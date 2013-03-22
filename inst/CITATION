@@ -1,0 +1,9 @@
+bibentry("article",
+  author = "Wallace, C et. al"
+  title = "Statistical colocalisation of monocyte gene expression and genetic
+	risk variants for type 1 diabetes."
+  journal = "Hum Mol Genet",
+  year = "2012",
+  url = "http://dx.doi.org/10.1093/hmg/dds098"
+)
+

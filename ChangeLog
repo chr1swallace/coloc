@@ -1,0 +1,35 @@
+2012-12-10  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.11
+	added principal components functions pcs.prepare(), pcs.model().
+	Restructed the coloc objects to separate Bayesian and non-Bayesian inference.
+
+2012-11-28  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.10
+	added Credible Interval calculation to coloc.test().
+
+2012-07-12  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.09
+	updated to return u and Var(u) in addition to chisq statistic.
+
+2012-04-12  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.08
+	fixed error in documentation, added MASS to Depends.
+
+2012-01-05  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.06
+	some tidying.
+
+2012-01-03  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.05
+	moved to S4 methods.
+
+2011-12-27  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v1.04
+	made the means of generating plots more flexible.
