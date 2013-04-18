@@ -1,7 +1,7 @@
 ## bootp <- function(b1,b2,s1,s2,eta) {
 ## }
 
-extra.plot <- function(plot.data, plots.extra) {
+extra.plot <- function(plot.data, plots.extra, theta.hat, eta.hat) {
   if(!is.list(plots.extra) || length(plots.extra)!=2 ||
      !("x" %in% names(plots.extra)) || !("y" %in% names(plots.extra)) ||
      !all(plots.extra$x %in% names(plot.data)) ||
@@ -15,7 +15,6 @@ extra.plot <- function(plot.data, plots.extra) {
                  chisq="chisquare",
                  post.theta="posterior for theta",
                  lhood="-2 log likelihood")
-
   if(length(plots.extra$y)>length(plots.extra$x)) {
     plots.extra$x <- rep(plots.extra$x,length=length(plots.extra$y))
   }
@@ -27,9 +26,9 @@ extra.plot <- function(plot.data, plots.extra) {
          plot.data[[ plots.extra$y[i] ]],
          type="l",axes=FALSE,
          xlab=labels[[ plots.extra$x[i] ]],ylab=labels[[ plots.extra$y[i] ]],
-         main=paste(labels[[ plots.extra$y[i] ]],"vs",labels[[ plots.extra$x[i] ]]),...)
+         main=paste(labels[[ plots.extra$y[i] ]],"vs",labels[[ plots.extra$x[i] ]]))
     if(plots.extra$x[i]=="theta") {
-      axis(1,at=seq(theta.min,theta.max,length=5),
+      axis(1,at=seq(0,pi,length=5),
            labels=c("0",expression(pi / 4),expression(pi / 2), expression(3 * pi / 4), expression(pi)))
     } else {
       axis(1)
@@ -44,7 +43,7 @@ extra.plot <- function(plot.data, plots.extra) {
 }
 
 
-coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,...) {
+coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL, ...) {
   c1 <- cbind(b1,sqrt(s1),b1+1.96*sqrt(s1),b1-1.96*sqrt(s1))
   c2 <- cbind(b2,sqrt(s2),b2+1.96*sqrt(s2),b2-1.96*sqrt(s2))
   if(!is.null(add)) {
