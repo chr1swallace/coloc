@@ -49,6 +49,9 @@ setClass("colocBMA",
                         bma="numeric",
                         bayes.factor="numeric"),
          contains="coloc")
+setClass("colocCallibrated",
+         representation(cppp="numeric"),
+         contains="colocBayes")
 
 show.coloc <- function(object) {
   if(!is.na(object@result["chisquare"])) {
