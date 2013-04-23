@@ -52,109 +52,107 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 
 
 
-#'Function to do colocalisation tests of two traits
-#'
-#'Performs the colocalisation tests described in Plagnol et al (2009) and
-#'Wallace et al (2012).
-#'
-#'This is a test for proportionality of regression coefficients from two
-#'independent regressions.  Analysis can either be based on a profile
-#'likelihood approach, where the proportionality coefficient, \code{eta}, is
-#'replaced by its maximum likelihood value, and inference is based on a
-#'chisquare test (\code{p.value}), or taking a hybrid-Bayesian approach and
-#'integrating the p value over the posterior distribution of \code{eta}, which
-#'gives a posterior predictive p value.  The Bayesian approach can also be used
-#'to give a credible interval for \code{eta}.  See the references below for
-#'further details.
-#'
-#'@param X,Y Each is either an lm or glm object.  The intersection of
-#'\code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
-#'identify SNPs in common which will be tested for colocalisation.  Any
-#'Intercept term is dropped, but other covariates should have distinct names or
-#'be listed in \code{vars.drop} to avoid them being included in the
-#'colocalisation test.
-#'@param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
-#'uniform (uninformative) prior.  We have found varying k to have little effect
-#'on the results.
-#'@param plot.coeff \code{TRUE} if you want to generate a plot showing the
-#'coefficients from the two regressions together with confidence regions.
-#'@param plots.extra list with 2 named elements, x and y, equal length
-#'character vectors containing the names of the quantities to be plotted on the
-#'x and y axes.
-#'@param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
-#'
-#'\code{x} is generally a sequence of \code{theta} and \code{eta}, with
-#'\code{y} selected from \code{post.theta}, the posterior density of theta,
-#'\code{chisq}, the chi-square values of the test, and \code{lhood}, the
-#'likelihood function.
-#'@param vars.drop Character vector naming additional variables in either
-#'regression which are not SNPs and should not be used in the colocalisation
-#'test.  They should appear in
-#'\code{c(names(coefficients(X)),names(coefficients(Y)))}
-#'@param bayes Logical, indicating whether to calculate the Bayesian posterior
-#'predictive p value, credible interval and, if \code{bayes.factor} is
-#'supplied, Bayes factors.  This can add a little time as it requires numerical
-#'integration, so can be set to FALSE to save time in simulations, for example.
-#'@param level.ci,n.approx \code{level.ci} denotes the required level of the
-#'credible interval for \code{eta}.  This is calculated numerically by
-#'approximating the posterior distribution at \code{n.approx} distinct values.
-#'@param bayes.factor Numeric vector, giving value(s) of \code{eta} which
-#'should be compared to the null values 0 and Inf.
-#'@return a numeric vector with 3 named elements:
-#'\item{eta.hat}{The estimated slope.}
-#'\item{chisquare}{The chisquared test statistic}
-#'\item{n}{The number of snps used in the test.  If eta were known, this
-#'would be the degrees of freedom of the test. Because eta has been replaced by
-#'its ML estimate, Plagnol et al suggest we expect the degrees of freedom to be
-#'n-1, but this requires the likelihood to be well behaved which is not always
-#'the case.  We prefer to consider the posterior predictive p value.}
-#'\item{ppp}{The posterior predictive p value}
-#'@note Plagnol et al's original test was available in his R package
-#'\code{QTLMatch v0.8} which now appears unavailable.  The numerically
-#'identical test, extended to allow for more than two SNPs, can be found in
-#'this package by looking at the chisquare statistic and the degrees of freedom
-#'given by \code{chisquare()} and \code{df()} respectively.  %
-#'\url{http://www-gene.cimr.cam.ac.uk/vplagnol/software.shtml}
-#'@author Chris Wallace
-#'@references Wallace et al (2012).  Statistical colocalisation of monocyte
-#'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-#'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
-#'
-#'Plagnol et al (2009).  Statistical independence of the colocalized
-#'association signals for type 1 diabetes and RPS26 gene expression on
-#'chromosome 12q13. Biostatistics 10:327-34.
-#'\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
-#'@examples
-#'
-#'  ## simulate covariate matrix (X) and continuous response vector (Y)
-#'  ## for two populations/triats Y1 and Y2 depend equally on f1 and f2
-#'  ## within each population, although their distributions differ between
-#'  ## populations.  They are compatible with a null hypothesis that they
-#'  ## share a common causal variant
-#'set.seed(1)
-#'  X1 <- matrix(rbinom(1000,1,0.4),ncol=2)
-#'  Y1 <- rnorm(500,apply(X1,1,sum),2)
-#'  X2 <- matrix(rbinom(1000,1,0.6),ncol=2)
-#'  Y2 <- rnorm(500,2*apply(X2,1,sum),5)
-#'  
-#'  boxplot(list(Y1,Y2),names=c("Y1","Y2"))
-#'  
-#'  ## fit and store linear model objects
-#'  colnames(X1) <- colnames(X2) <- c("f1","f2")
-#'  summary(lm1 <- lm(Y1~f1+f2,data=as.data.frame(X1)))
-#'  summary(lm2 <- lm(Y2~f1+f2,data=as.data.frame(X2)))
-#'  
-#'  ## test whether the traits are compatible with colocalisation
-#'  ### ppp should be large (>0.05, for example), indicating that they are.
-#'  par(mfrow=c(2,2))
-#'  coloc.test(lm1,lm2,plot.coeff=TRUE,
-#'             plots.extra=list(x=c("eta","theta"),
-#'                              y=c("lhood","lhood")))
-#'
-#'@export
-coloc.test <- function(X,Y,k=1,plot.coeff=TRUE,plots.extra=NULL,
-                       vars.drop=NULL, bayes=bma || !is.null(bayes.factor), n.approx=1001, level.ci=0.95,
-                       bayes.factor=NULL, bma=FALSE) {
+##' Function to do colocalisation tests of two traits
+##' 
+##' Performs the colocalisation tests described in Plagnol et al (2009) and
+##' Wallace et al (2012).
+##' 
+##' This is a test for proportionality of regression coefficients from two
+##' independent regressions.  Analysis can either be based on a profile
+##' likelihood approach, where the proportionality coefficient, \code{eta}, is
+##' replaced by its maximum likelihood value, and inference is based on a
+##' chisquare test (\code{p.value}), or taking a hybrid-Bayesian approach and
+##' integrating the p value over the posterior distribution of \code{eta}, which
+##' gives a posterior predictive p value.  The Bayesian approach can also be used
+##' to give a credible interval for \code{eta}.  See the references below for
+##' further details.
+##' 
+##' @param X,Y Each is either an lm or glm object.  The intersection of
+##' \code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
+##' identify SNPs in common which will be tested for colocalisation.  Any
+##' Intercept term is dropped, but other covariates should have distinct names or
+##' be listed in \code{vars.drop} to avoid them being included in the
+##' colocalisation test.
+##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
+##' uniform (uninformative) prior.  We have found varying k to have little effect
+##' on the results.
+##' @param plot.coeff \code{TRUE} if you want to generate a plot showing the
+##' coefficients from the two regressions together with confidence regions.
+##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
+##' @param plots.extra list with 2 named elements, x and y, equal length
+##' character vectors containing the names of the quantities to be plotted on the
+##' x and y axes.
+##'
+##' \code{x} is generally a sequence of \code{theta} and \code{eta}, with
+##' \code{y} selected from \code{post.theta}, the posterior density of theta,
+##' \code{chisq}, the chi-square values of the test, and \code{lhood}, the
+##' likelihood function.
+##' @param vars.drop Character vector naming additional variables in either
+##' regression which are not SNPs and should not be used in the colocalisation
+##' test.  They should appear in
+##' \code{c(names(coefficients(X)),names(coefficients(Y)))}
+##' @param bayes Logical, indicating whether to calculate the Bayesian posterior
+##' predictive p value, credible interval and, if \code{bayes.factor} is
+##' supplied, Bayes factors.  This can add a little time as it requires numerical
+##' integration, so can be set to FALSE to save time in simulations, for example.
+##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
+##' credible interval for \code{eta}.  This is calculated numerically by
+##' approximating the posterior distribution at \code{n.approx} distinct values.
+##' @param bayes.factor Numeric vector, giving value(s) of \code{eta} which
+##' should be compared to the null values 0 and Inf.
+##' @return a numeric vector with 3 named elements:
+##' \item{eta.hat}{The estimated slope.}
+##' \item{chisquare}{The chisquared test statistic}
+##' \item{n}{The number of snps used in the test.  If eta were known, this
+##' would be the degrees of freedom of the test. Because eta has been replaced by
+##' its ML estimate, Plagnol et al suggest we expect the degrees of freedom to be
+##' n-1, but this requires the likelihood to be well behaved which is not always
+##' the case.  We prefer to consider the posterior predictive p value.}
+##' \item{ppp}{The posterior predictive p value}
+##' @note Plagnol et al's original test was available in his R package
+##' \code{QTLMatch v0.8} which now appears unavailable.  The numerically
+##' identical test, extended to allow for more than two SNPs, can be found in
+##' this package by looking at the chisquare statistic and the degrees of freedom
+##' given by \code{chisquare()} and \code{df()} respectively.  %
+##' \url{http://www-gene.cimr.cam.ac.uk/vplagnol/software.shtml}
+##' @author Chris Wallace
+##' @references Wallace et al (2012).  Statistical colocalisation of monocyte
+##' gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
+##' 21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
+##' 
+##' Plagnol et al (2009).  Statistical independence of the colocalized
+##' association signals for type 1 diabetes and RPS26 gene expression on
+##' chromosome 12q13. Biostatistics 10:327-34.
+##' \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
+##' @examples
+##' 
+##'   ## simulate covariate matrix (X) and continuous response vector (Y)
+##'   ## for two populations/triats Y1 and Y2 depend equally on f1 and f2
+##'   ## within each population, although their distributions differ between
+##'   ## populations.  They are compatible with a null hypothesis that they
+##'   ## share a common causal variant
+##' set.seed(1)
+##'   X1 <- matrix(rbinom(1000,1,0.4),ncol=2)
+##'   Y1 <- rnorm(500,apply(X1,1,sum),2)
+##'   X2 <- matrix(rbinom(1000,1,0.6),ncol=2)
+##'   Y2 <- rnorm(500,2*apply(X2,1,sum),5)
+##'   
+##'   boxplot(list(Y1,Y2),names=c("Y1","Y2"))
+##'   
+##'   ## fit and store linear model objects
+##'   colnames(X1) <- colnames(X2) <- c("f1","f2")
+##'   summary(lm1 <- lm(Y1~f1+f2,data=as.data.frame(X1)))
+##'   summary(lm2 <- lm(Y2~f1+f2,data=as.data.frame(X2)))
+##'   
+##'   ## test whether the traits are compatible with colocalisation
+##'   ### ppp should be large (>0.05, for example), indicating that they are.
+##'   par(mfrow=c(2,2))
+##'   coloc.test(lm1,lm2,plot.coeff=TRUE,
+##'              plots.extra=list(x=c("eta","theta"),
+##'                               y=c("lhood","lhood")))
+##' 
+##' @export
+coloc.test <- function(X,Y,vars.drop=NULL, ...) {
   ## X and Y are glm objects, fitted to the same snps, with different outcome variables
   ## return values are
   ## return(c(eta.hat=eta.hat,chisq=X2,ppp=ppp$value))
@@ -185,6 +183,18 @@ coloc.test <- function(X,Y,k=1,plot.coeff=TRUE,plots.extra=NULL,
   
   V1 <- vcov(X)[snps,snps]
   V2 <- vcov(Y)[snps,snps]
+  coloc.test.summary(b1,b2,V1,V2,...)
+}
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @return 
+##' @author Chris Wallace
+##' @export
+coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=bma || !is.null(bayes.factor), n.approx=1001, level.ci=0.95,
+                       bayes.factor=NULL, bma=FALSE) {
+  nsnps <- length(b1)
   S1 <- solve(V1)
   S2 <- solve(V2)
   theta.min <- 0
@@ -268,7 +278,7 @@ coloc.test <- function(X,Y,k=1,plot.coeff=TRUE,plots.extra=NULL,
   if(plot.coeff) {
     coeff.plot(b1,b2,diag(V1),diag(V2),eta=eta.hat,
                main="Coefficients",
-                                        #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=length(snps)-1,lower.tail=FALSE),digits=2)),
+                                        #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=nsnps-1,lower.tail=FALSE),digits=2)),
                xlab=expression(b[1]),ylab=expression(b[2]))
   }
 
@@ -288,17 +298,17 @@ coloc.test <- function(X,Y,k=1,plot.coeff=TRUE,plots.extra=NULL,
   ## return
   if(!bayes) {
     return(new("coloc",
-               result=c(eta.hat=eta.hat,chisquare=X2,n=length(snps))))
+               result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps)))
   } else {
     if(!bma) {
       return(new("colocBayes",
-                 result=c(eta.hat=eta.hat,chisquare=X2,n=length(snps)),
+                 result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                  ppp=ppp$value,
                  credible.interval=cred.int,
                  bayes.factor=post.bf))
     } else {
       return(new("colocBMA",
-                 result=c(eta.hat=eta.hat,chisquare=X2,n=length(snps)),
+                 result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                  ppp=ppp$value,
                  bma=post.bma,
                  bayes.factor=post.bf))

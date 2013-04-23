@@ -117,7 +117,7 @@ pcs.prepare <- function(X1, X2) {
   rows.drop <- apply(is.na(X),1,any)
   if(sum(rows.drop))
     X <- X[!rows.drop,]
-  pcs <- prcomp(X)
+  pcs <- prcomp(X, scale.=TRUE)
   vars <- pcs$sdev^2
   cvars <- cumsum(vars)/sum(vars)
 
