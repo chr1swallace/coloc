@@ -259,6 +259,8 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     
     ## bayes factors
     if(!is.null(bayes.factor)) {
+      if(length(bayes.factor)<2)
+        warning("You are trying to prepare to calculate Bayes Factors for a single value or interval for eta.  bayes.factor should have length at least two.")
       if(is.list(bayes.factor)) { ## range values
          post.bf <- sapply(bayes.factor,
                           function(eta.range) {
@@ -268,7 +270,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
                           })
       } else { ## point values
 ##        bayes.factor <- c(0, 1, bayes.factor)
-        post.bf <- LV(atan(bayes.factor))
+        post.bf <- LV(atan(bayes.factor))/priorV(atan(bayes.factor))
       }
     } else {
       post.bf <- numeric(0)

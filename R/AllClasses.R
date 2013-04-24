@@ -143,6 +143,8 @@ setGeneric("bf",function(object) standardGeneric("bf"))
 setMethod("bf","colocBayes",function(object) {
   if(!length(object@bayes.factor))
     stop("No Bayes factor calculations stored.\n")
+  if(length(object@bayes.factor)==1)
+    warning("Comparing a single value or interval for eta to itself.  Probably not what you meant to do.  bayes.factor should have length at least two.")
   bayes.factor.table <- outer(object@bayes.factor, object@bayes.factor, "/")
   dimnames(bayes.factor.table) <- list(values.for=names(object@bayes.factor),
                                        values.against=names(object@bayes.factor))
