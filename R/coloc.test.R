@@ -66,7 +66,8 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' gives a posterior predictive p value.  The Bayesian approach can also be used
 ##' to give a credible interval for \code{eta}.  See the references below for
 ##' further details.
-##' 
+##'
+##' @inheritParams bma
 ##' @param X,Y Each is either an lm or glm object.  The intersection of
 ##' \code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
 ##' identify SNPs in common which will be tested for colocalisation.  Any
@@ -98,8 +99,6 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
 ##' credible interval for \code{eta}.  This is calculated numerically by
 ##' approximating the posterior distribution at \code{n.approx} distinct values.
-##' @param bayes.factor Numeric vector, giving value(s) of \code{eta} which
-##' should be compared to the null values 0 and Inf.
 ##' @return a numeric vector with 3 named elements:
 ##' \item{eta.hat}{The estimated slope.}
 ##' \item{chisquare}{The chisquared test statistic}
@@ -192,8 +191,9 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 ##' @return 
 ##' @author Chris Wallace
 ##' @export
-coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=bma || !is.null(bayes.factor), n.approx=1001, level.ci=0.95,
-                       bayes.factor=NULL, bma=FALSE) {
+coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=bma || !is.null(bayes.factor),
+                               n.approx=1001, level.ci=0.95,
+                               bayes.factor=NULL, bma=FALSE) {
   nsnps <- length(b1)
   S1 <- solve(V1)
   S2 <- solve(V2)
@@ -228,6 +228,8 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     ## cauchy prior for theta
     prior <- function(theta) { tt <- tan(theta);
                                k*(1+tt^2) / (2*pi*(1 + k^2 * tt^2)) }
+    priorV <- Vectorize(prior,"theta")
+    
     ## posterior for theta
     p <- length(b1)
     const <- ( sqrt(2*pi)^p * det(V1) * det(V2) )^(-1)
@@ -257,10 +259,17 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     
     ## bayes factors
     if(!is.null(bayes.factor)) {
-      bayes.null <- c(0,pi/2)
-      bayes.alt <- atan(bayes.factor)
-      post.bf <- post(c(bayes.null,bayes.alt))
-      names(post.bf) <- c("0","Inf",bayes.factor)
+      if(is.list(bayes.factor)) { ## range values
+         post.bf <- sapply(bayes.factor,
+                          function(eta.range) {
+                            theta.range <- sort(atan(eta.range))
+                            integrate(LV,lower=theta.range[1],upper=theta.range[2])$value/
+                              integrate(priorV,lower=theta.range[1], upper=theta.range[2])$value
+                          })
+      } else { ## point values
+##        bayes.factor <- c(0, 1, bayes.factor)
+        post.bf <- LV(atan(bayes.factor))
+      }
     } else {
       post.bf <- numeric(0)
     }

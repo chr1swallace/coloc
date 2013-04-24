@@ -143,11 +143,9 @@ setGeneric("bf",function(object) standardGeneric("bf"))
 setMethod("bf","colocBayes",function(object) {
   if(!length(object@bayes.factor))
     stop("No Bayes factor calculations stored.\n")
-  Pdata <- c(sum(object@bayes.factor[1:2]),object@bayes.factor)
-  bayes.factor.table <- outer(Pdata, Pdata, "/")
-  dimnames(bayes.factor.table) <- list(values.for=c("0|Inf",names(object@bayes.factor)),
-                                       values.against=c("0|Inf",names(object@bayes.factor)))
-  bayes.factor.table[1:3,1:3] <- NA
+  bayes.factor.table <- outer(object@bayes.factor, object@bayes.factor, "/")
+  dimnames(bayes.factor.table) <- list(values.for=names(object@bayes.factor),
+                                       values.against=names(object@bayes.factor))
   return(bayes.factor.table)
 })
 
