@@ -7,3 +7,10 @@ bibentry("article",
   url = "http://dx.doi.org/10.1093/hmg/dds098"
 )
 
+bibentry("article",
+author = "Wallace, C",
+title = " Statistical testing of shared genetic control for potentially related traits",
+journal = "arXiv",
+year = "2013",
+url = "http://arxiv.org/abs/1301.5510"
+)

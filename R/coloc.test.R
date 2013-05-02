@@ -6,8 +6,11 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
     t.max <- minimum$minimum + pi
     t.seq <- seq(t.min, t.max, length=n.approx)
     pval <- post(t.seq)
-    tpost <- function(theta) theta*post(theta)
-    t.mean <- integrate(tpost,lower=interval[1], upper=interval[2])$value
+#    tpost <- function(theta) theta*post(theta)
+#    t.mean <- integrate(tpost,lower=interval[1], upper=interval[2])$value
+  #  epost <- function(theta) tan(theta)*post(theta)
+#    e.mean <- integrate(epost,lower=interval[1], upper=interval[2])$value
+#    e.mean <- tan(t.mean)
   } else {
     t.seq <- seq(interval[1],interval[2],length=n.approx)
     minimum <- which.min(post)
@@ -15,7 +18,7 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
     t.max <- t.min + pi
     t.seq <- seq(t.min, t.max, length=n.approx)
     pval <- post[c(minimum:n.approx,1:(minimum - 1))]
-    t.mean <- sum(pval * t.seq)/sum(pval)
+#    e.mean <- tan(sum(pval * t.seq)/sum(pval))
   }    
   pval <- pval/sum(pval)
   
@@ -38,17 +41,14 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
     u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
   }
 
-  return(list(eta.mean=tan(t.mean %% pi),
-              eta.mode=tan(t.mode %% pi), 
+  return(list(#eta.mean=e.mean, #tan(t.mean %% pi),
+              eta.mode=tan(t.mode), 
               lower=tan(t.seq[l]), upper=tan(t.seq[u]), level=level.ci,
               level.observed=if(is.function(post)) {
                 integrate(post, lower=t.seq[l], upper=t.seq[u])$value
               } else { NA },
               interior=t.seq[l] %/% pi == t.seq[u] %/% pi))
 }
-
-
-### function to do colocalisation testing
 
 
 
@@ -258,20 +258,23 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     }
     
     ## bayes factors
+    bf.calc <- function(eta) {
+      if(length(eta)==1)
+        return( LV(atan(eta))/priorV(atan(eta)) )      
+      if(length(eta)==2) {
+        theta.range <- sort(atan(eta))
+        return(integrate(LV,lower=theta.range[1],upper=theta.range[2])$value/
+               integrate(priorV,lower=theta.range[1], upper=theta.range[2])$value)
+      }
+      warning(paste("Cannot calculate Bayes Factor for eta =",eta,"require length == 1 or 2."))
+      return(NA)
+    }
+    
     if(!is.null(bayes.factor)) {
       if(length(bayes.factor)<2)
         warning("You are trying to prepare to calculate Bayes Factors for a single value or interval for eta.  bayes.factor should have length at least two.")
-      if(is.list(bayes.factor)) { ## range values
-         post.bf <- sapply(bayes.factor,
-                          function(eta.range) {
-                            theta.range <- sort(atan(eta.range))
-                            integrate(LV,lower=theta.range[1],upper=theta.range[2])$value/
-                              integrate(priorV,lower=theta.range[1], upper=theta.range[2])$value
-                          })
-      } else { ## point values
-##        bayes.factor <- c(0, 1, bayes.factor)
-        post.bf <- LV(atan(bayes.factor))/priorV(atan(bayes.factor))
-      }
+      post.bf <- sapply(bayes.factor, bf.calc)
+      names(post.bf) <- c(bayes.factor)
     } else {
       post.bf <- numeric(0)
     }

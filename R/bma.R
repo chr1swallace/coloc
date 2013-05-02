@@ -160,7 +160,7 @@ coloc.bma <- function(df1,df2,snps,response1="Y", response2="Y", family1="binomi
     var.2[[i]] <- vcov(lm1)[-1,-1]
     this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,...)
     post[i,] <- this.coloc@bma
-   p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
+    p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
     if(length(bayes.factor)) {
       bf[i,] <- this.coloc@bayes.factor
     }

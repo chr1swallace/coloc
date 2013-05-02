@@ -3,9 +3,11 @@ source("demo/common.R")
 ## simulate some data
 data <- sim.data(nsim=1)
 
-## run a coloc
+## load code
 library(devtools)
 load_all()
+
+## run a coloc
 cb <- coloc.bma(data@df1, data@df2, family1="gaussian", family2="gaussian", snps=paste("s",1:10,sep=""),
                 bayes.factor=c(0,1,Inf))
 cbr <- coloc.bma(data@df1, data@df2, family1="gaussian", family2="gaussian", snps=paste("s",1:10,sep=""),
