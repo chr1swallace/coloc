@@ -65,7 +65,9 @@
 #'nsnps=2,bayes.factor=c(1,2,3),plot.coeff=TRUE)
 #'
 #'@export
-coloc.bma <- function(df1,df2,snps,response1="Y", response2="Y", family1="binomial", family2="binomial",
+coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
+                                setdiff(colnames(df2),response2)),
+                      response1="Y", response2="Y", family1="binomial", family2="binomial",
                      thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                      plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,...) {
   snps <- unique(snps)
