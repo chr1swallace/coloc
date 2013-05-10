@@ -74,7 +74,7 @@ lH3new.f <- function(x, y) {
 ##' @param N.df2 number of individuals in dataset 2
 ##' @param prior1 p_1 == p_2, prior probability a SNP is associated with one trait
 ##' @param prior2 p_12, prior probability a SNP is associated with both traits
-##' @param s standard deviation of prior
+##' @param sd.prior standard deviation of prior. TODO! CHANGE THIS TO ALLOW SEPARATE PRIORS FOR EACH TRAIT?
 ##' @param col.names column names in merged.df that correspond to the
 ##' pvalues in datasets 1 and 2 and the SNP minor allele frequencies.
 ##' @return a list of two \code{data.frame}s:
@@ -97,11 +97,12 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, prior1= log(10^(-4))
   f = merged.df[,col.names[3]]
   
 ####### Use different priors and different computation of variance of the mle for case/control vs. quantitative trait
-  if (s==0)  (case_control = FALSE) else (case_control = TRUE)
+  case_control <- s!=0 
   if (case_control) {     # s=0 if not a case-control studies
     sd.prior = 0.20
     merged.df$V.df1 <- Var.data.cc(f, N.df1, s) 
-    merged.df$V.df2 <- Var.data.cc(f, N.df2, s) } else {
+    merged.df$V.df2 <- Var.data.cc(f, N.df2, s) 
+   } else {
       sd.prior = 0.15
       merged.df$V.df1 <- Var.data(f, N.df1) 
       merged.df$V.df2 <- Var.data(f, N.df2) 
