@@ -46,13 +46,44 @@ logmean <- function(x) {
 ##' @param y lH4
 ##' @return log(exp(lH3)-0.001*exp(lH4))
 ##' @author Claudia Giambartolomei
-lH3new.f <- function(x, y) {                                  
+lH3new.f <- function(x, y, prior1, prior2) {
+  prop <- prior1^2/prior2
   my.max <- max(c(x,y))                             
-  my.res <- my.max + log( exp(x - my.max) - 0.001*exp(y - my.max))     
+  my.res <- my.max + log( exp(x - my.max) - prop*exp(y - my.max))     
+
   return(my.res)
 }
 
-
+##' Internal function, approx.bf
+##'
+##' Calculate approximate Bayes Factors
+##' @title 
+##' @param p p value
+##' @param f MAF
+##' @param type "quant" or "cc"
+##' @param N sample size
+##' @param s proportion of samples that are cases, ignored if type=="quant"
+##' @param suffix suffix to append to column names of returned data.frame
+##' @return data.frame containing lABF and intermediate calculations
+##' @author Claudia Giambartolomei, Chris Wallace
+approx.bf <- function(p,f,type, N, s, suffix) {
+  if(type=="quant") {
+    sd.prior <- 0.15
+    V <- Var.data(f, N)
+  } else {
+    sd.prior <- 0.2
+    V <- Var.data.cc(f, N, s)
+  }
+  z <- qnorm(0.5 * p, lower.tail = FALSE)
+  ## Shrinkage factor: ratio of the prior variance to the total variance
+  r <- sd.prior^2 / (sd.prior^2 + V)
+  ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
+  lABF = 0.5 * (log(1-r) + (r * z^2))
+  ret <- data.frame(V,z,r,lABF)
+  colnames(ret) <- paste(colnames(ret), suffix, sep=".")
+  return(ret)
+  
+}
 
 ##' Bayesian colocalisation analysis using summary p values
 ##'
@@ -72,18 +103,20 @@ lH3new.f <- function(x, y) {
 ##' \code{col.names}
 ##' @param N.df1 number of individuals in dataset 1
 ##' @param N.df2 number of individuals in dataset 2
+##' @param type.df1, type.df2 the type of data in datasets 1 and 2 - either "quant" or "cc" to denote quantitative or case-control.
 ##' @param prior1 p_1 == p_2, prior probability a SNP is associated with one trait
 ##' @param prior2 p_12, prior probability a SNP is associated with both traits
-##' @param sd.prior standard deviation of prior. TODO! CHANGE THIS TO ALLOW SEPARATE PRIORS FOR EACH TRAIT?
 ##' @param col.names column names in merged.df that correspond to the
 ##' pvalues in datasets 1 and 2 and the SNP minor allele frequencies.
+##' @param s.df1, s.df2  the proportion of samples in datasets 1 and 2 that are cases.  Only relevant for case control samples.
+##' @param sd.prior standard deviation of prior. TODO! CHANGE THIS TO ALLOW SEPARATE PRIORS FOR EACH TRAIT?
 ##' @return a list of two \code{data.frame}s:
 ##' \itemize{
 ##' \item results is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
 ##' \item merged.df is an annotated version of the input \code{data.frame}
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
-coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, prior1= log(10^(-4)), prior2= log(10^(-5)), s=0,
+coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant", prior1= log(10^(-4)), prior2= log(10^(-5)), s.df1=0.5, s.df2=0.5,
                    col.names=c("pvalues.df1","pvalues.df2","MAF")) {  # set s to 0 is it is not a case control study
 
   if(!is.data.frame(merged.df))
@@ -97,32 +130,11 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, prior1= log(10^(-4))
   f = merged.df[,col.names[3]]
   
 ####### Use different priors and different computation of variance of the mle for case/control vs. quantitative trait
-  case_control <- s!=0 
-  if (case_control) {     # s=0 if not a case-control studies
-    sd.prior = 0.20
-    merged.df$V.df1 <- Var.data.cc(f, N.df1, s) 
-    merged.df$V.df2 <- Var.data.cc(f, N.df2, s) 
-   } else {
-      sd.prior = 0.15
-      merged.df$V.df1 <- Var.data(f, N.df1) 
-      merged.df$V.df2 <- Var.data(f, N.df2) 
-    }
+  abf.df1 <- approx.bf(pvalues.df1, f, type.df1, N.df1, s.df1, suffix="df1")
+  abf.df2 <- approx.bf(pvalues.df2, f, type.df2, N.df2, s.df2, suffix="df2")
+  merged.df <- cbind(merged.df, abf.df1, abf.df2)  
+  merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   
-  merged.df$z.df1 <- qnorm(0.5 * (pvalues.df1), lower.tail = FALSE)  
-  ## Shrinkage factor: ratio of the prior variance to the total variance
-  merged.df$r.df1 <- sd.prior^2 / (sd.prior^2 + merged.df$V.df1)
-  ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
-  merged.df$lABF.df1 = 0.5 * (log(1-merged.df$r.df1) + (merged.df$r.df1 * merged.df$z.df1^2))    
-    
-  ## Do the same for other dataset:
-  merged.df$z.df2 <- qnorm(0.5 * (pvalues.df2), lower.tail = FALSE)      
-  ## Shrinkage factor: ratio of the prior variance to the total variance
-  merged.df$r.df2 <- sd.prior^2 / (sd.prior^2 + merged.df$V.df2)
-  ## Approximate BF
-  merged.df$lABF.df2 = 0.5 * (log(1-merged.df$r.df2) + (merged.df$r.df2 * merged.df$z.df2^2))   
-  
-  merged.df$internal.sum.lABF <- (merged.df$lABF.df1 + merged.df$lABF.df2) 
-   
 ############################## 
 
   lH0.abf <- 0
@@ -131,7 +143,7 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, prior1= log(10^(-4))
   lH3.abf <- prior1 + logmean(merged.df$lABF.df1) + prior1 + logmean(merged.df$lABF.df2)
   lH4.abf <- prior2 + logmean(merged.df$internal.sum.lABF)
 
-  lH3new.abf = lH3new.f(lH3.abf, lH4.abf)
+  lH3new.abf = lH3new.f(lH3.abf, lH4.abf, prior1, prior2)
   ## If x=(0.001*y), the difference (x-(0.001*y)) = 0, log(0) = -Inf, so fix this:
   ## If it is NaN and the difference between lH3.abf and (log(0.001) + lH4.abf) is very small (<0.001), then keep the old value of lH3.abf:
   if (is.na(lH3new.abf) & abs( lH3.abf -(log(0.001) + lH4.abf) ) <0.001)  (lH3new.abf = lH3.abf)
@@ -151,10 +163,20 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, prior1= log(10^(-4))
   results <- c(nsnps=common.snps, pp.df.abf)
   
   output<-list(results, merged.df)
-  ##output <- list(summary.df)
   return(output)
 }
-
+##' Bayesian colocalisation analysis using data.frames
+##'
+##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.bayesian.summary}}
+##' 
+##' @title Bayesian colocalisation analysis using data.frames
+##' @param df1, df2 datasets 1 and 2
+##' @param snps col.names for snps
+##' @param response1 col.name for response in dataset 1
+##' @param response2 col.name for response in dataset 2
+##' @param ... parameters passed to \code{\link{coloc.bayesian.summary}}
+##' @return output of \code{\link{coloc.bayesian.summary}}
+##' @author Chris Wallace
 coloc.bayesian.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                                               setdiff(colnames(df2),response2)),
                                     response1="Y", response2="Y", ...) {
@@ -173,7 +195,18 @@ coloc.bayesian.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1)
   coloc.bayesian(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
                  N.df1=nrow(X1), N.df2=nrow(X2), ...)
 }
-
+##' Bayesian colocalisation analysis using snpStats objects
+##'
+##' Generates p values via score tests, then runs \code{\link{coloc.bayesian.summary}}
+##' @title Bayesian colocalisation analysis using snpStats objects
+##' @param X1 genetic data for dataset 1
+##' @param X2 genetic data for dataset 2
+##' @param Y1 response for dataset 1
+##' @param Y2 response for dataset 2
+##' @param snps optional subset of snps to use
+##' @param ... parameters passed to \code{\link{coloc.bayesian.summary}}
+##' @return output of \code{\link{coloc.bayesian.summary}}
+##' @author Chris Wallace
 coloc.bayesian.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
     stop("X1 and X2 must be SnpMatrices")
