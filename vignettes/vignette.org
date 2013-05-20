@@ -219,8 +219,6 @@ single SNP p values quickly.
 #+begin_src R
 library(snpStats)
 ct.conf <- coloc.config.datasets(data@df1, data@df2, response1="Y", response2="Y")
-
-
 #+end_src
 
 # ## run a fully Bayesian coloc

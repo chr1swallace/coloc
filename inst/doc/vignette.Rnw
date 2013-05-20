@@ -1,4 +1,4 @@
-% Created 2013-05-20 Mon 16:06
+% Created 2013-05-20 Mon 21:19
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -119,9 +119,11 @@ data <- sim.data(nsim=1)
 ## load code
 library(devtools); load_all("..")
 @ %def
+\section*{Proportional testing}
+\label{sec-3}
 
 \subsection*{Principal components}
-\label{sec-2-1}
+\label{sec-3-1}
 
 The code below first prepares a principal component object by combining
 the genotypes in the two dataset, then models the most informative
@@ -165,7 +167,7 @@ ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
 ci(ct.pcs.bayes)
 @ %def
 \subsection*{Bayesian model averaging}
-\label{sec-2-2}
+\label{sec-3-2}
 
 This approach appears simpler.  There is no need to do any
 preparatory work, you require only a single function:
@@ -187,6 +189,52 @@ computation.  Second, the \texttt{thr} parameter is used to discard SNPs
 which are uninformative with regards the phenotype, that is, if $pp_{ij}$
 is the posterior probability of inclusion in single SNP models for
 SNP $i$, trait $j$, the set of discarded SNPs is formed by those for
-which $pp_{i1}<$ \texttt{thr} and $pp_{i2}<$ \texttt{thr}.
+which $pp_{i1}<$ \texttt{thr} and $pp_{i2}<$ \texttt{thr}.  Models containing
+\textbf{only} SNPs from this set will be ignored.  Note that models
+containing one SNP from this set and one SNP \emph{not} in the set \textbf{will}
+be evaluated.
+
+Finally, you should tell \texttt{coloc.bma()} how many SNPs should be
+included in each model.  The default is \texttt{nsnps=2}, 3 appears slightly
+more powerful but will geneally require considerably more
+computation, whilst values of 4 and above are both unlikely to
+provide more information and very unlikely to be computed in any
+reasonable time for interactive work.
+\subsection*{Bayes Factors}
+\label{sec-3-3}
+
+TODO
+\section*{Configuration analyses}
+\label{sec-4}
+
+The idea behind the configuration analysis is that the association of
+each trait with SNPs in a region may be summarised by a vector of 0s
+and at most a single 1, with the 1 indicating the causal SNP (so,
+assuming a single causal SNP for each trait).  The posterior
+probability of each possible configuration can be calculated and so,
+crucially, can the posterior probabilities that the traits share
+their configurations.  This allows us to estimate the support for the
+following cases:
+
+\begin{itemize}
+\item H$_{\text{0}}$: neither trait has a genetic association in the region
+\item H$_{\text{1}}$: only trait 1 has a genetic association in the region
+\item H$_{\text{2}}$: only trait 2 has a genetic association in the region
+\item H$_{\text{3}}$: both traits are associated, but with different causal variants
+\item H$_{\text{4}}$: both traits are associated and share a single causal variant
+\end{itemize}
+
+The function \texttt{coloc.config} is ideally suited to the case when only summary data are
+available, when a \texttt{data.frame} containing three columns giving the p
+values for each SNP and the SNP's minor allele frequency should be
+supplied.  Here, we have simulated full genotype data, so I will use
+the wrapper function \texttt{coloc.config.datasets()} for the analysis.
+This makes use of functions in the snpStats package to calculate
+single SNP p values quickly. 
+
+<<>>=
+library(snpStats)
+ct.conf <- coloc.config.datasets(data@df1, data@df2, response1="Y", response2="Y")
+@ %def
 % Emacs 24.2.1 (Org mode 8.0.3)
 \end{document}
