@@ -1,0 +1,134 @@
+#+title: Colocalisation Analysis
+#+author: Chris Wallace
+#+email: chris.wallace at cimr.cam.ac.uk
+#+date: <2013-05-20 Mon>
+
+# #+begin_html
+# <!--
+# %\VignetteEngine{knitr}
+# %\VignetteIndexEntry{snpStatsWriter vignette}
+# -->
+# #+end_html
+
+* A brief outline of colocalisation testing
+
+# #+begin_html
+# <font color="grey">
+# *Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+# </font>
+# #+end_html
+
+The coloc package can be used to perform genetic colocalisation
+analysis of two potentially related phenotypes, to ask whether they
+share common genetic causal variant(s) in a given region.  There are a
+few key references which this vignette will not duplicate (see below),
+but, in brief, two approaches are implemented.
+
+First, the proportional approach uses the fact that for two traits
+sharing causal variants, regression coefficients for either trait
+against any set of SNPs in the neighbourhood of those variants must be
+proportional.  This test was first proposed by Plagnol et al. [fn:1]
+in the context of evaulating whether expression of the gene /RPS26/
+mediated the association of type 1 diabetes to a region on chromosome
+12q13 as had recently been proposed.  The test addressed a common
+issue in genetics, and meant researchers could avoid the need to
+squint at parallel manhattan plots to decide whether two traits share
+causal variants.  The function =coloc.test()= in this package evolved
+from code released by Vincent, but no longer available.
+
+However, choosing *which* SNPs to use for the test is a problem.
+The obvious choice is to use those most strongly associated with one
+or other trait to maximise information, but doing so induces bias in
+the regression coefficients, which in turn leads to increased
+likelihood of spuriously rejecting the null of colocalisation, ie
+a quite substantially increased type 1 error rate [fn:2].  I proposed
+two alternatives to address this problem, eithir using a principal
+component summary of genetic variation in the region to overcome the
+need to select a small set of test SNPs, implemented in =coloc.pcs()=
+and associated functions, or to use the ideas of Bayesian model
+averaging to average p values over SNP selections, generating
+posterior predictive p values, implemented in =coloc.bma()=.
+
+Proportional testing, however, requires individual level genotype
+data, which are not always available.  Claudia Giambartolomei and
+Vincent Plagnol have proposed an alternative method, which makes use
+of Jon Wakefields work on determining approximate Bayes Factors from
+p values [fn:3] to generate a Bayesian colocalisation analysis [fn:4],
+implemented in the function =coloc.summaries()=.  Note that it is
+possible to use Bayesian analysis for proportional testing too, in
+determining the posterior distribution of the proportionality
+constant $\eta$.
+
+* Usage
+
+Let's simulate a small dataset, and compare the three methods.
+
+#+begin_src R
+setClass("simdata",
+         representation(df1="data.frame",df2="data.frame"))
+setValidity("simdata", function(object) {
+  n <- nrow(object@df1)
+  if(nrow(object@df2)!=n)
+    return("nrow of '@df1' should equal nrow of '@df2'")
+})
+setMethod("show", signature="simdata", function(object) {
+  cat("pair of simulated datasets, with",ncol(object@df1)-1,"SNPs and",nrow(object@df1),"samples.\n")
+})
+
+sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
+  cat("Generate",nsim,"small sets of data\n")
+  ntotal <- nsnps * nsamples * nsim
+  X1 <- matrix(rbinom(ntotal,1,0.4)+rbinom(ntotal,1,0.4),ncol=nsnps)
+  Y1 <- rnorm(nsamples,rowSums(X1[,causals]),2)
+  X2 <- matrix(rbinom(ntotal,1,0.4)+rbinom(ntotal,1,0.4),ncol=nsnps)
+  Y2 <- rnorm(nsamples,rowSums(X2[,causals]),2)
+  colnames(X1) <- colnames(X2) <- paste("s",1:nsnps,sep="")
+  df1 <- cbind(Y=Y1,X1)
+  df2 <- cbind(Y=Y2,X2)
+  if(nsim==1) {
+    return(new("simdata",
+               df1=as.data.frame(df1),
+               df2=as.data.frame(df2)))
+  } else {
+    index <- split(1:(nsamples * nsim), rep(1:nsim, nsamples))
+    objects <- lapply(index, function(i) new("simdata", df1=as.data.frame(df1[i,]),
+                                             df2=as.data.frame(df2[i,])))
+    return(objects)
+  }
+}
+
+## simulate some data
+set.seed(12345)
+data <- sim.data(nsim=1)
+#+end_src
+
+#+begin_src R
+## load code
+library(devtools); load_all("..")
+#+end_src
+
+# ## run a coloc with pcs
+# pcs <- pcs.prepare(data@df1[,-1], data@df2[,-1])
+# pcs.1 <- pcs.model(pcs, group=1, Y=data@df1[,1])
+# pcs.2 <- pcs.model(pcs, group=2, Y=data@df2[,1])
+# ct.pcs <- coloc.test(pcs.1,pcs.2, bayes.factor=c(0,1,Inf))
+
+# ## run a coloc with bma
+# ct.bma <- coloc.bma(data@df1, data@df2, family1="gaussian", family2="gaussian", bayes.factor=c(0,1,Inf))
+
+# ## run a fully Bayesian coloc
+# ct.bayes <- 
+
+# bf(cb)
+# bf(cbr)
+
+* Footnotes
+
+[fn:1] http://www.ncbi.nlm.nih.gov/pubmed/19039033
+
+[fn:2] http://arxiv.org/abs/1301.5510
+
+[fn:3] http://www.ncbi.nlm.nih.gov/pubmed/18642345
+
+[fn:4] http://arxiv.org/abs/1305.4022
+
