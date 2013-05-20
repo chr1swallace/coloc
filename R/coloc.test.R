@@ -92,10 +92,12 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' regression which are not SNPs and should not be used in the colocalisation
 ##' test.  They should appear in
 ##' \code{c(names(coefficients(X)),names(coefficients(Y)))}
-##' @param bayes Logical, indicating whether to calculate the Bayesian posterior
-##' predictive p value, credible interval and, if \code{bayes.factor} is
-##' supplied, Bayes factors.  This can add a little time as it requires numerical
-##' integration, so can be set to FALSE to save time in simulations, for example.
+##' @param bayes Logical, indicating whether to perform Bayesian
+##' inference for the coefficient of proportionality, eta.  If
+##' \code{bayes.factor} is supplied, Bayes factors are additionally
+##' computed for the specificed values.  This can add a little time as
+##' it requires numerical integration, so can be set to FALSE to save
+##' time in simulations, for example.
 ##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
 ##' credible interval for \code{eta}.  This is calculated numerically by
 ##' approximating the posterior distribution at \code{n.approx} distinct values.
@@ -184,14 +186,16 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
   V2 <- vcov(Y)[snps,snps]
   coloc.test.summary(b1,b2,V1,V2,...)
 }
-##' .. content for \description{} (no empty lines) ..
+
+##' Colocalisation testing supplying only regression coefficients and their variance-covariants matrices
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @return 
+##' Typically this should be called from \code{\link{coloc.test}()} or \code{\link{coloc.bma}()}, but is left as a public function, to use at your own risk, if you have some other way to define the SNPs under test.
+##' @title Colocalisation testing using regression coefficients
+##' @return an object of class coloc, colocBayes or colocBMA
 ##' @author Chris Wallace
+##' @inheritParams coloc.test
 ##' @export
-coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=bma || !is.null(bayes.factor),
+coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {
   nsnps <- length(b1)
@@ -310,25 +314,27 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
   ################################################################################
   
   ## return
-  if(!bayes) {
-    return(new("coloc",
-               result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps)))
-  } else {
-    if(!bma) {
-      return(new("colocBayes",
+    if(!bayes) {
+      return(new("coloc",
                  result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
-                 ppp=ppp$value,
-                 credible.interval=cred.int,
-                 bayes.factor=post.bf))
+                 method="single"))
     } else {
-      return(new("colocBMA",
-                 result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
-                 ppp=ppp$value,
-                 bma=post.bma,
-                 bayes.factor=post.bf))
-    }
-  }
-  
+      if(!bma) {
+        return(new("colocBayes",
+                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
+                   method="single",
+                   ppp=ppp$value,
+                   credible.interval=cred.int,
+                   bayes.factor=post.bf))
+      } else {
+        return(new("colocBayesBMA",
+                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
+                   method="single",
+                   ppp=ppp$value,
+                   bma=post.bma,
+                   bayes.factor=post.bf))
+      }
+    }  
 }
 
 

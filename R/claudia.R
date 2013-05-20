@@ -57,7 +57,7 @@ lH3new.f <- function(x, y, prior1, prior2) {
 ##' Internal function, approx.bf
 ##'
 ##' Calculate approximate Bayes Factors
-##' @title 
+##' @title Internal function, approx.bf
 ##' @param p p value
 ##' @param f MAF
 ##' @param type "quant" or "cc"
@@ -116,7 +116,7 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' \item merged.df is an annotated version of the input \code{data.frame}
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
-coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant", prior1= log(10^(-4)), prior2= log(10^(-5)), s.df1=0.5, s.df2=0.5,
+coloc.config <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant", prior1= log(10^(-4)), prior2= log(10^(-5)), s.df1=0.5, s.df2=0.5,
                    col.names=c("pvalues.df1","pvalues.df2","MAF")) {  # set s to 0 is it is not a case control study
 
   if(!is.data.frame(merged.df))
@@ -153,11 +153,11 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, type.df1="quant", ty
 #### Now we can compute the PP under each looping through all models as numerator: 
   all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3new.abf, lH4.abf)
   pp.df.abf <- exp(all.abf - my.denom.log.abf) 
-  names(pp.df.abf) <- paste('PP.H', 0:length(pp.df.abf), '.abf', sep='')
+  names(pp.df.abf) <- paste('PP.H', (1:length(pp.df.abf))-1, '.abf', sep='')
   
   ##  pp.df.abf <- signif(pp.df.abf*100,3)
-  print(signif(pp.df.abf*100,3))
-  print(paste("PP abf for shared variant: ", signif(pp.df.abf$PP.H4.abf,3) , '%', sep=''))
+  print(signif(pp.df.abf,3))
+  print(paste("PP abf for shared variant: ", signif(pp.df.abf["PP.H4.abf"],3)*100 , '%', sep=''))
   
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.df.abf)
@@ -167,17 +167,17 @@ coloc.bayesian.summary <- function(merged.df, N.df1, N.df2, type.df1="quant", ty
 }
 ##' Bayesian colocalisation analysis using data.frames
 ##'
-##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.bayesian.summary}}
+##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.config.summary}}
 ##' 
 ##' @title Bayesian colocalisation analysis using data.frames
 ##' @param df1, df2 datasets 1 and 2
 ##' @param snps col.names for snps
 ##' @param response1 col.name for response in dataset 1
 ##' @param response2 col.name for response in dataset 2
-##' @param ... parameters passed to \code{\link{coloc.bayesian.summary}}
-##' @return output of \code{\link{coloc.bayesian.summary}}
+##' @param ... parameters passed to \code{\link{coloc.config.summary}}
+##' @return output of \code{\link{coloc.config.summary}}
 ##' @author Chris Wallace
-coloc.bayesian.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
+coloc.config.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                                               setdiff(colnames(df2),response2)),
                                     response1="Y", response2="Y", ...) {
   if(length(snps)<2)
@@ -188,26 +188,21 @@ coloc.bayesian.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1)
     stop(paste("response2",response2,"not found in df2"))
   X1 <- new("SnpMatrix",as.matrix(df1[,snps]))
   X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
-  p1 <- p.value(single.snp.tests(phenotype=df1[,response1], snp.data=X1),df=1)
-  p2 <- p.value(single.snp.tests(phenotype=df1[,response1], snp.data=X1),df=1)
-  maf <- col.summary(rbind(X1,X2))[,"MAF"]
-  
-  coloc.bayesian(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
-                 N.df1=nrow(X1), N.df2=nrow(X2), ...)
+  coloc.config.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
 }
 ##' Bayesian colocalisation analysis using snpStats objects
 ##'
-##' Generates p values via score tests, then runs \code{\link{coloc.bayesian.summary}}
+##' Generates p values via score tests, then runs \code{\link{coloc.config.summary}}
 ##' @title Bayesian colocalisation analysis using snpStats objects
 ##' @param X1 genetic data for dataset 1
 ##' @param X2 genetic data for dataset 2
 ##' @param Y1 response for dataset 1
 ##' @param Y2 response for dataset 2
 ##' @param snps optional subset of snps to use
-##' @param ... parameters passed to \code{\link{coloc.bayesian.summary}}
-##' @return output of \code{\link{coloc.bayesian.summary}}
+##' @param ... parameters passed to \code{\link{coloc.config.summary}}
+##' @return output of \code{\link{coloc.config.summary}}
 ##' @author Chris Wallace
-coloc.bayesian.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
+coloc.config.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
     stop("X1 and X2 must be SnpMatrices")
   if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))
@@ -216,11 +211,15 @@ coloc.bayesian.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),coln
     stop("require at least two SNPs in common between X1 and X2 to do anything sensible")
   X1 <- X1[,snps]
   X2 <- X2[,snps]
-  X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
-  p1 <- p.value(single.snp.tests(phenotype=df1[,response1], snp.data=X1),df=1)
-  p2 <- p.value(single.snp.tests(phenotype=df1[,response1], snp.data=X1),df=1)
-  maf <- col.summary(rbind(X1,X2))[,"MAF"]
+  if(is.null(rownames(X1)))
+    rownames(X1) <- paste("X1",1:nrow(X1),sep=".")
+  if(is.null(rownames(X2)))
+    rownames(X2) <- paste("X2",1:nrow(X2),sep=".")
   
-  coloc.bayesian(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
+  p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
+  p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
+  maf <- col.summary(X2)[,"MAF"]
+  
+  coloc.config(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
                  N.df1=nrow(X1), N.df2=nrow(X2), ...)
 }

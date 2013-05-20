@@ -3,11 +3,12 @@
 \title{Wrapper to use colocalization testing within a Bayesian model averaging
 structure.}
 \usage{
-  coloc.bma(df1, df2, snps, response1 = "Y",
-    response2 = "Y", family1 = "binomial",
+  coloc.bma(df1, df2,
+    snps = intersect(setdiff(colnames(df1), response1), setdiff(colnames(df2), response2)),
+    response1 = "Y", response2 = "Y", family1 = "binomial",
     family2 = "binomial", thr = 0.01, nsnps = 2,
     n.approx = 1001, bayes.factor = NULL,
-    plot.coeff = FALSE, r2.trim = 0.95, ...)
+    plot.coeff = FALSE, r2.trim = 0.95, quiet = FALSE, ...)
 }
 \arguments{
   \item{df1,df2}{Each is a dataframe, containing response
@@ -35,9 +36,11 @@ structure.}
   \item{n.approx}{number of values at which to numerically
   approximate the posterior}
 
-  \item{bayes.factor}{Numeric vector, giving value(s) of
-  \code{eta} which should be compared to the null values 0
-  and Inf.}
+  \item{bayes.factor}{Either a numeric vector, giving
+  single value(s) of \code{eta} or a list of numeric
+  vectors, each of length two and specifying ranges of eta
+  which should be compared to each other.  Thus, the vector
+  or list needs to have length at least two.}
 
   \item{r2.trim}{for pairs SNPs with r2>\code{r2.trim},
   only one SNP will be retained.  This avoids numerical

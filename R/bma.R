@@ -25,7 +25,7 @@
 #'@param bayes.factor Either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.
 #'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
 #'@param ... other parameters passed to \code{coloc.test}
-#'@return a \code{colocBayes} object
+#'@return a \code{colocBMA} object
 #'@author Chris Wallace
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
 #'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
@@ -68,7 +68,8 @@
 coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                                 setdiff(colnames(df2),response2)),
                       response1="Y", response2="Y", family1="binomial", family2="binomial",
-                     thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
+                     bayes=!is.null(bayes.factor),
+                      thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                      plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,...) {
   snps <- unique(snps)
   n.orig <- length(snps)
@@ -144,8 +145,8 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
     bf <- numeric(0)
   }
   var.1 <- var.2 <- coef.1 <- coef.2 <- vector("list",nrow(models.l))
-  p <- matrix(NA,length(probs),5)
-  colnames(p) <- c("eta.hat","chisquare","n","p","ppp")
+  p <- matrix(NA,length(probs),4 + as.integer(bayes))
+  colnames(p) <- c("eta.hat","chisquare","n","p","ppp")[1:ncol(p)]
   wh <- which(probs>thr^2)
   min.models <- min(3,length(snps))
   if(length(wh) < min.models) 
@@ -160,38 +161,51 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
     coef.2[[i]] <- coefficients(lm2)[-1]
     var.1[[i]] <- vcov(lm1)[-1,-1]
     var.2[[i]] <- vcov(lm1)[-1,-1]
-    this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,...)
-    post[i,] <- this.coloc@bma
-    p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
+    this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,bayes=bayes,...)
+    if(bayes) {
+      post[i,] <- this.coloc@bma
+      p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
+    } else {
+      p[i,] <- c(this.coloc@result,p.value(this.coloc))
+    }      
     if(length(bayes.factor)) {
       bf[i,] <- this.coloc@bayes.factor
     }
   }
 
   stats <- colSums(p[wh,] * probs[wh] / sum(probs[wh]))
-  post <- colSums(post[wh,] * probs[wh] / sum(probs[wh]))
+  if(bayes) {
+    post <- colSums(post[wh,] * probs[wh] / sum(probs[wh]))
+    ci <- credible.interval(post,interval=c(0,pi), n.approx=n.approx)
+  }
   if(length(bayes.factor)) {
     bf <- colSums(bf[wh,] * probs[wh] / sum(probs[wh]))
     names(bf) <- c(bayes.factor)
   }
-  ci <- credible.interval(post,interval=c(0,pi), n.approx=n.approx)
   var.1 <- lapply(var.1, diag)
   var.2 <- lapply(var.2, diag)
   
   if(plot.coeff) {
     coeff.plot(unlist(coef.1),unlist(coef.2),
                unlist(var.1),unlist(var.2),
-               eta=ci$eta.mean,
+               eta=stats["eta.hat"],
                main="Coefficients",
                                         #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=length(snps)-1,lower.tail=FALSE),digits=2)),
                xlab=expression(b[1]),ylab=expression(b[2]))
   }
 
-  return(new("colocBayes",
-             result=c(eta.hat=p[1],chisquare=NA,n=p[3]),
-             ppp=stats[c("p","ppp")],
-             credible.interval=ci,
-             bayes.factor=bf))
+  if(!bayes) {
+    return(new("coloc",
+               result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
+               method="BMA"))
+  } else {
+    return(new("colocBayes",
+               result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
+               method="BMA",
+               ppp=stats["ppp"],
+               credible.interval=ci,
+               bayes.factor=bf))
+  }
 }
 
 multi.bf <- function(models, x, y, family, dataset=1,quiet=FALSE) {

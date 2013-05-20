@@ -38,27 +38,31 @@ validColoc <- function(object) {
 #'showClass("colocBayes")
 #'
 setClass("coloc",
-         representation(result="numeric"))
+         representation(result="numeric", method="character"))
 setClass("colocBayes",
          representation(ppp="numeric",
                         credible.interval="list",
                         bayes.factor="numeric"),
          contains="coloc")
 setClass("colocBMA",
-         representation(ppp="numeric",
-                        bma="numeric",
-                        bayes.factor="numeric"),
+         representation(bma="numeric"),
          contains="coloc")
+setClass("colocBayesBMA",
+         representation(bma="numeric"),
+         contains="colocBayes")
 
 show.coloc <- function(object) {
-  if(!is.na(object@result["chisquare"])) {
-    res <- c(object@result,  p.value=p.value(object))
+  if(object@method=="single") {
+     res <- c(object@result,  p.value=p.value(object))
   } else {
-    res <- c(object@result[c("eta.hat","n")],ppp.value=ppp.value(object))
+    res <- c(object@result[c("eta.hat","n","p")])
+    names(res)[3] <- "ppp.value"
   }
   print(res)
 }
+setMethod("summary","coloc",show.coloc)
 setMethod("show","coloc",show.coloc)
+setMethod("summary","colocBayes",show.coloc)
 setMethod("show","colocBayes",show.coloc)
 
 ## eta <- function(object) {
@@ -124,9 +128,9 @@ setMethod("chisquare","coloc",function(object) object@result["chisquare"])
 setGeneric("ci",function(object) standardGeneric("ci"))
 setMethod("ci","colocBayes",function(object) {
   if(is.na(object@credible.interval$level.observed)) {
-    return(object@credible.interval[c("eta.mean","eta.mode","lower","upper","level","interior")])
+    return(object@credible.interval[c("eta.mode","lower","upper","level","interior")])
   } else {
-    return(object@credible.interval[c("eta.mean","eta.mode","lower","upper","level.observed","interior")])
+    return(object@credible.interval[c("eta.mode","lower","upper","level.observed","interior")])
   }})
 setGeneric("df",function(object) standardGeneric("df"))
 setMethod("df","coloc",function(object) object@result["n"]-1)

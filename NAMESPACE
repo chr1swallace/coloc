@@ -1,4 +1,5 @@
 export(coloc.bma)
 export(coloc.test)
+export(coloc.test.summary)
 export(pcs.model)
 export(pcs.prepare)

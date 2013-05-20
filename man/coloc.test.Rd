@@ -2,10 +2,7 @@
 \alias{coloc.test}
 \title{Function to do colocalisation tests of two traits}
 \usage{
-  coloc.test(X, Y, k = 1, plot.coeff = TRUE,
-    plots.extra = NULL, vars.drop = NULL,
-    bayes = bma || !is.null(bayes.factor), n.approx = 1001,
-    level.ci = 0.95, bayes.factor = NULL, bma = FALSE)
+  coloc.test(X, Y, vars.drop = NULL, ...)
 }
 \arguments{
   \item{X,Y}{Each is either an lm or glm object.  The
@@ -25,13 +22,13 @@
   plot showing the coefficients from the two regressions
   together with confidence regions.}
 
-  \item{plots.extra}{list with 2 named elements, x and y,
-  equal length character vectors containing the names of
-  the quantities to be plotted on the x and y axes.}
-
   \item{bma}{parameter set to \code{TRUE} when
   \code{coloc.test} is called by \code{coloc.bma}.  DO NOT
-  SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
+  SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!}
+
+  \item{plots.extra}{list with 2 named elements, x and y,
+  equal length character vectors containing the names of
+  the quantities to be plotted on the x and y axes.
 
   \code{x} is generally a sequence of \code{theta} and
   \code{eta}, with \code{y} selected from
@@ -57,10 +54,6 @@
   This is calculated numerically by approximating the
   posterior distribution at \code{n.approx} distinct
   values.}
-
-  \item{bayes.factor}{Numeric vector, giving value(s) of
-  \code{eta} which should be compared to the null values 0
-  and Inf.}
 }
 \value{
   a numeric vector with 3 named elements:
@@ -105,29 +98,29 @@
 }
 \examples{
 ## simulate covariate matrix (X) and continuous response vector (Y)
- ## for two populations/triats Y1 and Y2 depend equally on f1 and f2
- ## within each population, although their distributions differ between
- ## populations.  They are compatible with a null hypothesis that they
- ## share a common causal variant
+  ## for two populations/triats Y1 and Y2 depend equally on f1 and f2
+  ## within each population, although their distributions differ between
+  ## populations.  They are compatible with a null hypothesis that they
+  ## share a common causal variant
 set.seed(1)
- X1 <- matrix(rbinom(1000,1,0.4),ncol=2)
- Y1 <- rnorm(500,apply(X1,1,sum),2)
- X2 <- matrix(rbinom(1000,1,0.6),ncol=2)
- Y2 <- rnorm(500,2*apply(X2,1,sum),5)
+  X1 <- matrix(rbinom(1000,1,0.4),ncol=2)
+  Y1 <- rnorm(500,apply(X1,1,sum),2)
+  X2 <- matrix(rbinom(1000,1,0.6),ncol=2)
+  Y2 <- rnorm(500,2*apply(X2,1,sum),5)
 
- boxplot(list(Y1,Y2),names=c("Y1","Y2"))
+  boxplot(list(Y1,Y2),names=c("Y1","Y2"))
 
- ## fit and store linear model objects
- colnames(X1) <- colnames(X2) <- c("f1","f2")
- summary(lm1 <- lm(Y1~f1+f2,data=as.data.frame(X1)))
- summary(lm2 <- lm(Y2~f1+f2,data=as.data.frame(X2)))
+  ## fit and store linear model objects
+  colnames(X1) <- colnames(X2) <- c("f1","f2")
+  summary(lm1 <- lm(Y1~f1+f2,data=as.data.frame(X1)))
+  summary(lm2 <- lm(Y2~f1+f2,data=as.data.frame(X2)))
 
- ## test whether the traits are compatible with colocalisation
- ### ppp should be large (>0.05, for example), indicating that they are.
- par(mfrow=c(2,2))
- coloc.test(lm1,lm2,plot.coeff=TRUE,
-            plots.extra=list(x=c("eta","theta"),
-                             y=c("lhood","lhood")))
+  ## test whether the traits are compatible with colocalisation
+  ### ppp should be large (>0.05, for example), indicating that they are.
+  par(mfrow=c(2,2))
+  coloc.test(lm1,lm2,plot.coeff=TRUE,
+             plots.extra=list(x=c("eta","theta"),
+                              y=c("lhood","lhood")))
 }
 \author{
   Chris Wallace
