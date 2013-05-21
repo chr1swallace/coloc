@@ -1,0 +1,306 @@
+% Created 2013-05-21 Tue 10:28
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{hyperref}
+\tolerance=1000
+\usepackage{fullpage}
+\author{Chris Wallace}
+\date{\textit{<2013-05-21 Tue>}}
+\title{Coloc: a package for colocalisation analyses}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 24.2.1 (Org mode 8.0.3)}}
+\begin{document}
+
+\maketitle
+
+\section*{A brief outline of colocalisation analysis}
+\label{sec-1}
+
+
+The coloc package can be used to perform genetic colocalisation
+analysis of two potentially related phenotypes, to ask whether they
+share common genetic causal variant(s) in a given region.  There are a
+few key references which this vignette will not duplicate (see below),
+but, in brief, two approaches are implemented.
+
+First, the proportional approach uses the fact that for two traits
+sharing causal variants, regression coefficients for either trait
+against any set of SNPs in the neighbourhood of those variants must be
+proportional.  This test was first proposed by Plagnol et al. \footnote{\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}}
+in the context of evaulating whether expression of the gene \emph{RPS26}
+mediated the association of type 1 diabetes to a region on chromosome
+12q13 as had recently been proposed.  The test addressed a common
+issue in genetics, and meant researchers could avoid the need to
+squint at parallel manhattan plots to decide whether two traits share
+causal variants.  The function \texttt{coloc.test()} in this package evolved
+from code released by Vincent, but no longer available.
+
+However, choosing \textbf{which} SNPs to use for the test is a problem.
+The obvious choice is to use those most strongly associated with one
+or other trait to maximise information, but doing so induces bias in
+the regression coefficients, which in turn leads to increased
+likelihood of spuriously rejecting the null of colocalisation, ie
+a quite substantially increased type 1 error rate \footnote{\url{http://arxiv.org/abs/1301.5510}}.  I proposed
+two alternatives to address this problem, eithir using a principal
+component summary of genetic variation in the region to overcome the
+need to select a small set of test SNPs, implemented in \texttt{coloc.pcs()}
+and associated functions, or to use the ideas of Bayesian model
+averaging to average p values over SNP selections, generating
+posterior predictive p values, implemented in \texttt{coloc.bma()}.
+
+Proportional testing, however, requires individual level genotype
+data, which are not always available.  Claudia Giambartolomei and
+Vincent Plagnol have proposed an alternative method, which makes use
+of Jon Wakefields work on determining approximate Bayes Factors from
+p values \footnote{\url{http://www.ncbi.nlm.nih.gov/pubmed/18642345}} to generate a Bayesian colocalisation analysis \footnote{\url{http://arxiv.org/abs/1305.4022}},
+implemented in the function \texttt{coloc.summaries()}.  Note that it is
+possible to use Bayesian analysis for proportional testing too, in
+determining the posterior distribution of the proportionality
+constant $\eta$.
+\section*{Usage}
+\label{sec-2}
+
+Let's simulate a small dataset, and compare the three methods.
+
+<<echo=FALSE>>=
+setClass("simdata",
+         representation(df1="data.frame",df2="data.frame"))
+setValidity("simdata", function(object) {
+  n <- nrow(object@df1)
+  if(nrow(object@df2)!=n)
+    return("nrow of '@df1' should equal nrow of '@df2'")
+})
+setMethod("show", signature="simdata", function(object) {
+  cat("pair of simulated datasets, with",ncol(object@df1)-1,"SNPs and",nrow(object@df1),"samples.\n")
+})
+
+sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
+  cat("Generate",nsim,"small sets of data\n")
+  ntotal <- nsnps * nsamples * nsim
+  X1 <- matrix(rbinom(ntotal,1,0.4)+rbinom(ntotal,1,0.4),ncol=nsnps)
+  Y1 <- rnorm(nsamples,rowSums(X1[,causals]),2)
+  X2 <- matrix(rbinom(ntotal,1,0.4)+rbinom(ntotal,1,0.4),ncol=nsnps)
+  Y2 <- rnorm(nsamples,rowSums(X2[,causals]),2)
+  colnames(X1) <- colnames(X2) <- paste("s",1:nsnps,sep="")
+  df1 <- cbind(Y=Y1,X1)
+  df2 <- cbind(Y=Y2,X2)
+  if(nsim==1) {
+    return(new("simdata",
+               df1=as.data.frame(df1),
+               df2=as.data.frame(df2)))
+  } else {
+    index <- split(1:(nsamples * nsim), rep(1:nsim, nsamples))
+    objects <- lapply(index, function(i) new("simdata", df1=as.data.frame(df1[i,]),
+                                             df2=as.data.frame(df2[i,])))
+    return(objects)
+  }
+}
+
+## simulate some data
+set.seed(12345)
+data <- sim.data(nsamples=1000,nsim=1)
+@ %def
+
+<<echo=FALSE>>=
+## load code
+library(devtools); load_all("..")
+@ %def
+\section*{Proportional testing}
+\label{sec-3}
+
+\subsection*{Principal components}
+\label{sec-3-1}
+
+The code below first prepares a principal component object by combining
+the genotypes in the two dataset, then models the most informative
+components (the minimum set required to capture 80\% of the genetic
+variation) in each dataset, before finally testing whether there is
+colocalisation between these models.
+
+<<fig=TRUE>>=
+## run a coloc with pcs
+pcs <- pcs.prepare(data@df1[,-1], data@df2[,-1])
+pcs.1 <- pcs.model(pcs, group=1, Y=data@df1[,1], threshold=0.8)
+pcs.2 <- pcs.model(pcs, group=2, Y=data@df2[,1], threshold=0.8)
+ct.pcs <- coloc.test(pcs.1,pcs.2)
+@ %def
+
+The plot shows the estimated coefficients for each principal component
+modeled for traits 1 and 2 on the x and y axes, with circles showing
+the 95\% confidence region.  The points lie close to the line through
+the origin, which supports a hypothesis of colocalisation.
+
+A little more information is stored in the \texttt{ct.pcs} object:
+
+<<>>=
+ct.pcs
+str(summary(ct.pcs))
+@ %def
+
+The best estimate for the coefficient of proportionality,
+$\hat{\eta}$, is 1.13, and the null hypothesis of colocalisation is
+not rejected with a chisquare statistic of 5.27 based on 7 degrees of
+freedom ($n-1$ where the $n$ is the number of components tested, and
+one degree of freedom was used in estimating $\eta$), giving a p value
+of 0.63.  The \texttt{summary()} method returns a named vector of length 4
+containing this information.
+
+If more information is needed about $\eta$, then this is available if
+the \texttt{bayes} argument is supplied:
+
+<<>>=
+ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
+ci(ct.pcs.bayes)
+@ %def
+\subsection*{Bayesian model averaging}
+\label{sec-3-2}
+
+This approach appears simpler.  There is no need to do any
+preparatory work, you require only a single function:
+
+<<fig=TRUE>>=
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+                    plot.coeff=TRUE)
+ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
+                          family1="gaussian", family2="gaussian", 
+                          bayes=TRUE)
+ct.bma
+ci(ct.bma.bayes)
+@ %def
+
+The \texttt{family1/2} parameters are used to specify the model and link
+function, ="gaussian"= (with identity link) or ="binomial"= (with
+logit link) are accepted values.  The plot here shows all models
+considered simulataneously, and does not attempt to discriminate
+between models with strong and weak support.  It's rather confusing,
+and is off by default.
+
+However, \texttt{coloc.bma()} is doing
+quite some work to cover the model space efficiently, and it is
+important to understand how it does this.  First, the \texttt{r2.trim}
+parameter is used to "tag" the SNPs - a subset of SNPs are selected so
+that no pair have $r^2>$ \texttt{r2.trim}.  The default value is 0.95 and the
+idea is that models containing SNPs with very similar genotypes
+provide little additional information, so the $p$ value need be
+averaged over only one of each such group.  Lower values of \texttt{r2.trim}
+will produce a sparser model space and so decrease computation.
+Second, the \texttt{thr} parameter is used to discard SNPs which are
+uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
+posterior probability of inclusion in single SNP models for SNP $i$,
+trait $j$, the set of discarded SNPs is formed by those for which
+$pp_{i1}<$ \texttt{thr} and $pp_{i2}<$ \texttt{thr}.  Models containing \textbf{only} SNPs
+from this set will be ignored.  Note that models containing one SNP
+from this set and one SNP \emph{not} in the set \textbf{will} be evaluated.
+
+Finally, you should tell \texttt{coloc.bma()} how many SNPs should be
+included in each model.  The default is \texttt{nsnps=2}, 3 appears slightly
+more powerful but will geneally require considerably more
+computation, whilst values of 4 and above are both unlikely to
+provide more information and very unlikely to be computed in any
+reasonable time for interactive work.
+\subsection*{Using Bayes Factors to compare specific values of $\eta$}
+\label{sec-3-3}
+
+It may be that specific values of $\eta$ are of interest.  For
+example, when comparing eQTLs in two tissues, or when comparing risk
+of two related diseases, the value $\eta=1$ is of particular
+interest.  In proportional testing, we can use Bayes Factors to
+compare the support for different values of $\eta$.  Eg
+
+<<>>=
+## compare individual values of eta
+ct.pcs <- coloc.test(pcs.1,pcs.2, bayes.factor=c(-1,0,1))
+bf(ct.pcs)
+
+## compare ranges of eta
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+                    bayes.factor=list(c(-0.1,1), c(0.9,1.1)))
+bf(ct.bma)
+@ %def
+
+\section*{Approximate Bayes Factor colocalisation analyses}
+\label{sec-4}
+
+The idea behind the ABF analysis is that the association of
+each trait with SNPs in a region may be summarised by a vector of 0s
+and at most a single 1, with the 1 indicating the causal SNP (so,
+assuming a single causal SNP for each trait).  The posterior
+probability of each possible configuration can be calculated and so,
+crucially, can the posterior probabilities that the traits share
+their configurations.  This allows us to estimate the support for the
+following cases:
+
+\begin{itemize}
+\item $H_0$: neither trait has a genetic association in the region
+\item $H_1$: only trait 1 has a genetic association in the region
+\item $H_2$: only trait 2 has a genetic association in the region
+\item $H_3$: both traits are associated, but with different causal variants
+\item $H_4$: both traits are associated and share a single causal variant
+\end{itemize}
+
+The function \texttt{coloc.abf} is ideally suited to the case when only summary data are
+available, when a \texttt{data.frame} containing three columns giving the p
+values for each SNP and the SNP's minor allele frequency should be
+supplied.  Here, we have simulated full genotype data, so I will use
+the wrapper function \texttt{coloc.abf.datasets()} for the analysis.
+This makes use of functions in the snpStats package to calculate
+single SNP p values quickly. 
+
+<<>>=
+library(snpStats)
+ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
+@ %def
+\section*{The difference between proportional and ABF approaches}
+\label{sec-5}
+
+So what are the differences between proportional and ABF approaches?
+Which should you choose?
+
+Well, if you only have p values, then you must use ABF.  But be aware
+that a single causal variant is assumed, and that for accurate
+inference, the causal variant needs to be included, so either very
+dense or imputed genotyping data is needed.  The ABF approach has
+another big advantages over proportional testing.  Being Bayesian, it
+allows you to evaluate support for each hypothesis, whereas with
+proportional testing, when the null of colocalisation is not rejected,
+you cannot be sure whether this reflects true colocalisation or a lack
+of power.  The proportional approach is much less affected by
+spareness of genotyping data, with power only slightly decreased, but
+type 1 error rates unaffected.
+
+The behaviour of the two approaches only really differs when there are
+two or more causal variants.  When both are shared, proportional
+testing has the same type 1 error rate, and whilst ABF tends to still
+favour $H_4$ (shared variant), it tends to put some more weight on
+$H_3$ (distinct variants).  But when at least one is specific to one
+trait and at least one is shared, their behaviour differs more
+substantially.  Of course, neither approach was designed with this
+case in mind, and so there is no "right" answer, but it is instructive
+to understand their expected behaviour.  Proportional testing tends to
+reject colocalisation, whilst ABF tends to favour sharing.  Until the
+methods are extended to incorporate this specific case, it can be
+useful to compare the two approaches when complete and dense
+genotyping data are available.  When the results differ, we have
+tended to identify a combination of shared and distinct causal
+variants.  The ABF approach can still be applied in this case, if p
+values are available conditioning on the strongest signal, as
+demonstrated in our paper \footnotemark[4]{}.
+% Emacs 24.2.1 (Org mode 8.0.3)
+\end{document}
