@@ -76,26 +76,21 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' summary df [2] original df with additional ABF and other values
 ##' Using MAF from eQTL dataset (column named "MAF.df2")
 ##' "pvalues.df1" and "pvalues.df2" : names of the colums with p-values
-##' N.df1 and N.df2 number of indviduals used to get the p-values in each dataset
+##' N.dataset1 and N.dataset2 number of indviduals used to get the p-values in each dataset
 ##' sd.prior = standard deviation of prior
 ##' @title Fully Bayesian colocalisation analysis
-##' @param merged.df data.frame containing (at least) three columns:
-##' \itemize{ \item the p values in dataset 1 \item the p values in
-##' dataset 2, and \item SNP minor allele frequencies, MAF.  } By
-##' default, these are named pvalues.df1, pvalues.df2 and MAF, but you
-##' may supply your own column names using the argument
-##' \code{col.names}
-##' @param N.df1 number of individuals in dataset 1
-##' @param N.df2 number of individuals in dataset 2
-##' @param type.df1 the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
-##' @param type.df2 the type of data in dataset 2 
+##' @param pvalues.dataset1 single variant P-values in dataset 1
+##' @param pvalues.dataset2 single variant P-values in dataset 2
+##' @param maf minor allele frequency of the variants
+##' @param N.dataset1 number of individuals in dataset 1
+##' @param N.dataset2 number of individuals in dataset 2
+##' @param type.dataset1 the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
+##' @param type.dataset2 the type of data in dataset 2 
 ##' @param p1 prior probability a SNP is associated with trait 1
 ##' @param p2 prior probability a SNP is associated with trait 2
 ##' @param p12 prior probability a SNP is associated with both traits
-##' @param s.df1 the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
-##' @param s.df2 the proportion of samples in dataset 2 that are cases
-##' @param col.names column names in merged.df that correspond to the
-##' pvalues in datasets 1 and 2 and the SNP minor allele frequencies.
+##' @param s.dataset1 the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
+##' @param s.dataset2 the proportion of samples in dataset 2 that are cases
 ##' @return a list of two \code{data.frame}s:
 ##' \itemize{
 ##' \item results is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
@@ -103,30 +98,32 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
-coloc.abf <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant",
-                         p1=1e-4, p2=1e-4, p12=1e-5,
-                         s.df1=0.5, s.df2=0.5,
-                         col.names=c("pvalues.df1","pvalues.df2","MAF")) {  # set s to 0 is it is not a case control study
+coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.dataset2, type.dataset1="quant", type.dataset2="quant",
+                      p1=1e-4, p2=1e-4, p12=1e-5,
+                      s.dataset1=0.5, s.dataset2=0.5) {
 
-  if(!is.data.frame(merged.df))
-    stop("merged.df should be a data.frame")
-  if(!all(col.names %in% colnames(merged.df)))
-    stop("not all col.names found in colnames(merged.df)")
-  merged.df <- subset(merged.df, apply(merged.df[,col.names], 1, min)>0) # all p values and MAF > 0
+  if (length(pvalues.dataset1) != length(pvalues.dataset2)) stop('Length of the P-value vectors must match')
+  if (length(pvalues.dataset1) != length(MAF)) stop('Length of the P-value vectors and MAF vector must match')
   
-  pvalues.df1 = merged.df[,col.names[1]]
-  pvalues.df2 = merged.df[,col.names[2]]
-  f = merged.df[,col.names[3]]
+  merged.df <- data.frame (pvalues.df1 = pvalues.dataset1,
+                           pvalues.df2 = pvalues.dataset2,
+                           MAF = MAF)
+  
+  merged.df <- subset(merged.df, apply(merged.df, 1, min)>0) # all p values and MAF > 0
+  
+  pvalues.df1 = merged.df[,1]
+  pvalues.df2 = merged.df[,2]
+  f = merged.df[,3]
   
 ####### Use different priors and different computation of variance of the mle for case/control vs. quantitative trait
-  abf.df1 <- approx.bf(pvalues.df1, f, type.df1, N.df1, s.df1, suffix="df1")
-  abf.df2 <- approx.bf(pvalues.df2, f, type.df2, N.df2, s.df2, suffix="df2")
+  abf.df1 <- approx.bf(pvalues.df1, f, type.dataset1, N.dataset1, s.dataset1, suffix="df1")
+  abf.df2 <- approx.bf(pvalues.df2, f, type.dataset2, N.dataset2, s.dataset2, suffix="df2")
   merged.df <- cbind(merged.df, abf.df1, abf.df2)  
   merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   
 ############################## 
 
-  lH0.abf <- 0
+  lH0.abf <-  0
   lH1.abf <- log(p1) + logsum(merged.df$lABF.df1)
   lH2.abf <- log(p2) + logsum(merged.df$lABF.df2)
   lH3.abf <- log(p1) + log(p2) + logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2) - logsum(merged.df$internal.sum.lABF)
@@ -212,6 +209,6 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
   p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
   maf <- col.summary(X2)[,"MAF"]
   
-  coloc.abf(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
-                 N.df1=nrow(X1), N.df2=nrow(X2), ...)
+  coloc.abf(pvalues.dataset1=p1,pvalues.dataset2=p2,MAF=maf,
+            N.dataset1=nrow(X1), N.dataset2=nrow(X2), ...)
 }
