@@ -42,12 +42,13 @@
   should appear in
   \code{c(names(coefficients(X)),names(coefficients(Y)))}}
 
-  \item{bayes}{Logical, indicating whether to calculate the
-  Bayesian posterior predictive p value, credible interval
-  and, if \code{bayes.factor} is supplied, Bayes factors.
-  This can add a little time as it requires numerical
-  integration, so can be set to FALSE to save time in
-  simulations, for example.}
+  \item{bayes}{Logical, indicating whether to perform
+  Bayesian inference for the coefficient of
+  proportionality, eta.  If \code{bayes.factor} is
+  supplied, Bayes factors are additionally computed for the
+  specificed values.  This can add a little time as it
+  requires numerical integration, so can be set to FALSE to
+  save time in simulations, for example.}
 
   \item{level.ci,n.approx}{\code{level.ci} denotes the
   required level of the credible interval for \code{eta}.

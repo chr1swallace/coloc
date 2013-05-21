@@ -1,16 +1,17 @@
-#+title: Colocalisation Analysis
+#+title: Coloc: a package for colocalisation analyses
 #+author: Chris Wallace
 #+email: chris.wallace at cimr.cam.ac.uk
-#+date: <2013-05-20 Mon>
+#+date: <2013-05-21 Tue>
+#+latex_header: \usepackage{fullpage}
 
-# #+begin_html
-# <!--
-# %\VignetteEngine{knitr}
-# %\VignetteIndexEntry{snpStatsWriter vignette}
-# -->
-# #+end_html
+#+begin_html
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{snpStatsWriter vignette}
+-->
+#+end_html
 
-* A brief outline of colocalisation testing
+* A brief outline of colocalisation analysis
 
 # #+begin_html
 # <font color="grey">
@@ -63,7 +64,7 @@ constant $\eta$.
 
 Let's simulate a small dataset, and compare the three methods.
 
-#+begin_src R
+#+begin_src R :ravel echo=FALSE
 setClass("simdata",
          representation(df1="data.frame",df2="data.frame"))
 setValidity("simdata", function(object) {
@@ -99,7 +100,7 @@ sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
 
 ## simulate some data
 set.seed(12345)
-data <- sim.data(nsim=1)
+data <- sim.data(nsamples=1000,nsim=1)
 #+end_src
 
 #+begin_src R :ravel echo=FALSE
@@ -158,27 +159,40 @@ ci(ct.pcs.bayes)
 This approach appears simpler.  There is no need to do any
 preparatory work, you require only a single function:
 
-#+begin_src R
-ct.bma <- coloc.bma(data@df1, data@df2, family1="gaussian", family2="gaussian")
-ct.bma.bayes <- coloc.bma(data@df1, data@df2, family1="gaussian", family2="gaussian", bayes=TRUE)
+#+begin_src R :ravel fig=TRUE
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+                    plot.coeff=TRUE)
+ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
+                          family1="gaussian", family2="gaussian", 
+                          bayes=TRUE)
+ct.bma
+ci(ct.bma.bayes)
 #+end_src
 
-However, =coloc.bma()= is doing quite some work to cover the model
-space efficiently, and it is important to understand how it does this.
-First, the =r2.trim= parameter is used to "tag" the SNPs - a subset of
-SNPs are selected so that no pair have $r^2>$ =r2.trim=.  The default
-value is 0.95 and the idea is that models containing SNPs with very
-similar genotypes provide little additional information, so the $p$
-value need be averaged over only one of each such group.  Lower values
-of =r2.trim= will produce a sparser model space and so decrease
-computation.  Second, the =thr= parameter is used to discard SNPs
-which are uninformative with regards the phenotype, that is, if $pp_{ij}$
-is the posterior probability of inclusion in single SNP models for
-SNP $i$, trait $j$, the set of discarded SNPs is formed by those for
-which $pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing
-*only* SNPs from this set will be ignored.  Note that models
-containing one SNP from this set and one SNP /not/ in the set *will*
-be evaluated.
+The =family1/2= parameters are used to specify the model and link
+function, ="gaussian"= (with identity link) or ="binomial"= (with
+logit link) are accepted values.  The plot here shows all models
+considered simulataneously, and does not attempt to discriminate
+between models with strong and weak support.  It's rather confusing,
+and is off by default.
+
+However, =coloc.bma()= is doing
+quite some work to cover the model space efficiently, and it is
+important to understand how it does this.  First, the =r2.trim=
+parameter is used to "tag" the SNPs - a subset of SNPs are selected so
+that no pair have $r^2>$ =r2.trim=.  The default value is 0.95 and the
+idea is that models containing SNPs with very similar genotypes
+provide little additional information, so the $p$ value need be
+averaged over only one of each such group.  Lower values of =r2.trim=
+will produce a sparser model space and so decrease computation.
+Second, the =thr= parameter is used to discard SNPs which are
+uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
+posterior probability of inclusion in single SNP models for SNP $i$,
+trait $j$, the set of discarded SNPs is formed by those for which
+$pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing *only* SNPs
+from this set will be ignored.  Note that models containing one SNP
+from this set and one SNP /not/ in the set *will* be evaluated.
 
 Finally, you should tell =coloc.bma()= how many SNPs should be
 included in each model.  The default is =nsnps=2=, 3 appears slightly
@@ -187,13 +201,30 @@ computation, whilst values of 4 and above are both unlikely to
 provide more information and very unlikely to be computed in any
 reasonable time for interactive work.
 
-** Bayes Factors
+** Using Bayes Factors to compare specific values of $\eta$
 
-TODO
+It may be that specific values of $\eta$ are of interest.  For
+example, when comparing eQTLs in two tissues, or when comparing risk
+of two related diseases, the value $\eta=1$ is of particular
+interest.  In proportional testing, we can use Bayes Factors to
+compare the support for different values of $\eta$.  Eg
 
-* Configuration analyses
+#+begin_src R
+## compare individual values of eta
+ct.pcs <- coloc.test(pcs.1,pcs.2, bayes.factor=c(-1,0,1))
+bf(ct.pcs)
 
-The idea behind the configuration analysis is that the association of
+## compare ranges of eta
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+                    bayes.factor=list(c(-0.1,1), c(0.9,1.1)))
+bf(ct.bma)
+#+end_src
+
+
+* Approximate Bayes Factor colocalisation analyses
+
+The idea behind the ABF analysis is that the association of
 each trait with SNPs in a region may be summarised by a vector of 0s
 and at most a single 1, with the 1 indicating the causal SNP (so,
 assuming a single causal SNP for each trait).  The posterior
@@ -202,30 +233,60 @@ crucially, can the posterior probabilities that the traits share
 their configurations.  This allows us to estimate the support for the
 following cases:
 
-- H_0: neither trait has a genetic association in the region
-- H_1: only trait 1 has a genetic association in the region
-- H_2: only trait 2 has a genetic association in the region
-- H_3: both traits are associated, but with different causal variants
-- H_4: both traits are associated and share a single causal variant
+- $H_0$: neither trait has a genetic association in the region
+- $H_1$: only trait 1 has a genetic association in the region
+- $H_2$: only trait 2 has a genetic association in the region
+- $H_3$: both traits are associated, but with different causal variants
+- $H_4$: both traits are associated and share a single causal variant
 
-The function =coloc.config= is ideally suited to the case when only summary data are
+The function =coloc.abf= is ideally suited to the case when only summary data are
 available, when a =data.frame= containing three columns giving the p
 values for each SNP and the SNP's minor allele frequency should be
 supplied.  Here, we have simulated full genotype data, so I will use
-the wrapper function =coloc.config.datasets()= for the analysis.
+the wrapper function =coloc.abf.datasets()= for the analysis.
 This makes use of functions in the snpStats package to calculate
 single SNP p values quickly. 
 
 #+begin_src R
 library(snpStats)
-ct.conf <- coloc.config.datasets(data@df1, data@df2, response1="Y", response2="Y")
+ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
 #+end_src
 
-# ## run a fully Bayesian coloc
-# ct.bayes <- 
+* The difference between proportional and ABF approaches
 
-# bf(cb)
-# bf(cbr)
+So what are the differences between proportional and ABF approaches?
+Which should you choose?
+
+Well, if you only have p values, then you must use ABF.  But be aware
+that a single causal variant is assumed, and that for accurate
+inference, the causal variant needs to be included, so either very
+dense or imputed genotyping data is needed.  The ABF approach has
+another big advantages over proportional testing.  Being Bayesian, it
+allows you to evaluate support for each hypothesis, whereas with
+proportional testing, when the null of colocalisation is not rejected,
+you cannot be sure whether this reflects true colocalisation or a lack
+of power.  The proportional approach is much less affected by
+spareness of genotyping data, with power only slightly decreased, but
+type 1 error rates unaffected.
+
+The behaviour of the two approaches only really differs when there are
+two or more causal variants.  When both are shared, proportional
+testing has the same type 1 error rate, and whilst ABF tends to still
+favour $H_4$ (shared variant), it tends to put some more weight on
+$H_3$ (distinct variants).  But when at least one is specific to one
+trait and at least one is shared, their behaviour differs more
+substantially.  Of course, neither approach was designed with this
+case in mind, and so there is no "right" answer, but it is instructive
+to understand their expected behaviour.  Proportional testing tends to
+reject colocalisation, whilst ABF tends to favour sharing.  Until the
+methods are extended to incorporate this specific case, it can be
+useful to compare the two approaches when complete and dense
+genotyping data are available.  When the results differ, we have
+tended to identify a combination of shared and distinct causal
+variants.  The ABF approach can still be applied in this case, if p
+values are available conditioning on the strongest signal, as
+demonstrated in our paper [fn:4].
+
 
 * Footnotes
 

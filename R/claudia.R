@@ -22,37 +22,21 @@ Var.data.cc <- function(f, N, s) {
   1 / (2 * N * f * (1 - f) * s * (1 - s))
 }
 
-##' Internal function, logmean
+##' Internal function, logsum
 ##'
 ##' This function calculates the log of the sum of the exponentiated
 ##' logs taking out the max, i.e. insuring that the sum is not Inf
-##' @title logmean
+##' @title logsum
 ##' @param x numeric vector
 ##' @return max(x) + log(sum(exp(x - max(x))))
 ##' @author Claudia Giambartolomei
-logmean <- function(x) {
+logsum <- function(x) {
   my.max <- max(x)                              ##take out the maximum value in log form
   my.res <- my.max + log(sum(exp(x - my.max ))) 
   return(my.res)
 }
 
 
-##' Internal function, lH3new.f
-##'
-##'  This is to correct the posterior probability of H3 so that it
-##' does not include H4 (same SNP)
-##' @title Internal function, lH3new.f
-##' @param x lH3
-##' @param y lH4
-##' @return log(exp(lH3)-0.001*exp(lH4))
-##' @author Claudia Giambartolomei
-lH3new.f <- function(x, y, prior1, prior2) {
-  prop <- prior1^2/prior2
-  my.max <- max(c(x,y))                             
-  my.res <- my.max + log( exp(x - my.max) - prop*exp(y - my.max))     
-
-  return(my.res)
-}
 
 ##' Internal function, approx.bf
 ##'
@@ -103,21 +87,25 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' \code{col.names}
 ##' @param N.df1 number of individuals in dataset 1
 ##' @param N.df2 number of individuals in dataset 2
-##' @param type.df1, type.df2 the type of data in datasets 1 and 2 - either "quant" or "cc" to denote quantitative or case-control.
-##' @param prior1 p_1 == p_2, prior probability a SNP is associated with one trait
-##' @param prior2 p_12, prior probability a SNP is associated with both traits
+##' @param type.df1 the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
+##' @param type.df2 the type of data in dataset 2 
+##' @param p1 prior probability a SNP is associated with trait 1
+##' @param p2 prior probability a SNP is associated with trait 2
+##' @param p12 prior probability a SNP is associated with both traits
+##' @param s.df1 the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
+##' @param s.df2 the proportion of samples in dataset 2 that are cases
 ##' @param col.names column names in merged.df that correspond to the
 ##' pvalues in datasets 1 and 2 and the SNP minor allele frequencies.
-##' @param s.df1, s.df2  the proportion of samples in datasets 1 and 2 that are cases.  Only relevant for case control samples.
-##' @param sd.prior standard deviation of prior. TODO! CHANGE THIS TO ALLOW SEPARATE PRIORS FOR EACH TRAIT?
 ##' @return a list of two \code{data.frame}s:
 ##' \itemize{
 ##' \item results is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
 ##' \item merged.df is an annotated version of the input \code{data.frame}
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
-coloc.config <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant", prior1= log(10^(-4)), prior2= log(10^(-5)), s.df1=0.5, s.df2=0.5,
-                   col.names=c("pvalues.df1","pvalues.df2","MAF")) {  # set s to 0 is it is not a case control study
+coloc.abf <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant",
+                         p1=1e-4, p2=1e-4, p12=1e-5,
+                         s.df1=0.5, s.df2=0.5,
+                         col.names=c("pvalues.df1","pvalues.df2","MAF")) {  # set s to 0 is it is not a case control study
 
   if(!is.data.frame(merged.df))
     stop("merged.df should be a data.frame")
@@ -138,46 +126,47 @@ coloc.config <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="qu
 ############################## 
 
   lH0.abf <- 0
-  lH1.abf <- prior1 + logmean(merged.df$lABF.df1)
-  lH2.abf <- prior1 + logmean(merged.df$lABF.df2)
-  lH3.abf <- prior1 + logmean(merged.df$lABF.df1) + prior1 + logmean(merged.df$lABF.df2)
-  lH4.abf <- prior2 + logmean(merged.df$internal.sum.lABF)
+  lH1.abf <- log(p1) + logsum(merged.df$lABF.df1)
+  lH2.abf <- log(p2) + logsum(merged.df$lABF.df2)
+  lH3.abf <- log(p1) + log(p2) + logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2) - logsum(merged.df$internal.sum.lABF)
+  lH4.abf <- p12 + logsum(merged.df$internal.sum.lABF)
 
-  lH3new.abf = lH3new.f(lH3.abf, lH4.abf, prior1, prior2)
-  ## If x=(0.001*y), the difference (x-(0.001*y)) = 0, log(0) = -Inf, so fix this:
-  ## If it is NaN and the difference between lH3.abf and (log(0.001) + lH4.abf) is very small (<0.001), then keep the old value of lH3.abf:
-  if (is.na(lH3new.abf) & abs( lH3.abf -(log(0.001) + lH4.abf) ) <0.001)  (lH3new.abf = lH3.abf)
-  
-  my.denom.log.abf <- logmean(c(lH0.abf, lH1.abf, lH2.abf, lH3new.abf, lH4.abf))
+  ## lH3new.abf = lH3new.f(lH3.abf, lH4.abf, p1, p2, p12)
+  ## ## If x=(0.001*y), the difference (x-(0.001*y)) = 0, log(0) = -Inf, so fix this:
+  ## ## If it is NaN and the difference between lH3.abf and (log(0.001) + lH4.abf) is very small (<0.001), then keep the old value of lH3.abf:
+  ## if (is.na(lH3new.abf) & abs( lH3.abf - ( log(p1*p2/p12) + lH4.abf ) ) < p1*p2/p12)
+  ##   lH3new.abf <- lH3.abf
   
 #### Now we can compute the PP under each looping through all models as numerator: 
-  all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3new.abf, lH4.abf)
-  pp.df.abf <- exp(all.abf - my.denom.log.abf) 
-  names(pp.df.abf) <- paste('PP.H', (1:length(pp.df.abf))-1, '.abf', sep='')
+  all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+  my.denom.log.abf <- logsum(all.abf)
+  pp.abf <- exp(all.abf - my.denom.log.abf) 
+  names(pp.abf) <- paste('PP.H', (1:length(pp.abf))-1, '.abf', sep='')
   
-  ##  pp.df.abf <- signif(pp.df.abf*100,3)
-  print(signif(pp.df.abf,3))
-  print(paste("PP abf for shared variant: ", signif(pp.df.abf["PP.H4.abf"],3)*100 , '%', sep=''))
+  ##  pp.abf <- signif(pp.abf*100,3)
+  print(signif(pp.abf,3))
+  print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
   
   common.snps <- nrow(merged.df)
-  results <- c(nsnps=common.snps, pp.df.abf)
+  results <- c(nsnps=common.snps, pp.abf)
   
   output<-list(results, merged.df)
   return(output)
 }
 ##' Bayesian colocalisation analysis using data.frames
 ##'
-##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.config.summary}}
+##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' 
 ##' @title Bayesian colocalisation analysis using data.frames
-##' @param df1, df2 datasets 1 and 2
+##' @param df1 dataset 1
+##' @param df2 dataset 2
 ##' @param snps col.names for snps
 ##' @param response1 col.name for response in dataset 1
 ##' @param response2 col.name for response in dataset 2
-##' @param ... parameters passed to \code{\link{coloc.config.summary}}
-##' @return output of \code{\link{coloc.config.summary}}
+##' @param ... parameters passed to \code{\link{coloc.abf}}
+##' @return output of \code{\link{coloc.abf}}
 ##' @author Chris Wallace
-coloc.config.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
+coloc.abf.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                                               setdiff(colnames(df2),response2)),
                                     response1="Y", response2="Y", ...) {
   if(length(snps)<2)
@@ -188,21 +177,21 @@ coloc.config.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),r
     stop(paste("response2",response2,"not found in df2"))
   X1 <- new("SnpMatrix",as.matrix(df1[,snps]))
   X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
-  coloc.config.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
+  coloc.abf.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
 }
 ##' Bayesian colocalisation analysis using snpStats objects
 ##'
-##' Generates p values via score tests, then runs \code{\link{coloc.config.summary}}
+##' Generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' @title Bayesian colocalisation analysis using snpStats objects
 ##' @param X1 genetic data for dataset 1
 ##' @param X2 genetic data for dataset 2
 ##' @param Y1 response for dataset 1
 ##' @param Y2 response for dataset 2
 ##' @param snps optional subset of snps to use
-##' @param ... parameters passed to \code{\link{coloc.config.summary}}
-##' @return output of \code{\link{coloc.config.summary}}
+##' @param ... parameters passed to \code{\link{coloc.abf}}
+##' @return output of \code{\link{coloc.abf}}
 ##' @author Chris Wallace
-coloc.config.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
+coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
     stop("X1 and X2 must be SnpMatrices")
   if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))
@@ -220,6 +209,6 @@ coloc.config.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnam
   p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
   maf <- col.summary(X2)[,"MAF"]
   
-  coloc.config(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
+  coloc.abf(merged.df=data.frame(pvalues.df1=p1,pvalues.df2=p2,MAF=maf),
                  N.df1=nrow(X1), N.df2=nrow(X2), ...)
 }

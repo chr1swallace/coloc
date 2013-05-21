@@ -195,6 +195,10 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 ##' @author Chris Wallace
 ##' @inheritParams coloc.test
 ##' @export
+##' @param b1 regression coefficients for trait 1
+##' @param b2 regression coefficients for trait 2
+##' @param V1 variance-covariance matrix for trait 1
+##' @param V2 variance-covariance matrix for trait 2
 coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {
