@@ -14,7 +14,7 @@
 #'to give a credible interval for \code{eta}.  See the references below for
 #'further details.
 #'
-#'@inheritParams coloc.test
+#'@inheritParams coloc.test.summary
 #'@param df1,df2 Each is a dataframe, containing response and potential explanatory variables for two independent datasets.
 #'@param snps The SNPs to consider as potential explanatory variables
 #'@param response1,response2 The names of the response variables in \code{df1} and \code{df2} respectively
@@ -22,10 +22,10 @@
 #'@param thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
 #'@param nsnps number of SNPs required to model both traits.  The BMA analysis will average over all possible \code{nsnp} SNP models, subject to \code{thr} above.
 #'@param n.approx number of values at which to numerically approximate the posterior
-#'@param bayes.factor Either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.
 #'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
 #'@param ... other parameters passed to \code{coloc.test}
-#'@return a \code{colocBMA} object
+#'@return a \code{coloc} or \code{colocBayes} object
 #'@author Chris Wallace
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
 #'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet

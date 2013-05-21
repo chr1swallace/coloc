@@ -1,7 +1,9 @@
 \docType{class}
 \name{coloc-class}
 \alias{coloc-class}
+\alias{colocBMA}
 \alias{colocBayes-class}
+\alias{colocBayesBMA}
 \title{Classes \code{"coloc"} and \code{"colocBayes"}}
 \description{
   Classes designed to hold objects returned by function
@@ -34,7 +36,8 @@ showClass("colocBayes")
   \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 }
 \seealso{
-  \code{\link{coloc.test}}
+  \code{\link{coloc.test}},
+  \code{\link{coloc.test.summary}}, \code{\link{coloc.bma}}
 }
 \keyword{classes}
 

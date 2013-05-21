@@ -9,20 +9,20 @@ validColoc <- function(object) {
 }
 #'Classes \code{"coloc"} and \code{"colocBayes"}
 #'
-#'Classes
+#'Classes 
 #'designed to hold objects returned by function \code{\link{coloc.test}} which
 #'performs a test of the null hypothesis that two genetic traits colocalise -
 #'that they share a common causal variant.
 #'
 #'
 #'@name coloc-class
-#'@aliases coloc-class colocBayes-class
+#'@aliases coloc-class colocBayes-class colocBayesBMA colocBMA
 #'@docType class
 #'@section Objects from the Class: Objects can be created by calls to the
 #'function \code{\link{coloc.test}()}.  Class \code{colocBayes} extends class
 #'\code{coloc}. 
 #'@author Chris Wallace.
-#'@seealso \code{\link{coloc.test}}
+#'@seealso \code{\link{coloc.test}}, \code{\link{coloc.test.summary}}, \code{\link{coloc.bma}}
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
 #'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
 #'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
@@ -36,7 +36,8 @@ validColoc <- function(object) {
 #'
 #'showClass("coloc")
 #'showClass("colocBayes")
-#'
+#'@exportClass coloc
+#'@exportClass colocBayes
 setClass("coloc",
          representation(result="numeric", method="character"))
 setClass("colocBayes",
@@ -84,7 +85,7 @@ setMethod("show","colocBayes",show.coloc)
 ##   pchisq(object@result["chisquare"],df=object@result["df"],lower.tail=FALSE)
 ## }
 
-#'Functions to extract information from a \code{coloc} or \code{colocBayes}
+#'Methods to extract information from a \code{coloc} or \code{colocBayes}
 #'object
 #'
 #'Extract information from a \code{coloc} object.
@@ -93,27 +94,20 @@ setMethod("show","colocBayes",show.coloc)
 #'
 #'\code{theta()} returns theta.hat, the maximum likelihood value of eta.
 #'
-#'\code{lhood()} returns -2 times the log-likelihood ratio..
-#'
-#'\code{chisquare()} returns the value of the chisquare statistic derived by
-#'Wallace et al (in preparation).
-#'
-#'\code{df()} returns the associated degrees of freedom.
-#'
-#'\code{p.value()} returns the associated p value.
-#'
-#'\code{ppp.value()} returns the posterior predicted p value, or \code{NA} if
-#'not calculated.
+#'\code{summary()} returns a summary, giving eta, chisquare statistic, number of SNPs/PCs, p value and, if a \code{colocBayes} object, the ppp.value
 #'
 #'\code{ci()} returns the credible interval, or \code{NA} if not calculated.
 #'
-#'@aliases eta theta df ppp.value p.value chisquare ci bf eta,coloc-method
-#'p.value,coloc-method show,coloc-method chisquare,coloc-method
-#'theta,coloc-method df,coloc-method ci,colocBayes-method bf,colocBayes-method
-#'ppp.value,colocBayes-method plot,colocPCs,missing-method
-#'@param object Object returned by \code{coloc.test()} function.
+#'@aliases eta theta summary ci
+#'eta,coloc-method theta,coloc-method summary,coloc-method ci,coloc-method
+#'eta,colocBayes-method theta,colocBayes-method summary,colocBayes-method ci,colocBayes-method
+#'@param object Object returned by \code{coloc.test()} or \code{coloc.bma()} functions.
 #'@author Chris Wallace.
 #'@seealso \code{\link{coloc.test}}, \code{\link{pcs.prepare}}
+#'@exportMethod eta
+#'@exportMethod theta
+#'@exportMethod ci
+#'@exportMethod summary
 #'@keywords methods
 setGeneric("eta",function(object) standardGeneric("eta"))
 setMethod("eta","coloc",function(object) object@result["eta.hat"])
@@ -123,8 +117,6 @@ setMethod("theta","coloc",function(object) {
           names(theta) <- "theta.hat"
           theta
           })
-setGeneric("chisquare",function(object) standardGeneric("chisquare"))
-setMethod("chisquare","coloc",function(object) object@result["chisquare"])
 setGeneric("ci",function(object) standardGeneric("ci"))
 setMethod("ci","colocBayes",function(object) {
   if(is.na(object@credible.interval$level.observed)) {
@@ -132,6 +124,9 @@ setMethod("ci","colocBayes",function(object) {
   } else {
     return(object@credible.interval[c("eta.mode","lower","upper","level.observed","interior")])
   }})
+## these are not exported
+setGeneric("chisquare",function(object) standardGeneric("chisquare"))
+setMethod("chisquare","coloc",function(object) object@result["chisquare"])
 setGeneric("df",function(object) standardGeneric("df"))
 setMethod("df","coloc",function(object) object@result["n"]-1)
 ## setGeneric("n",function(object) standardGeneric("n"))
@@ -144,6 +139,16 @@ setMethod("p.value","coloc",function(object)
           pchisq(object@result["chisquare"],df=object@result["n"]-1,lower.tail=FALSE))
 
 setGeneric("bf",function(object) standardGeneric("bf"))
+##' Summarise the evidence for/against specific values or ranges of eta using bayes factors
+##'
+##' Only available for \code{colocBayes} objects, and you need to specify the specific values of interest using the \code{bayes.factor} argument when doing the proportional coloc analysis
+##' @title Bayes factors to compare specific values of eta
+#'@aliases bf bf,colocBayes-method
+##' @param object of class \code{colocBayes}
+##' @return a matrix of Bayes factors
+##' @export
+##' @author Chris Wallace
+##' @keywords methods
 setMethod("bf","colocBayes",function(object) {
   if(!length(object@bayes.factor))
     stop("No Bayes factor calculations stored.\n")
@@ -184,6 +189,7 @@ validColocPCs <- function(object) {
 #'chromosome 12q13. Biostatistics 10:327-34.
 #'\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 #'@keywords classes
+#'@export
 #'@examples
 #'
 #'showClass("colocPCs")

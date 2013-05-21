@@ -37,16 +37,13 @@ structure.}
   \item{n.approx}{number of values at which to numerically
   approximate the posterior}
 
-  \item{bayes.factor}{Either a numeric vector, giving
-  single value(s) of \code{eta} or a list of numeric
-  vectors, each of length two and specifying ranges of eta
-  which should be compared to each other.  Thus, the vector
-  or list needs to have length at least two.}
-
   \item{r2.trim}{for pairs SNPs with r2>\code{r2.trim},
   only one SNP will be retained.  This avoids numerical
   instability problems caused by including two highly
   correlated SNPs in the model.}
+
+  \item{quiet}{suppress messages about how the model spaced
+  is trimmed for BMA}
 
   \item{...}{other parameters passed to \code{coloc.test}}
 
@@ -58,12 +55,18 @@ structure.}
   requires numerical integration, so can be set to FALSE to
   save time in simulations, for example.}
 
+  \item{bayes.factor}{Either a numeric vector, giving
+  single value(s) of \code{eta} or a list of numeric
+  vectors, each of length two and specifying ranges of eta
+  which should be compared to each other.  Thus, the vector
+  or list needs to have length at least two.}
+
   \item{plot.coeff}{\code{TRUE} if you want to generate a
   plot showing the coefficients from the two regressions
   together with confidence regions.}
 }
 \value{
-  a \code{colocBMA} object
+  a \code{coloc} or \code{colocBayes} object
 }
 \description{
   Performs the colocalisation tests described in Plagnol et

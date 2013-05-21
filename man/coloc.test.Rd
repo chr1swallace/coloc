@@ -5,7 +5,7 @@
   coloc.test(X, Y, vars.drop = NULL, ...)
 }
 \arguments{
-  \item{X,Y}{Each is either an lm or glm object.  The
+  \item{X}{Either an lm or glm object for trait 1.  The
   intersection of \code{names(coefficients(X))} and
   \code{names(coefficients(Y))} is used to identify SNPs in
   common which will be tested for colocalisation.  Any
@@ -13,28 +13,7 @@
   have distinct names or be listed in \code{vars.drop} to
   avoid them being included in the colocalisation test.}
 
-  \item{k}{Theta has a Cauchy(0,k) prior.  The default,
-  k=1, is equivalent to a uniform (uninformative) prior.
-  We have found varying k to have little effect on the
-  results.}
-
-  \item{plot.coeff}{\code{TRUE} if you want to generate a
-  plot showing the coefficients from the two regressions
-  together with confidence regions.}
-
-  \item{bma}{parameter set to \code{TRUE} when
-  \code{coloc.test} is called by \code{coloc.bma}.  DO NOT
-  SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!}
-
-  \item{plots.extra}{list with 2 named elements, x and y,
-  equal length character vectors containing the names of
-  the quantities to be plotted on the x and y axes.
-
-  \code{x} is generally a sequence of \code{theta} and
-  \code{eta}, with \code{y} selected from
-  \code{post.theta}, the posterior density of theta,
-  \code{chisq}, the chi-square values of the test, and
-  \code{lhood}, the likelihood function.}
+  \item{Y}{Either an lm or glm object for trait 2.}
 
   \item{vars.drop}{Character vector naming additional
   variables in either regression which are not SNPs and
@@ -42,19 +21,8 @@
   should appear in
   \code{c(names(coefficients(X)),names(coefficients(Y)))}}
 
-  \item{bayes}{Logical, indicating whether to perform
-  Bayesian inference for the coefficient of
-  proportionality, eta.  If \code{bayes.factor} is
-  supplied, Bayes factors are additionally computed for the
-  specificed values.  This can add a little time as it
-  requires numerical integration, so can be set to FALSE to
-  save time in simulations, for example.}
-
-  \item{level.ci,n.approx}{\code{level.ci} denotes the
-  required level of the credible interval for \code{eta}.
-  This is calculated numerically by approximating the
-  posterior distribution at \code{n.approx} distinct
-  values.}
+  \item{...}{other arguments passed to
+  \code{\link{coloc.test.summary}()}.}
 }
 \value{
   a numeric vector with 3 named elements:

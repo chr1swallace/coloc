@@ -7,17 +7,18 @@
 #+begin_html
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{snpStatsWriter vignette}
+%\VignetteIndexEntry{Colocalisation vignette}
 -->
 #+end_html
+#+latex: %\VignetteIndexEntry{Colocalisation analysis}
 
 * A brief outline of colocalisation analysis
 
-# #+begin_html
-# <font color="grey">
-# *Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
-# </font>
-# #+end_html
+#+begin_html
+<font color="grey">
+*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+</font>
+#+end_html
 
 The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
@@ -98,14 +99,10 @@ sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
   }
 }
 
-## simulate some data
+## simulate some data and load the coloc library
 set.seed(12345)
 data <- sim.data(nsamples=1000,nsim=1)
-#+end_src
-
-#+begin_src R :ravel echo=FALSE
-## load code
-library(devtools); load_all("..")
+library(coloc)
 #+end_src
 
 * Proportional testing

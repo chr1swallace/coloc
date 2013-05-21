@@ -67,40 +67,18 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' to give a credible interval for \code{eta}.  See the references below for
 ##' further details.
 ##'
-##' @inheritParams bma
-##' @param X,Y Each is either an lm or glm object.  The intersection of
+##' @param X Either an lm or glm object for trait 1.  The intersection of
 ##' \code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
 ##' identify SNPs in common which will be tested for colocalisation.  Any
 ##' Intercept term is dropped, but other covariates should have distinct names or
 ##' be listed in \code{vars.drop} to avoid them being included in the
 ##' colocalisation test.
-##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
-##' uniform (uninformative) prior.  We have found varying k to have little effect
-##' on the results.
-##' @param plot.coeff \code{TRUE} if you want to generate a plot showing the
-##' coefficients from the two regressions together with confidence regions.
-##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
-##' @param plots.extra list with 2 named elements, x and y, equal length
-##' character vectors containing the names of the quantities to be plotted on the
-##' x and y axes.
-##'
-##' \code{x} is generally a sequence of \code{theta} and \code{eta}, with
-##' \code{y} selected from \code{post.theta}, the posterior density of theta,
-##' \code{chisq}, the chi-square values of the test, and \code{lhood}, the
-##' likelihood function.
+##' @param Y Either an lm or glm object for trait 2.
 ##' @param vars.drop Character vector naming additional variables in either
 ##' regression which are not SNPs and should not be used in the colocalisation
 ##' test.  They should appear in
 ##' \code{c(names(coefficients(X)),names(coefficients(Y)))}
-##' @param bayes Logical, indicating whether to perform Bayesian
-##' inference for the coefficient of proportionality, eta.  If
-##' \code{bayes.factor} is supplied, Bayes factors are additionally
-##' computed for the specificed values.  This can add a little time as
-##' it requires numerical integration, so can be set to FALSE to save
-##' time in simulations, for example.
-##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
-##' credible interval for \code{eta}.  This is calculated numerically by
-##' approximating the posterior distribution at \code{n.approx} distinct values.
+##' @param ... other arguments passed to \code{\link{coloc.test.summary}()}.
 ##' @return a numeric vector with 3 named elements:
 ##' \item{eta.hat}{The estimated slope.}
 ##' \item{chisquare}{The chisquared test statistic}
@@ -199,6 +177,30 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 ##' @param b2 regression coefficients for trait 2
 ##' @param V1 variance-covariance matrix for trait 1
 ##' @param V2 variance-covariance matrix for trait 2
+##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
+##' uniform (uninformative) prior.  We have found varying k to have little effect
+##' on the results.
+##' @param plot.coeff \code{TRUE} if you want to generate a plot showing the
+##' coefficients from the two regressions together with confidence regions.
+##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
+##' @param plots.extra list with 2 named elements, x and y, equal length
+##' character vectors containing the names of the quantities to be plotted on the
+##' x and y axes.
+##' 
+##' \code{x} is generally a sequence of \code{theta} and \code{eta}, with
+##' \code{y} selected from \code{post.theta}, the posterior density of theta,
+##' \code{chisq}, the chi-square values of the test, and \code{lhood}, the
+##' likelihood function.
+##' @param bayes Logical, indicating whether to perform Bayesian
+##' inference for the coefficient of proportionality, eta.  If
+##' \code{bayes.factor} is supplied, Bayes factors are additionally
+##' computed for the specificed values.  This can add a little time as
+##' it requires numerical integration, so can be set to FALSE to save
+##' time in simulations, for example.
+##' @param bayes.factor Either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.
+##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
+##' credible interval for \code{eta}.  This is calculated numerically by
+##' approximating the posterior distribution at \code{n.approx} distinct values.
 coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {

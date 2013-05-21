@@ -102,6 +102,7 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' \item merged.df is an annotated version of the input \code{data.frame}
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
+##' @export
 coloc.abf <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant",
                          p1=1e-4, p2=1e-4, p12=1e-5,
                          s.df1=0.5, s.df2=0.5,
@@ -165,6 +166,7 @@ coloc.abf <- function(merged.df, N.df1, N.df2, type.df1="quant", type.df2="quant
 ##' @param response2 col.name for response in dataset 2
 ##' @param ... parameters passed to \code{\link{coloc.abf}}
 ##' @return output of \code{\link{coloc.abf}}
+##' @export
 ##' @author Chris Wallace
 coloc.abf.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                                               setdiff(colnames(df2),response2)),
@@ -190,6 +192,7 @@ coloc.abf.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),resp
 ##' @param snps optional subset of snps to use
 ##' @param ... parameters passed to \code{\link{coloc.abf}}
 ##' @return output of \code{\link{coloc.abf}}
+##' @export
 ##' @author Chris Wallace
 coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
