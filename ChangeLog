@@ -1,3 +1,12 @@
+2013-22-05  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v2.0
+	New function, coloc.abf(), to implement the colocalisation
+	approach described by Giambartolomei et. al.
+
+	Changes in the coloc.test() and coloc.bma() functions to make them
+	consistent with regards arguments and output.
+
 2012-12-10  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
 	* v1.11
