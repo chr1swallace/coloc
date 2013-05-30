@@ -1,4 +1,4 @@
-% Created 2013-05-21 Tue 16:47
+% Created 2013-05-22 Wed 10:47
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -18,7 +18,7 @@
 \tolerance=1000
 \usepackage{fullpage}
 \author{Chris Wallace}
-\date{\textit{<2013-05-21 Tue>}}
+\date{2013-05-22 Wed}
 \title{Coloc: a package for colocalisation analyses}
 \hypersetup{
   pdfkeywords={},
@@ -27,9 +27,9 @@
 \begin{document}
 
 \maketitle
-%\VignetteIndexEntry{Colocalisation analysis}
-
 \tableofcontents
+
+%\VignetteIndexEntry{Colocalisation analysis}
 
 \section{A brief outline of colocalisation analysis}
 \label{sec-1}
@@ -74,7 +74,7 @@ implemented in the function \texttt{coloc.summaries()}.  Note that it is
 possible to use Bayesian analysis for proportional testing too, in
 determining the posterior distribution of the proportionality
 constant $\eta$.
-\section*{Usage}
+\section{Usage}
 \label{sec-2}
 
 Let's simulate a small dataset, and compare the three methods.
@@ -121,7 +121,7 @@ library(coloc)
 \section{Proportional testing}
 \label{sec-3}
 
-\subsection*{Principal components}
+\subsection{Principal components}
 \label{sec-3-1}
 
 The code below first prepares a principal component object by combining
@@ -165,7 +165,7 @@ the \texttt{bayes} argument is supplied:
 ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
 ci(ct.pcs.bayes)
 @ %def
-\subsection*{Bayesian model averaging}
+\subsection{Bayesian model averaging}
 \label{sec-3-2}
 
 This approach appears simpler.  There is no need to do any
@@ -212,8 +212,7 @@ more powerful but will generally require considerably more
 computation, whilst values of 4 and above are both unlikely to
 provide more information and very unlikely to be computed in any
 reasonable time for interactive work.
-
-\subsection*{Using Bayes Factors to compare specific values of $\eta$}
+\subsection{Using Bayes Factors to compare specific values of $\eta$}
 \label{sec-3-3}
 
 It may be that specific values of $\eta$ are of interest.  For
@@ -237,8 +236,8 @@ bf(ct.bma)
 \section{Approximate Bayes Factor colocalisation analyses}
 \label{sec-4}
 
-\subsection*{Introduction}
-
+\subsection{Introduction}
+\label{sec-4-1}
 The idea behind the ABF analysis is that the association of
 each trait with SNPs in a region may be summarised by a vector of 0s
 and at most a single 1, with the 1 indicating the causal SNP (so,
@@ -255,48 +254,46 @@ following cases:
 \item $H_3$: both traits are associated, but with different causal variants
 \item $H_4$: both traits are associated and share a single causal variant
 \end{itemize}
+\subsection{The basic \texttt{coloc.abf} function}
+\label{sec-4-2}
+The function \texttt{coloc.abf} is ideally suited to the case when only
+summary data are available, and requires three vectors giving p values
+for each SNP for traits 1 and 2, and the SNP's minor allele frequency.
+A wrapper function is avalailable to run all these steps but we will
+first generate the p values manually to give all the details. We use the snpStats library from
+Bioconductor to calculate the p values quickly.
 
-\subsection*{The basic coloc.abf function}
-The function \texttt{coloc.abf} is ideally suited to the case when only summary data are
-available, when a \texttt{data.frame} containing three columns giving the p
-values for each SNP and the SNP's minor allele frequency should be
-supplied. A wrapper function is avalailable to run all these steps but we will first generate the p values manually to give all the details.
-
-<<compute.pval>>=
+<<>>=
 library(snpStats)
 
 Y1 <- data@df1$Y
 Y2 <- data@df2$Y
 
-X1 <- new("SnpMatrix",as.matrix(data@df1[,2:11]))
-X2 <- new("SnpMatrix",as.matrix(data@df2[,2:11]))
+X1 <- new("SnpMatrix",as.matrix(data@df1[,-1]))
+X2 <- new("SnpMatrix",as.matrix(data@df2[,-1]))
 
 p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
 p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
 maf <- col.summary(X2)[,"MAF"]
+@ %def
 
-@ 
 Note that we are using the second dataset in that case to compute the minor allele frequencies.
 This is unlikely to make any significant difference but one could have used dataset 1 instead.
 It is now possible to compute the probabilities of interest.
 
-<<coloc.abf>>=
+<<>>=
 my.res <- coloc.abf(pvalues.dataset1=p1,
                     pvalues.dataset2=p2,
                     MAF=maf, 
                     N.dataset1=nrow(X1), 
                     N.dataset2=nrow(X2))
 print(my.res[[1]])
-@ 
-
-\subsection*{The wrapper function}
-
-Here, we have simulated full genotype data, so I will use
-the wrapper function \texttt{coloc.abf.datasets()} for the analysis.
-This makes use of functions in the snpStats package to calculate
-single SNP p values quickly. 
-
-
+@ %def
+\subsection{The wrapper function}
+\label{sec-4-3}
+Here, as we have simulated full genotype data, we can use
+the wrapper function \texttt{coloc.abf.datasets()} to combine all the steps
+shown above.
 
 <<>>=
 ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
@@ -311,7 +308,7 @@ Well, if you only have p values, then you must use ABF.  But be aware
 that a single causal variant is assumed, and that for accurate
 inference, the causal variant needs to be included, so either very
 dense or imputed genotyping data is needed.  The ABF approach has
-another big advantage over proportional testing.  Being Bayesian, it
+another big advantage over proportional testing: being Bayesian, it
 allows you to evaluate support for each hypothesis, whereas with
 proportional testing, when the null of colocalisation is not rejected,
 you cannot be sure whether this reflects true colocalisation or a lack
@@ -336,5 +333,8 @@ tended to identify a combination of shared and distinct causal
 variants.  The ABF approach can still be applied in this case, if p
 values are available conditioning on the strongest signal, as
 demonstrated in our paper \footnotemark[4]{}.
+
+You can see more about the ABF approach on
+\href{http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/}{this blogpost}.
 % Emacs 24.2.1 (Org mode 8.0.3)
 \end{document}

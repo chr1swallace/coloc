@@ -36,6 +36,21 @@ logsum <- function(x) {
   return(my.res)
 }
 
+##' Internal function, logdiff
+##'
+##' This function calculates the log of the difference of the exponentiated
+##' logs taking out the max, i.e. insuring that the difference is not negative
+##' @title logdiff
+##' @param x numeric
+##' @param y numeric
+##' @return max(x) + log(exp(x - max(x,y)) - exp(y-max(x,y)))
+##' @author Chris Wallace
+logdiff <- function(x,y) {
+  my.max <- max(x,y)                              ##take out the maximum value in log form
+  my.res <- my.max + log(exp(x - my.max ) - exp(y-my.max))
+  return(my.res)
+}
+
 
 
 ##' Internal function, approx.bf
@@ -81,7 +96,7 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' @title Fully Bayesian colocalisation analysis
 ##' @param pvalues.dataset1 single variant P-values in dataset 1
 ##' @param pvalues.dataset2 single variant P-values in dataset 2
-##' @param maf minor allele frequency of the variants
+##' @param MAF minor allele frequency of the variants
 ##' @param N.dataset1 number of individuals in dataset 1
 ##' @param N.dataset2 number of individuals in dataset 2
 ##' @param type.dataset1 the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
@@ -98,7 +113,8 @@ approx.bf <- function(p,f,type, N, s, suffix) {
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
-coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.dataset2, type.dataset1="quant", type.dataset2="quant",
+coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.dataset2,
+                      type.dataset1="quant", type.dataset2="quant",
                       p1=1e-4, p2=1e-4, p12=1e-5,
                       s.dataset1=0.5, s.dataset2=0.5) {
 
@@ -126,8 +142,9 @@ coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.da
   lH0.abf <-  0
   lH1.abf <- log(p1) + logsum(merged.df$lABF.df1)
   lH2.abf <- log(p2) + logsum(merged.df$lABF.df2)
-  lH3.abf <- log(p1) + log(p2) + logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2) - logsum(merged.df$internal.sum.lABF)
   lH4.abf <- p12 + logsum(merged.df$internal.sum.lABF)
+  lH3.abf <- log(p1) + log(p2) + logdiff(logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2),
+                                         logsum(merged.df$internal.sum.lABF))
 
   ## lH3new.abf = lH3new.f(lH3.abf, lH4.abf, p1, p2, p12)
   ## ## If x=(0.001*y), the difference (x-(0.001*y)) = 0, log(0) = -Inf, so fix this:
@@ -165,9 +182,10 @@ coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.da
 ##' @return output of \code{\link{coloc.abf}}
 ##' @export
 ##' @author Chris Wallace
-coloc.abf.datasets <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
-                                              setdiff(colnames(df2),response2)),
-                                    response1="Y", response2="Y", ...) {
+coloc.abf.datasets <- function(df1,df2,
+                               snps=intersect(setdiff(colnames(df1),response1),
+                                 setdiff(colnames(df2),response2)),
+                               response1="Y", response2="Y", ...) {
   if(length(snps)<2)
     stop("require at least two SNPs in common between df1 and df2 to do anything sensible")
   if(!(response1 %in% colnames(df1)))

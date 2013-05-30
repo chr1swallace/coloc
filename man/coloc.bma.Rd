@@ -4,7 +4,8 @@
 structure.}
 \usage{
   coloc.bma(df1, df2,
-    snps = intersect(setdiff(colnames(df1), response1), setdiff(colnames(df2), response2)),
+    snps = intersect(setdiff(colnames(df1), response1),
+                     setdiff(colnames(df2), response2)),
     response1 = "Y", response2 = "Y", family1 = "binomial",
     family2 = "binomial", bayes = !is.null(bayes.factor),
     thr = 0.01, nsnps = 2, n.approx = 1001,

@@ -1,8 +1,21 @@
-#+title: Coloc: a package for colocalisation analyses
-#+author: Chris Wallace
-#+email: chris.wallace at cimr.cam.ac.uk
-#+date: <2013-05-21 Tue>
+#+TITLE:     Coloc: a package for colocalisation analyses
+#+AUTHOR:    Chris Wallace
+#+EMAIL:     chris.wallace@cimr.cam.ac.uk
+#+DATE:      2013-05-22 Wed
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:(not LOGBOOK) todo:t pri:nil tags:t
+
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
 #+latex_header: \usepackage{fullpage}
+#+latex: %\VignetteIndexEntry{Colocalisation analysis}
 
 #+begin_html
 <!--
@@ -10,7 +23,6 @@
 %\VignetteIndexEntry{Colocalisation vignette}
 -->
 #+end_html
-#+latex: %\VignetteIndexEntry{Colocalisation analysis}
 
 * A brief outline of colocalisation analysis
 
@@ -30,7 +42,7 @@ First, the proportional approach uses the fact that for two traits
 sharing causal variants, regression coefficients for either trait
 against any set of SNPs in the neighbourhood of those variants must be
 proportional.  This test was first proposed by Plagnol et al. [fn:1]
-in the context of evaulating whether expression of the gene /RPS26/
+in the context of evaluating whether expression of the gene /RPS26/
 mediated the association of type 1 diabetes to a region on chromosome
 12q13 as had recently been proposed.  The test addressed a common
 issue in genetics, and meant researchers could avoid the need to
@@ -44,7 +56,7 @@ or other trait to maximise information, but doing so induces bias in
 the regression coefficients, which in turn leads to increased
 likelihood of spuriously rejecting the null of colocalisation, ie
 a quite substantially increased type 1 error rate [fn:2].  I proposed
-two alternatives to address this problem, eithir using a principal
+two alternatives to address this problem, either using a principal
 component summary of genetic variation in the region to overcome the
 need to select a small set of test SNPs, implemented in =coloc.pcs()=
 and associated functions, or to use the ideas of Bayesian model
@@ -54,7 +66,7 @@ posterior predictive p values, implemented in =coloc.bma()=.
 Proportional testing, however, requires individual level genotype
 data, which are not always available.  Claudia Giambartolomei and
 Vincent Plagnol have proposed an alternative method, which makes use
-of Jon Wakefields work on determining approximate Bayes Factors from
+of Jon Wakefield's work on determining approximate Bayes Factors from
 p values [fn:3] to generate a Bayesian colocalisation analysis [fn:4],
 implemented in the function =coloc.summaries()=.  Note that it is
 possible to use Bayesian analysis for proportional testing too, in
@@ -170,7 +182,7 @@ ci(ct.bma.bayes)
 The =family1/2= parameters are used to specify the model and link
 function, ="gaussian"= (with identity link) or ="binomial"= (with
 logit link) are accepted values.  The plot here shows all models
-considered simulataneously, and does not attempt to discriminate
+considered simultaneously, and does not attempt to discriminate
 between models with strong and weak support.  It's rather confusing,
 and is off by default.
 
@@ -193,7 +205,7 @@ from this set and one SNP /not/ in the set *will* be evaluated.
 
 Finally, you should tell =coloc.bma()= how many SNPs should be
 included in each model.  The default is =nsnps=2=, 3 appears slightly
-more powerful but will geneally require considerably more
+more powerful but will generally require considerably more
 computation, whilst values of 4 and above are both unlikely to
 provide more information and very unlikely to be computed in any
 reasonable time for interactive work.
@@ -221,6 +233,7 @@ bf(ct.bma)
 
 * Approximate Bayes Factor colocalisation analyses
 
+** Introduction
 The idea behind the ABF analysis is that the association of
 each trait with SNPs in a region may be summarised by a vector of 0s
 and at most a single 1, with the 1 indicating the causal SNP (so,
@@ -236,16 +249,47 @@ following cases:
 - $H_3$: both traits are associated, but with different causal variants
 - $H_4$: both traits are associated and share a single causal variant
 
-The function =coloc.abf= is ideally suited to the case when only summary data are
-available, when a =data.frame= containing three columns giving the p
-values for each SNP and the SNP's minor allele frequency should be
-supplied.  Here, we have simulated full genotype data, so I will use
-the wrapper function =coloc.abf.datasets()= for the analysis.
-This makes use of functions in the snpStats package to calculate
-single SNP p values quickly. 
+** The basic =coloc.abf= function
+The function =coloc.abf= is ideally suited to the case when only
+summary data are available, and requires three vectors giving p values
+for each SNP for traits 1 and 2, and the SNP's minor allele frequency.
+A wrapper function is avalailable to run all these steps but we will
+first generate the p values manually to give all the details. We use the snpStats library from
+Bioconductor to calculate the p values quickly.
 
 #+begin_src R
 library(snpStats)
+
+Y1 <- data@df1$Y
+Y2 <- data@df2$Y
+
+X1 <- new("SnpMatrix",as.matrix(data@df1[,-1]))
+X2 <- new("SnpMatrix",as.matrix(data@df2[,-1]))
+
+p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
+p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
+maf <- col.summary(X2)[,"MAF"]
+#+end_src
+
+Note that we are using the second dataset in that case to compute the minor allele frequencies.
+This is unlikely to make any significant difference but one could have used dataset 1 instead.
+It is now possible to compute the probabilities of interest.
+
+#+begin_src R
+my.res <- coloc.abf(pvalues.dataset1=p1,
+                    pvalues.dataset2=p2,
+                    MAF=maf, 
+                    N.dataset1=nrow(X1), 
+                    N.dataset2=nrow(X2))
+print(my.res[[1]])
+#+end_src
+
+** The wrapper function
+Here, as we have simulated full genotype data, we can use
+the wrapper function =coloc.abf.datasets()= to combine all the steps
+shown above.
+
+#+begin_src R
 ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
 #+end_src
 
@@ -258,7 +302,7 @@ Well, if you only have p values, then you must use ABF.  But be aware
 that a single causal variant is assumed, and that for accurate
 inference, the causal variant needs to be included, so either very
 dense or imputed genotyping data is needed.  The ABF approach has
-another big advantages over proportional testing.  Being Bayesian, it
+another big advantage over proportional testing: being Bayesian, it
 allows you to evaluate support for each hypothesis, whereas with
 proportional testing, when the null of colocalisation is not rejected,
 you cannot be sure whether this reflects true colocalisation or a lack
@@ -284,6 +328,8 @@ variants.  The ABF approach can still be applied in this case, if p
 values are available conditioning on the strongest signal, as
 demonstrated in our paper [fn:4].
 
+You can see more about the ABF approach on
+[[http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/][this blogpost]].
 
 * Footnotes
 
