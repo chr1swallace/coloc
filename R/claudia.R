@@ -80,20 +80,46 @@ approx.bf <- function(p,f,type, N, s, suffix) {
   lABF = 0.5 * (log(1-r) + (r * z^2))
   ret <- data.frame(V,z,r,lABF)
   colnames(ret) <- paste(colnames(ret), suffix, sep=".")
-  return(ret)
-  
+  return(ret)  
+}
+##' Internal function, calculate posterior probabilities for configurations, given logABFs for each SNP and prior probs
+##'
+##' @title combine.abf
+##' @param l1 merged.df$lABF.df1
+##' @param l2 merged.df$lABF.df2
+##' @inheritParams coloc.abf
+##' @return named numeric vector of posterior probabilities
+##' @author Claudia Giambartolomei, Chris Wallace
+combine.abf <- function(l1, l2, p1, p2, p12) {
+  lsum <- l1 + l2
+  lH0.abf <- 0
+  lH1.abf <- log(p1) + logsum(l1)
+  lH2.abf <- log(p2) + logsum(l2)
+  lH3.abf <- log(p1) + log(p2) + logdiff(logsum(l1) + logsum(l2), logsum(lsum))
+  lH4.abf <- log(p12) + logsum(lsum)
+
+  all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+  my.denom.log.abf <- logsum(all.abf)
+  pp.abf <- exp(all.abf - my.denom.log.abf)
+  names(pp.abf) <- paste("PP.H", (1:length(pp.abf)) - 1, ".abf", sep = "")
+  print(signif(pp.abf,3))
+  print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
+  return(pp.abf)
 }
 
 ##' Bayesian colocalisation analysis using summary p values
 ##'
-##' This function takes a data frame obtained by merging p-values for
-##' both eQTL and biomarker dataset and returns a list with [1]
-##' summary df [2] original df with additional ABF and other values
-##' Using MAF from eQTL dataset (column named "MAF.df2")
-##' "pvalues.df1" and "pvalues.df2" : names of the colums with p-values
-##' N.dataset1 and N.dataset2 number of indviduals used to get the p-values in each dataset
-##' sd.prior = standard deviation of prior
-##' @title Fully Bayesian colocalisation analysis
+##' This function makes a data frame obtained by merging p-values for
+##' two traits over the same set of SNPs and calculates posterior
+##' probabilities of different causal variant configurations under the
+##' assumption of a single causal variant for each trait.
+##'
+##' It uses an approximation to calculate Bayes factors for
+##' association at each SNP that depends on the SNP's MAF and ignores
+##' any uncertainty in imputation, and is therefore better suited to
+##' well imputed SNPs.  \code{\link{coloc.abf.imputed}} is preferred
+##' when regression coefficients and their standard errors are available.
+##' @title Fully Bayesian colocalisation analysis using p values
 ##' @param pvalues.dataset1 single variant P-values in dataset 1
 ##' @param pvalues.dataset2 single variant P-values in dataset 2
 ##' @param MAF minor allele frequency of the variants
@@ -139,29 +165,7 @@ coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.da
   
 ############################## 
 
-  lH0.abf <-  0
-  lH1.abf <- log(p1) + logsum(merged.df$lABF.df1)
-  lH2.abf <- log(p2) + logsum(merged.df$lABF.df2)
-  lH4.abf <- log(p12) + logsum(merged.df$internal.sum.lABF)
-  lH3.abf <- log(p1) + log(p2) + logdiff(logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2),
-                                         logsum(merged.df$internal.sum.lABF))
-
-  ## lH3new.abf = lH3new.f(lH3.abf, lH4.abf, p1, p2, p12)
-  ## ## If x=(0.001*y), the difference (x-(0.001*y)) = 0, log(0) = -Inf, so fix this:
-  ## ## If it is NaN and the difference between lH3.abf and (log(0.001) + lH4.abf) is very small (<0.001), then keep the old value of lH3.abf:
-  ## if (is.na(lH3new.abf) & abs( lH3.abf - ( log(p1*p2/p12) + lH4.abf ) ) < p1*p2/p12)
-  ##   lH3new.abf <- lH3.abf
-  
-#### Now we can compute the PP under each looping through all models as numerator: 
-  all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
-  my.denom.log.abf <- logsum(all.abf)
-  pp.abf <- exp(all.abf - my.denom.log.abf) 
-  names(pp.abf) <- paste('PP.H', (1:length(pp.abf))-1, '.abf', sep='')
-  
-  ##  pp.abf <- signif(pp.abf*100,3)
-  print(signif(pp.abf,3))
-  print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
-  
+  pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   

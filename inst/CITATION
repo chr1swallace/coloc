@@ -1,13 +1,11 @@
 c(bibentry("article",
            header="If you use coloc.bma or coloc.test with argument bayes=TRUE",
            author = "Wallace, C et. al",	       
-           title = "Statistical colocalisation of monocyte gene expression and genetic
-	risk variants for type 1 diabetes.",
+           title = "Statistical colocalisation of monocyte gene expression and genetic risk variants for type 1 diabetes.",
            journal = "Hum Mol Genet",
            year = "2012",
            url = "http://dx.doi.org/10.1093/hmg/dds098"
            ),
-  
   bibentry("article",
            header="If you use coloc.pcs or coloc.bma",
            author = "{Wallace}, C.",
@@ -20,18 +18,17 @@ c(bibentry("article",
            year = 2013,
            month = "jan",
            url = "http://arxiv.org/abs/1301.5510"),
-  
-bibentry("article",
-         header="If you use coloc.abf",
-         author = "{Giambartolomei}, C. and {Vukcevic}, D. and {Schadt}, E.~E. and 
+  bibentry("article",	
+           header="If you use coloc.abf",
+           author = "{Giambartolomei}, C. and {Vukcevic}, D. and {Schadt}, E.~E. and 
                    {Hingorani}, A.~D. and {Wallace}, C. and {Plagnol}, V.",
-         title = "{Bayesian test for co-localisation between pairs of genetic association studies using summary statistics}",
-         journal = "{ArXiv e-prints}",
-         archivePrefix = "arXiv",
-         eprint = "{1305.4022}",
-         primaryClass = "q-bio.GN",
-         keywords = "{Quantitative Biology - Genomics}",
-         year = 2013,
-         month = "may",
-         url = "http://arxiv.org/abs/1305.4022")
+           title = "{Bayesian test for co-localisation between pairs of genetic association studies using summary statistics}",
+           journal = "{ArXiv e-prints}",
+           archivePrefix = "arXiv",
+           eprint = "{1305.4022}",
+           primaryClass = "q-bio.GN",
+           keywords = "{Quantitative Biology - Genomics}",
+           year = 2013,
+           month = "may",
+           url = "http://arxiv.org/abs/1305.4022")
   )

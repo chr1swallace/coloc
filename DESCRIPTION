@@ -8,7 +8,7 @@ Suggests:
     ggplot2,
     snpStats
 Title: Colocalisation tests of two genetic traits
-Version: 2.0
+Version: 2.01
 Date: 2013-05-22
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "chris.wallace@cimr.cam.ac.uk"),
@@ -31,3 +31,4 @@ Collate:
     'pcs.R'
     'private.R'
     'claudia.R'
+    'coloc.abf.imputed.R'
