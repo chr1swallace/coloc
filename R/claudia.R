@@ -142,7 +142,7 @@ coloc.abf <- function(pvalues.dataset1, pvalues.dataset2, MAF , N.dataset1, N.da
   lH0.abf <-  0
   lH1.abf <- log(p1) + logsum(merged.df$lABF.df1)
   lH2.abf <- log(p2) + logsum(merged.df$lABF.df2)
-  lH4.abf <- p12 + logsum(merged.df$internal.sum.lABF)
+  lH4.abf <- log(p12) + logsum(merged.df$internal.sum.lABF)
   lH3.abf <- log(p1) + log(p2) + logdiff(logsum(merged.df$lABF.df1) + logsum(merged.df$lABF.df2),
                                          logsum(merged.df$internal.sum.lABF))
 
