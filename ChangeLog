@@ -1,8 +1,11 @@
 2013-03-06  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
-	* v2.01
+	* v2.1
 	Bug fix for coloc.abf() function, which used p12 instead of
 	log(p12) to calculate L4.
+
+	New function coloc.abf.imputed() to make better use of fuller
+	information on imputed data.
 
 2013-22-05  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
