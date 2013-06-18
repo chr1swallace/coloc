@@ -52,7 +52,6 @@ logdiff <- function(x,y) {
 }
 
 
-
 ##' Internal function, approx.bf
 ##'
 ##' Calculate approximate Bayes Factors
@@ -170,7 +169,13 @@ coloc.abf.imputed <- function (beta.dataset1, beta.dataset2, varbeta.dataset1, v
   output <- list(results, merged.df)
   return(output)
 }
-
+##' Internal function, process each dataset list for coloc.abf
+##'
+##' @title process.dataset
+##' @param d list
+##' @param suffix "df1" or "df2"
+##' @return data.frame with log(abf) or log(bf)
+##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
   nd <- names(d)
   if("beta" %in% nd & "varbeta" %in% nd & "type" %in% nd) {
@@ -180,27 +185,27 @@ process.dataset <- function(d, suffix) {
       d$snp <- sprintf("SNP.%s",1:length(d$beta))
     df <- data.frame(z = d$beta/sqrt(d$varbeta),
                      V = d$varbeta,
-                     snp=d$snp)
-    abf <- approx.bf.imputed(df$z, df$V, d$type)
-    df <- cbind(df, abf)
+                     snp=as.character(d$snp))
     colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
+    abf <- approx.bf.imputed(z=df$z, V=df$V, type=d$type, suffix=suffix)
+    df <- cbind(df, abf)
     return(df)
   }
 
-  if("pvalues" %in% nd & MAF %in% nd & N %in% nd & "type" %in% nd) {
+  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd & "type" %in% nd) {
     if (length(d$pvalues) != length(d$MAF))
       stop('Length of the P-value vectors and MAF vector must match')
     if(d$type=="cc" & !("s" %in% nd))
       stop("Must specify s if type=='cc' and you want to use approximate Bayes Factors")
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
-   df <- data.frame(pvalues = d$pvalues,
+    df <- data.frame(pvalues = d$pvalues,
                      MAF = d$MAF,
-                    snp=d$snp)    
-    df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
-    abf <- approx.bf(df$pvalues, df$MAF, d$type, d$N, d$s, suffix="df1")
+                     snp=as.character(d$snp))    
+     colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
+   df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
+    abf <- approx.bf(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
-    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
     return(df)  
   }
 
@@ -248,9 +253,13 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 
   if(!is.list(dataset1) || !is.list(dataset2))
     stop("dataset1 and dataset2 must be lists.")
+  if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
+    dataset1$MAF <- MAF
+  if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
+    dataset2$MAF <- MAF
   
-  df1 <- process.dataset(dataset1)
-  df2 <- process.dataset(dataset2)
+  df1 <- process.dataset(d=dataset1, suffix="df1")
+  df2 <- process.dataset(d=dataset2, suffix="df2")
   merged.df <- merge(df1,df2)
   
   if(!nrow(merged.df))
@@ -316,8 +325,8 @@ coloc.abf.datasets <- function(df1,df2,
 ##' @author Chris Wallace
 coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)),
                                type1=c("quant","cc"),type2=c("quant","cc"),s1=NA,s2=NA,...) {
-  type1 <- match.args(type1)
-  type2 <- match.args(type2)
+  type1 <- match.arg(type1)
+  type2 <- match.arg(type2)
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
     stop("X1 and X2 must be SnpMatrices")
   if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))

@@ -231,7 +231,7 @@ bf(ct.bma)
 #+end_src
 
 
-* Approximate Bayes Factor colocalisation analyses
+* (Approximate) Bayes Factor colocalisation analyses
 
 ** Introduction
 The idea behind the ABF analysis is that the association of
@@ -251,8 +251,21 @@ following cases:
 
 ** The basic =coloc.abf= function
 The function =coloc.abf= is ideally suited to the case when only
-summary data are available, and requires three vectors giving p values
-for each SNP for traits 1 and 2, and the SNP's minor allele frequency.
+summary data are available, and requires, for each trait, either:
+- p values for each SNP
+- each SNP's minor allele frequency
+- sample size
+- ratio of cases:controls (if using a case-control trait)
+or:
+- regression coefficients for each SNP
+- variance of these regression coefficients.
+
+If regression coefficients and their variance are available, please
+use these, but we can also approximate Bayes Factors from p values and
+minor allele frequencies, although, note, such approximation can be
+less accurate when imputed data are used.  NB, you can mix and match,
+depending on the data available from each study.
+
 A wrapper function is avalailable to run all these steps but we will
 first generate the p values manually to give all the details. We use the snpStats library from
 Bioconductor to calculate the p values quickly.
@@ -276,11 +289,9 @@ This is unlikely to make any significant difference but one could have used data
 It is now possible to compute the probabilities of interest.
 
 #+begin_src R
-my.res <- coloc.abf(pvalues.dataset1=p1,
-                    pvalues.dataset2=p2,
-                    MAF=maf, 
-                    N.dataset1=nrow(X1), 
-                    N.dataset2=nrow(X2))
+my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
+                    dataset2=list(pvalues=p2,N=nrow(X2),type="quant"),
+                    MAF=maf)
 print(my.res[[1]])
 #+end_src
 
@@ -290,7 +301,8 @@ the wrapper function =coloc.abf.datasets()= to combine all the steps
 shown above.
 
 #+begin_src R
-ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
+ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y",
+                             type1="quant", type2="quant")
 #+end_src
 
 * The difference between proportional and ABF approaches

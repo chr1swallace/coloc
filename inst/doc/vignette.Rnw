@@ -1,4 +1,4 @@
-% Created 2013-05-22 Wed 10:47
+% Created 2013-06-18 Tue 11:53
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -14,7 +14,7 @@
 \usepackage{latexsym}
 \usepackage{amssymb}
 \usepackage{amstext}
-\usepackage{hyperref}
+\usepackage[colorlinks=TRUE]{hyperref}
 \tolerance=1000
 \usepackage{fullpage}
 \author{Chris Wallace}
@@ -233,7 +233,7 @@ ct.bma <- coloc.bma(data@df1, data@df2,
 bf(ct.bma)
 @ %def
 
-\section{Approximate Bayes Factor colocalisation analyses}
+\section{(Approximate) Bayes Factor colocalisation analyses}
 \label{sec-4}
 
 \subsection{Introduction}
@@ -257,8 +257,25 @@ following cases:
 \subsection{The basic \texttt{coloc.abf} function}
 \label{sec-4-2}
 The function \texttt{coloc.abf} is ideally suited to the case when only
-summary data are available, and requires three vectors giving p values
-for each SNP for traits 1 and 2, and the SNP's minor allele frequency.
+summary data are available, and requires, for each trait, either:
+\begin{itemize}
+\item p values for each SNP
+\item each SNP's minor allele frequency
+\item sample size
+\item ratio of cases:controls (if using a case-control trait)
+\end{itemize}
+or:
+\begin{itemize}
+\item regression coefficients for each SNP
+\item variance of these regression coefficients.
+\end{itemize}
+
+If regression coefficients and their variance are available, please
+use these, but we can also approximate Bayes Factors from p values and
+minor allele frequencies, although, note, such approximation can be
+less accurate when imputed data are used.  NB, you can mix and match,
+depending on the data available from each study.
+
 A wrapper function is avalailable to run all these steps but we will
 first generate the p values manually to give all the details. We use the snpStats library from
 Bioconductor to calculate the p values quickly.
@@ -282,11 +299,9 @@ This is unlikely to make any significant difference but one could have used data
 It is now possible to compute the probabilities of interest.
 
 <<>>=
-my.res <- coloc.abf(pvalues.dataset1=p1,
-                    pvalues.dataset2=p2,
-                    MAF=maf, 
-                    N.dataset1=nrow(X1), 
-                    N.dataset2=nrow(X2))
+my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
+                    dataset2=list(pvalues=p2,N=nrow(X2),type="quant"),
+                    MAF=maf)
 print(my.res[[1]])
 @ %def
 \subsection{The wrapper function}
@@ -296,7 +311,8 @@ the wrapper function \texttt{coloc.abf.datasets()} to combine all the steps
 shown above.
 
 <<>>=
-ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y")
+ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y",
+                             type1="quant", type2="quant")
 @ %def
 \section{The difference between proportional and ABF approaches}
 \label{sec-5}
