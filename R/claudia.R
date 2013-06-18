@@ -82,6 +82,27 @@ approx.bf <- function(p,f,type, N, s, suffix) {
   colnames(ret) <- paste(colnames(ret), suffix, sep=".")
   return(ret)  
 }
+
+##' Internal function, approx.bf.imputed
+##'
+##' Calculate approximate Bayes Factors using supplied variance of the regression coefficients
+##' @title Internal function, approx.bf.imputed
+##' @param z normal deviate associated with regression coefficient and its variance
+##' @param V its variance
+##' @inheritParams approx.bf
+##' @return data.frame containing lABF and intermediate calculations
+##' @author Vincent Plagnol, Chris Wallace
+approx.bf.imputed <- function (z, V, type, suffix=NULL) {
+  if (type == "quant") {sd.prior <- 0.15} else {sd.prior <- 0.2}
+  r <- sd.prior^2/(sd.prior^2 + V)
+  lABF = 0.5 * (log(1 - r) + (r * z^2))
+  ret <- data.frame(V, z, r, lABF)
+  if(!is.null(suffix))
+    colnames(ret) <- paste(colnames(ret), suffix, sep = ".")
+  return(ret)
+}
+
+
 ##' Internal function, calculate posterior probabilities for configurations, given logABFs for each SNP and prior probs
 ##'
 ##' @title combine.abf
@@ -106,26 +127,6 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
   print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
   return(pp.abf)
 }
-
-##' Internal function, approx.bf.imputed
-##'
-##' Calculate approximate Bayes Factors using supplied variance of the regression coefficients
-##' @title Internal function, approx.bf.imputed
-##' @param z normal deviate associated with regression coefficient and its variance
-##' @param V its variance
-##' @inheritParams approx.bf
-##' @return data.frame containing lABF and intermediate calculations
-##' @author Vincent Plagnol, Chris Wallace
-approx.bf.imputed <- function (z, V, type, suffix=NULL) {
-  if (type == "quant") {sd.prior <- 0.15} else {sd.prior <- 0.2}
-  r <- sd.prior^2/(sd.prior^2 + V)
-  lABF = 0.5 * (log(1 - r) + (r * z^2))
-  ret <- data.frame(V, z, r, lABF)
-  if(!is.null(suffix))
-    colnames(ret) <- paste(colnames(ret), suffix, sep = ".")
-  return(ret)
-}
-
 
 ##' Bayesian colocalisation analysis using summary coefficients and their variances
 ##'
@@ -175,11 +176,14 @@ process.dataset <- function(d, suffix) {
   if("beta" %in% nd & "varbeta" %in% nd & "type" %in% nd) {
     if(length(d$beta) != length(d$varbeta))
       stop("Length of the beta vectors and variance vectors must match")
+    if(!("snp" %in% nd))
+      d$snp <- sprintf("SNP.%s",1:length(d$beta))
     df <- data.frame(z = d$beta/sqrt(d$varbeta),
-                     V = d$varbeta)    
+                     V = d$varbeta,
+                     snp=d$snp)
     abf <- approx.bf.imputed(df$z, df$V, d$type)
     df <- cbind(df, abf)
-    colnames(df) <- paste(colnames(df), suffix, sep=".")
+    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
     return(df)
   }
 
@@ -187,18 +191,23 @@ process.dataset <- function(d, suffix) {
     if (length(d$pvalues) != length(d$MAF))
       stop('Length of the P-value vectors and MAF vector must match')
     if(d$type=="cc" & !("s" %in% nd))
-      stop("Must specify s if type=="cc" and you want to use approximate Bayes Factors")
-    df <- data.frame(pvalues = pvalues,
-                     MAF = MAF)    
-    df <- subset(df, apply(df, 1, min)>0) # all p values and MAF > 0
+      stop("Must specify s if type=='cc' and you want to use approximate Bayes Factors")
+    if(!("snp" %in% nd))
+      d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
+   df <- data.frame(pvalues = d$pvalues,
+                     MAF = d$MAF,
+                    snp=d$snp)    
+    df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
     abf <- approx.bf(df$pvalues, df$MAF, d$type, d$N, d$s, suffix="df1")
     df <- cbind(df, abf)
-    colnames(df) <- paste(colnames(df), suffix, sep=".")
+    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
     return(df)  
   }
+
+  stop("Must give, as a minimum, either (beta, varbeta, type) or (pvalues, MAF, N, type)")
 }
 
-##' Bayesian colocalisation analysis using summary p values
+##' Bayesian colocalisation analysis
 ##'
 ##' This function makes a data frame obtained by merging p-values for
 ##' two traits over the same set of SNPs and calculates posterior
@@ -220,6 +229,7 @@ process.dataset <- function(d, suffix) {
 ##' \item varbeta @param variance of beta
 ##' \item type the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
 ##' \item s the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
+##' \item snp a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.
 ##' }
 ##' Some of these items may be missing, but you must give type and then either pvalues, N and s (if type="cc") or beta and varbeta.  If you use pvalues, then the function needs to know minor allele frequencies, and will either use the MAF given here or a global estimate of MAF supplied separately.
 ##' @param dataset2 as above, for dataset 2
@@ -233,26 +243,19 @@ process.dataset <- function(d, suffix) {
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
-coloc.abf <- function(dataset1, dataset2, MAF, 
+coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
                       p1=1e-4, p2=1e-4, p12=1e-5) {
 
-  if (length(pvalues.dataset1) != length(pvalues.dataset2)) stop('Length of the P-value vectors must match')
-  if (length(pvalues.dataset1) != length(MAF)) stop('Length of the P-value vectors and MAF vector must match')
+  if(!is.list(dataset1) || !is.list(dataset2))
+    stop("dataset1 and dataset2 must be lists.")
   
-  merged.df <- data.frame (pvalues.df1 = pvalues.dataset1,
-                           pvalues.df2 = pvalues.dataset2,
-                           MAF = MAF)
+  df1 <- process.dataset(dataset1)
+  df2 <- process.dataset(dataset2)
+  merged.df <- merge(df1,df2)
   
-  merged.df <- subset(merged.df, apply(merged.df, 1, min)>0) # all p values and MAF > 0
-  
-  pvalues.df1 = merged.df[,1]
-  pvalues.df2 = merged.df[,2]
-  f = merged.df[,3]
-  
-####### Use different priors and different computation of variance of the mle for case/control vs. quantitative trait
-  abf.df1 <- approx.bf(pvalues.df1, f, type.dataset1, N.dataset1, s.dataset1, suffix="df1")
-  abf.df2 <- approx.bf(pvalues.df2, f, type.dataset2, N.dataset2, s.dataset2, suffix="df2")
-  merged.df <- cbind(merged.df, abf.df1, abf.df2)  
+  if(!nrow(merged.df))
+    stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
+
   merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   
 ############################## 
@@ -264,6 +267,7 @@ coloc.abf <- function(dataset1, dataset2, MAF,
   output<-list(results, merged.df)
   return(output)
 }
+
 ##' Bayesian colocalisation analysis using data.frames
 ##'
 ##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.abf}}
@@ -274,7 +278,8 @@ coloc.abf <- function(dataset1, dataset2, MAF,
 ##' @param snps col.names for snps
 ##' @param response1 col.name for response in dataset 1
 ##' @param response2 col.name for response in dataset 2
-##' @param ... parameters passed to \code{\link{coloc.abf}}
+##' 
+##' @param ... parameters passed to \code{\link{coloc.abf.snpStats}}
 ##' @return output of \code{\link{coloc.abf}}
 ##' @export
 ##' @author Chris Wallace
@@ -301,11 +306,18 @@ coloc.abf.datasets <- function(df1,df2,
 ##' @param Y1 response for dataset 1
 ##' @param Y2 response for dataset 2
 ##' @param snps optional subset of snps to use
+##' @param type1 type of data in Y1, "quant" or "cc"
+##' @param type2 type of data in Y2, "quant" or "cc"
+##' @param s1 the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
+##' @param s2 the proportion of samples in dataset 2 that are cases (only relevant for case control samples)
 ##' @param ... parameters passed to \code{\link{coloc.abf}}
 ##' @return output of \code{\link{coloc.abf}}
 ##' @export
 ##' @author Chris Wallace
-coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)), ...) {
+coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)),
+                               type1=c("quant","cc"),type2=c("quant","cc"),s1=NA,s2=NA,...) {
+  type1 <- match.args(type1)
+  type2 <- match.args(type2)
   if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
     stop("X1 and X2 must be SnpMatrices")
   if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))
@@ -319,10 +331,11 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
   if(is.null(rownames(X2)))
     rownames(X2) <- paste("X2",1:nrow(X2),sep=".")
   
-  p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
-  p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
-  maf <- col.summary(X2)[,"MAF"]
+  pval1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
+  pval2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
+  maf1 <- col.summary(X1)[,"MAF"]
+  maf2 <- col.summary(X2)[,"MAF"]
   
-  coloc.abf(pvalues.dataset1=p1,pvalues.dataset2=p2,MAF=maf,
-            N.dataset1=nrow(X1), N.dataset2=nrow(X2), ...)
+  coloc.abf(dataset1=list(pvalues=pval1, N=nrow(X1), MAF=maf1, snp=snps, type=type1, s=s1),
+            dataset2=list(pvalues=pval2, N=nrow(X2), MAF=maf2, snp=snps, type=type2, s=s2))
 }
