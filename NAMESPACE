@@ -1,6 +1,5 @@
 export(coloc.abf)
 export(coloc.abf.datasets)
-export(coloc.abf.imputed)
 export(coloc.abf.snpStats)
 export(coloc.bma)
 export(coloc.test)

@@ -1,3 +1,13 @@
+2013-19-06  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v2.2
+	Merged coloc.abf and coloc.abf.imputed(), so that datasets for
+	wheich beta, var(beta) are available can be matched to datasets
+	with only p values and maf.2
+
+	This means the arguments to coloc.abf() have been changed!  Please
+	check ?coloc.abf for the new function.
+
 2013-03-06  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
 	* v2.1

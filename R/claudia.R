@@ -127,48 +127,6 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
   return(pp.abf)
 }
 
-##' Bayesian colocalisation analysis using summary coefficients and their variances
-##'
-##' This function makes a data frame obtained by merging p-values for
-##' two traits over the same set of SNPs and calculates posterior
-##' probabilities of different causal variant configurations under the
-##' assumption of a single causal variant for each trait.
-##'
-##' It uses the variance of the regression coefficients to estimate the 
-##' @title Fully Bayesian colocalisation analysis using regression coefficients
-##' @inheritParams coloc.abf
-##' @param beta.dataset1 coefficient from dataset 1
-##' @param beta.dataset2  coefficient from dataset 2
-##' @param varbeta.dataset1 variance of the coefficient from dataset 1
-##' @param varbeta.dataset2  variance of the coefficient from dataset 2
-##' @return a list of two \code{data.frame}s:
-##' \itemize{
-##' \item results is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
-##' \item merged.df is an annotated version of the input \code{data.frame}
-##' }
-##' @author Vincent Plagnol, Chris Wallace
-##' @export
-coloc.abf.imputed <- function (beta.dataset1, beta.dataset2, varbeta.dataset1, varbeta.dataset2, type.dataset1, type.dataset2,
-                                p1 = 1e-04, p2 = 1e-04, p12 = 1e-05) {
-
-  if (length(beta.dataset1) != length(beta.dataset2)) stop("Length of the beta vectors must match")
-  if (length(beta.dataset1) != length(varbeta.dataset1)) stop("Length of the beta vectors and variance vectors must match")
-  if (length(beta.dataset1) != length(varbeta.dataset2)) stop("Length of the beta vectors and variance vectors must match")
-
-  merged.df <- data.frame(z.df1 = beta.dataset1/sqrt(varbeta.dataset1),
-                          z.df2 = beta.dataset2/sqrt(varbeta.dataset2),
-                          V.df1 = varbeta.dataset1,
-                          V.df2 = varbeta.dataset2)
-  abf.df1 <- approx.bf.imputed(merged.df$z.df1, merged.df$V.df1, type.dataset1, suffix = "df1")
-  abf.df2 <- approx.bf.imputed(merged.df$z.df2, merged.df$V.df2, type.dataset2, suffix = "df2")
-  merged.df <- cbind(merged.df, abf.df1, abf.df2)
-  merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
-  pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)
-  common.snps <- nrow(merged.df)
-  results <- c(nsnps = common.snps, pp.abf)
-  output <- list(results, merged.df)
-  return(output)
-}
 ##' Internal function, process each dataset list for coloc.abf
 ##'
 ##' @title process.dataset
@@ -214,30 +172,46 @@ process.dataset <- function(d, suffix) {
 
 ##' Bayesian colocalisation analysis
 ##'
-##' This function makes a data frame obtained by merging p-values for
-##' two traits over the same set of SNPs and calculates posterior
-##' probabilities of different causal variant configurations under the
-##' assumption of a single causal variant for each trait.
+##' This function calculates posterior probabilities of different
+##' causal variant configurations under the assumption of a single
+##' causal variant for each trait.
 ##'
-##' It uses an approximation to calculate Bayes factors for
-##' association at each SNP that depends on the SNP's MAF and ignores
-##' any uncertainty in imputation, and is therefore better suited to
-##' well imputed SNPs.  \code{\link{coloc.abf.imputed}} is preferred
-##' when regression coefficients and their standard errors are available.
-##' @title Fully Bayesian colocalisation analysis using p values
+##' If regression coefficients and variances are available, it
+##' calculates Bayes factors for association at each SNP.  If only p
+##' values are available, it uses an approximation that depends on the
+##' SNP's MAF and ignores any uncertainty in imputation.  Regression
+##' coefficients should be used if available.
+##' 
+##' @title Fully Bayesian colocalisation analysis using Bayes Factors
 ##' @param dataset1 a list with the following elements
-##' \itemize{
-##' \item pvalues P-values for each SNP in dataset 1
-##' \item N Number of samples in dataset 1
-##' \item MAF minor allele frequency of the variants
-##' \item beta regression coefficient for each SNP from dataset 1
-##' \item varbeta @param variance of beta
-##' \item type the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control
-##' \item s the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
-##' \item snp a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.
+##' \describe{
+##' 
+##'   \item{pvalues}{P-values for each SNP in dataset 1}
+##'
+##'   \item{N}{Number of samples in dataset 1}
+##'
+##'   \item{MAF}{minor allele frequency of the variants}
+##'
+##' \item{beta}{regression coefficient for each SNP from dataset 1}
+##' 
+##' \item{varbeta}{variance of beta}
+##' 
+##' \item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
+##'
+##' \item{s}{the proportion of samples in dataset 1 that are cases (only relevant for case control samples)}
+##'
+##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
+##'
 ##' }
-##' Some of these items may be missing, but you must give type and then either pvalues, N and s (if type="cc") or beta and varbeta.  If you use pvalues, then the function needs to know minor allele frequencies, and will either use the MAF given here or a global estimate of MAF supplied separately.
+##'
+##' Some of these items may be missing, but you must give \code{type}
+##' and then either \code{pvalues}, \code{N} and \code{s} (if
+##' type="cc") or \code{beta} and \code{varbeta}.  If you use pvalues,
+##' then the function needs to know minor allele frequencies, and will
+##' either use the MAF given here or a global estimate of MAF supplied
+##' separately.
 ##' @param dataset2 as above, for dataset 2
+##' @param MAF Common minor allele frequency vector to be used for both dataset1 and dataset2
 ##' @param p1 prior probability a SNP is associated with trait 1
 ##' @param p2 prior probability a SNP is associated with trait 2
 ##' @param p12 prior probability a SNP is associated with both traits
