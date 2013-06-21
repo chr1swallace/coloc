@@ -141,12 +141,9 @@ process.dataset <- function(d, suffix) {
       stop("Length of the beta vectors and variance vectors must match")
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$beta))
-    df <- data.frame(z = d$beta/sqrt(d$varbeta),
-                     V = d$varbeta,
-                     snp=as.character(d$snp))
-    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
-    abf <- approx.bf.imputed(z=df$z, V=df$V, type=d$type, suffix=suffix)
-    df <- cbind(df, abf)
+    df <- approx.bf.imputed(z=d$beta/sqrt(d$varbeta),
+                             V=d$varbeta, type=d$type, suffix=suffix)
+    df$snp <- as.character(d$snp)
     return(df)
   }
 
@@ -160,8 +157,8 @@ process.dataset <- function(d, suffix) {
     df <- data.frame(pvalues = d$pvalues,
                      MAF = d$MAF,
                      snp=as.character(d$snp))    
-     colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
-   df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
+    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
+    df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
     abf <- approx.bf(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
     return(df)  
@@ -212,13 +209,13 @@ process.dataset <- function(d, suffix) {
 ##' separately.
 ##' @param dataset2 as above, for dataset 2
 ##' @param MAF Common minor allele frequency vector to be used for both dataset1 and dataset2
-##' @param p1 prior probability a SNP is associated with trait 1
-##' @param p2 prior probability a SNP is associated with trait 2
-##' @param p12 prior probability a SNP is associated with both traits
+##' @param p1 prior probability a SNP is associated with trait 1, default 1e-4
+##' @param p2 prior probability a SNP is associated with trait 2, default 1e-4
+##' @param p12 prior probability a SNP is associated with both traits, default 1e-5
 ##' @return a list of two \code{data.frame}s:
 ##' \itemize{
-##' \item results is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
-##' \item merged.df is an annotated version of the input \code{data.frame}
+##' \item summary is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
+##' \item results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal
 ##' }
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
@@ -235,6 +232,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
   merged.df <- merge(df1,df2)
+
+  ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
+  my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
+  merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
   
   if(!nrow(merged.df))
     stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
@@ -247,7 +248,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
-  output<-list(results, merged.df)
+  output<-list(summary=results, results=merged.df)
   return(output)
 }
 
