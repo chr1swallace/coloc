@@ -233,15 +233,15 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   df2 <- process.dataset(d=dataset2, suffix="df2")
   merged.df <- merge(df1,df2)
 
+   if(!nrow(merged.df))
+    stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
+
+  merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
   my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
   merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
   
-  if(!nrow(merged.df))
-    stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
-
-  merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
-  
+ 
 ############################## 
 
   pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
