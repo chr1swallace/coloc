@@ -1,4 +1,3 @@
-library(coloc)
 library(mlogitBMA)
 library(nnet)
 library(snpStats)
