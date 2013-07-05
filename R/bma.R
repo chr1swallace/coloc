@@ -151,7 +151,9 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   min.models <- min(3,length(snps))
   if(length(wh) < min.models) 
     wh <- order(probs,decreasing=TRUE)[1:min.models]
-  cat("Averaging coloc testing over",length(wh),"models with posterior probabilities >=",signif(min(probs[wh]),digits=2),"\n")
+  cat("Averaging coloc testing over",length(wh),
+      "models with posterior probabilities >=",
+      signif(min(probs[wh]),digits=2),"\n")
   for(i in wh) {
     if(!quiet)
     cat(".")
@@ -160,10 +162,10 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
     coef.1[[i]] <- coefficients(lm1)[-1]
     coef.2[[i]] <- coefficients(lm2)[-1]
     var.1[[i]] <- vcov(lm1)[-1,-1]
-    var.2[[i]] <- vcov(lm1)[-1,-1]
+    var.2[[i]] <- vcov(lm2)[-1,-1]
     this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,bayes=bayes,...)
     if(bayes) {
-      post[i,] <- this.coloc@bma
+      post[i,] <- this.coloc@bma ## posterior distribution for eta
       p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
     } else {
       p[i,] <- c(this.coloc@result,p.value(this.coloc))
@@ -175,10 +177,13 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
 
   stats <- colSums(p[wh,] * probs[wh] / sum(probs[wh]))
   if(bayes) {
+    ## average posteriors over models to get a single posterior
     post <- colSums(post[wh,] * probs[wh] / sum(probs[wh]))
+    ## then calculate the credible interval
     ci <- credible.interval(post,interval=c(0,pi), n.approx=n.approx)
   }
   if(length(bayes.factor)) {
+    ## average bayes factors for particular values/ranges of eta over models
     bf <- colSums(bf[wh,] * probs[wh] / sum(probs[wh]))
     names(bf) <- c(bayes.factor)
   }
