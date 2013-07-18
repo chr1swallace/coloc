@@ -1,4 +1,3 @@
-
 coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(rep(1,15)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snp for each of the three traits
     snps <- unique(snps)
@@ -181,7 +180,7 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
     #association with one trait
     logbf[2]<-wlogsum(logB10[wh1], n1[wh1])
     logbf[3]<-wlogsum(logB10[wh2], n2[wh2])
-    logbf[4]<wlogsum(logB10[wh3], n3[wh3])
+    logbf[4]<-wlogsum(logB10[wh3], n3[wh3])
     #association with two traits, no colocalisation
     logbf[5]<-wlogsum(c(logB10[wh4],logB10[wh7]),c(n1[wh4]*n2[wh4],n1[wh7]*(n1[wh7]-1)))
     logbf[6]<-wlogsum(c(logB10[wh5],logB10[wh8]),c(n1[wh5]*n3[wh5],n1[wh8]*(n1[wh8]-1)))
