@@ -1,4 +1,3 @@
-
 #'Wrapper to use colocalization testing within a Bayesian model averaging
 #'structure for datasets with common controls.
 #'
@@ -196,7 +195,7 @@ multi.var.bf <- function(models, x, y, family,quiet=FALSE) {
 #'
 #'\code{pcs.var.model} can then be invoked to create \code{glm} objects.
 #'
-#'@aliases pcs.prepare
+#'@aliases pcs.var.prepare
 #'@param X Either a SnpMatrix or numeric matrix of genetic data.
 #'Columns index SNPs, rows index samples.
 #'@return a \code{colocPCs} object.
@@ -235,7 +234,7 @@ pcs.var.prepare <- function(X) {
 #'Prepares models of response based on principal components of two datasets for
 #'colocalisation testing.
 #'
-#'@aliases pcs.model
+#'@aliases pcs.var.model
 #'
 #'@param object A colocPCs object, result of \code{pcs.var.prepare()}.
 #'@param Y Numeric phenotype vector
