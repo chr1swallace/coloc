@@ -1,5 +1,21 @@
-coloc.bayes <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(c(1,1,1,1,1)),r2.trim=0.99,pp.thr=0.005,nmodsnp=1,quiet=TRUE) {
-    #we consider all models which contain at most nmodsnp snps for each trait
+
+#'Colocation for two traits with a common control
+#'Generates bayes factors for each plausible one SNP model
+#' 
+#'
+#'@title bayesian colocalisation; two traits
+#'@export
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param priors A list of priors over the hypotheses 
+#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
+#'@return a list of posterior probabilities that each SNP is causitive to both traits, and the corresponding SNPs
+#'@author Mary Fortune
+coloc.bayes <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(c(1,1,1,1,1)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
+    #we consider all models which contain at most 1 snp for each trait
     snps <- unique(snps)
     n.orig <- length(snps)
     if(n.orig<2)
@@ -33,7 +49,7 @@ coloc.bayes <- function(df1,snps=setdiff(colnames(df1),response),response="Y",pr
     mod.trait2<-glib(x=df.trait2[,-1], y=df.trait2[,1], error="binomial", link="logit",models=modelsep)
     pp.trait1<-mod.trait1$bf$postprob[,2]
     pp.trait2<-mod.trait2$bf$postprob[,2]
-    whichsnps<-union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr))
+    whichsnps<-sort(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)))
     cat("We consider ",length(whichsnps), " SNPs in the final analysis. \n")
     snps<-snps[whichsnps]
     
@@ -47,7 +63,7 @@ coloc.bayes <- function(df1,snps=setdiff(colnames(df1),response),response="Y",pr
     binX<-binX[,-1]
     #extract the new reponse
     binY<-binmod[,"Y.star"]
-    models<-makebinmod(n.clean,nmodsnp)
+    models<-makebinmod(n.clean,1)
     category<-apply(models,1,whichcat)
     #run glib
     mods1 <- glib(x=binX, y=binY, error="binomial", link="logit",models=models)
@@ -71,10 +87,27 @@ coloc.bayes <- function(df1,snps=setdiff(colnames(df1),response),response="Y",pr
         cat("--- \n")
         postprobs[[ii]]=postprob
     }
-    return(postprobs)
+    tmp <- 0.5*twologB10[which(category==4)]
+    pp<-(exp( tmp - logsum(tmp) ))
+    return(list("postprob"=pp,"snps"=snps))
 }
 
-
+#'Colocation for two traits with a common control
+#'Merges SNPs with high r2 into tags prior to analysis
+#'Generates bayes factors for each plausible one tag model
+#'
+#'
+#'@title bayesian colocalisation; two traits; with tagging
+#'@export
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param priors A list of priors over the hypotheses 
+#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+#'@param r2.trim If a pairs of SNPs has r2>\code{r2.trim}, they are put in the same tag
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
+#'@return a list of posterior probabilities that each tag is causitive to both traits, the tag names, and the corresponding SNPs
+#'@author Mary Fortune
 coloc.bayes.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(c(1,1,1,1,1)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snps for each trait, using tagging
     snps <- unique(snps)
@@ -104,7 +137,7 @@ coloc.bayes.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y
     n.clean <- length(tags)
     
     
-    #remove tagss with low posterior probabilities in the individual models.
+    #remove tags with low posterior probabilities in the individual models.
     f1 <- as.formula(paste("Y ~", paste(tags,collapse="+")))
     df.trait1<-df1[which(df1[,1]!=2),c("Y",tags)]
     df.trait2<-df1[which(df1[,1]!=1),c("Y",tags)]
@@ -114,7 +147,7 @@ coloc.bayes.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y
     mod.trait2<-glib(x=df.trait2[,-1], y=df.trait2[,1], error="binomial", link="logit",models=modelsep)
     pp.trait1<-mod.trait1$bf$postprob[,2]
     pp.trait2<-mod.trait2$bf$postprob[,2]
-    whichtags<-union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr))
+    whichtags<-sort(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)))
     cat("We consider ",length(whichtags), " tags in the final analysis. \n")
     tags<-tags[whichtags]
     tagsize<-tagsize[which(unique(tagkey) %in% tags)]
@@ -135,6 +168,7 @@ coloc.bayes.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y
     #-2 log the bf with a flat prior
     logB10=0.5*mods1$bf$twologB10[,2]
     logbf <- numeric(5)
+    #find which SNPs are present in each model
     if (n.clean>1){
         n1 <- as.vector( models[,1:n.clean] %*% tagsize )
         n2 <- as.vector( models[,(n.clean+1):(2*n.clean)] %*% tagsize )
@@ -163,10 +197,24 @@ coloc.bayes.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y
         cat("--- \n")
         postprobs[[ii]]=postprob
     }
-    return(postprobs)
+    tmp <- logB10[which(category==4)]
+    pp<-(exp( tmp - logsum(tmp) ))
+    snplist<-vector("list",length(pp))
+    for (ii in 1:length(pp)){
+        snplist[[ii]]<-names(which(tagkey==tags[ii]))
+    }
+    return(list("postprob"=pp,"tags"=tags,snps=snplist))
 }
 
-
+##' Internal function, makebinmod
+##'
+##' This function takes in a line from the model matrix
+##' and computes which of the categories it corresponds to
+##' @title makebinmod
+##' @param p the number of SNPs
+##' @param m the maximum number of causitive snps for each trait
+##' @return a numeric matrix giving the models 
+##' @author Mary Fortune
 makebinmod<-function(p,m){
     #returns a model matrix for the binomial equivalent model
     #p=number of snps present
@@ -199,6 +247,15 @@ makebinmod<-function(p,m){
     }
     return(models)
 }
+
+##' Internal function, whichcat
+##'
+##' This function takes in a line from the model matrix
+##' and computes which of the categories it corresponds to
+##' @title whichcat
+##' @param line numeric vector
+##' @return a number corresponding to the category 
+##' @author Mary Fortune
 whichcat<-function(line){
     #puts the model given in line into one of the five categories
     #assumes m=1
@@ -218,6 +275,17 @@ whichcat<-function(line){
     }
 }
 
+
+##' Internal function, wlogsum
+##'
+##' This function calculates the log of the sum of the exponentiated
+##' logs taking out the max, i.e. insuring that the sum is not Inf
+##' This sum is weighted by some constants w
+##' @title wlogsum
+##' @param x numeric vector
+##' @param w numeric vector
+##' @return my.max + log(sum(exp(x - my.max )*w))
+##' @author Chris Wallace
 wlogsum <- function(x, w=NULL) {
     if (length(x)==1){
         if(is.null(w)) {
@@ -235,6 +303,12 @@ wlogsum <- function(x, w=NULL) {
     }
 }
 
+
+##'Returns the r2 values between each pair of SNPs
+##'@title find r2
+##'@param X a SnpMatrix
+##'@return a matrix of the r2 values
+##'@author Chris Wallace
 myr2 <- function(X) {
   r2 <- ld(X,
            depth=ncol(X)-1,
@@ -250,10 +324,13 @@ if(any(is.na(r2))) {
   diag(r2) <- 1
 return(r2)
 }
+
+
 ##' Derive tag SNPs for a SnpMatrix object using heirarchical clustering
 ##'
 ##' Uses complete linkage and the \code{\link{hclust}} function to define clusters, then cuts the tree at 1-tag.threshold
 ##' @title tag
+##' @param X a SnpMatrix
 ##' @param snps colnames of the SnpMatrix object to be used
 ##' @param tag.threshold threshold to cut tree, default=0.99
 ##' @param samples optional, subset of samples to use
