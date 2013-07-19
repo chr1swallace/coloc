@@ -1,3 +1,19 @@
+
+#'Colocation for three traits with a common control
+#'Generates bayes factors for each plausible one SNP model
+#' 
+#'
+#'@title bayesian colocalisation; three traits
+#'@export
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param priors A list of priors over the hypotheses 
+#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
+#'@return a list of posterior probabilities that each SNP is causitive to both traits, and the corresponding SNPs
+#'@author Mary Fortune
 coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(rep(1,15)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snp for each of the three traits
     snps <- unique(snps)
@@ -37,7 +53,7 @@ coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y"
     pp.trait1<-mod.trait1$bf$postprob[,2]
     pp.trait2<-mod.trait2$bf$postprob[,2]
     pp.trait3<-mod.trait3$bf$postprob[,2]
-    whichsnps<-union(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)),which(pp.trait3>pp.thr))
+    whichsnps<-sort(union(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)),which(pp.trait3>pp.thr)))
     cat("We consider ",length(whichsnps), " SNPs in the final analysis. \n")
     snps<-snps[whichsnps]
     
@@ -73,13 +89,29 @@ coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y"
         cat("--- \n")
         postprobs[[ii]]=postprob
     }
-    return(postprobs)
+    tmp <- 0.5*twologB10[which(category==14)]
+    pp<-(exp( tmp - logsum(tmp) ))
+    return(list("postprob"=pp,"snps"=snps))
 }
 
 
 
-##########################
-
+#'Colocation for three traits with a common control
+#'Merges SNPs with high r2 into tags prior to analysis
+#'Generates bayes factors for each plausible one tag model
+#'
+#'
+#'@title bayesian colocalisation; three traits; with tagging
+#'@export
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param priors A list of priors over the hypotheses 
+#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+#'@param r2.trim If a pairs of SNPs has r2>\code{r2.trim}, they are put in the same tag
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
+#'@return a list of posterior probabilities that each tag is causitive to both traits, the tag names, and the corresponding SNPs
+#'@author Mary Fortune
 coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(rep(1,15)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snp for each of the three traits
     snps <- unique(snps)
@@ -122,7 +154,7 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
     pp.trait1<-mod.trait1$bf$postprob[,2]
     pp.trait2<-mod.trait2$bf$postprob[,2]
     pp.trait3<-mod.trait3$bf$postprob[,2]
-    whichtags<-union(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)),which(pp.trait3>pp.thr))
+    whichtags<-sort(union(union(which(pp.trait1>pp.thr),which(pp.trait2>pp.thr)),which(pp.trait3>pp.thr)))
     cat("We consider ",length(whichtags), " tags in the final analysis. \n")
     tags<-tags[whichtags]
     
@@ -144,6 +176,7 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
     logB10=0.5*mods1$bf$twologB10[,2]
     logbf <- numeric(15)
     tagsize<-tagsize[which(unique(tagkey) %in% tags)]
+    #which SNPs are present in each model
     if (n.clean>1){
         n1 <- as.vector( models[,1:n.clean] %*% tagsize )
         n2 <- as.vector( models[,(n.clean+1):(2*n.clean)] %*% tagsize )
@@ -153,6 +186,7 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
         n2<-rep(tagsize,length(category))
         n3<-rep(tagsize,length(category))
     }
+    #which models correspond to which category
     wh0<-which(category==0)
     wh1<-which(category==1)
     wh2<-which(category==2)
@@ -210,13 +244,26 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
         cat("--- \n")
         postprobs[[ii]]=postprob
     }
-    return(postprobs)
+    tmp <- logB10[which(category==14)]
+    pp<-(exp( tmp - logsum(tmp) ))
+    snplist<-vector("list",length(pp))
+    for (ii in 1:length(pp)){
+        snplist[[ii]]<-names(which(tagkey==tags[ii]))
+    }
+    return(list("postprob"=pp,"tags"=tags,snps=snplist))
 }
 
 
 
-#########################
 
+##' Internal function, makebinmod.3t
+##'
+##' This function takes in a line from the model matrix in the 3 trait case
+##' and computes which of the categories it corresponds to
+##' @title makebinmod
+##' @param p the number of SNPs
+##' @return a numeric matrix giving the models 
+##' @author Mary Fortune
 makebinmod.3t<-function(p){
     #returns a model matrix for the binomial equivalent model
     #p=number of snps present
@@ -270,9 +317,18 @@ divide.hyps <- function(t1,t2,t3) {
         return(13)
     }
 }
- 
+
+
+##' Internal function, whichcat.3t
+##'
+##' This function takes in a line from the model matrix
+##' and computes which of the categories it corresponds to
+##' @title whichcat
+##' @param line numeric vector
+##' @return a number corresponding to the category 
+##' @author Mary Fortune
 whichcat.3t<-function(line){
-#puts the model given in line into one of the twelve categories
+#puts the model given in line into one of the 15 categories
 #assumes m=1
     p<-(length(line)-2)/3
     tline1<-line[1:p]
@@ -298,6 +354,16 @@ whichcat.3t<-function(line){
     return(ret)
 }
 
+
+##' Internal function, my.logsum
+##'
+##' This function calculates the log of the sum of the exponentiated
+##' logs taking out the max, i.e. insuring that the sum is not Inf
+##' This sum is weighted by some constants w
+##' @title my.logsum
+##' @param x numeric vector
+##' @return my.max + log(sum(exp(x - my.max )))
+##' @author Mary Fortune
 my.logsum <- function(x) {
     if (length(x)==1){return(x)}
     my.max <- max(x)                              ##take out the maximum value in log form
@@ -306,6 +372,17 @@ my.logsum <- function(x) {
     return(my.res)
 }
 
+
+##' Internal function, wlogsum
+##'
+##' This function calculates the log of the sum of the exponentiated
+##' logs taking out the max, i.e. insuring that the sum is not Inf
+##' This sum is weighted by some constants w
+##' @title wlogsum
+##' @param x numeric vector
+##' @param w numeric vector
+##' @return my.max + log(sum(exp(x - my.max )*w))
+##' @author Chris Wallace
 wlogsum <- function(x, w=NULL) {
     if (length(x)==1){
         if(is.null(w)) {
@@ -323,6 +400,12 @@ wlogsum <- function(x, w=NULL) {
     }
 }
 
+
+##'Returns the r2 values between each pair of SNPs
+##'@title find r2
+##'@param X a SnpMatrix
+##'@return a matrix of the r2 values
+##'@author Chris Wallace
 myr2 <- function(X) {
   r2 <- ld(X,
            depth=ncol(X)-1,
