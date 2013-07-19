@@ -1,3 +1,26 @@
+
+#'Wrapper to use colocalization testing within a Bayesian model averaging
+#'structure for datasets with common controls.
+#'
+#'This is a test for proportionality of regression coefficients from a multinomial regression.  
+#'Analysis is based on taking a hybrid-Bayesian approach and
+#'integrating the p value over the posterior distribution of \code{eta}, which
+#'gives a posterior predictive p value.  The Bayesian approach can also be used
+#'to give a credible interval for \code{eta}.
+#'
+#'@inheritParams coloc.test.summary
+#'@export
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+#'@param nsnps number of SNPs required to model both traits.  The BMA analysis will average over all possible \code{nsnp} SNP models, subject to \code{thr} above.
+#'@param n.approx number of values at which to numerically approximate the posterior
+#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param quiet suppress messages about how the model spaced is trimmed for BMA
+#'@param ... other parameters passed to \code{coloc.test}
+#'@return a \code{coloc} or \code{colocBayes} object
+#'@author Mary Fortune
 coloc.var.bma <- function(df1,snps=setdiff(colnames(df1),response),
                       response="Y", bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
@@ -161,6 +184,24 @@ multi.var.bf <- function(models, x, y, family,quiet=FALSE) {
   return(mods1$bf$postprob[,2])
 }
 
+
+#'Prepares principal components of dataset with common control for
+#'colocalisation testing.
+#'
+#'If \code{X1} is a \code{SnpMatrix} object, it are checked for
+#'missing data, and any missing values imputed by repeated use of
+#'\code{impute.snps} from the \code{snpStats} package.
+#'
+#'Principal components are calculated using \code{prcomp}.
+#'
+#'\code{pcs.var.model} can then be invoked to create \code{glm} objects.
+#'
+#'@aliases pcs.prepare
+#'@param X Either a SnpMatrix or numeric matrix of genetic data.
+#'Columns index SNPs, rows index samples.
+#'@return a \code{colocPCs} object.
+#'@export
+#'@author Mary Fortune
 pcs.var.prepare <- function(X) {
   #X gives the SNP matrix - all entries are 0,1,2
   snps <- colnames(X)
@@ -186,6 +227,25 @@ pcs.var.prepare <- function(X) {
              vars=cvars))    
 }
 
+
+
+
+
+
+#'Prepares models of response based on principal components of two datasets for
+#'colocalisation testing.
+#'
+#'@aliases pcs.model
+#'
+#'@param object A colocPCs object, result of \code{pcs.var.prepare()}.
+#'@param Y Numeric phenotype vector
+#'@param threshold The minimum number of principal components which captures at
+#'least threshold proportion of the variance will be selected.  Simulations
+#'suggest \code{threshold=0.8} is a good default value.
+#'@return \code{pcs.prepare} returns a \code{colocPCs} object.
+#'@export
+#'\code{pcs.model} returns a \code{glm} object.
+#'@author Mary Fortune
 pcs.var.model <- function(object, Y, threshold=0.8) {
   if(length(object@vars)<2)
     stop("require 2 or more principal components to test for proportionality")
@@ -215,6 +275,36 @@ pcs.var.model <- function(object, Y, threshold=0.8) {
 }
 
 
+
+#'Wrapper to use colocalization testing within a principle components
+#'structure for datasets with common controls.
+#'
+#'This is a test for proportionality of regression coefficients from a multinomial regression.  
+#'Analysis is based on taking a hybrid-Bayesian approach and
+#'integrating the p value over the posterior distribution of \code{eta}, which
+#'gives a posterior predictive p value.  The Bayesian approach can also be used
+#'to give a credible interval for \code{eta}.
+##'
+##' @param X A glm object for the traits.  Any
+##' Intercept term is dropped, but other covariates should have distinct names or
+##' be listed in \code{vars.drop} to avoid them being included in the
+##' colocalisation test.
+##' @param vars.drop Character vector naming additional variables in either
+##' regression which are not SNPs and should not be used in the colocalisation
+##' test.  They should appear in
+##' \code{c(names(coefficients(X)))}
+##' @param ... other arguments passed to \code{\link{coloc.test.summary}()}.
+##' @return a numeric vector with 3 named elements:
+##' \item{eta.hat}{The estimated slope.}
+##' \item{chisquare}{The chisquared test statistic}
+##' \item{n}{The number of snps used in the test.  If eta were known, this
+##' would be the degrees of freedom of the test. Because eta has been replaced by
+##' its ML estimate, Plagnol et al suggest we expect the degrees of freedom to be
+##' n-1, but this requires the likelihood to be well behaved which is not always
+##' the case.  We prefer to consider the posterior predictive p value.}
+##' \item{ppp}{The posterior predictive p value}
+##' @export
+##' @author Mary Fortune
 coloc.var.test <- function(X,vars.drop=NULL, ...) {
   ## X is a multinom objects, fitted to the snps
   ## return values are
@@ -246,7 +336,42 @@ coloc.var.test <- function(X,vars.drop=NULL, ...) {
   coloc.var.test.summary(b1,b2,V,...)
 }
 
-
+##' Colocalisation testing supplying only regression coefficients and their variance-covariants matrices
+##'
+##' Typically this should be called from \code{\link{coloc.var.test}()}, but is left as a public function, to use at your own risk, if you have some other way to define the SNPs under test.
+##' @title Colocalisation testing for shared controls using regression coefficients
+##' @return an object of class coloc, colocBayes or colocBMA
+##' @author Chris Wallace
+##' @inheritParams coloc.test
+##' @export
+##' @param b1 regression coefficients for trait 1
+##' @param b2 regression coefficients for trait 2
+##' @param V variance-covariance matrix
+##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
+##' uniform (uninformative) prior.  We have found varying k to have little effect
+##' on the results.
+##' @param plot.coeff \code{TRUE} if you want to generate a plot showing the
+##' coefficients from the two regressions together with confidence regions.
+##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
+##' @param plots.extra list with 2 named elements, x and y, equal length
+##' character vectors containing the names of the quantities to be plotted on the
+##' x and y axes.
+##' 
+##' \code{x} is generally a sequence of \code{theta} and \code{eta}, with
+##' \code{y} selected from \code{post.theta}, the posterior density of theta,
+##' \code{chisq}, the chi-square values of the test, and \code{lhood}, the
+##' likelihood function.
+##' @param bayes Logical, indicating whether to perform Bayesian
+##' inference for the coefficient of proportionality, eta.  If
+##' \code{bayes.factor} is supplied, Bayes factors are additionally
+##' computed for the specificed values.  This can add a little time as
+##' it requires numerical integration, so can be set to FALSE to save
+##' time in simulations, for example.
+##' @param bayes.factor Either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.
+##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
+##' credible interval for \code{eta}.  This is calculated numerically by
+##' approximating the posterior distribution at \code{n.approx} distinct values.
+##' @author Mary Fortune
 coloc.var.test.summary <- function(b1,b2,V,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {
@@ -396,6 +521,13 @@ coloc.var.test.summary <- function(b1,b2,V,k=1,plot.coeff=TRUE,plots.extra=NULL,
   }  
 }
 
+
+##'Code to determine whether, for a specific variance-covariance matrix for shared controls
+##'the form of the test statistic is the same under the two approaches
+##'@title Checking equivalence of test statistics
+##'@param V Variance-covariance matrix
+##'@return a number giving the maximum difference between the two statistics
+##'@author Mary Fortune
 checklikechi<-function(V){
   #for a specific covariance matrix V, we check that the form of the chi squared statistic is that of the likelihood
     n=ncol(V)/2
@@ -420,6 +552,15 @@ checklikechi<-function(V){
   return(minval)
 }
 
+
+#'@title finding the minimum single SNP p-value for each of the two traits
+#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+#'@param snps The SNPs to consider as potential explanatory variables
+#'@param response The name of the response variable in \code{df1}
+#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param quiet suppress messages
+#'@return the minimum single SNP p value for each trait
+#'@author Mary Fortune
 singlesnp.twotrait<-function(df1,response="Y",snps=setdiff(colnames(df1),response),r2.trim=0.95,quiet=TRUE){
     #returns the minimum single SNP p value for each trait
     snps <- unique(snps)
