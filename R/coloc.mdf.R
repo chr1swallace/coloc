@@ -15,7 +15,7 @@
 #'@param thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
 #'@param nsnps number of SNPs required to model both traits.  The BMA analysis will average over all possible \code{nsnp} SNP models, subject to \code{thr} above.
 #'@param n.approx number of values at which to numerically approximate the posterior
-#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param r2.trim for pairs SNPs with r2> \code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
 #'@param quiet suppress messages about how the model spaced is trimmed for BMA
 #'@param ... other parameters passed to \code{coloc.test}
 #'@return a \code{coloc} or \code{colocBayes} object
@@ -556,7 +556,7 @@ checklikechi<-function(V){
 #'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
 #'@param snps The SNPs to consider as potential explanatory variables
 #'@param response The name of the response variable in \code{df1}
-#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+#'@param r2.trim for pairs SNPs with r2> \code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
 #'@param quiet suppress messages
 #'@return the minimum single SNP p value for each trait
 #'@author Mary Fortune

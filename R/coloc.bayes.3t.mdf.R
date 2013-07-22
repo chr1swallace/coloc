@@ -1,19 +1,19 @@
 
-#'Colocation for three traits with a common control
-#'Generates bayes factors for each plausible one SNP model
-#' 
-#'
-#'@title bayesian colocalisation; three traits
-#'@export
-#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
-#'@param snps The SNPs to consider as potential explanatory variables
-#'@param response The name of the response variable in \code{df1}
-#'@param priors A list of priors over the hypotheses 
-#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
-#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
-#'@param quiet suppress messages about how the model spaced is trimmed for BMA
-#'@return a list of posterior probabilities that each SNP is causitive to both traits, and the corresponding SNPs
-#'@author Mary Fortune
+##' Colocation for three traits with a common control
+##' Generates bayes factors for each plausible one SNP model
+##'  
+##' 
+##' @title bayesian colocalisation; three traits
+##' @export
+##' @param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+##' @param snps The SNPs to consider as potential explanatory variables
+##' @param response The name of the response variable in \code{df1}
+##' @param priors A list of priors over the hypotheses 
+##' @param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+##' @param r2.trim for pairs SNPs with r2> \code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
+##' @param quiet suppress messages about how the model spaced is trimmed for BMA
+##' @return a list of posterior probabilities that each SNP is causitive to both traits, and the corresponding SNPs
+##' @author Mary Fortune
 coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(rep(1,15)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snp for each of the three traits
     snps <- unique(snps)
@@ -96,22 +96,22 @@ coloc.bayes.3t <- function(df1,snps=setdiff(colnames(df1),response),response="Y"
 
 
 
-#'Colocation for three traits with a common control
-#'Merges SNPs with high r2 into tags prior to analysis
-#'Generates bayes factors for each plausible one tag model
-#'
-#'
-#'@title bayesian colocalisation; three traits; with tagging
-#'@export
-#'@param df1 A dataframe, containing response and potential explanatory variables for the dataset.
-#'@param snps The SNPs to consider as potential explanatory variables
-#'@param response The name of the response variable in \code{df1}
-#'@param priors A list of priors over the hypotheses 
-#'@param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
-#'@param r2.trim If a pairs of SNPs has r2>\code{r2.trim}, they are put in the same tag
-#'@param quiet suppress messages about how the model spaced is trimmed for BMA
-#'@return a list of posterior probabilities that each tag is causitive to both traits, the tag names, and the corresponding SNPs
-#'@author Mary Fortune
+##' Colocation for three traits with a common control
+##' Merges SNPs with high r2 into tags prior to analysis
+##' Generates bayes factors for each plausible one tag model
+##' 
+##' 
+##' @title bayesian colocalisation; three traits; with tagging
+##' @export
+##' @param df1 A dataframe, containing response and potential explanatory variables for the dataset.
+##' @param snps The SNPs to consider as potential explanatory variables
+##' @param response The name of the response variable in \code{df1}
+##' @param priors A list of priors over the hypotheses 
+##' @param pp.thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
+##' @param r2.trim If a pairs of SNPs has r2> \code{r2.trim}, they are put in the same tag
+##' @param quiet suppress messages about how the model spaced is trimmed for BMA
+##' @return a list of posterior probabilities that each tag is causitive to both traits, the tag names, and the corresponding SNPs
+##' @author Mary Fortune
 coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response="Y",priors=list(rep(1,15)),r2.trim=0.99,pp.thr=0.005,quiet=TRUE) {
     #we consider all models which contain at most 1 snp for each of the three traits
     snps <- unique(snps)
@@ -256,14 +256,14 @@ coloc.bayes.3t.tag <- function(df1,snps=setdiff(colnames(df1),response),response
 
 
 
-##' Internal function, makebinmod.3t
-##'
-##' This function takes in a line from the model matrix in the 3 trait case
-##' and computes which of the categories it corresponds to
-##' @title makebinmod
-##' @param p the number of SNPs
-##' @return a numeric matrix giving the models 
-##' @author Mary Fortune
+##'  Internal function, makebinmod.3t
+##' 
+##'  This function takes in a line from the model matrix in the 3 trait case
+##'  and computes which of the categories it corresponds to
+##'  @title makebinmod
+##'  @param p the number of SNPs
+##'  @return a numeric matrix giving the models 
+##'  @author Mary Fortune
 makebinmod.3t<-function(p){
     #returns a model matrix for the binomial equivalent model
     #p=number of snps present
@@ -319,14 +319,14 @@ divide.hyps <- function(t1,t2,t3) {
 }
 
 
-##' Internal function, whichcat.3t
-##'
-##' This function takes in a line from the model matrix
-##' and computes which of the categories it corresponds to
-##' @title whichcat
-##' @param line numeric vector
-##' @return a number corresponding to the category 
-##' @author Mary Fortune
+##'  Internal function, whichcat.3t
+##' 
+##'  This function takes in a line from the model matrix
+##'  and computes which of the categories it corresponds to
+##'  @title whichcat
+##'  @param line numeric vector
+##'  @return a number corresponding to the category 
+##'  @author Mary Fortune
 whichcat.3t<-function(line){
 #puts the model given in line into one of the 15 categories
 #assumes m=1
@@ -355,15 +355,15 @@ whichcat.3t<-function(line){
 }
 
 
-##' Internal function, my.logsum
-##'
-##' This function calculates the log of the sum of the exponentiated
-##' logs taking out the max, i.e. insuring that the sum is not Inf
-##' This sum is weighted by some constants w
-##' @title my.logsum
-##' @param x numeric vector
-##' @return my.max + log(sum(exp(x - my.max )))
-##' @author Mary Fortune
+##'  Internal function, my.logsum
+##' 
+##'  This function calculates the log of the sum of the exponentiated
+##'  logs taking out the max, i.e. insuring that the sum is not Inf
+##'  This sum is weighted by some constants w
+##'  @title my.logsum
+##'  @param x numeric vector
+##'  @return my.max + log(sum(exp(x - my.max )))
+##'  @author Mary Fortune
 my.logsum <- function(x) {
     if (length(x)==1){return(x)}
     my.max <- max(x)                              ##take out the maximum value in log form
@@ -373,16 +373,16 @@ my.logsum <- function(x) {
 }
 
 
-##' Internal function, wlogsum
-##'
-##' This function calculates the log of the sum of the exponentiated
-##' logs taking out the max, i.e. insuring that the sum is not Inf
-##' This sum is weighted by some constants w
-##' @title wlogsum
-##' @param x numeric vector
-##' @param w numeric vector
-##' @return my.max + log(sum(exp(x - my.max )*w))
-##' @author Chris Wallace
+##'  Internal function, wlogsum
+##' 
+##'  This function calculates the log of the sum of the exponentiated
+##'  logs taking out the max, i.e. insuring that the sum is not Inf
+##'  This sum is weighted by some constants w
+##'  @title wlogsum
+##'  @param x numeric vector
+##'  @param w numeric vector
+##'  @return my.max + log(sum(exp(x - my.max )*w))
+##'  @author Chris Wallace
 wlogsum <- function(x, w=NULL) {
     if (length(x)==1){
         if(is.null(w)) {
@@ -401,46 +401,3 @@ wlogsum <- function(x, w=NULL) {
 }
 
 
-##'Returns the r2 values between each pair of SNPs
-##'@title find r2
-##'@param X a SnpMatrix
-##'@return a matrix of the r2 values
-##'@author Chris Wallace
-myr2 <- function(X) {
-  r2 <- ld(X,
-           depth=ncol(X)-1,
-           symmetric=TRUE,
-           stat="R.squared")
-if(any(is.na(r2))) {
-    r2.na <- as(is.na(r2),"matrix")
-    use <- rowSums(r2.na)>0
-## work around for r2=NA bug.
-    r2.cor <- as(cor(as(X[,use,drop=FALSE],"numeric"), use="pairwise.complete.obs")^2,"Matrix")
-    r2[ which(r2.na) ] <- r2.cor[ which(r2.na[use,use]) ]
-}
-  diag(r2) <- 1
-return(r2)
-}
-##' Derive tag SNPs for a SnpMatrix object using heirarchical clustering
-##'
-##' Uses complete linkage and the \code{\link{hclust}} function to define clusters, then cuts the tree at 1-tag.threshold
-##' @title tag
-##' @param snps colnames of the SnpMatrix object to be used
-##' @param tag.threshold threshold to cut tree, default=0.99
-##' @param samples optional, subset of samples to use
-##' @return character vector, names are \code{snps}, values are the tag for each SNP
-##' @author Chris Wallace
-##' @export
-tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL) {
-if(!is.null(snps) || !is.null(samples))
-    X <- X[samples,snps]
-  r2 <- myr2(X)
-   D <- as.dist(1-r2)
-   hc <- hclust(D, method="complete")
-   clusters <- cutree(hc, h=1-tag.threshold)
-   snps.use <- names(clusters)[!duplicated(clusters)]
-   r2.use <- r2[snps.use, colnames(X), drop=FALSE]
-   tags <- rownames(r2.use)[apply(r2.use,2,which.max)]
-   names(tags) <- colnames(r2.use)
-return(tags)
-}

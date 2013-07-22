@@ -33,3 +33,6 @@ Collate:
     'private.R'
     'claudia.R'
     'coloc.bayes.mdf.R'
+    'coloc.bayes.3t.mdf.R'
+    'coloc.mdf.R'
+    'common.control.R'
