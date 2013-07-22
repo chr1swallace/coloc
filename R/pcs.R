@@ -1,3 +1,5 @@
+## THIS IS MARY
+
 ## given two snpMatrix objects or numeric matrices, find the common principal component structure, pick the top pcs and return regression objects ready for coloc testing
 
 #' Impute missing genotypes
@@ -36,8 +38,6 @@ fillin <- function(X,bp=1:ncol(X),strata=NULL) {
   cat("\n")
   N
 } 
-
-THIS IS MARY
 
 #'Functions to prepare principle component models for colocalisation testing
 #'
