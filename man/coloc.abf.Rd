@@ -47,22 +47,25 @@
   used for both dataset1 and dataset2}
 
   \item{p1}{prior probability a SNP is associated with
-  trait 1}
+  trait 1, default 1e-4}
 
   \item{p2}{prior probability a SNP is associated with
-  trait 2}
+  trait 2, default 1e-4}
 
   \item{p12}{prior probability a SNP is associated with
-  both traits}
+  both traits, default 1e-5}
 }
 \value{
-  a list of two \code{data.frame}s: \itemize{ \item results
+  a list of two \code{data.frame}s: \itemize{ \item summary
   is a vector giving the number of SNPs analysed, and the
   posterior probabilities of H0 (no causal variant), H1
   (causal variant for trait 1 only), H2 (causal variant for
   trait 2 only), H3 (two distinct causal variants) and H4
-  (one common causal variant) \item merged.df is an
-  annotated version of the input \code{data.frame} }
+  (one common causal variant) \item results is an annotated
+  version of the input data containing log Approximate
+  Bayes Factors and intermediate calculations, and the
+  posterior probability SNP.PP.H4 of the SNP being causal
+  for the shared signal }
 }
 \description{
   Bayesian colocalisation analysis

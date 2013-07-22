@@ -10,13 +10,13 @@
   \item{l2}{merged.df$lABF.df2}
 
   \item{p1}{prior probability a SNP is associated with
-  trait 1}
+  trait 1, default 1e-4}
 
   \item{p2}{prior probability a SNP is associated with
-  trait 2}
+  trait 2, default 1e-4}
 
   \item{p12}{prior probability a SNP is associated with
-  both traits}
+  both traits, default 1e-5}
 }
 \value{
   named numeric vector of posterior probabilities

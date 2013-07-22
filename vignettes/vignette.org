@@ -10,8 +10,8 @@
 
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:   
-#+LINK_HOME: 
+#+LINK_UP:
+#+LINK_HOME:
 #+XSLT:
 
 #+latex_header: \usepackage{fullpage}
@@ -352,4 +352,3 @@ You can see more about the ABF approach on
 [fn:3] http://www.ncbi.nlm.nih.gov/pubmed/18642345
 
 [fn:4] http://arxiv.org/abs/1305.4022
-
