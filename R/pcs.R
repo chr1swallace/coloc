@@ -37,7 +37,7 @@ fillin <- function(X,bp=1:ncol(X),strata=NULL) {
   N
 } 
 
-
+THIS IS MARY
 
 #'Functions to prepare principle component models for colocalisation testing
 #'
