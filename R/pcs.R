@@ -52,7 +52,7 @@ fillin <- function(X,bp=1:ncol(X),strata=NULL) {
 #'
 #' \code{pcs.model} can then be invoked to create \code{glm} objects.
 #'
-#'@title pcs.prepare
+#'@aliases pcs.prepare
 #'@param X1,X2 Each is either a SnpMatrix or numeric matrix of genetic data.
 #'Columns index SNPs, rows index samples.
 #'@return a \code{colocPCs} object.
@@ -132,7 +132,7 @@ pcs.prepare <- function(X1, X2) {
 #'Prepares models of response based on principal components of two datasets for
 #'colocalisation testing.
 #'
-#'@aliases pcs.model
+#'@title pcs.model
 #'@param object A colocPCs object, result of \code{pcs.prepare()}.
 #'@param group 1 or 2, indicating which group of samples to extract from
 #'principal components matrix
@@ -144,8 +144,8 @@ pcs.prepare <- function(X1, X2) {
 #'@param family Passed to \code{glm()} function.  \code{pcs.model} attempts to
 #'guess, either "binomial" if \code{Y} contains only 0s and 1s, "gaussian"
 #'otherwise.
-#'@return \code{pcs.prepare} returns a \code{colocPCs} object.
-#'@author Chris Wallace
+##' @return \code{pcs.prepare} returns a \code{colocPCs} object, \code{pcs.model} returns a \code{glm} object.
+##' @author Chris Wallace
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
 #'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
 #'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
