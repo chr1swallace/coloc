@@ -242,8 +242,8 @@ pcs.var.prepare <- function(X) {
 #'least threshold proportion of the variance will be selected.  Simulations
 #'suggest \code{threshold=0.8} is a good default value.
 #'@return \code{pcs.prepare} returns a \code{colocPCs} object.
-#'@export
 #'\code{pcs.model} returns a \code{glm} object.
+#'@export
 #'@author Mary Fortune
 pcs.var.model <- function(object, Y, threshold=0.8) {
   if(length(object@vars)<2)

@@ -32,7 +32,7 @@ Collate:
     'pcs.R'
     'private.R'
     'claudia.R'
+    'common.control.R'
     'coloc.bayes.mdf.R'
     'coloc.bayes.3t.mdf.R'
     'coloc.mdf.R'
-    'common.control.R'
