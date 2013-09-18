@@ -1,0 +1,25 @@
+\name{Var.data}
+\alias{Var.data}
+\title{Var.data}
+\usage{
+  Var.data(f, N)
+}
+\arguments{
+  \item{f}{minor allele freq}
+
+  \item{N}{sample number}
+}
+\value{
+  variance of MLE beta
+}
+\description{
+  variance of MLE of beta for quantitative trait, assuming
+  var(y)=0
+}
+\details{
+  Internal function
+}
+\author{
+  Claudia Giambartolomei
+}
+
