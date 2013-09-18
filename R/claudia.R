@@ -170,7 +170,7 @@ process.dataset <- function(d, suffix) {
       stop("Length of snp names and beta vectors must match")
  
     if(d$type == 'quant' & !('sdY' %in% nd)) 
-      d$sdY <- sdY.est(d$varbeta, d$MAF, d$n)
+      d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
     
     df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                               V=d$varbeta, type=d$type, suffix=suffix, sd=d$sdY)
