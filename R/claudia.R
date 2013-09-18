@@ -52,10 +52,10 @@ logdiff <- function(x,y) {
 }
 
 
-##' Internal function, approx.bf
+##' Internal function, approx.bf.p
 ##'
 ##' Calculate approximate Bayes Factors
-##' @title Internal function, approx.bf
+##' @title Internal function, approx.bf.p
 ##' @param p p value
 ##' @param f MAF
 ##' @param type "quant" or "cc"
@@ -64,7 +64,7 @@ logdiff <- function(x,y) {
 ##' @param suffix suffix to append to column names of returned data.frame
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Claudia Giambartolomei, Chris Wallace
-approx.bf <- function(p,f,type, N, s, suffix) {
+approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
   if(type=="quant") {
     sd.prior <- 0.15
     V <- Var.data(f, N)
@@ -78,21 +78,22 @@ approx.bf <- function(p,f,type, N, s, suffix) {
   ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
   lABF = 0.5 * (log(1-r) + (r * z^2))
   ret <- data.frame(V,z,r,lABF)
-  colnames(ret) <- paste(colnames(ret), suffix, sep=".")
+  if(!is.null(suffix))
+    colnames(ret) <- paste(colnames(ret), suffix, sep=".")
   return(ret)  
 }
 
-##' Internal function, approx.bf.imputed
+##' Internal function, approx.bf.estimates
 ##'
 ##' Calculate approximate Bayes Factors using supplied variance of the regression coefficients
-##' @title Internal function, approx.bf.imputed
+##' @title Internal function, approx.bf.estimates
 ##' @param z normal deviate associated with regression coefficient and its variance
 ##' @param V its variance
-##' @inheritParams approx.bf
+##' @inheritParams approx.bf.p
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace
-approx.bf.imputed <- function (z, V, type, suffix=NULL) {
-  if (type == "quant") {sd.prior <- 0.15} else {sd.prior <- 0.2}
+approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
+  sd.prior <- if (type == "quant") { 0.15*sdY } else { 0.2 }
   r <- sd.prior^2/(sd.prior^2 + V)
   lABF = 0.5 * (log(1 - r) + (r * z^2))
   ret <- data.frame(V, z, r, lABF)
@@ -126,6 +127,25 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
   print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
   return(pp.abf)
 }
+##' Estimate trait standard deviation given vectors of variance of coefficients,  MAF and sample size
+##'
+##' Estimate is based on var(beta-hat) = var(Y) / (n * var(X))
+##' var(X) = 2*maf*(1-maf)
+##' so we can estimate var(Y) by regressing n*var(X) against 1/var(beta)
+##' 
+##' @title Estimate trait variance, internal function
+##' @param vbeta vector of variance of coefficients
+##' @param maf vector of MAF (same length as vbeta)
+##' @param n sample size
+##' @return estimated standard deviation of Y
+##' 
+##' @author Chris Wallace
+sdY.est <- function(vbeta, maf, n) {
+  oneover <- 1/vbeta
+  nvx <- 2 * n * maf * (1-maf)
+  m <- lm(nvx ~ oneover)
+  return(sqrt(coef(m)[['oneover']]))
+}
 
 ##' Internal function, process each dataset list for coloc.abf
 ##'
@@ -135,19 +155,30 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
 ##' @return data.frame with log(abf) or log(bf)
 ##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
+  message('Processing dataset')
+
   nd <- names(d)
-  if("beta" %in% nd & "varbeta" %in% nd & "type" %in% nd) {
+  if (! 'type' %in% nd)
+    stop('The variable type must be set, otherwise the Bayes factors cannot be computed')
+
+  if("beta" %in% nd & "varbeta" %in% nd) {
     if(length(d$beta) != length(d$varbeta))
       stop("Length of the beta vectors and variance vectors must match")
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$beta))
-    df <- approx.bf.imputed(z=d$beta/sqrt(d$varbeta),
-                             V=d$varbeta, type=d$type, suffix=suffix)
+    if(length(d$snp) != length(d$beta))
+      stop("Length of snp names and beta vectors must match")
+ 
+    if(d$type == 'quant' & !('sdY' %in% nd)) 
+      d$sdY <- sdY.est(d$varbeta, d$maf, d$n)
+    
+    df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
+                              V=d$varbeta, type=d$type, suffix=suffix, sd=d$sdY)
     df$snp <- as.character(d$snp)
     return(df)
   }
 
-  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd & "type" %in% nd) {
+  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd) {
     if (length(d$pvalues) != length(d$MAF))
       stop('Length of the P-value vectors and MAF vector must match')
     if(d$type=="cc" & !("s" %in% nd))
@@ -159,7 +190,7 @@ process.dataset <- function(d, suffix) {
                      snp=as.character(d$snp))    
     colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
     df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
-    abf <- approx.bf(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
+    abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
     return(df)  
   }
