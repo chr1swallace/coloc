@@ -73,6 +73,17 @@ possible to use Bayesian analysis for proportional testing too, in
 determining the posterior distribution of the proportionality
 constant $\eta$.
 
+#+CAPTION: Suitability of functions in this package for different data structures
+| Function             | Approach                | Data required      | Dependence       |
+|                      |                         |                    | between datasets |
+|----------------------+-------------------------+--------------------+------------------|
+| coloc.abf            | Bayesian                | summary statistics | independent      |
+| coloc.abf.datasets   | Bayesian                | raw genotypes      | independent      |
+| coloc.bma            | Proportional, averages  | raw genotypes      | independent      |
+|                      | over models             |                    |                  |
+| coloc.pcs/coloc.test | Proportional, based on  | raw genotypes      | independent      |
+|                      | PC summary of genotypes |                    |                  |
+
 * Usage
 
 Let's simulate a small dataset, and compare the three methods.
@@ -115,6 +126,16 @@ sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
 set.seed(12345)
 data <- sim.data(nsamples=1000,nsim=1)
 library(coloc)
+#+end_src
+
+If you are not familiar with the analysis of genetic data in R, I
+would suggest beginning with the [[http://www.bioconductor.org/packages/release/bioc/html/snpStats.html][snpStats package]], which has
+functions for reading data in a variety of formats and contains a
+vignette on data input.  Once you have your genetic data loaded as a
+SnpMatrix, =X=, and phenotype information in a vector =Y=, then
+conversion to a =data.frame= as used above follows
+#+begin_src R
+df <- as.data.frame(cbind(Y=Y, as(X,"numeric")))
 #+end_src
 
 * Proportional testing
