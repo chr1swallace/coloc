@@ -161,7 +161,7 @@ process.dataset <- function(d, suffix) {
   if (! 'type' %in% nd)
     stop('The variable type must be set, otherwise the Bayes factors cannot be computed')
 
-  if("beta" %in% nd & "varbeta" %in% nd) {
+  if("beta" %in% nd && "varbeta" %in% nd && ("MAF" %in% nd || "sdY" %in% nd)) {
     if(length(d$beta) != length(d$varbeta))
       stop("Length of the beta vectors and variance vectors must match")
     if(!("snp" %in% nd))
@@ -170,7 +170,7 @@ process.dataset <- function(d, suffix) {
       stop("Length of snp names and beta vectors must match")
  
     if(d$type == 'quant' & !('sdY' %in% nd)) 
-      d$sdY <- sdY.est(d$varbeta, d$maf, d$n)
+      d$sdY <- sdY.est(d$varbeta, d$MAF, d$n)
     
     df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                               V=d$varbeta, type=d$type, suffix=suffix, sd=d$sdY)
