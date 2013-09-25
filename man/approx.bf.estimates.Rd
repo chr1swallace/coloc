@@ -10,6 +10,9 @@
 
   \item{V}{its variance}
 
+  \item{sdY}{standard deviation of the trait. If not
+  supplied, will be estimated.}
+
   \item{type}{"quant" or "cc"}
 
   \item{suffix}{suffix to append to column names of

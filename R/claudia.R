@@ -89,6 +89,7 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 ##' @title Internal function, approx.bf.estimates
 ##' @param z normal deviate associated with regression coefficient and its variance
 ##' @param V its variance
+##' @param sdY standard deviation of the trait. If not supplied, will be estimated.
 ##' @inheritParams approx.bf.p
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace
@@ -173,7 +174,7 @@ process.dataset <- function(d, suffix) {
       d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
     
     df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
-                              V=d$varbeta, type=d$type, suffix=suffix, sd=d$sdY)
+                              V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
     df$snp <- as.character(d$snp)
     return(df)
   }

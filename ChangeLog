@@ -1,3 +1,13 @@
+2013-09-25  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v2.3
+	BUGFIX: Introduced a function to estimate trait variance
+	from supplied coefficients and standard errors.  This is used
+	within the approach implemented in coloc.abf(), and replaces the
+	earlier version which implicity assumed that var(Y)=1 for
+	quantitative traits, which could lead to incorrect inference when
+	var(Y) was far from 1.
+
 2013-19-06  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
 	* v2.2
