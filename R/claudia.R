@@ -145,7 +145,7 @@ sdY.est <- function(vbeta, maf, n) {
   oneover <- 1/vbeta
   nvx <- 2 * n * maf * (1-maf)
   m <- lm(nvx ~ oneover)
-  return(sqrt(abs(coef(m))[['oneover']]))
+  return(sqrt(abs(coef(m)[['oneover']])))
 }
 
 ##' Internal function, process each dataset list for coloc.abf
