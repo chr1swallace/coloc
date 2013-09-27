@@ -1,3 +1,9 @@
+2013-09-27  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v2.3-1
+	BUGFIX to sdY.est(), now forces zero intercept and stops if
+	estimated variance is negative.
+
 2013-09-25  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
 	* v2.3
