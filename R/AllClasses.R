@@ -211,18 +211,18 @@ setMethod("plot", signature(x="colocPCs",y="missing"),
             n <- length(object@vars)
             npc <- which(object@vars>threshold)[1]
                                         #  title <- paste("Number of components required to capture >=",threshold,"of the variance")
-            if(ggplot2) {
-              require(ggplot2)
-              ggplot(data.frame(n=1:n,v=object@vars),
-                     aes_string(x = 'n', y = 'v') # to get around R CMD check complaining about next line
-                                        # aes(x=n,y=v)
-                     ) + xlab("Number of components") +
-                       ylab("Proportion of variance explained") + geom_vline(xintercept=npc,lty=2,col="grey") +
-                         geom_line()
-            } else {
+##             if(ggplot2) {
+##               require(ggplot2)
+##               ggplot(data.frame(n=1:n,v=object@vars),
+##                      aes_string(x = 'n', y = 'v') # to get around R CMD check complaining about next line
+##                                         # aes(x=n,y=v)
+##                      ) + xlab("Number of components") +
+##                        ylab("Proportion of variance explained") + geom_vline(xintercept=npc,lty=2,col="grey") +
+##                          geom_line()
+##             } else {
               plot(1:n, object@vars, xlab="Number of components", ylab="Proportion of variance explained",
                    type="l")
               abline(v=npc,col="grey",lty=2)
-            }
+##             }
           })
 

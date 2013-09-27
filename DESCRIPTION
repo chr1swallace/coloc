@@ -2,6 +2,7 @@ Package: coloc
 Type: Package
 Depends:
     methods,
+    colorspace,
     MASS,
     BMA
 Suggests:
@@ -19,6 +20,8 @@ Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
 Maintainer: Chris Wallace <chris.wallace@cimr.cam.ac.uk>
 Description: Performs the colocalisation tests described in Plagnol et al
     (2009), Wallace et al (2013) and Giambartolomei et al (2013).
+URL: https://github.com/chr1swallace/coloc
+BugReports: https://github.com/chr1swallace/coloc/issues
 License: GPL
 LazyLoad: yes
 Collate:
