@@ -144,8 +144,10 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
 sdY.est <- function(vbeta, maf, n) {
   oneover <- 1/vbeta
   nvx <- 2 * n * maf * (1-maf)
-  m <- lm(nvx ~ oneover)
-  return(sqrt(abs(coef(m)[['oneover']])))
+  m <- lm(nvx ~ oneover - 1)
+  if(coef(m)[["oneover"]] < 0)
+    stop("Trying to estimate trait variance from betas, and getting negative estimate.  Something is wrong.  You can 'fix' this by supplying an estimate of trait standard deviation yourself, as sdY=<value> in the dataset list.")
+  return(sqrt(coef(m)[["oneover"]]))
 }
 
 ##' Internal function, process each dataset list for coloc.abf
