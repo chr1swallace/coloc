@@ -40,9 +40,9 @@ abf.plot <- function(  coloc.obj = coloc.abf(ds1, ds2),
   df$pos <- Pos
 
   df <- melt(df[,c("snp","pos","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","pos"))
-  df$variable <- sub("pp1", paste0("pp1 (", trait1, ") = ", d.pp1),df$variable)
-  df$variable <- sub("pp2", paste0("pp2 (", trait2, ") = ", d.pp2),df$variable)
-  df$variable <- sub("SNP.PP.H4","pp4 (Both) = ", d.pp4,df$variable)
+  df$variable <- sub("pp1", paste0("pp1 (", trait1, ") = ", d.pp1) ,df$variable)
+  df$variable <- sub("pp2", paste0("pp2 (", trait2, ") = ", d.pp2) ,df$variable)
+  df$variable <- sub("SNP.PP.H4", paste0("pp4 (Both) = ", d.pp4) ,df$variable)
 
 
   ## identify and label the top 3 SNPs that have highest pp1, pp2 or pp4
