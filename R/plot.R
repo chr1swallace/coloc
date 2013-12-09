@@ -29,6 +29,9 @@ abf.plot <- function(  coloc.obj = coloc.abf(ds1, ds2),
                      chr, pos.start, pos.end,
                      trait1, trait2) {
 
+  
+  d.pp1 = signif(coloc.obj$summary[3], 3)
+  d.pp2 = signif(coloc.obj$summary[4], 3)
   d.pp4 = signif(coloc.obj$summary[6], 3)
   df = coloc.obj$results
   
@@ -37,9 +40,9 @@ abf.plot <- function(  coloc.obj = coloc.abf(ds1, ds2),
   df$pos <- Pos
 
   df <- melt(df[,c("snp","pos","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","pos"))
-  df$variable <- sub("pp1", paste0("pp1 (", t1, ")"),df$variable)
-  df$variable <- sub("pp2", paste0("pp2 (", t2, ")"),df$variable)
-  df$variable <- sub("SNP.PP.H4","pp4 (Both)",df$variable)
+  df$variable <- sub("pp1", paste0("pp1 (", trait1, ") = ", d.pp1),df$variable)
+  df$variable <- sub("pp2", paste0("pp2 (", trait2, ") = ", d.pp2),df$variable)
+  df$variable <- sub("SNP.PP.H4","pp4 (Both) = ", d.pp4,df$variable)
 
 
   ## identify and label the top 3 SNPs that have highest pp1, pp2 or pp4
@@ -48,7 +51,7 @@ abf.plot <- function(  coloc.obj = coloc.abf(ds1, ds2),
   snps = unique(df.ord$snp)[1:3]
 
   df$label <- ifelse(df$snp %in% snps, df$snp,"")
-  ttl <- paste0(t1, ' & ', t2, ' (chr', chr, ': ', pos.start, '-', pos.end, ', PP4.abf = ', d.pp4, ')')
+  ttl <- paste0(t1, ' & ', t2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
  
   ggplot(df, aes(x=pos,y=value)) +
     geom_point(data=subset(df,label==""),size=1.5) +
