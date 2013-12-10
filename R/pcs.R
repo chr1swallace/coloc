@@ -98,6 +98,8 @@ pcs.prepare <- function(X1, X2) {
     stop("require at least 2 SNPs in common between objects X1, X2")
   if(!identical(class(X1),class(X2)))
     stop("require X1 and X2 to be of same class")
+    X1 <- X1[,snps.common]
+    X2 <- X2[,snps.common]
   if(is(X1,"SnpMatrix")) {
     if(any(X1==as.raw("0"))) {
       X1 <- fillin(X1)
