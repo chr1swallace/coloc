@@ -201,7 +201,7 @@ process.dataset <- function(d, suffix) {
   stop("Must give, as a minimum, either (beta, varbeta, type) or (pvalues, MAF, N, type)")
 }
 
-##' Bayesian colocalisation analysis
+##' Bayesian colocalisation analysis using summary data
 ##'
 ##' This function calculates posterior probabilities of different
 ##' causal variant configurations under the assumption of a single
@@ -282,11 +282,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
-  output<-list(summary=results, results=merged.df)
-  return(output)
+  new(colocABF, summary=results, results=merged.df)
 }
 
-##' Bayesian colocalisation analysis using data.frames
+##' Bayesian colocalisation analysis using raw data given in data.frames
 ##'
 ##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' 
@@ -315,7 +314,7 @@ coloc.abf.datasets <- function(df1,df2,
   X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
   coloc.abf.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
 }
-##' Bayesian colocalisation analysis using snpStats objects
+##' Bayesian colocalisation analysis using raw data given as SnpMatrix objects
 ##'
 ##' Generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' @title Bayesian colocalisation analysis using snpStats objects
