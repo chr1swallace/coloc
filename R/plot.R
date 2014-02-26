@@ -13,9 +13,7 @@
 ##'
 ##' If coloc.obj is missing, it will be created as coloc.obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
 ##' @title abf.plot
-##' @param coloc.obj result of a coloc.abf()
-##' @param ds1 dataset1 (optional)
-##' @param ds2 dataset2 (optional)
+##' @param coloc.obj object of class \code{colocABF} returned by coloc.abf()
 ##' @param Pos positions of all snps in ds1 or in ds2
 ##' @param chr Chromosome
 ##' @param pos.start lower bound of positions
@@ -24,16 +22,17 @@
 ##' @param trait2 name of trait 2   
 ##' @return a ggplot object
 ##' @author Hui Guo, Chris Wallace
-abf.plot <- function(  coloc.obj = coloc.abf(ds1, ds2),
-                     ds1, ds2, Pos=1:nrow(coloc.obj$results),
-                     chr, pos.start, pos.end,
-                     trait1, trait2) {
+#' @docType methods
+#' @rdname plot-methods
+abf.plot <- function(  coloc.obj, Pos=1:nrow(coloc.obj@results),
+                     chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
+                     trait1="trait 1", trait2="trait 2") {
 
   
-  d.pp1 = signif(coloc.obj$summary[3], 3)
-  d.pp2 = signif(coloc.obj$summary[4], 3)
-  d.pp4 = signif(coloc.obj$summary[6], 3)
-  df = coloc.obj$results
+  d.pp1 = signif(coloc.obj@summary[3], 3)
+  d.pp2 = signif(coloc.obj@summary[4], 3)
+  d.pp4 = signif(coloc.obj@summary[6], 3)
+  df = coloc.obj@results
   
   df$pp1 <- exp(df$lABF.df1 - logsum(df$lABF.df1))
   df$pp2 <- exp(df$lABF.df2 - logsum(df$lABF.df2))

@@ -72,18 +72,22 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                      plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,...) {
   snps <- unique(snps)
-  n.orig <- length(snps)
-  if(n.orig<2)
-    return(1)
-  prep <- prepare.df(df1, snps, r2.trim=r2.trim, dataset=1, quiet=quiet)
-  df1 <- prep$df
+  n.orig <- length(setdiff(snps,c(response1,response2)))
+  if(n.orig<nsnps)
+    stop("require at least ",nsnps," SNPs to do colocalisation testing")
+  df1 <- as.data.frame(df1[,c(response1,snps)])
+  df2 <- as.data.frame(df2[,c(response2,snps)])
+
+  ## remove missings and tag
+  prep <- prepare.df(df1, df2, r2.trim=r2.trim, dataset=1, quiet=quiet)  
   snps <- prep$snps
-  prep <- prepare.df(df2, snps, r2.trim=r2.trim, dataset=2, quiet=quiet)
-  df2 <- prep$df
-  snps <- prep$snps
+  df1 <- prep$df1[,c(response1,snps)]
+  df2 <- prep$df2[,c(response2,snps)]
   
-  if(!quiet)
-    cat("Dropped",n.orig - length(snps),"of",n.orig,"SNPs due to LD: r2 >",r2.trim,"\n",length(snps),"SNPs remain.\n")
+  if(!quiet) {
+    message("Dropped ",n.orig - length(snps)," of ",n.orig," SNPs due to LD: r2 > ",r2.trim,".")
+    message(length(snps)," SNPs remain.")
+  }
 
   ## remove any completely predictive SNPs
   f1 <- as.formula(paste(response1, "~", paste(snps,collapse="+")))
@@ -107,11 +111,14 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
  
   ## step1, select marginally interesting single SNPs
   models <- diag(1,n.clean,n.clean)
-  use <- marg.bf(models, x=x1, y=df1$Y, family=family1)[,"pp"] > thr |
-    marg.bf(models, x=x2, y=df2$Y, family=family2)[,"pp"] > thr
-  if(!quiet)
-    cat("Restricting model space.\n",n.clean - sum(use), "SNPs have single SNP posterior probabilities <",thr,
-      "\nModels containing only these SNPs will not be explored.\n")
+  marg.1 <- marg.bf(models, x=x1, y=df1[,response1], family=family1)[,"pp"] 
+  marg.2 <- marg.bf(models, x=x2, y=df2[,response2], family=family2)[,"pp"]  
+  use <- marg.1>thr | marg.2>thr
+  if(!quiet) {
+    message("Restricting model space.")
+    message(n.clean - sum(use), " SNPs have single SNP posterior probabilities < ",thr)
+    message("Models containing only these SNPs will not be explored.")
+  }
 
   ## step2, evaluate all pairs of marginally interesting single SNPs
   combs <- lapply(nsnps, function(n) {
@@ -133,7 +140,9 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   }
 
   ## fit the models to each dataset to get posterior probs
-  probs <- multi.bf(models, x1, df1$Y, family1, dataset=1,quiet=quiet) * multi.bf(models, x2, df2$Y, family2, dataset=2,quiet=quiet)
+  multi.1 <- multi.bf(models, x1, df1[,response1], family1, dataset=1,quiet=quiet)
+  multi.2 <- multi.bf(models, x2, df2[,response2], family2, dataset=2,quiet=quiet)
+  probs <- multi.1 * multi.2
   probs <- probs/sum(probs)
 
   ## run coloc.test on each model
@@ -157,8 +166,8 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   for(i in wh) {
     if(!quiet)
     cat(".")
-    lm1 <- glm(df1$Y ~ ., data=x1[,models.l[i,]], family=family1)
-    lm2 <- glm(df2$Y ~ ., data=x2[,models.l[i,]], family=family2)
+    lm1 <- glm(df1[,response1] ~ ., data=x1[,models.l[i,]], family=family1)
+    lm2 <- glm(df2[,response2] ~ ., data=x2[,models.l[i,]], family=family2)
     coef.1[[i]] <- coefficients(lm1)[-1]
     coef.2[[i]] <- coefficients(lm2)[-1]
     var.1[[i]] <- vcov(lm1)[-1,-1]
@@ -202,12 +211,14 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   if(!bayes) {
     return(new("coloc",
                result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
-               method="BMA"))
+               method="BMA",
+               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2))))
   } else {
     return(new("colocBayes",
                result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
                method="BMA",
-               ppp=stats["ppp"],
+               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2)),
+           ppp=stats["ppp"],
                credible.interval=ci,
                bayes.factor=bf))
   }
@@ -233,18 +244,23 @@ marg.bf <- function(models,x,y,family) {
   cbind(pp=mods1$bf$postprob[,2],twologB10=mods1$bf$twologB10[,2])
 }
 
-prepare.df <- function(df1,snps,r2.trim,dataset=1,quiet=FALSE) {
-  if(is.matrix(df1))
-    df1 <- as.data.frame(df1)
-  use1 <- apply(!is.na(df1),1,all)
-  if(any(!use1)) {
+
+rmna <- function(df,dnum,quiet) {
+  use <- apply(!is.na(df),1,all)
+  if(any(!use)) {
     if(!quiet)
-      cat("dropping",sum(!use1),"observations from dataset",dataset,"due to missingness.\n")
-    df1 <- df1[use1,]
+      cat("dropping",sum(!use),"observations from dataset",dnum,"due to missingness.\n")
+    df <- df[use,]
   }
-  r2 <- cor(df1[,snps])^2
+  return(df)
+}
+prepare.df <- function(df1,df2,r2.trim,dataset=1,quiet=FALSE) {
+  df1 <- rmna(df1,1,quiet=quiet)
+  df2 <- rmna(df2,2,quiet=quiet)
+  x <- rbind(df1[,-1],df2[,-1])             
+  r2 <- cor(x)^2
   r2.high <- apply(r2, 1, function(x) which(x>r2.trim)[1])
-  snps <- snps[ r2.high == 1:length(r2.high) ]
-  return(list(df=df1,snps=snps))
+  snps <- colnames(x)[ r2.high == 1:length(r2.high) ]
+  return(list(df1=df1,df2=df2,snps=snps))
 }
 

@@ -33,3 +33,6 @@ Collate:
     'pcs.R'
     'private.R'
     'claudia.R'
+    'AllGenerics.R'
+    'AllMethods.R'
+    'plot.R'
