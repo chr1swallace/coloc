@@ -204,6 +204,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                unlist(var.1),unlist(var.2),
                eta=stats["eta.hat"],
                main="Coefficients",
+               alpha=probs[wh],
                                         #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=length(snps)-1,lower.tail=FALSE),digits=2)),
                xlab=expression(b[1]),ylab=expression(b[2]))
   }
@@ -212,12 +213,12 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
     return(new("coloc",
                result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
                method="BMA",
-               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2))))
+               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2),model.prob=probs[wh])))
   } else {
     return(new("colocBayes",
                result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
                method="BMA",
-               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2)),
+               plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2),model.prob=probs[wh]),
            ppp=stats["ppp"],
                credible.interval=ci,
                bayes.factor=bf))
