@@ -144,10 +144,8 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
 sdY.est <- function(vbeta, maf, n) {
   oneover <- 1/vbeta
   nvx <- 2 * n * maf * (1-maf)
-  m <- lm(nvx ~ oneover - 1)
-  if(coef(m)[["oneover"]] < 0)
-    stop("Trying to estimate trait variance from betas, and getting negative estimate.  Something is wrong.  You can 'fix' this by supplying an estimate of trait standard deviation yourself, as sdY=<value> in the dataset list.")
-  return(sqrt(coef(m)[["oneover"]]))
+  m <- lm(nvx ~ oneover)
+  return(sqrt(coef(m)[['oneover']]))
 }
 
 ##' Internal function, process each dataset list for coloc.abf
@@ -201,7 +199,7 @@ process.dataset <- function(d, suffix) {
   stop("Must give, as a minimum, either (beta, varbeta, type) or (pvalues, MAF, N, type)")
 }
 
-##' Bayesian colocalisation analysis using summary data
+##' Bayesian colocalisation analysis
 ##'
 ##' This function calculates posterior probabilities of different
 ##' causal variant configurations under the assumption of a single
@@ -282,10 +280,11 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
-  new(colocABF, summary=results, results=merged.df)
+  output<-list(summary=results, results=merged.df)
+  return(output)
 }
 
-##' Bayesian colocalisation analysis using raw data given in data.frames
+##' Bayesian colocalisation analysis using data.frames
 ##'
 ##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' 
@@ -314,7 +313,7 @@ coloc.abf.datasets <- function(df1,df2,
   X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
   coloc.abf.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
 }
-##' Bayesian colocalisation analysis using raw data given as SnpMatrix objects
+##' Bayesian colocalisation analysis using snpStats objects
 ##'
 ##' Generates p values via score tests, then runs \code{\link{coloc.abf}}
 ##' @title Bayesian colocalisation analysis using snpStats objects

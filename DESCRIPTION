@@ -2,15 +2,14 @@ Package: coloc
 Type: Package
 Depends:
     methods,
-    colorspace,
     MASS,
     BMA
 Suggests:
     ggplot2,
     snpStats
 Title: Colocalisation tests of two genetic traits
-Version: 2.3-1
-Date: 2013-09-26
+Version: 2.3
+Date: 2013-05-22
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "chris.wallace@cimr.cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -20,8 +19,6 @@ Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
 Maintainer: Chris Wallace <chris.wallace@cimr.cam.ac.uk>
 Description: Performs the colocalisation tests described in Plagnol et al
     (2009), Wallace et al (2013) and Giambartolomei et al (2013).
-URL: https://github.com/chr1swallace/coloc
-BugReports: https://github.com/chr1swallace/coloc/issues
 License: GPL
 LazyLoad: yes
 Collate:
@@ -33,6 +30,3 @@ Collate:
     'pcs.R'
     'private.R'
     'claudia.R'
-    'AllGenerics.R'
-    'AllMethods.R'
-    'plot.R'

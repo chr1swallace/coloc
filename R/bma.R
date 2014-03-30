@@ -200,6 +200,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   var.2 <- lapply(var.2, diag)
   
   if(plot.coeff) {
+      message("Plots generated directly are deprecated.  Please plot returned object instead.")
     coeff.plot(unlist(coef.1),unlist(coef.2),
                unlist(var.1),unlist(var.2),
                eta=stats["eta.hat"],

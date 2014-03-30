@@ -126,9 +126,10 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##'   ## test whether the traits are compatible with colocalisation
 ##'   ### ppp should be large (>0.05, for example), indicating that they are.
 ##'   par(mfrow=c(2,2))
-##'   coloc.test(lm1,lm2,plot.coeff=TRUE,
+##'   obj <- coloc.test(lm1,lm2,
 ##'              plots.extra=list(x=c("eta","theta"),
 ##'                               y=c("lhood","lhood")))
+##'   plot(obj)
 ##' 
 ##' @export
 coloc.test <- function(X,Y,vars.drop=NULL, ...) {
@@ -180,7 +181,7 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 ##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
 ##' uniform (uninformative) prior.  We have found varying k to have little effect
 ##' on the results.
-##' @param plot.coeff \code{TRUE} if you want to generate a plot showing the
+##' @param plot.coeff DEPRECATED.  Please \code{plot()} returned object instead. \code{TRUE} if you want to generate a plot showing the
 ##' coefficients from the two regressions together with confidence regions.
 ##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
 ##' @param plots.extra list with 2 named elements, x and y, equal length
@@ -201,7 +202,7 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 ##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
 ##' credible interval for \code{eta}.  This is calculated numerically by
 ##' approximating the posterior distribution at \code{n.approx} distinct values.
-coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,bayes=!is.null(bayes.factor),
+coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {
   nsnps <- length(b1)
@@ -300,7 +301,8 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     
   ## plots
   if(plot.coeff) {
-    coeff.plot(b1,b2,diag(V1),diag(V2),eta=eta.hat,
+      message("Plots generated directly are deprecated.  Please plot returned object instead.")
+      coeff.plot(b1,b2,diag(V1),diag(V2),eta=eta.hat,
                main="Coefficients",
                                         #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=nsnps-1,lower.tail=FALSE),digits=2)),
                xlab=expression(b[1]),ylab=expression(b[2]))
@@ -323,12 +325,14 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
     if(!bayes) {
       return(new("coloc",
                  result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
-                 method="single"))
+                 method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)))
     } else {
       if(!bma) {
         return(new("colocBayes",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
                    ppp=ppp$value,
                    credible.interval=cred.int,
                    bayes.factor=post.bf))
@@ -336,6 +340,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=TRUE,plots.extra=NULL,
         return(new("colocBayesBMA",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
                    ppp=ppp$value,
                    bma=post.bma,
                    bayes.factor=post.bf))

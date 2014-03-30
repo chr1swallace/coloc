@@ -101,18 +101,18 @@ pcs.prepare <- function(X1, X2) {
     X1 <- X1[,snps.common]
     X2 <- X2[,snps.common]
   if(is(X1,"SnpMatrix")) {
-    if(any(X1==as.raw("0"))) {
+#    if(any(X1==as.raw("0"))) {
       X1 <- fillin(X1)
-    } else {
-      X1 <- as(X1,"numeric")
-    }
+##     } else {
+##       X1 <- as(X1,"numeric")
+##     }
   }
   if(is(X2,"SnpMatrix")) {
-    if(any(X2==as.raw("0"))) {
+##     if(any(X2==as.raw("0"))) {
       X2 <- fillin(X2)
-    } else {
-      X2 <- as(X2,"numeric")
-    }
+##     } else {
+##       X2 <- as(X2,"numeric")
+##     }
   }
   X <- rbind(X1,X2)
   rows.drop <- apply(is.na(X),1,any)
