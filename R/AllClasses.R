@@ -1,3 +1,22 @@
+### colocABF class
+
+#' Class \code{"colocABF"} holds objects returned by the \code{coloc.abf} function
+#'
+#' @name colocABF-class
+#'@aliases colocABF-class
+#'@docType class
+#'@section Objects from the Class
+#' Objects can be created by calls to the
+#'function \code{\link{coloc.abf}()}.  
+#'@author Chris Wallace.
+#'@seealso \code{\link{coloc.abf}}
+#'@keywords classes
+#'@examples
+#'showClass("colocABF")
+#'@exportClass colocABF
+setClass("colocABF",
+         representation(summary="data.frame", results="data.frame"))
+
 ### coloc class: simple class to hold results of coloc.test()
 validColoc <- function(object) {
   if(length(object@result) != 3 ||
@@ -18,7 +37,8 @@ validColoc <- function(object) {
 #'@name coloc-class
 #'@aliases coloc-class colocBayes-class colocBayesBMA colocBMA
 #'@docType class
-#'@section Objects from the Class: Objects can be created by calls to the
+#'@section Objects from the Class:
+#' Objects can be created by calls to the
 #'function \code{\link{coloc.test}()}.  Class \code{colocBayes} extends class
 #'\code{coloc}. 
 #'@author Chris Wallace.
@@ -39,7 +59,7 @@ validColoc <- function(object) {
 #'@exportClass coloc
 #'@exportClass colocBayes
 setClass("coloc",
-         representation(result="numeric", method="character"))
+         representation(result="numeric", method="character", plot.data="list"))
 setClass("colocBayes",
          representation(ppp="numeric",
                         credible.interval="list",
@@ -211,18 +231,18 @@ setMethod("plot", signature(x="colocPCs",y="missing"),
             n <- length(object@vars)
             npc <- which(object@vars>threshold)[1]
                                         #  title <- paste("Number of components required to capture >=",threshold,"of the variance")
-            if(ggplot2) {
-              require(ggplot2)
-              ggplot(data.frame(n=1:n,v=object@vars),
-                     aes_string(x = 'n', y = 'v') # to get around R CMD check complaining about next line
-                                        # aes(x=n,y=v)
-                     ) + xlab("Number of components") +
-                       ylab("Proportion of variance explained") + geom_vline(xintercept=npc,lty=2,col="grey") +
-                         geom_line()
-            } else {
+##             if(ggplot2) {
+##               require(ggplot2)
+##               ggplot(data.frame(n=1:n,v=object@vars),
+##                      aes_string(x = 'n', y = 'v') # to get around R CMD check complaining about next line
+##                                         # aes(x=n,y=v)
+##                      ) + xlab("Number of components") +
+##                        ylab("Proportion of variance explained") + geom_vline(xintercept=npc,lty=2,col="grey") +
+##                          geom_line()
+##             } else {
               plot(1:n, object@vars, xlab="Number of components", ylab="Proportion of variance explained",
                    type="l")
               abline(v=npc,col="grey",lty=2)
-            }
+##             }
           })
 

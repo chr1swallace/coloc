@@ -17,3 +17,19 @@ test_that("process.dataset", {
   expect_that(process.dataset(list(beta=1,p=2,type="blah"), ""), throws_error())
 })
           
+## alternative test data
+## colocdata<- read.table("inst/tests/test.txt", sep="\t", header=T)
+N <- 18124
+result <- coloc.abf(dataset1=list(beta=colocdata$beta.dataset1,
+            varbeta=colocdata$varbeta.dataset1,
+            type="quant",
+            snp=colocdata$SNP,
+            N=N),
+          dataset2=list(beta=colocdata$beta.dataset1,
+            varbeta=colocdata$varbeta.dataset1,
+            type="quant",
+            snp=colocdata$SNP,
+            N=N),
+          MAF=colocdata$MAF)
+
+
