@@ -326,7 +326,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
       return(new("coloc",
                  result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                  method="single",
-                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)))
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2))))
     } else {
       if(!bma) {
         return(new("colocBayes",
@@ -335,7 +335,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
                    ppp=ppp$value,
                    credible.interval=cred.int,
-                   bayes.factor=post.bf))
+                   bayes.factor=post.bf)))
       } else {
         return(new("colocBayesBMA",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
@@ -343,7 +343,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
                    ppp=ppp$value,
                    bma=post.bma,
-                   bayes.factor=post.bf))
+                   bayes.factor=post.bf)))
       }
     }  
 }

@@ -64,35 +64,37 @@ abf.plot <- function(  coloc.obj, Pos=1:nrow(coloc.obj@results),
 
 
 
-coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL, ...) {
-  c1 <- cbind(b1,sqrt(s1),b1+1.96*sqrt(s1),b1-1.96*sqrt(s1))
-  c2 <- cbind(b2,sqrt(s2),b2+1.96*sqrt(s2),b2-1.96*sqrt(s2))
-  if(!is.null(add)) {
-    c1 <- cbind(c1,add[[1]])
-    c2 <- cbind(c2,add[[2]])
-  }
-  xr <- range(c1)
-  yr <- range(c2)
-  if(xr[1]>0)
-    xr[1] <- -0.005
-  if(xr[2]<0)
-    xr[2] <- 0.005
-  if(yr[1]>0)
-    yr[1] <- -0.005
-  if(yr[2]<0)
-    yr[2] <- 0.005
+coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL, ...) {
+##   c1 <- cbind(b1,sqrt(s1),b1+1.96*sqrt(s1),b1-1.96*sqrt(s1))
+##   c2 <- cbind(b2,sqrt(s2),b2+1.96*sqrt(s2),b2-1.96*sqrt(s2))
+##   if(!is.null(add)) {
+##     c1 <- cbind(c1,add[[1]])
+##     c2 <- cbind(c2,add[[2]])
+##   }
+##   xr <- range(c1)
+##   yr <- range(c2)
+##   if(xr[1]>0)
+##     xr[1] <- -0.005
+##   if(xr[2]<0)
+##     xr[2] <- 0.005
+##   if(yr[1]>0)
+##     yr[1] <- -0.005
+##   if(yr[2]<0)
+##     yr[2] <- 0.005
 
   ## ggplot version
-  df <- data.frame(x=c1[,1], y=c2[,1],x.se=c1[,2],y.se=c2[,2],id=1:nrow(c1))
-  if(!is.null(alpha))
-    df$alpha <- alpha
-   T <- seq(0,2,by=0.05)*pi
-  df.path <- do.call("rbind",lapply(1:nrow(c1), function(j) {
-   tmp <- data.frame(x=c1[j,1] + 1.96*c1[j,2]*cos(T),
-                     y=c2[j,1] + 1.96*c2[j,2]*sin(T))
-   tmp$id <- j
-   return(tmp)
-  }))
+  df <- data.frame(x=b1, y=b2, x.se=s1, y.se=s2,id=1:length(b1))
+  if(!is.null(alpha)) {
+    nr <- length(b1)/length(alpha)
+    df$alpha <- rep(alpha,each=nr)
+  }
+  ##  T <- seq(0,2,by=0.05)*pi
+##   df.path <- do.call("rbind",lapply(1:nrow(c1), function(j) {
+##    tmp <- data.frame(x=c1[j,1] + 1.96*c1[j,2]*cos(T),
+##                      y=c2[j,1] + 1.96*c2[j,2]*sin(T))
+##    tmp$id <- j
+##    return(tmp)
+##   }))
 
   p <- ggplot(df,aes(x=x,y=y,xmin=x-1.96*x.se,xmax=x+1.96*x.se,ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha)) +
     geom_hline() + geom_vline() +
@@ -100,7 +102,8 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL, ...) {
       geom_errorbarh(col="steelblue4") +theme(legend.position="none") + labs(x="beta.1",y="beta.2")
   if(!is.null(slope))
     p <- p + geom_abline(slope=slope,colour="blue",linetype="dashed")
-  p
+  if(!is.null(annot))
+    p <- p + annotate("text", y= max(df$y+1.96*df$y.se), x =max(df$x+1.96*df$x.se),label=annot,hjust=1)
   
   return(p)
   

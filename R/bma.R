@@ -252,14 +252,17 @@ rmna <- function(df,dnum,quiet) {
   if(any(!use)) {
     if(!quiet)
       cat("dropping",sum(!use),"observations from dataset",dnum,"due to missingness.\n")
-    df <- df[use,]
   }
-  return(df)
+  return(df[use,,drop=FALSE])
 }
-prepare.df <- function(df1,df2,r2.trim,dataset=1,quiet=FALSE) {
+prepare.df <- function(df1,df2=NULL,r2.trim,dataset=1,quiet=FALSE) {
   df1 <- rmna(df1,1,quiet=quiet)
-  df2 <- rmna(df2,2,quiet=quiet)
-  x <- rbind(df1[,-1],df2[,-1])             
+  if(!is.null(df2)) {
+    df2 <- rmna(df2,2,quiet=quiet)
+    x <- rbind(df1[,-1],df2[,-1])
+  } else {
+    x <- df1[,-1]
+  }
   r2 <- cor(x)^2
   r2.high <- apply(r2, 1, function(x) which(x>r2.trim)[1])
   snps <- colnames(x)[ r2.high == 1:length(r2.high) ]

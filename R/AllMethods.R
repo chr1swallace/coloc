@@ -26,6 +26,7 @@ setMethod("plot", signature(x="coloc",y="missing"),
                        s2=sqrt(x@plot.data$var2),
                        alpha=x@plot.data$model.prob,
                        slope=x@result[["eta.hat"]],
+                       annot=paste("p =",format.pval(x@result[["p"]])),
                        ...)
           })
   
