@@ -173,8 +173,10 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
     var.1[[i]] <- vcov(lm1)[-1,-1]
     var.2[[i]] <- vcov(lm2)[-1,-1]
     this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,bayes=bayes,...)
-    if(bayes) {
+    if(bma) {
       post[i,] <- this.coloc@bma ## posterior distribution for eta
+    }
+    if(bayes) {
       p[i,] <- c(this.coloc@result,p.value(this.coloc),ppp.value(this.coloc))
     } else {
       p[i,] <- c(this.coloc@result,p.value(this.coloc))
@@ -185,7 +187,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   }
 
   stats <- colSums(p[wh,] * probs[wh] / sum(probs[wh]))
-  if(bayes) {
+  if(bma) {
     ## average posteriors over models to get a single posterior
     post <- colSums(post[wh,] * probs[wh] / sum(probs[wh]))
     ## then calculate the credible interval

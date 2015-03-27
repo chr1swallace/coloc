@@ -92,7 +92,7 @@ fillin <- function(X,bp=1:ncol(X),strata=NULL) {
 #'  coloc.test(m1,m2,plot.coeff=FALSE,bayes=FALSE)
 #'
 #'@export
-pcs.prepare <- function(X1, X2) {
+pcs.prepare <- function(X1, X2, impute=TRUE) {
   snps.common <- intersect(colnames(X1),colnames(X2))
   if(length(snps.common)<2)
     stop("require at least 2 SNPs in common between objects X1, X2")
@@ -101,18 +101,18 @@ pcs.prepare <- function(X1, X2) {
     X1 <- X1[,snps.common]
     X2 <- X2[,snps.common]
   if(is(X1,"SnpMatrix")) {
-#    if(any(X1==as.raw("0"))) {
+    if(any(X1==as.raw("0")) & impute) {
       X1 <- fillin(X1)
-##     } else {
-##       X1 <- as(X1,"numeric")
-##     }
+     } else {
+       X1 <- as(X1,"numeric")
+     }
   }
   if(is(X2,"SnpMatrix")) {
-##     if(any(X2==as.raw("0"))) {
+     if(any(X2==as.raw("0")) & impute) {
       X2 <- fillin(X2)
-##     } else {
-##       X2 <- as(X2,"numeric")
-##     }
+    } else {
+       X2 <- as(X2,"numeric")
+     }
   }
   X <- rbind(X1,X2)
   rows.drop <- apply(is.na(X),1,any)

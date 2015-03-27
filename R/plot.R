@@ -87,6 +87,8 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL
   if(!is.null(alpha)) {
     nr <- length(b1)/length(alpha)
     df$alpha <- rep(alpha,each=nr)
+  } else {
+    df$alpha <- 1
   }
   ##  T <- seq(0,2,by=0.05)*pi
 ##   df.path <- do.call("rbind",lapply(1:nrow(c1), function(j) {

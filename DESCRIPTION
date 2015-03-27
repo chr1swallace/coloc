@@ -1,11 +1,11 @@
 Package: coloc
 Type: Package
 Depends:
+    ggplot2,
     methods,
     MASS,
     BMA
 Suggests:
-    ggplot2,
     snpStats
 Title: Colocalisation tests of two genetic traits
 Version: 2.3
@@ -21,12 +21,3 @@ Description: Performs the colocalisation tests described in Plagnol et al
     (2009), Wallace et al (2013) and Giambartolomei et al (2013).
 License: GPL
 LazyLoad: yes
-Collate:
-    'AllClasses.R'
-    'bma.R'
-    'coloc-package.R'
-    'coloc.combine.R'
-    'coloc.test.R'
-    'pcs.R'
-    'private.R'
-    'claudia.R'
