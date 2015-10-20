@@ -196,7 +196,7 @@ process.dataset <- function(d, suffix) {
     return(df)  
   }
 
-  stop("Must give, as a minimum, either (beta, varbeta, type) or (pvalues, MAF, N, type)")
+  stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
 }
 
 ##' Bayesian colocalisation analysis
@@ -227,8 +227,10 @@ process.dataset <- function(d, suffix) {
 ##' 
 ##' \item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
 ##'
-##' \item{s}{the proportion of samples in dataset 1 that are cases (only relevant for case control samples)}
+##' \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
 ##'
+##'  \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
+##' 
 ##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
 ##'
 ##' }
