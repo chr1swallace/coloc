@@ -7,7 +7,7 @@ Y<-rnorm(nrow(X),mean=as(X[,8],"numeric")) + rnorm(nrow(X),sd=2)
 eff<-snp.rhs.estimates(Y ~ 1, snp.data=X, family="gaussian")
 vbeta <- sapply(eff@.Data, "[[", "Var.beta")
 maf <- col.summary(X)[,"MAF"]
-sd.est <- sdY.est(vbeta=vbeta, maf=maf, n=nrow(X))
+sd.est <- coloc:::sdY.est(vbeta=vbeta, maf=maf, n=nrow(X))
 test_that("sdY.est", {
   expect_that(abs(sd.est - sd(Y)) < 1, is_true())
 })
@@ -19,17 +19,17 @@ test_that("process.dataset", {
           
 ## alternative test data
 ## colocdata<- read.table("inst/tests/test.txt", sep="\t", header=T)
-N <- 18124
-result <- coloc.abf(dataset1=list(beta=colocdata$beta.dataset1,
-            varbeta=colocdata$varbeta.dataset1,
-            type="quant",
-            snp=colocdata$SNP,
-            N=N),
-          dataset2=list(beta=colocdata$beta.dataset1,
-            varbeta=colocdata$varbeta.dataset1,
-            type="quant",
-            snp=colocdata$SNP,
-            N=N),
-          MAF=colocdata$MAF)
+## N <- 18124
+## result <- coloc.abf(dataset1=list(beta=colocdata$beta.dataset1,
+##             varbeta=colocdata$varbeta.dataset1,
+##             type="quant",
+##             snp=colocdata$SNP,
+##             N=N),
+##           dataset2=list(beta=colocdata$beta.dataset1,
+##             varbeta=colocdata$varbeta.dataset1,
+##             type="quant",
+##             snp=colocdata$SNP,
+##             N=N),
+##           MAF=colocdata$MAF)
 
 

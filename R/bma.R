@@ -25,6 +25,7 @@
 #'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
 #'@param quiet suppress messages about how the model spaced is trimmed for BMA
 #'@param ... other parameters passed to \code{coloc.test}
+#'@inheritParams coloc.test.summary
 #'@return a \code{coloc} or \code{colocBayes} object
 #'@author Chris Wallace
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
@@ -70,7 +71,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                       response1="Y", response2="Y", family1="binomial", family2="binomial",
                      bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
-                     plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,...) {
+                     plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
   snps <- unique(snps)
   n.orig <- length(setdiff(snps,c(response1,response2)))
   if(n.orig<nsnps)
@@ -223,7 +224,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
                method="BMA",
                plot.data=list(coef1=unlist(coef.1),coef2=unlist(coef.2),var1=unlist(var.1),var2=unlist(var.2),model.prob=probs[wh]),
            ppp=stats["ppp"],
-               credible.interval=ci,
+               credible.interval=list(ci),
                bayes.factor=bf))
   }
 }
@@ -240,7 +241,7 @@ multi.bf <- function(models, x, y, family, dataset=1,quiet=FALSE) {
 }
 
 marg.bf <- function(models,x,y,family) {
-  if(family=="binomial") {
+    if(family=="binomial") {
     mods1 <- glib(x, y, error="binomial", link="logit",models=models)
   } else {
     mods1 <- glib(x, y, error="gaussian", link="identity",models=models)

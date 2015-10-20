@@ -1,23 +1,26 @@
 Package: coloc
 Type: Package
-Depends:
+Imports:
     ggplot2,
-    methods,
-    MASS,
-    BMA
+    snpStats,    
+    BMA,
+    reshape
 Suggests:
-    snpStats
+    knitr
 Title: Colocalisation tests of two genetic traits
-Version: 2.3
-Date: 2013-05-22
+Version: 2.3-3
+Date: 2015-10-20
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "chris.wallace@cimr.cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
     email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb",
     email="v.plagnol@ucl.ac.uk"))
+Author: Chris Wallace <chris.wallace@cimr.cam.ac.uk>
 Maintainer: Chris Wallace <chris.wallace@cimr.cam.ac.uk>
 Description: Performs the colocalisation tests described in Plagnol et al
     (2009), Wallace et al (2013) and Giambartolomei et al (2013).
 License: GPL
 LazyLoad: yes
+VignetteBuilder: knitr
+

@@ -89,6 +89,7 @@ constant $\eta$.
 Let's simulate a small dataset, and compare the three methods.
 
 #+begin_src R :ravel echo=FALSE
+library(coloc)
 setClass("simdata",
          representation(df1="data.frame",df2="data.frame"))
 setValidity("simdata", function(object) {
@@ -134,9 +135,7 @@ functions for reading data in a variety of formats and contains a
 vignette on data input.  Once you have your genetic data loaded as a
 SnpMatrix, =X=, and phenotype information in a vector =Y=, then
 conversion to a =data.frame= as used above follows
-#+begin_src R
-df <- as.data.frame(cbind(Y=Y, as(X,"numeric")))
-#+end_src
+: df <- as.data.frame(cbind(Y=Y, as(X,"numeric")))
 
 * Proportional testing
 
@@ -191,13 +190,11 @@ preparatory work, you require only a single function:
 
 #+begin_src R :ravel fig=TRUE
 ct.bma <- coloc.bma(data@df1, data@df2, 
-                    family1="gaussian", family2="gaussian",
-                    plot.coeff=TRUE)
+                    family1="gaussian", family2="gaussian")
+plot(ct.bma)
 ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
                           family1="gaussian", family2="gaussian", 
                           bayes=TRUE)
-ct.bma
-ci(ct.bma.bayes)
 #+end_src
 
 The =family1/2= parameters are used to specify the model and link

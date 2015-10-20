@@ -234,7 +234,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
 ################################################################################
   
   ## Bayesian inference
-  
+ ppp <- NULL ; cred.int <- list()
   if(bayes) {
     ## cauchy prior for theta
     prior <- function(theta) { tt <- tan(theta);
@@ -261,7 +261,7 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
     pval <- Vectorize(pv,"theta")
     toint <- function(theta) { pval(theta) * post(theta) }
     ppp <- integrate(toint,lower=theta.min,upper=theta.max)
-    
+
     if(bma) {
       ## numeric approx of lhood for BMA
       theta.bma <- seq(0,pi,length=n.approx)
@@ -329,21 +329,21 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2))))
     } else {
       if(!bma) {
-        return(new("colocBayes",
+return(new("colocBayes",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
-                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
                    ppp=ppp$value,
                    credible.interval=cred.int,
-                   bayes.factor=post.bf)))
+                   bayes.factor=post.bf))
       } else {
         return(new("colocBayesBMA",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
-                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2),
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
                    ppp=ppp$value,
                    bma=post.bma,
-                   bayes.factor=post.bf)))
+                   bayes.factor=post.bf))
       }
     }  
 }

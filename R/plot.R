@@ -24,7 +24,7 @@
 ##' @author Hui Guo, Chris Wallace
 #' @docType methods
 #' @rdname plot-methods
-abf.plot <- function(  coloc.obj, Pos=1:nrow(coloc.obj@results),
+abf.plot <- function(coloc.obj, Pos=1:nrow(coloc.obj@results),
                      chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
                      trait1="trait 1", trait2="trait 2") {
 
@@ -50,12 +50,12 @@ abf.plot <- function(  coloc.obj, Pos=1:nrow(coloc.obj@results),
   snps = unique(df.ord$snp)[1:3]
 
   df$label <- ifelse(df$snp %in% snps, df$snp,"")
-  ttl <- paste0(t1, ' & ', t2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
+  ttl <- paste0(trait1, ' & ', trait2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
  
-  ggplot(df, aes(x=pos,y=value)) +
+  ggplot(df, aes_string(x="pos",y="value")) +
     geom_point(data=subset(df,label==""),size=1.5) +
     geom_point(data=subset(df,label!=""),col="red",size=1.5) +
-    geom_text(aes(label=label),hjust=-0.1,vjust=0.5,size=2.5,col="red") +
+    geom_text(aes_string(label="label"),hjust=-0.1,vjust=0.5,size=2.5,col="red") +
     facet_grid(variable ~ .) +
     theme(legend.position="none") + xlab(paste("Chromosome", chr, sep=' ')) + ylab("Posterior probability") + 
     ggtitle(ttl)
@@ -97,7 +97,7 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL
 ##    tmp$id <- j
 ##    return(tmp)
 ##   }))
-
+  x <- y <- x.se <- y.se <- NULL
   p <- ggplot(df,aes(x=x,y=y,xmin=x-1.96*x.se,xmax=x+1.96*x.se,ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha)) +
     geom_hline() + geom_vline() +
       geom_errorbar(col="steelblue4") + 

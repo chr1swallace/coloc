@@ -53,9 +53,11 @@ fillin <- function(X,bp=1:ncol(X),strata=NULL) {
 #' \code{pcs.model} can then be invoked to create \code{glm} objects.
 #'
 #'@aliases pcs.prepare
-#'@param X1,X2 Each is either a SnpMatrix or numeric matrix of genetic data.
+#' @param X1 Either a SnpMatrix or numeric matrix of genetic data.
 #'Columns index SNPs, rows index samples.
-#'@return a \code{colocPCs} object.
+#' @param X2 as X1
+#' @param impute if TRUE (default), impute missing genotypes
+#' @return a \code{colocPCs} object.
 #'
 #'@author Chris Wallace
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte

@@ -1,3 +1,10 @@
+2013-05-22 Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
+
+	* v2.3-2 Tidied code relating mainly to proportional
+	colocalisation testing methods, making more methods confirm to S4.
+
+	pcs.prepare now imputates missing genotypes by default
+
 2013-09-25  Chris Wallace  <chris.wallace@cimr.cam.ac.uk>
 
 	* v2.3

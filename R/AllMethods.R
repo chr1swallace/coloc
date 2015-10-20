@@ -90,4 +90,10 @@ setMethod("df","coloc",function(object) object@result["n"]-1)
 ## setMethod("n","coloc",function(object) object@result["n"])
 setMethod("ppp.value","colocBayes",function(object) object@ppp)
 setMethod("ppp.value","colocBMA",function(object) object@ppp)
-setMethod("p.value","coloc",function(object) pchisq(object@result["chisquare"],df=object@result["n"]-1,lower.tail=FALSE))
+setMethod("p.value","coloc",function(object) {
+    if("p" %in% names(object@result)) {
+        return(object@result["p"])
+    }
+    return(pchisq(object@result["chisquare"],df=object@result["n"]-1,lower.tail=FALSE))
+})
+
