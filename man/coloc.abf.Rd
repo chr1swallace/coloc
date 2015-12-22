@@ -31,16 +31,20 @@ coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04,
 
 }
 
-Some of these items may be missing, but you must give \code{type}
-and then either \code{pvalues}, \code{N} and \code{s} (if
-type="cc") or \code{beta} and \code{varbeta}.  If you use pvalues,
-then the function needs to know minor allele frequencies, and will
-either use the MAF given here or a global estimate of MAF supplied
-separately.}
+Some of these items may be missing, but you must give
+\itemize{
+\item{always}{\code{type}}
+\item{if \code{type}=="cc"}{\code{s}}
+\item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
+\item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
+and then either
+\item{}{\code{pvalues}, \code{MAF}}
+\item{}{\code{beta}, \code{varbeta}}
+}}
 
 \item{dataset2}{as above, for dataset 2}
 
-\item{MAF}{Common minor allele frequency vector to be used for both dataset1 and dataset2}
+\item{MAF}{Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets}
 
 \item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
 
