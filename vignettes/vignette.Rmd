@@ -2,23 +2,23 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. A brief outline of colocalisation analysis</a></li>
-<li><a href="#sec-2">2. Usage</a></li>
-<li><a href="#sec-3">3. Proportional testing</a>
+<li><a href="#orgheadline1">1. A brief outline of colocalisation analysis</a></li>
+<li><a href="#orgheadline2">2. Usage</a></li>
+<li><a href="#orgheadline6">3. Proportional testing</a>
 <ul>
-<li><a href="#sec-3-1">3.1. Principal components</a></li>
-<li><a href="#sec-3-2">3.2. Bayesian model averaging</a></li>
-<li><a href="#sec-3-3">3.3. Using Bayes Factors to compare specific values of \(\eta\)</a></li>
+<li><a href="#orgheadline3">3.1. Principal components</a></li>
+<li><a href="#orgheadline4">3.2. Bayesian model averaging</a></li>
+<li><a href="#orgheadline5">3.3. Using Bayes Factors to compare specific values of \(\eta\)</a></li>
 </ul>
 </li>
-<li><a href="#sec-4">4. (Approximate) Bayes Factor colocalisation analyses</a>
+<li><a href="#orgheadline10">4. (Approximate) Bayes Factor colocalisation analyses</a>
 <ul>
-<li><a href="#sec-4-1">4.1. Introduction</a></li>
-<li><a href="#sec-4-2">4.2. The basic <code>coloc.abf</code> function</a></li>
-<li><a href="#sec-4-3">4.3. The wrapper function</a></li>
+<li><a href="#orgheadline7">4.1. Introduction</a></li>
+<li><a href="#orgheadline8">4.2. The basic <code>coloc.abf</code> function</a></li>
+<li><a href="#orgheadline9">4.3. The wrapper function</a></li>
 </ul>
 </li>
-<li><a href="#sec-5">5. The difference between proportional and ABF approaches</a></li>
+<li><a href="#orgheadline11">5. The difference between proportional and ABF approaches</a></li>
 </ul>
 </div>
 </div>
@@ -28,10 +28,10 @@
 %\VignetteIndexEntry{Colocalisation vignette}
 -->
 
-# A brief outline of colocalisation analysis<a id="sec-1" name="sec-1"></a>
+# A brief outline of colocalisation analysis<a id="orgheadline1"></a>
 
 <font color="grey">
-*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+*Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>
 
 The coloc package can be used to perform genetic colocalisation
@@ -43,7 +43,7 @@ but, in brief, two approaches are implemented.
 First, the proportional approach uses the fact that for two traits
 sharing causal variants, regression coefficients for either trait
 against any set of SNPs in the neighbourhood of those variants must be
-proportional.  This test was first proposed by Plagnol et al. <sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup>
+proportional.  This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
 in the context of evaluating whether expression of the gene *RPS26*
 mediated the association of type 1 diabetes to a region on chromosome
 12q13 as had recently been proposed.  The test addressed a common
@@ -57,7 +57,7 @@ The obvious choice is to use those most strongly associated with one
 or other trait to maximise information, but doing so induces bias in
 the regression coefficients, which in turn leads to increased
 likelihood of spuriously rejecting the null of colocalisation, ie
-a quite substantially increased type 1 error rate <sup><a id="fnr.2" name="fnr.2" class="footref" href="#fn.2">2</a></sup>.  I proposed
+a quite substantially increased type 1 error rate <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>.  I proposed
 two alternatives to address this problem, either using a principal
 component summary of genetic variation in the region to overcome the
 need to select a small set of test SNPs, implemented in `coloc.pcs()`
@@ -69,7 +69,7 @@ Proportional testing, however, requires individual level genotype
 data, which are not always available.  Claudia Giambartolomei and
 Vincent Plagnol have proposed an alternative method, which makes use
 of Jon Wakefield's work on determining approximate Bayes Factors from
-p values <sup><a id="fnr.3" name="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a Bayesian colocalisation analysis <sup><a id="fnr.4" name="fnr.4" class="footref" href="#fn.4">4</a></sup>,
+p values <sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a Bayesian colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>,
 implemented in the function `coloc.summaries()`.  Note that it is
 possible to use Bayesian analysis for proportional testing too, in
 determining the posterior distribution of the proportionality
@@ -79,86 +79,87 @@ constant \(\eta\).
 <caption class="t-above"><span class="table-number">Table 1:</span> Suitability of functions in this package for different data structures</caption>
 
 <colgroup>
-<col  class="left" />
+<col  class="org-left" />
 
-<col  class="left" />
+<col  class="org-left" />
 
-<col  class="left" />
+<col  class="org-left" />
 
-<col  class="left" />
+<col  class="org-left" />
 </colgroup>
 <thead>
 <tr>
-<th scope="col" class="left">Function</th>
-<th scope="col" class="left">Approach</th>
-<th scope="col" class="left">Data required</th>
-<th scope="col" class="left">Dependence</th>
+<th scope="col" class="org-left">Function</th>
+<th scope="col" class="org-left">Approach</th>
+<th scope="col" class="org-left">Data required</th>
+<th scope="col" class="org-left">Dependence</th>
 </tr>
 
 
 <tr>
-<th scope="col" class="left">&#xa0;</th>
-<th scope="col" class="left">&#xa0;</th>
-<th scope="col" class="left">&#xa0;</th>
-<th scope="col" class="left">between datasets</th>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">between datasets</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td class="left">coloc.abf</td>
-<td class="left">Bayesian</td>
-<td class="left">summary statistics</td>
-<td class="left">independent</td>
+<td class="org-left">coloc.abf</td>
+<td class="org-left">Bayesian</td>
+<td class="org-left">summary statistics</td>
+<td class="org-left">independent</td>
 </tr>
 
 
 <tr>
-<td class="left">coloc.abf.datasets</td>
-<td class="left">Bayesian</td>
-<td class="left">raw genotypes</td>
-<td class="left">independent</td>
+<td class="org-left">coloc.abf.datasets</td>
+<td class="org-left">Bayesian</td>
+<td class="org-left">raw genotypes</td>
+<td class="org-left">independent</td>
 </tr>
 
 
 <tr>
-<td class="left">coloc.bma</td>
-<td class="left">Proportional, averages</td>
-<td class="left">raw genotypes</td>
-<td class="left">independent</td>
+<td class="org-left">coloc.bma</td>
+<td class="org-left">Proportional, averages</td>
+<td class="org-left">raw genotypes</td>
+<td class="org-left">independent</td>
 </tr>
 
 
 <tr>
-<td class="left">&#xa0;</td>
-<td class="left">over models</td>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">over models</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 
 
 <tr>
-<td class="left">coloc.pcs/coloc.test</td>
-<td class="left">Proportional, based on</td>
-<td class="left">raw genotypes</td>
-<td class="left">independent</td>
+<td class="org-left">coloc.pcs/coloc.test</td>
+<td class="org-left">Proportional, based on</td>
+<td class="org-left">raw genotypes</td>
+<td class="org-left">independent</td>
 </tr>
 
 
 <tr>
-<td class="left">&#xa0;</td>
-<td class="left">PC summary of genotypes</td>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">PC summary of genotypes</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 </tbody>
 </table>
 
-# Usage<a id="sec-2" name="sec-2"></a>
+# Usage<a id="orgheadline2"></a>
 
 Let's simulate a small dataset, and compare the three methods.
 
 ```{r echo=FALSE}
+library(coloc)
 setClass("simdata",
 	 representation(df1="data.frame",df2="data.frame"))
 setValidity("simdata", function(object) {
@@ -207,9 +208,9 @@ conversion to a `data.frame` as used above follows
 
     df <- as.data.frame(cbind(Y=Y, as(X,"numeric")))
 
-# Proportional testing<a id="sec-3" name="sec-3"></a>
+# Proportional testing<a id="orgheadline6"></a>
 
-## Principal components<a id="sec-3-1" name="sec-3-1"></a>
+## Principal components<a id="orgheadline3"></a>
 
 The code below first prepares a principal component object by combining
 the genotypes in the two dataset, then models the most informative
@@ -253,20 +254,18 @@ ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
 ci(ct.pcs.bayes)
 ```
 
-## Bayesian model averaging<a id="sec-3-2" name="sec-3-2"></a>
+## Bayesian model averaging<a id="orgheadline4"></a>
 
 This approach appears simpler.  There is no need to do any
 preparatory work, you require only a single function:
 
 ```{r fig=TRUE}
 ct.bma <- coloc.bma(data@df1, data@df2, 
-		    family1="gaussian", family2="gaussian",
-		    plot.coeff=TRUE)
+		    family1="gaussian", family2="gaussian")
+plot(ct.bma)
 ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
 			  family1="gaussian", family2="gaussian", 
 			  bayes=TRUE)
-ct.bma
-ci(ct.bma.bayes)
 ```
 
 The `family1/2` parameters are used to specify the model and link
@@ -300,7 +299,7 @@ computation, whilst values of 4 and above are both unlikely to
 provide more information and very unlikely to be computed in any
 reasonable time for interactive work.
 
-## Using Bayes Factors to compare specific values of \(\eta\)<a id="sec-3-3" name="sec-3-3"></a>
+## Using Bayes Factors to compare specific values of \(\eta\)<a id="orgheadline5"></a>
 
 It may be that specific values of \(\eta\) are of interest.  For
 example, when comparing eQTLs in two tissues, or when comparing risk
@@ -320,9 +319,9 @@ ct.bma <- coloc.bma(data@df1, data@df2,
 bf(ct.bma)
 ```
 
-# (Approximate) Bayes Factor colocalisation analyses<a id="sec-4" name="sec-4"></a>
+# (Approximate) Bayes Factor colocalisation analyses<a id="orgheadline10"></a>
 
-## Introduction<a id="sec-4-1" name="sec-4-1"></a>
+## Introduction<a id="orgheadline7"></a>
 
 The idea behind the ABF analysis is that the association of
 each trait with SNPs in a region may be summarised by a vector of 0s
@@ -339,7 +338,7 @@ following cases:
 -   \(H_3\): both traits are associated, but with different causal variants
 -   \(H_4\): both traits are associated and share a single causal variant
 
-## The basic `coloc.abf` function<a id="sec-4-2" name="sec-4-2"></a>
+## The basic `coloc.abf` function<a id="orgheadline8"></a>
 
 The function `coloc.abf` is ideally suited to the case when only
 summary data are available, and requires, for each trait, either:
@@ -389,7 +388,7 @@ my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
 print(my.res[[1]])
 ```
 
-## The wrapper function<a id="sec-4-3" name="sec-4-3"></a>
+## The wrapper function<a id="orgheadline9"></a>
 
 Here, as we have simulated full genotype data, we can use
 the wrapper function `coloc.abf.datasets()` to combine all the steps
@@ -400,7 +399,7 @@ ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y",
 			     type1="quant", type2="quant")
 ```
 
-# The difference between proportional and ABF approaches<a id="sec-5" name="sec-5"></a>
+# The difference between proportional and ABF approaches<a id="orgheadline11"></a>
 
 So what are the differences between proportional and ABF approaches?
 Which should you choose?
@@ -433,7 +432,7 @@ genotyping data are available.  When the results differ, we have
 tended to identify a combination of shared and distinct causal
 variants.  The ABF approach can still be applied in this case, if p
 values are available conditioning on the strongest signal, as
-demonstrated in our paper <sup><a id="fnr.4.100" name="fnr.4.100" class="footref" href="#fn.4">4</a></sup>.
+demonstrated in our paper <sup><a id="fnr.4.100" class="footref" href="#fn.4">4</a></sup>.
 
 You can see more about the ABF approach on
 [this blogpost](http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/).
@@ -442,13 +441,13 @@ You can see more about the ABF approach on
 <h2 class="footnotes">Footnotes: </h2>
 <div id="text-footnotes">
 
-<div class="footdef"><sup><a id="fn.1" name="fn.1" class="footnum" href="#fnr.1">1</a></sup> <http://www.ncbi.nlm.nih.gov/pubmed/19039033></div>
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><http://www.ncbi.nlm.nih.gov/pubmed/19039033></div></div>
 
-<div class="footdef"><sup><a id="fn.2" name="fn.2" class="footnum" href="#fnr.2">2</a></sup> <http://arxiv.org/abs/1301.5510></div>
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract></div></div>
 
-<div class="footdef"><sup><a id="fn.3" name="fn.3" class="footnum" href="#fnr.3">3</a></sup> <http://www.ncbi.nlm.nih.gov/pubmed/18642345></div>
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><http://www.ncbi.nlm.nih.gov/pubmed/18642345></div></div>
 
-<div class="footdef"><sup><a id="fn.4" name="fn.4" class="footnum" href="#fnr.4">4</a></sup> <http://arxiv.org/abs/1305.4022></div>
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383></div></div>
 
 
 </div>

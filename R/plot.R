@@ -99,7 +99,7 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL
 ##   }))
   x <- y <- x.se <- y.se <- NULL
   p <- ggplot(df,aes(x=x,y=y,xmin=x-1.96*x.se,xmax=x+1.96*x.se,ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha)) +
-    geom_hline() + geom_vline() +
+    geom_hline(yintercept=0) + geom_vline(xintercept=0) +
       geom_errorbar(col="steelblue4") + 
       geom_errorbarh(col="steelblue4") +theme(legend.position="none") + labs(x="beta.1",y="beta.2")
   if(!is.null(slope))
