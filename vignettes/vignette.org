@@ -1,7 +1,7 @@
 #+TITLE:     Coloc: a package for colocalisation analyses
 #+AUTHOR:    Chris Wallace
-#+EMAIL:     chris.wallace@cimr.cam.ac.uk
-#+DATE:      2013-05-22 Wed
+#+EMAIL:     cew54@cam.ac.uk
+#+DATE:      2016-05-19 Thu
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:  en
@@ -28,7 +28,7 @@
 
 #+begin_html
 <font color="grey">
-*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+*Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>
 #+end_html
 
@@ -365,8 +365,12 @@ You can see more about the ABF approach on
 
 [fn:1] http://www.ncbi.nlm.nih.gov/pubmed/19039033
 
-[fn:2] http://arxiv.org/abs/1301.5510
+[fn:2] http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract
 
 [fn:3] http://www.ncbi.nlm.nih.gov/pubmed/18642345
 
-[fn:4] http://arxiv.org/abs/1305.4022
+[fn:4] http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383
+
+# Local Variables:
+# firestarter: (org-ravel-md-knitr-dispatch)
+# End:
