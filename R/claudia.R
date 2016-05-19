@@ -160,15 +160,30 @@ process.dataset <- function(d, suffix) {
 
   nd <- names(d)
   if (! 'type' %in% nd)
-    stop('The variable type must be set, otherwise the Bayes factors cannot be computed')
+    stop("dataset ",suffix,": ",'The variable type must be set, otherwise the Bayes factors cannot be computed')
 
+  if(!(d$type %in% c("quant","cc")))
+      stop("dataset ",suffix,": ","type must be quant or cc")
+  if(d$type=="cc") {
+      if(! "s" %in% nd)
+          stop("dataset ",suffix,": ","please give s, proportion of samples who are cases")
+      if(! "MAF" %in% nd)
+          stop("dataset ",suffix,": ","please give MAF for type cc")
+      if(d$s<=0 || d$s>=1)
+          stop("dataset ",suffix,": ","s must be between 0 and 1")
+  }
+  if(d$type=="quant") {
+      if(!("MAF" %in% nd || "sdY" %in% nd))
+          stop("dataset ",suffix,": ","must give MAF or sdY for type quant")
+  }
+  
   if("beta" %in% nd && "varbeta" %in% nd && ("MAF" %in% nd || "sdY" %in% nd)) {
     if(length(d$beta) != length(d$varbeta))
-      stop("Length of the beta vectors and variance vectors must match")
+      stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$beta))
     if(length(d$snp) != length(d$beta))
-      stop("Length of snp names and beta vectors must match")
+      stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
  
     if(d$type == 'quant' & !('sdY' %in% nd)) 
       d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
