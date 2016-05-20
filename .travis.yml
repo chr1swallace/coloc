@@ -3,5 +3,7 @@
 language: r
 warnings_are_errors: true
 sudo: required
+
+install:
 # Installs all packages in the DESCRIPTION file.
   - ./travis-tool.sh install_bioc_deps
