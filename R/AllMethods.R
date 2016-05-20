@@ -10,6 +10,7 @@ setMethod("plot", signature(x="coloc",y="missing"),
                      main="Coefficients",
                      xlab=expression(b[1]),ylab=expression(b[2]))})
 #' @rdname plot-methods
+#' @rdname plot-methods
 #' @aliases plot,colocABF,missing-method
 setMethod("plot", signature(x="colocABF",y="missing"),
           function(x,...) {
@@ -31,10 +32,13 @@ setMethod("plot", signature(x="coloc",y="missing"),
                        annot=paste("p =",format.pval(p.value(x))),
                        ...)
           })
+#' @rdname plot-methods
+#' @aliases plot,colocPCs,missing-method
 setMethod("plot", signature(x="colocPCs",y="missing"),
-          function(x, threshold=0.8, ggplot2=FALSE) {
-            n <- length(object@vars)
-            npc <- which(object@vars>threshold)[1]
+          function(x) {
+              threshold=0.8
+              n <- length(x@vars)
+              npc <- which(x@vars>threshold)[1]
                                                     #  title <- paste("Number of components required to capture >=",threshold,"of the variance")
 ##             if(ggplot2) {
 ##               require(ggplot2)
@@ -45,7 +49,7 @@ setMethod("plot", signature(x="colocPCs",y="missing"),
 ##                        ylab("Proportion of variance explained") + geom_vline(xintercept=npc,lty=2,col="grey") +
 ##                          geom_line()
 ##             } else {
-              plot(1:n, object@vars, xlab="Number of components", ylab="Proportion of variance explained",
+              plot(1:n, x@vars, xlab="Number of components", ylab="Proportion of variance explained",
                    type="l")
               abline(v=npc,col="grey",lty=2)
 ##             }
@@ -71,6 +75,8 @@ setMethod("ci","colocBayes",function(object) {
     return(object@credible.interval[c("eta.mode","lower","upper","level.observed","interior")])
   }})
 
+##' @rdname bf-methods
+##' @aliases bf,colocBayes-method
 setMethod("bf","colocBayes",function(object) {
   if(!length(object@bayes.factor))
     stop("No Bayes factor calculations stored.\n")

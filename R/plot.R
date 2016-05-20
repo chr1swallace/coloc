@@ -22,8 +22,8 @@
 ##' @param trait2 name of trait 2   
 ##' @return a ggplot object
 ##' @author Hui Guo, Chris Wallace
-#' @docType methods
-#' @rdname plot-methods
+##' @docType methods
+##' @rdname plot-methods
 abf.plot <- function(coloc.obj, Pos=1:nrow(coloc.obj@results),
                      chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
                      trait1="trait 1", trait2="trait 2") {
@@ -49,6 +49,7 @@ abf.plot <- function(coloc.obj, Pos=1:nrow(coloc.obj@results),
   df.ord = df[order(df$value, decreasing=TRUE), ]
   snps = unique(df.ord$snp)[1:3]
 
+    label <- NULL # avoid R CMD check NOTE
   df$label <- ifelse(df$snp %in% snps, df$snp,"")
   ttl <- paste0(trait1, ' & ', trait2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
  

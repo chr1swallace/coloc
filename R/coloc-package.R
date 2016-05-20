@@ -28,6 +28,7 @@
 #' @importFrom BMA glib glib.data.frame
 #' @importFrom reshape melt
 #' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
+#' @importFrom methods setMethod setClass
 #' @import ggplot2
 NULL
 

@@ -6,6 +6,7 @@
 \alias{plot}
 \alias{plot,coloc,missing-method}
 \alias{plot,colocABF,missing-method}
+\alias{plot,colocPCs,missing-method}
 \title{Plotting functions for the coloc package}
 \usage{
 plot(x, y, ...)
@@ -15,6 +16,8 @@ plot(x, y, ...)
 \S4method{plot}{colocABF,missing}(x, y, ...)
 
 \S4method{plot}{coloc,missing}(x, y, ...)
+
+\S4method{plot}{colocPCs,missing}(x)
 
 abf.plot(coloc.obj, Pos = 1:nrow(coloc.obj@results), chr = NULL,
   pos.start = min(Pos), pos.end = max(Pos), trait1 = "trait 1",

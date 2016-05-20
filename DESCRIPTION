@@ -4,12 +4,13 @@ Imports:
     ggplot2,
     snpStats,
     BMA,
-    reshape
+    reshape,
+    methods
 Suggests:
     knitr
 Title: Colocalisation tests of two genetic traits
-Version: 2.3-4
-Date: 2016-05-19
+Version: 2.3-5
+Date: 2016-05-20
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
