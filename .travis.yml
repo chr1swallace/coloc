@@ -1,9 +1,8 @@
 # Sample .travis.yml for R projects
 
 language: r
-warnings_are_errors: true
+warnings_are_errors: false
 sudo: required
 
-install:
-# Installs all packages in the DESCRIPTION file.
-  - ./travis-tool.sh install_bioc_deps
+bioc_packages:
+  - snpStats
