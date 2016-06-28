@@ -30,9 +30,11 @@
 #' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
 #' @importFrom methods setMethod setClass
 #' @import ggplot2
+#' @importFrom graphics abline axis box
+#' @importFrom methods as is new slot
+#' @importFrom stats as.formula coef coefficients cor glmintegrate lm optimize pchisq pf prcompqnorm var vcov
+#' @importFrom utils combn
 NULL
-
-
 
 #'Class \code{"colocPCs"}
 #'
