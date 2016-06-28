@@ -7,17 +7,17 @@ Imports:
     reshape,
     methods
 Suggests:
-    knitr
-Title: Colocalisation tests of two genetic traits
-Version: 2.3-5
-Date: 2016-05-20
+    knitr,
+    testthat
+Title: Colocalisation Tests of Two Genetic Traits
+Version: 2.3-6
+Date: 2016-06-28
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
     email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb",
     email="v.plagnol@ucl.ac.uk"))
-Author: Chris Wallace <cew54@cam.ac.uk>
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Description: Performs the colocalisation tests described in Plagnol et al
     (2009), Wallace et al (2013) and Giambartolomei et al (2013).

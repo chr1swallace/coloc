@@ -92,8 +92,7 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' \code{QTLMatch v0.8} which now appears unavailable.  The numerically
 ##' identical test, extended to allow for more than two SNPs, can be found in
 ##' this package by looking at the chisquare statistic and the degrees of freedom
-##' given by \code{chisquare()} and \code{df()} respectively.  %
-##' \url{http://www-gene.cimr.cam.ac.uk/vplagnol/software.shtml}
+##' given by \code{chisquare()} and \code{df()} respectively.  
 ##' @author Chris Wallace
 ##' @references Wallace et al (2012).  Statistical colocalisation of monocyte
 ##' gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet

@@ -54,8 +54,7 @@ Plagnol et al's original test was available in his R package
 \code{QTLMatch v0.8} which now appears unavailable.  The numerically
 identical test, extended to allow for more than two SNPs, can be found in
 this package by looking at the chisquare statistic and the degrees of freedom
-given by \code{chisquare()} and \code{df()} respectively.  %
-\url{http://www-gene.cimr.cam.ac.uk/vplagnol/software.shtml}
+given by \code{chisquare()} and \code{df()} respectively.
 }
 \examples{
 

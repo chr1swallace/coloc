@@ -32,7 +32,7 @@
 #' @import ggplot2
 #' @importFrom graphics abline axis box
 #' @importFrom methods as is new slot
-#' @importFrom stats as.formula coef coefficients cor glmintegrate lm optimize pchisq pf prcompqnorm var vcov
+#' @importFrom stats as.formula coef coefficients cor glm integrate lm optimize pchisq pf prcomp qnorm var vcov
 #' @importFrom utils combn
 NULL
 
