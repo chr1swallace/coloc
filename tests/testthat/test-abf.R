@@ -6,7 +6,7 @@ X <- X[, cs[,"MAF"]>0.05 & cs[,"Call.rate"]>0.9]
 maf <- col.summary(X)[,"MAF"]
 
 ## quantitative trait
-Y<-rnorm(nrow(X),mean=as(X[,8],"numeric")) + rnorm(nrow(X),sd=2)
+Y<-rnorm(nrow(X),mean=as(X[,8],"numeric"),sd=4) + rnorm(nrow(X),sd=2)
 eff<-snp.rhs.estimates(Y ~ 1, snp.data=X, family="gaussian")
 beta.q <- sapply(eff@.Data, "[[", "beta")
 vbeta.q <- sapply(eff@.Data, "[[", "Var.beta")
@@ -22,7 +22,7 @@ p.cc <- pchisq(beta.cc^2/vbeta.cc,df=1,lower.tail=FALSE)
 
 ## general things
 test_that("sdY.est", {
-  expect_that(abs(sd.est - sd(Y)) < 1, is_true())
+  expect_that(abs(sd.est - sd(Y)) < 0.1, is_true())
 })
 DQ <- list(beta=beta.q,
            varbeta=vbeta.q,
@@ -58,6 +58,11 @@ PCC.bad <- list(pvalues=p.cc,
             N=nrow(X))
 
 
+RESULTS <- list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
+                dp = coloc.abf(dataset1=DQ,dataset2=PCC),
+                pd = coloc.abf(dataset1=PQ,dataset2=DCC),
+                pp = coloc.abf(dataset1=PQ,dataset2=PCC))
+lapply(RESULTS,"[[","summary")
 
 test_that("process.dataset", {
   expect_that(process.dataset(list(), ""), throws_error())
@@ -82,8 +87,6 @@ test_that("coloc.abf", {
     expect_true(which.max(result$summary[-1]) == 5)
     expect_true(result$summary[1] == ncol(X))
 })
-
-
 
 
 ## alternative test data

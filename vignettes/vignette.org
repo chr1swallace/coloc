@@ -101,7 +101,7 @@ setMethod("show", signature="simdata", function(object) {
   cat("pair of simulated datasets, with",ncol(object@df1)-1,"SNPs and",nrow(object@df1),"samples.\n")
 })
 
-sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
+sim.data <- function(nsnps=50,nsamples=200,causals=1:2,nsim=1) {
   cat("Generate",nsim,"small sets of data\n")
   ntotal <- nsnps * nsamples * nsim
   X1 <- matrix(rbinom(ntotal,1,0.4)+rbinom(ntotal,1,0.4),ncol=nsnps)
@@ -124,10 +124,28 @@ sim.data <- function(nsnps=10,nsamples=200,causals=1:2,nsim=1) {
 }
 
 ## simulate some data and load the coloc library
-set.seed(12345)
+set.seed(46411)
 data <- sim.data(nsamples=1000,nsim=1)
 library(coloc)
 #+end_src
+
+#+RESULTS:
+| coloc      |
+| BMA        |
+| rrcov      |
+| inline     |
+| robustbase |
+| leaps      |
+| survival   |
+| MASS       |
+| colorspace |
+| stats      |
+| graphics   |
+| grDevices  |
+| utils      |
+| datasets   |
+| methods    |
+| base       |
 
 If you are not familiar with the analysis of genetic data in R, I
 would suggest beginning with the [[http://www.bioconductor.org/packages/release/bioc/html/snpStats.html][snpStats package]], which has
@@ -190,8 +208,8 @@ preparatory work, you require only a single function:
 
 #+begin_src R :ravel fig=TRUE
 ct.bma <- coloc.bma(data@df1, data@df2, 
-                    family1="gaussian", family2="gaussian")
-plot(ct.bma)
+                    family1="gaussian", family2="gaussian",
+		    plot.coeff=TRUE)
 ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
                           family1="gaussian", family2="gaussian", 
                           bayes=TRUE)
@@ -286,7 +304,7 @@ depending on the data available from each study.
 
 A wrapper function is avalailable to run all these steps but we will
 first generate the p values manually to give all the details. We use the snpStats library from
-Bioconductor to calculate the p values quickly.
+Bioconductor to calculate the p values quickly.  We will also calculate the coefficients and their standard errors to compare the two approaches (but you should use only one - the coefficients if available, otherwise the p values).
 
 #+begin_src R
 library(snpStats)
@@ -299,12 +317,41 @@ X2 <- new("SnpMatrix",as.matrix(data@df2[,-1]))
 
 p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
 p2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
+
 maf <- col.summary(X2)[,"MAF"]
+
+get.beta <- function(...) {
+   tmp <- snpStats::snp.rhs.estimates(..., family="gaussian")
+   beta <- sapply(tmp,"[[","beta")
+   varbeta <- sapply(tmp, "[[", "Var.beta")
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(Y1 ~ 1, snp.data=X1)
+b2 <- get.beta(Y2 ~ 1, snp.data=X2)
 #+end_src
 
 Note that we are using the second dataset in that case to compute the minor allele frequencies.
 This is unlikely to make any significant difference but one could have used dataset 1 instead.
 It is now possible to compute the probabilities of interest.
+
+With coefficients, and std. deviation of Y known, we have the most accurate inference.  Note that if you have a case-control trait, set type="cc" and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.
+#+begin_src R
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant"),
+                    MAF=maf)
+print(my.res[[1]])
+#+end_src
+
+When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:
+
+#+begin_src R
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type="quant"),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type="quant"),
+                    MAF=maf)
+print(my.res[[1]])
+#+end_src
+
+When only p values are available, we can use the form:
 
 #+begin_src R
 my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
@@ -313,8 +360,7 @@ my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
 print(my.res[[1]])
 #+end_src
 
-** The wrapper function
-Here, as we have simulated full genotype data, we can use
+Here, as we have simulated full genotype data in snpStats format, we can use
 the wrapper function =coloc.abf.datasets()= to combine all the steps
 shown above.
 
