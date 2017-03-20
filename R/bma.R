@@ -15,22 +15,48 @@
 #'further details.
 #'
 #'@inheritParams coloc.test.summary
-#'@param df1,df2 Each is a dataframe, containing response and potential explanatory variables for two independent datasets.
-#'@param snps The SNPs to consider as potential explanatory variables
-#'@param response1,response2 The names of the response variables in \code{df1} and \code{df2} respectively
-#'@param family1,family2 the error family for use in \code{glm}
-#'@param thr posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis
-#'@param nsnps number of SNPs required to model both traits.  The BMA analysis will average over all possible \code{nsnp} SNP models, subject to \code{thr} above.
-#'@param n.approx number of values at which to numerically approximate the posterior
-#'@param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.
-#'@param quiet suppress messages about how the model spaced is trimmed for BMA
-#'@param ... other parameters passed to \code{coloc.test}
-#'@inheritParams coloc.test.summary
+#' @param df1
+#' @param df2
+#' @param snps The SNPs to consider as potential explanatory variables
+#' @param response1
+#' @param setdiff
+#' @param response2
+#' @param response1
+#' @param response2
+#' @param stratum1
+#' @param stratum2
+#' @param family1
+#' @param family2
+#' @param bayes
+#' @param thr posterior probability threshold used to trim SNP list.
+#'     Only SNPs with a marginal posterior probability of inclusion
+#'     greater than this with one or other trait will be included in
+#'     the full BMA analysis
+#' @param nsnps number of SNPs required to model both traits.  The BMA
+#'     analysis will average over all possible \code{nsnp} SNP models,
+#'     subject to \code{thr} above.
+#' @param n.approx number of values at which to numerically
+#'     approximate the posterior
+#' @param bayes.factor
+#' @param plot.coeff
+#' @param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP
+#'     will be retained.  This avoids numerical instability problems
+#'     caused by including two highly correlated SNPs in the model.
+#' @param quiet suppress messages about how the model spaced is
+#'     trimmed for BMA
+#' @param bma
+#' @param ... other parameters passed to \code{coloc.test}
+#' @param df1,df2 Each is a dataframe, containing response and
+#'     potential explanatory variables for two independent datasets.
+#' @param response1,response2 The names of the response variables in
+#'     \code{df1} and \code{df2} respectively
+#' @param family1,family2 the error family for use in \code{glm}
 #'@return a \code{coloc} or \code{colocBayes} object
 #'@author Chris Wallace
-#'@references Wallace et al (2012).  Statistical colocalisation of monocyte
-#'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-#'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
+#'@references Wallace et al (2012).  Statistical colocalisation of
+#'     monocyte gene expression and genetic risk variants for type 1
+#'     diabetes.  Hum Mol Genet 21:2815-2824.
+#'     \url{http://europepmc.org/abstract/MED/22403184}
 #'
 #'Plagnol et al (2009).  Statistical independence of the colocalized
 #'association signals for type 1 diabetes and RPS26 gene expression on
@@ -58,32 +84,46 @@
 #'  
 #'
 #'## test colocalisation using bma
-#'df1=cbind(Y1=Y1,X1)
-#'df2=cbind(Y2=Y2,X2)
+#'df1=as.data.frame(cbind(Y1=Y1,X1))
+#'df2=as.data.frame(cbind(Y2=Y2,X2))
 #'
-#'coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+#'result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 #'family1="gaussian", family2="gaussian",
-#'nsnps=2,bayes.factor=c(1,2,3),plot.coeff=TRUE)
+#'nsnps=2,bayes.factor=c(1,2,3))
+#'result
+#'plot(result)
+#'
+#' test colocalisation when one dataset contains a stratifying factor in column named "s"
+#' df1$s <- rbinom(500,1,0.5)
+#'result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+#' stratum1="s",
+#'family1="gaussian", family2="gaussian",
+#'nsnps=2,bayes.factor=c(1,2,3))
+#'result
+#'plot(result)
 #'
 #'@export
-coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
-                                setdiff(colnames(df2),response2)),
-                      response1="Y", response2="Y", family1="binomial", family2="binomial",
+coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,stratum1)),
+                                setdiff(colnames(df2),c(response2,stratum2))),
+                      response1="Y", response2="Y",
+                      stratum1=NULL, stratum2=NULL,
+                      family1="binomial", family2="binomial",
                      bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                      plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
   snps <- unique(snps)
-  n.orig <- length(setdiff(snps,c(response1,response2)))
+  n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
   if(n.orig<nsnps)
     stop("require at least ",nsnps," SNPs to do colocalisation testing")
-  df1 <- as.data.frame(df1[,c(response1,snps)])
-  df2 <- as.data.frame(df2[,c(response2,snps)])
+  df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
+  df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
 
   ## remove missings and tag
-  prep <- prepare.df(df1, df2, r2.trim=r2.trim, dataset=1, quiet=quiet)  
+  prep <- prepare.df(df1, df2, drop.cols=c(response1,response2,stratum1,stratum2),
+                     r2.trim=r2.trim, dataset=1, quiet=quiet)  
   snps <- prep$snps
-  df1 <- prep$df1[,c(response1,snps)]
-  df2 <- prep$df2[,c(response2,snps)]
+  df1 <- prep$df1[,c(response1,stratum1,snps)]
+  df2 <- prep$df2[,c(response2,stratum2,snps)]
   
   if(!quiet) {
     message("Dropped ",n.orig - length(snps)," of ",n.orig," SNPs due to LD: r2 > ",r2.trim,".")
@@ -112,8 +152,8 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
  
   ## step1, select marginally interesting single SNPs
   models <- diag(1,n.clean,n.clean)
-  marg.1 <- marg.bf(models, x=x1, y=df1[,response1], family=family1)[,"pp"] 
-  marg.2 <- marg.bf(models, x=x2, y=df2[,response2], family=family2)[,"pp"]  
+  marg.1 <- marg.bf(models, x=x1, y=df1[,response1], stratum=nullorvalue(df1,stratum1), family=family1)[,"pp"]
+  marg.2 <- marg.bf(models, x=x2, y=df2[,response2], stratum=nullorvalue(df2,stratum2), family=family2)[,"pp"]
   use <- marg.1>thr | marg.2>thr
   if(!quiet) {
     message("Restricting model space.")
@@ -141,7 +181,8 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   }
 
   ## fit the models to each dataset to get posterior probs
-  multi.1 <- multi.bf(models, x1, df1[,response1], family1, dataset=1,quiet=quiet)
+  multi.1 <- multi.bf(models, x1, df1[,response1], family1, stratum=nullorvalue(df1,stratum1),
+                      dataset=1,quiet=quiet)
   multi.2 <- multi.bf(models, x2, df2[,response2], family2, dataset=2,quiet=quiet)
   probs <- multi.1 * multi.2
   probs <- probs/sum(probs)
@@ -164,15 +205,33 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   cat("Averaging coloc testing over",length(wh),
       "models with posterior probabilities >=",
       signif(min(probs[wh]),digits=2),"\n")
+  models.1 <- models.2 <- models.l
+  drop1 <- drop2 <- 1
+  if(!is.null(stratum1)) {
+      x1 <- cbind(s=df1[,stratum1],x1)
+      colnames(x1)[1] <- stratum1
+      models.1 <- cbind(TRUE,models.1)
+      drop1 <- c(1,2)
+  }
+  if(!is.null(stratum2)) {
+      x2 <- cbind(s=df2[,stratum2],x2)
+      colnames(x2)[1] <- stratum2
+      models.2 <- cbind(TRUE,models.2)
+      drop2 <- c(1,2)
+  }
   for(i in wh) {
     if(!quiet)
     cat(".")
-    lm1 <- glm(df1[,response1] ~ ., data=x1[,models.l[i,]], family=family1)
-    lm2 <- glm(df2[,response2] ~ ., data=x2[,models.l[i,]], family=family2)
-    coef.1[[i]] <- coefficients(lm1)[-1]
-    coef.2[[i]] <- coefficients(lm2)[-1]
-    var.1[[i]] <- vcov(lm1)[-1,-1]
-    var.2[[i]] <- vcov(lm2)[-1,-1]
+    lm1 <- glm(df1[,response1] ~ .,
+               data=x1[,models.1[i,]],
+               family=family1)
+    lm2 <- glm(df2[,response2] ~ .,
+               data=x2[,models.2[i,]],
+               family=family2)
+    coef.1[[i]] <- coefficients(lm1)[-drop1]
+    coef.2[[i]] <- coefficients(lm2)[-drop2]
+    var.1[[i]] <- vcov(lm1)[-drop1,-drop1]
+    var.2[[i]] <- vcov(lm2)[-drop2,-drop2]
     this.coloc <-  coloc.test.summary(coef.1[[i]], coef.2[[i]], var.1[[i]], var.2[[i]], plot.coeff=FALSE,bma=TRUE,n.approx=n.approx,bayes.factor=bayes.factor,bayes=bayes,...)
     if(bma) {
       post[i,] <- this.coloc@bma ## posterior distribution for eta
@@ -202,16 +261,15 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   var.1 <- lapply(var.1, diag)
   var.2 <- lapply(var.2, diag)
   
-  if(plot.coeff) {
+  if(plot.coeff) 
       message("Plots generated directly are deprecated.  Please plot returned object instead.")
-    coeff.plot(unlist(coef.1),unlist(coef.2),
-               unlist(var.1),unlist(var.2),
-               eta=stats["eta.hat"],
-               main="Coefficients",
-               alpha=probs[wh],
-                                        #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=length(snps)-1,lower.tail=FALSE),digits=2)),
-               xlab=expression(b[1]),ylab=expression(b[2]))
-  }
+    ## coeff.plot(unlist(coef.1),unlist(coef.2),
+    ##            unlist(var.1),unlist(var.2),
+    ##            eta=stats["eta.hat"],
+    ##            main="Coefficients",
+    ##            alpha=probs[wh],
+    ##                                     #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=length(snps)-1,lower.tail=FALSE),digits=2)),
+    ##            xlab=expression(b[1]),ylab=expression(b[2]))
 
   if(!bayes) {
     return(new("coloc",
@@ -229,9 +287,13 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),response1),
   }
 }
 
-multi.bf <- function(models, x, y, family, dataset=1,quiet=FALSE) {
+multi.bf <- function(models, x, y, family, stratum=NULL, dataset=1,quiet=FALSE) {
   if(!quiet)
-  cat("Fitting",nrow(models),"multi SNP models to dataset",dataset,"\n")
+      cat("Fitting",nrow(models),"multi SNP models to dataset",dataset,"\n")
+  if(!is.null(stratum)) {
+      x <- cbind(stratum,x)
+      models <- cbind(1,models)
+  }
   if(family=="binomial") {
     mods1 <- glib(x, y, error="binomial", link="logit",models=models)
   } else {
@@ -240,7 +302,23 @@ multi.bf <- function(models, x, y, family, dataset=1,quiet=FALSE) {
   return(mods1$bf$postprob[,2])
 }
 
-marg.bf <- function(models,x,y,family) {
+nullorvalue <- function(df,index) {
+    if(is.null(index))
+        return(NULL)
+    df[,index]
+}
+
+marg.bf <- function(models,x,y,stratum=NULL,family) {
+    if(!is.null(stratum)) {
+        tmp <- lapply(unique(stratum),function(s) {
+            wh <- which(stratum==s)
+            marg.bf(models,x[wh,,drop=FALSE],y[wh],family=family)
+        })
+        tmp <- do.call("cbind",tmp)
+        return(cbind(pp=apply(tmp[,grep("pp",colnames(tmp))],1,max),
+                     twologB10=apply(tmp[,grep("twologB10",colnames(tmp))],1,max)))
+                      
+    }
     if(family=="binomial") {
     mods1 <- glib(x, y, error="binomial", link="logit",models=models)
   } else {
@@ -258,13 +336,13 @@ rmna <- function(df,dnum,quiet) {
   }
   return(df[use,,drop=FALSE])
 }
-prepare.df <- function(df1,df2=NULL,r2.trim,dataset=1,quiet=FALSE) {
+prepare.df <- function(df1,df2=NULL,drop.cols,r2.trim,dataset=1,quiet=FALSE) {
   df1 <- rmna(df1,1,quiet=quiet)
   if(!is.null(df2)) {
     df2 <- rmna(df2,2,quiet=quiet)
-    x <- rbind(df1[,-1],df2[,-1])
+    x <- rbind(df1[,setdiff(colnames(df1),drop.cols)],df2[,setdiff(colnames(df2),drop.cols)])
   } else {
-    x <- df1[,-1]
+    x <- df1[,setdiff(colnames(df1),drop.cols)]
   }
   r2 <- cor(x)^2
   r2.high <- apply(r2, 1, function(x) which(x>r2.trim)[1])
