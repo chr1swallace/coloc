@@ -24,4 +24,3 @@ logs taking out the max, i.e. insuring that the difference is not negative
 \author{
 Chris Wallace
 }
-

@@ -27,4 +27,3 @@ so we can estimate var(Y) by regressing n*var(X) against 1/var(beta)
 \author{
 Chris Wallace
 }
-

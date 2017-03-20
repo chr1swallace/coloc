@@ -3,9 +3,9 @@
 \docType{class}
 \name{coloc-class}
 \alias{coloc-class}
-\alias{colocBMA}
 \alias{colocBayes-class}
 \alias{colocBayesBMA}
+\alias{colocBMA}
 \title{Classes \code{"coloc"} and \code{"colocBayes"}}
 \description{
 Classes 
@@ -19,13 +19,11 @@ Objects can be created by calls to the
 function \code{\link{coloc.test}()}.  Class \code{colocBayes} extends class
 \code{coloc}.
 }
+
 \examples{
 
 showClass("coloc")
 showClass("colocBayes")
-}
-\author{
-Chris Wallace.
 }
 \references{
 Wallace et al (2012).  Statistical colocalisation of monocyte
@@ -40,5 +38,7 @@ chromosome 12q13. Biostatistics 10:327-34.
 \seealso{
 \code{\link{coloc.test}}, \code{\link{coloc.test.summary}}, \code{\link{coloc.bma}}
 }
+\author{
+Chris Wallace.
+}
 \keyword{classes}
-

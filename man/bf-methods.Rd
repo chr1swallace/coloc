@@ -26,4 +26,3 @@ Only available for \code{colocBayes} objects, and you need to specify the specif
 Chris Wallace
 }
 \keyword{methods}
-

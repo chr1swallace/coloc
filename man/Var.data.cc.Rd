@@ -25,4 +25,3 @@ Internal function
 \author{
 Claudia Giambartolomei
 }
-

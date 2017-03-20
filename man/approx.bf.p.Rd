@@ -31,4 +31,3 @@ Calculate approximate Bayes Factors
 \author{
 Claudia Giambartolomei, Chris Wallace
 }
-

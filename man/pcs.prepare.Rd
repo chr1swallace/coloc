@@ -57,9 +57,6 @@ set.seed(1)
  coloc.test(m1,m2,plot.coeff=FALSE,bayes=FALSE)
 
 }
-\author{
-Chris Wallace
-}
 \references{
 Wallace et al (2012).  Statistical colocalisation of monocyte
 gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
@@ -70,4 +67,6 @@ association signals for type 1 diabetes and RPS26 gene expression on
 chromosome 12q13. Biostatistics 10:327-34.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 }
-
+\author{
+Chris Wallace
+}

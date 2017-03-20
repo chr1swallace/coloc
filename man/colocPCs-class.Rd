@@ -3,6 +3,7 @@
 \docType{class}
 \name{colocPCs-class}
 \alias{colocPCs-class}
+\alias{colocPCs-class}
 \title{Class \code{"colocPCs"}}
 \description{
 %% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
@@ -22,6 +23,7 @@ function \code{\link{pcs.prepare}()}. %% ~~ describe objects here ~~
  Objects can be created by calls to the
 function \code{\link{pcs.prepare}()}. %% ~~ describe objects here ~~
 }
+
 \examples{
 
 showClass("colocPCs")
@@ -29,11 +31,6 @@ showClass("colocPCs")
 
 showClass("colocPCs")
 
-}
-\author{
-Chris Wallace.
-
-Chris Wallace.
 }
 \references{
 Wallace et al (2012).  Statistical colocalisation of monocyte
@@ -59,5 +56,9 @@ chromosome 12q13. Biostatistics 10:327-34.
 
 \code{\link{pcs.prepare}}, \code{\link{pcs.model}}
 }
-\keyword{classes}
+\author{
+Chris Wallace.
 
+Chris Wallace.
+}
+\keyword{classes}

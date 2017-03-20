@@ -22,4 +22,3 @@ logs taking out the max, i.e. insuring that the sum is not Inf
 \author{
 Claudia Giambartolomei
 }
-

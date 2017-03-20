@@ -29,4 +29,3 @@ Calculate approximate Bayes Factors using supplied variance of the regression co
 \author{
 Vincent Plagnol, Chris Wallace
 }
-

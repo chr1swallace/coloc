@@ -60,4 +60,3 @@ Typically this should be called from \code{\link{coloc.test}()} or \code{\link{c
 \author{
 Chris Wallace
 }
-

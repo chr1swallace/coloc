@@ -5,19 +5,26 @@
 \title{Wrapper to use colocalization testing within a Bayesian model averaging
 structure.}
 \usage{
-coloc.bma(df1, df2, snps = intersect(setdiff(colnames(df1), response1),
-  setdiff(colnames(df2), response2)), response1 = "Y", response2 = "Y",
+coloc.bma(df1, df2, snps = intersect(setdiff(colnames(df1), c(response1,
+  stratum1)), setdiff(colnames(df2), c(response2, stratum2))),
+  response1 = "Y", response2 = "Y", stratum1 = NULL, stratum2 = NULL,
   family1 = "binomial", family2 = "binomial",
   bayes = !is.null(bayes.factor), thr = 0.01, nsnps = 2,
   n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
   r2.trim = 0.95, quiet = FALSE, bma = FALSE, ...)
 }
 \arguments{
-\item{df1, df2}{Each is a dataframe, containing response and potential explanatory variables for two independent datasets.}
+\item{df1, df2}{Each is a dataframe, containing response and
+potential explanatory variables for two independent datasets.}
 
 \item{snps}{The SNPs to consider as potential explanatory variables}
 
-\item{response1, response2}{The names of the response variables in \code{df1} and \code{df2} respectively}
+\item{response1, response2}{The names of the response variables in
+\code{df1} and \code{df2} respectively}
+
+\item{stratum1}{optional column name of df1 that gives stratum information}
+
+\item{stratum2}{optional column name of df2 that gives stratum information}
 
 \item{family1, family2}{the error family for use in \code{glm}}
 
@@ -28,22 +35,30 @@ computed for the specificed values.  This can add a little time as
 it requires numerical integration, so can be set to FALSE to save
 time in simulations, for example.}
 
-\item{thr}{posterior probability threshold used to trim SNP list.  Only SNPs with a marginal posterior probability of inclusion greater than this with one or other trait will be included in the full BMA analysis}
+\item{thr}{posterior probability threshold used to trim SNP list.
+Only SNPs with a marginal posterior probability of inclusion
+greater than this with one or other trait will be included in
+the full BMA analysis}
 
-\item{nsnps}{number of SNPs required to model both traits.  The BMA analysis will average over all possible \code{nsnp} SNP models, subject to \code{thr} above.}
+\item{nsnps}{number of SNPs required to model both traits.  The BMA
+analysis will average over all possible \code{nsnp} SNP models,
+subject to \code{thr} above.}
 
-\item{n.approx}{number of values at which to numerically approximate the posterior}
+\item{n.approx}{number of values at which to numerically
+approximate the posterior}
 
-\item{bayes.factor}{Calculate Bayes Factors to compare specific values of eta.  \code{bayes.factor} should either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.}
+\item{bayes.factor}{if true, compare specific models}
 
-\item{plot.coeff}{DEPRECATED.  Please \code{plot()} returned object instead. \code{TRUE} if you want to generate a plot showing the
-coefficients from the two regressions together with confidence regions.}
+\item{plot.coeff}{deprecated}
 
-\item{r2.trim}{for pairs SNPs with r2>\code{r2.trim}, only one SNP will be retained.  This avoids numerical instability problems caused by including two highly correlated SNPs in the model.}
+\item{r2.trim}{for pairs SNPs with r2>\code{r2.trim}, only one SNP
+will be retained.  This avoids numerical instability problems
+caused by including two highly correlated SNPs in the model.}
 
-\item{quiet}{suppress messages about how the model spaced is trimmed for BMA}
+\item{quiet}{suppress messages about how the model spaced is
+trimmed for BMA}
 
-\item{bma}{parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!}
+\item{bma}{if true (default), average over models}
 
 \item{...}{other parameters passed to \code{coloc.test}}
 }
@@ -87,25 +102,36 @@ set.seed(1)
  
 
 ## test colocalisation using bma
-df1=cbind(Y1=Y1,X1)
-df2=cbind(Y2=Y2,X2)
+df1=as.data.frame(cbind(Y1=Y1,X1))
+df2=as.data.frame(cbind(Y2=Y2,X2))
 
-coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 family1="gaussian", family2="gaussian",
-nsnps=2,bayes.factor=c(1,2,3),plot.coeff=TRUE)
+nsnps=2,bayes.factor=c(1,2,3))
+result
+plot(result)
 
-}
-\author{
-Chris Wallace
+test colocalisation when one dataset contains a stratifying factor in column named "s"
+df1$s <- rbinom(500,1,0.5)
+result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+stratum1="s",
+family1="gaussian", family2="gaussian",
+nsnps=2,bayes.factor=c(1,2,3))
+result
+plot(result)
+
 }
 \references{
-Wallace et al (2012).  Statistical colocalisation of monocyte
-gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
+Wallace et al (2012).  Statistical colocalisation of
+    monocyte gene expression and genetic risk variants for type 1
+    diabetes.  Hum Mol Genet 21:2815-2824.
+    \url{http://europepmc.org/abstract/MED/22403184}
 
 Plagnol et al (2009).  Statistical independence of the colocalized
 association signals for type 1 diabetes and RPS26 gene expression on
 chromosome 12q13. Biostatistics 10:327-34.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 }
-
+\author{
+Chris Wallace
+}

@@ -15,19 +15,9 @@
 #'further details.
 #'
 #'@inheritParams coloc.test.summary
-#' @param df1
-#' @param df2
 #' @param snps The SNPs to consider as potential explanatory variables
-#' @param response1
-#' @param setdiff
-#' @param response2
-#' @param response1
-#' @param response2
-#' @param stratum1
-#' @param stratum2
-#' @param family1
-#' @param family2
-#' @param bayes
+#' @param stratum1 optional column name of df1 that gives stratum information
+#' @param stratum2 optional column name of df2 that gives stratum information
 #' @param thr posterior probability threshold used to trim SNP list.
 #'     Only SNPs with a marginal posterior probability of inclusion
 #'     greater than this with one or other trait will be included in
@@ -37,14 +27,14 @@
 #'     subject to \code{thr} above.
 #' @param n.approx number of values at which to numerically
 #'     approximate the posterior
-#' @param bayes.factor
-#' @param plot.coeff
+#' @param bayes.factor if true, compare specific models
+#' @param plot.coeff deprecated
 #' @param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP
 #'     will be retained.  This avoids numerical instability problems
 #'     caused by including two highly correlated SNPs in the model.
 #' @param quiet suppress messages about how the model spaced is
 #'     trimmed for BMA
-#' @param bma
+#' @param bma if true (default), average over models
 #' @param ... other parameters passed to \code{coloc.test}
 #' @param df1,df2 Each is a dataframe, containing response and
 #'     potential explanatory variables for two independent datasets.

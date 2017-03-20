@@ -2,11 +2,12 @@
 % Please edit documentation in R/AllGenerics.R, R/AllMethods.R, R/plot.R
 \docType{methods}
 \name{plot}
-\alias{abf.plot}
 \alias{plot}
 \alias{plot,coloc,missing-method}
 \alias{plot,colocABF,missing-method}
+\alias{plot,coloc,missing-method}
 \alias{plot,colocPCs,missing-method}
+\alias{abf.plot}
 \title{Plotting functions for the coloc package}
 \usage{
 plot(x, y, ...)
@@ -60,4 +61,3 @@ If coloc.obj is missing, it will be created as coloc.obj=coloc.abf(ds1,ds2).  Bo
 \author{
 Hui Guo, Chris Wallace
 }
-

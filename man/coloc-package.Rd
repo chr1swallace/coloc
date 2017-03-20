@@ -12,9 +12,6 @@ Wallace et al (in preparation) and draws some plots.
 \code{coloc.test()} tests for colocalisation and returns an object of class
 \code{coloc}.
 }
-\author{
-Chris Wallace <chris.wallace@cimr.cam.ac.uk>
-}
 \references{
 Plagnol et al (2009).  Statistical independence of the
 colocalized association signals for type 1 diabetes and RPS26 gene expression
@@ -31,5 +28,7 @@ Giambartolomei et al (2014).  Bayesian Test for Colocalisation between Pairs of 
 
 \url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
 }
+\author{
+Chris Wallace <chris.wallace@cimr.cam.ac.uk>
+}
 \keyword{package}
-

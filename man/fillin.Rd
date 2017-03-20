@@ -19,4 +19,3 @@ a numeric matrix of imputed genotypes, 0,2 = homs, 1 = het
 \description{
 Impute missing genotypes in a snpMatrix object in each SNP in turn, conditional on all the others.
 }
-

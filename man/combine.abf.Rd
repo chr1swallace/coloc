@@ -26,4 +26,3 @@ Internal function, calculate posterior probabilities for configurations, given l
 \author{
 Claudia Giambartolomei, Chris Wallace
 }
-

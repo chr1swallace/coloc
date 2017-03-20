@@ -24,4 +24,4 @@ Description: Performs the colocalisation tests described in Plagnol et al
 License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

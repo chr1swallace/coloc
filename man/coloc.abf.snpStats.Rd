@@ -41,4 +41,3 @@ Generates p values via score tests, then runs \code{\link{coloc.abf}}
 \author{
 Chris Wallace
 }
-

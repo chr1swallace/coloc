@@ -76,4 +76,3 @@ coefficients should be used if available.
 \author{
 Claudia Giambartolomei, Chris Wallace
 }
-

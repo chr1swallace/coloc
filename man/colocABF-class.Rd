@@ -11,11 +11,10 @@ function \code{\link{coloc.abf}()}.
 \examples{
 showClass("colocABF")
 }
-\author{
-Chris Wallace.
-}
 \seealso{
 \code{\link{coloc.abf}}
 }
+\author{
+Chris Wallace.
+}
 \keyword{classes}
-

@@ -20,4 +20,3 @@ Internal function, process each dataset list for coloc.abf
 \author{
 Chris Wallace
 }
-

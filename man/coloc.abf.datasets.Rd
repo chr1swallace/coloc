@@ -33,4 +33,3 @@ Converts genetic data to snpStats objects, generates p values via score tests, t
 \author{
 Chris Wallace
 }
-
