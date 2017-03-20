@@ -111,7 +111,7 @@ nsnps=2,bayes.factor=c(1,2,3))
 result
 plot(result)
 
-test colocalisation when one dataset contains a stratifying factor in column named "s"
+## test colocalisation when one dataset contains a stratifying factor in column named "s"
 df1$s <- rbinom(500,1,0.5)
 result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 stratum1="s",
