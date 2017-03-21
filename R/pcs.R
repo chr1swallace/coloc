@@ -142,6 +142,7 @@ pcs.prepare <- function(X1, X2, impute=TRUE) {
 #'principal components matrix
 #'@param Y Numeric phenotype vector, length equal to the number of samples from
 #'the requested group
+#' @param stratum optional vector that gives stratum information
 #'@param threshold The minimum number of principal components which captures at
 #'least threshold proportion of the variance will be selected.  Simulations
 #'suggest \code{threshold=0.8} is a good default value.
@@ -180,11 +181,16 @@ pcs.prepare <- function(X1, X2, impute=TRUE) {
 #'  m1 <- pcs.model(pcs, group=1, Y=Y1)
 #'  m2 <- pcs.model(pcs, group=2, Y=Y2)
 #'
+#'  ## Alternatively, if one (or both) datasets have a known stratification, here simulated as
+#'  S <- rbinom(500,1,0.5)
+#'  ## specify this in pcs.model as
+#'  m1 <- pcs.model(pcs, group=1, Y=Y1, stratum=S)
+#'
 #'  ## test colocalisation using PCs
 #'  coloc.test(m1,m2,plot.coeff=FALSE,bayes=FALSE)
 #'
 #'@export
-pcs.model <- function(object, group, Y, threshold=0.8, family=if(all(Y %in% c(0,1))) {"binomial"} else {"gaussian"}) {
+pcs.model <- function(object, group, Y, stratum=NULL, threshold=0.8, family=if(all(Y %in% c(0,1))) {"binomial"} else {"gaussian"}) {
   if(length(object@vars)<2)
     stop("require 2 or more principal components to test for proportionality")
   npc <- which(object@vars>threshold)[1]
@@ -193,17 +199,24 @@ pcs.model <- function(object, group, Y, threshold=0.8, family=if(all(Y %in% c(0,
   cat("selecting",npc,"components out of",ncol(object@pcs),"to capture",object@vars[npc],"of total variance.\n")
   X <- object@pcs[ object@group[object@use]==group, 1:npc ]
   Y <- Y[ object@use[ object@group==group ] ]
+  lhs <- "Y ~ "
+  if(!is.null(stratum)) {
+      if(length(stratum)!=length(Y))
+          stop("stratum must match Y in length")
+      S <- stratum[ object@use[ object@group==group ] ]
+      lhs <- "Y ~ S + "
+  }
   if(nrow(X) != length(Y))
     stop("length of Y not equal to the number of rows from group",group,"\n")
   snps <- colnames(object@pcs)[1:npc]
-  f <- as.formula(paste("Y ~", paste(snps,collapse="+")))
+  f <- as.formula(paste(lhs, paste(snps,collapse="+")))
   data <-  as.data.frame(cbind(Y,X))
   m <- glm(f,data=data,family=family)
   while(any(is.na(coefficients(m)))) {
     drop <- which((is.na(coefficients(m)))[-1])
     cat("dropping",length(drop),"colinear PCs",snps[drop],"\n")
     snps <- snps[-drop]
-    f <- as.formula(paste("Y ~", paste(snps,collapse="+")))
+    f <- as.formula(paste(lhs, paste(snps,collapse="+")))
     m <- glm(f,data=data,family=family)
   }
   return(m)  
