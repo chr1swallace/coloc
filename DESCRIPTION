@@ -10,8 +10,8 @@ Suggests:
     knitr,
     testthat
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 2.3-7
-Date: 2016-12-12
+Version: 2.4
+Date: 2017-03-21
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
