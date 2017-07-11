@@ -295,6 +295,106 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                                     level.ci=level.ci)
     }
   }
+
+  faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
+                               n.approx=1001, level.ci=0.95,
+                               bayes.factor=NULL, bma=FALSE) {
+  nsnps <- length(b1)
+  S1 <- solve(V1)
+  S2 <- solve(V2)
+  theta.min <- 0
+  theta.max <- pi
+  
+  ## -2LL = Fieller's chisq
+  d <- function(theta,b1,b2) { sin(theta) * b1 - cos(theta) * b2 }
+  Vstar <- function(theta) { sin(theta)^2 * V1 + cos(theta)^2 * V2 }
+  chisq <- function(theta,b1,b2) { t(d(theta,b1,b2)) %*% solve(Vstar(theta)) %*% d(theta,b1,b2) }
+  chisqV <- Vectorize(chisq, "theta")
+  
+  findmin <- function(b1,b2) {
+    ## there are at most two minima, and never both on the same side of pi/2
+    o.left <- optimize(chisq,interval=c(0,pi/2),b1=b1,b2=b2)
+    o.right <- optimize(chisq,interval=c(pi/2,pi),b1=b1,b2=b2)
+    if(o.left$objective < o.right$objective) {
+      return(o.left)
+    } else {
+      return(o.right)
+    }
+  }
+  fm <- findmin(b1,b2)
+  theta.hat <- fm$minimum; eta.hat=tan(theta.hat)
+  X2 <- fm$objective[1,1]
+  
+################################################################################
+  
+  ## Bayesian inference
+  ppp <- NULL ; cred.int <- list()
+  if(bayes) {
+      ## cauchy prior for theta
+      ## prior <- function(theta) { tt <- tan(theta);
+      ##                            k*(1+tt^2) / (2*pi*(1 + k^2 * tt^2)) }
+      ## priorV <- Vectorize(prior,"theta")
+      
+      ## posterior for theta
+      p <- length(b1)
+      const <- ( sqrt(2*pi)^p * det(V1) * det(V2) )^(-1)
+      M <- function(theta) { solve(cos(theta)^2 * S1 + sin(theta)^2 * S2) }
+      ## TODO t(b1) %*% S1 -> crossprod, and indep of theta?
+      bS1 <- crossprod(b1,S1)
+      bS2 <- crossprod(b2,S2)
+      mu <- function(theta) { t( (cos(theta) * bS1 + #t(b1) %*% S1 +
+                                  sin(theta) * bS2 #t(b2) %*% S2
+      ) %*% M(theta) ) }
+      L <- function(theta) {
+                                        #const * prior(theta) *
+          det(M(theta))^(-0.5) *
+          exp( -0.5 * (#t(b1) %*% S1 %*% b1 + t(b2) %*% S2 %*% b2 -
+              t(mu(theta)) %*% solve(M(theta)) %*% mu(theta)) )
+      }
+      LV <- Vectorize(L,"theta")
+      LV.int <- integrate(LV,lower=0,upper=pi)
+      post <- function(theta) { LV(theta) / LV.int$value }
+      
+      ##  posterior predictive p value
+      pv <- function(theta) { pchisq(chisq(theta,b1,b2),df=p,lower.tail=FALSE) }
+      pval <- Vectorize(pv,"theta")
+      toint <- function(theta) { pval(theta) * post(theta) }
+      ppp <- integrate(toint,lower=theta.min,upper=theta.max)
+
+      if(bma) {
+          ## numeric approx of lhood for BMA
+          theta.bma <- seq(0,pi,length=n.approx)
+          post.bma <- post(theta.bma)
+      }
+    
+    ## bayes factors
+    bf.calc <- function(eta) {
+      if(length(eta)==1)
+        return( LV(atan(eta))/priorV(atan(eta)) )      
+      if(length(eta)==2) {
+        theta.range <- sort(atan(eta))
+        return(integrate(LV,lower=theta.range[1],upper=theta.range[2])$value/
+               integrate(priorV,lower=theta.range[1], upper=theta.range[2])$value)
+      }
+      warning(paste("Cannot calculate Bayes Factor for eta =",eta,"require length == 1 or 2."))
+      return(NA)
+    }
+    
+    if(!is.null(bayes.factor)) {
+      if(length(bayes.factor)<2)
+        warning("You are trying to prepare to calculate Bayes Factors for a single value or interval for eta.  bayes.factor should have length at least two.")
+      post.bf <- sapply(bayes.factor, bf.calc)
+      names(post.bf) <- c(bayes.factor)
+    } else {
+      post.bf <- numeric(0)
+    }
+
+    ## credible interval - only if not doing bma
+    if(!bma) {
+      cred.int <- credible.interval(post, interval=c(theta.min, theta.max), n.approx=n.approx,
+                                    level.ci=level.ci)
+    }
+  }
   
 ################################################################################
     

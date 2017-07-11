@@ -98,7 +98,7 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,s
                       response1="Y", response2="Y",
                       stratum1=NULL, stratum2=NULL,
                       family1="binomial", family2="binomial",
-                     bayes=!is.null(bayes.factor),
+                      bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                      plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
   snps <- unique(snps)
