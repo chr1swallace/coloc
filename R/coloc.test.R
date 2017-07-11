@@ -1,47 +1,47 @@
 credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
-  if(is.function(post)) {
-    ## minimum, so that we can reset theta.min, theta.max and centre on the mode
-    minimum <- optimize(post, interval)
-    t.min <- minimum$minimum
-    t.max <- minimum$minimum + pi
-    t.seq <- seq(t.min, t.max, length=n.approx)
-    pval <- post(t.seq)
-#    tpost <- function(theta) theta*post(theta)
-#    t.mean <- integrate(tpost,lower=interval[1], upper=interval[2])$value
-  #  epost <- function(theta) tan(theta)*post(theta)
-#    e.mean <- integrate(epost,lower=interval[1], upper=interval[2])$value
-#    e.mean <- tan(t.mean)
-  } else {
-    t.seq <- seq(interval[1],interval[2],length=n.approx)
-    minimum <- which.min(post)
-    t.min <- t.seq[minimum]
-    t.max <- t.min + pi
-    t.seq <- seq(t.min, t.max, length=n.approx)
-    pval <- post[c(minimum:n.approx,1:(minimum - 1))]
-#    e.mean <- tan(sum(pval * t.seq)/sum(pval))
-  }    
-  pval <- pval/sum(pval)
-  
-  ## search
-  centre <- which.max(pval)
-  t.mode <- t.seq[centre]
-  v <- pval[centre-1]
-  l <- which.min(abs(pval[1:(centre+1)] - v))
-  u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
-  while(sum(pval[l:u])<level.ci) { # go down in twenties
-    cat(".")
-    v <- max(pval[l-20], pval[u+20])
+    if(is.function(post)) {
+        ## minimum, so that we can reset theta.min, theta.max and centre on the mode
+        minimum <- optimize(post, interval)
+        t.min <- minimum$minimum
+        t.max <- minimum$minimum + pi
+        t.seq <- seq(t.min, t.max, length=n.approx)
+        pval <- post(t.seq)
+                                        #    tpost <- function(theta) theta*post(theta)
+                                        #    t.mean <- integrate(tpost,lower=interval[1], upper=interval[2])$value
+                                        #  epost <- function(theta) tan(theta)*post(theta)
+                                        #    e.mean <- integrate(epost,lower=interval[1], upper=interval[2])$value
+                                        #    e.mean <- tan(t.mean)
+    } else {
+        t.seq <- seq(interval[1],interval[2],length=n.approx)
+        minimum <- which.min(post)
+        t.min <- t.seq[minimum]
+        t.max <- t.min + pi
+        t.seq <- seq(t.min, t.max, length=n.approx)
+        pval <- post[c(minimum:n.approx,1:(minimum - 1))]
+                                        #    e.mean <- tan(sum(pval * t.seq)/sum(pval))
+    }    
+    pval <- pval/sum(pval)
+    
+    ## search
+    centre <- which.max(pval)
+    t.mode <- t.seq[centre]
+    v <- pval[centre-1]
     l <- which.min(abs(pval[1:(centre+1)] - v))
     u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
-  }
-  while(sum(pval[l:u])>level.ci) { # go up in ones
-    cat(".")
-    v <- min(pval[l+1], pval[u-1])
-    l <- which.min(abs(pval[1:(centre+1)] - v))
-    u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
-  }
+    while(sum(pval[l:u])<level.ci) { # go down in twenties
+        cat(".")
+        v <- max(pval[l-20], pval[u+20])
+        l <- which.min(abs(pval[1:(centre+1)] - v))
+        u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
+    }
+    while(sum(pval[l:u])>level.ci) { # go up in ones
+        cat(".")
+        v <- min(pval[l+1], pval[u-1])
+        l <- which.min(abs(pval[1:(centre+1)] - v))
+        u <- which.min(abs(pval[(centre+1):n.approx] - v)) + centre
+    }
 
-  return(list(#eta.mean=e.mean, #tan(t.mean %% pi),
+    return(list(#eta.mean=e.mean, #tan(t.mean %% pi),
               eta.mode=tan(t.mode), 
               lower=tan(t.seq[l]), upper=tan(t.seq[u]), level=level.ci,
               level.observed=if(is.function(post)) {
@@ -295,8 +295,62 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                                     level.ci=level.ci)
     }
   }
+################################################################################
+    
+  ## plots
+  if(plot.coeff) {
+      message("Plots generated directly are deprecated.  Please plot returned object instead.")
+      coeff.plot(b1,b2,diag(V1),diag(V2),eta=eta.hat,
+               main="Coefficients",
+                                        #         sub=paste("ppp =",format.pval(ppp$value,digits=2),"p =",format.pval(pchisq(X2,df=nsnps-1,lower.tail=FALSE),digits=2)),
+               xlab=expression(b[1]),ylab=expression(b[2]))
+  }
 
-  faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
+  x <- seq(theta.min,theta.max,length=1001)
+
+  if(!is.null(plots.extra)) {
+    plot.data <- list(theta=x,
+                      eta=tan(x),
+                      chisq=chisqV(x,b1,b2),
+                      post.theta=if(bayes) { post(x) } else {rep(NA,length(x))},
+                      lhood=chisqV(x,b1,b2))
+    extra.plot(plot.data, plots.extra, theta.hat=theta.hat, eta.hat=eta.hat)   
+  }
+
+  ################################################################################
+  
+  ## return
+    if(!bayes) {
+      return(new("coloc",
+                 result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
+                 method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2))))
+    } else {
+      if(!bma) {
+return(new("colocBayes",
+                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
+                   method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
+                   ppp=ppp$value,
+                   credible.interval=cred.int,
+                   bayes.factor=post.bf))
+      } else {
+        return(new("colocBayesBMA",
+                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
+                   method="single",
+                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
+                   ppp=ppp$value,
+                   bma=post.bma,
+                   bayes.factor=post.bf))
+      }
+    }  
+}
+
+
+  
+
+
+faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
                                bayes.factor=NULL, bma=FALSE) {
   nsnps <- length(b1)

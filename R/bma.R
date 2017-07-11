@@ -319,13 +319,15 @@ marg.bf <- function(models,x,y,stratum=NULL,family) {
 
 
 rmna <- function(df,dnum,quiet) {
-  use <- apply(!is.na(df),1,all)
+  use <- complete.cases(df) #apply(!is.na(df),1,all)
   if(any(!use)) {
     if(!quiet)
       cat("dropping",sum(!use),"observations from dataset",dnum,"due to missingness.\n")
   }
-  return(df[use,,drop=FALSE])
+  return(df[which(use),,drop=FALSE])
 }
+
+
 prepare.df <- function(df1,df2=NULL,drop.cols,r2.trim,dataset=1,quiet=FALSE) {
   df1 <- rmna(df1,1,quiet=quiet)
   if(!is.null(df2)) {
@@ -335,8 +337,24 @@ prepare.df <- function(df1,df2=NULL,drop.cols,r2.trim,dataset=1,quiet=FALSE) {
     x <- df1[,setdiff(colnames(df1),drop.cols)]
   }
   r2 <- cor(x)^2
-  r2.high <- apply(r2, 1, function(x) which(x>r2.trim)[1])
-  snps <- colnames(x)[ r2.high == 1:length(r2.high) ]
+  d <- as.dist(1-r2)
+  h <- hclust(d,method="single")
+  hc <- cutree(h,h=1-r2.trim)
+  hgrp <- split(names(hc),hc)
+  snps <- sapply(hgrp,"[[",1)
   return(list(df1=df1,df2=df2,snps=snps))
 }
+## prepare.df.old <- function(df1,df2=NULL,drop.cols,r2.trim,dataset=1,quiet=FALSE) {
+##   df1 <- rmna(df1,1,quiet=quiet)
+##   if(!is.null(df2)) {
+##     df2 <- rmna(df2,2,quiet=quiet)
+##     x <- rbind(df1[,setdiff(colnames(df1),drop.cols)],df2[,setdiff(colnames(df2),drop.cols)])
+##   } else {
+##     x <- df1[,setdiff(colnames(df1),drop.cols)]
+##   }
+##   r2 <- cor(x)^2
+##   r2.high <- apply(r2, 1, function(x) which(x>r2.trim)[1])
+##   snps <- colnames(x)[ r2.high == 1:length(r2.high) ]
+##   return(list(df1=df1,df2=df2,snps=snps))
+## }
 

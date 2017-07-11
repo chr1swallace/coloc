@@ -160,7 +160,7 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @return data.frame with log(abf) or log(bf)
 ##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
-  message('Processing dataset')
+  #message('Processing dataset')
 
   nd <- names(d)
   if (! 'type' %in% nd)
