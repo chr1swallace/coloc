@@ -58,6 +58,8 @@ setClass("colocABF",
 #'@exportClass colocBayes
 setClass("coloc",
          representation(result="numeric", method="character", plot.data="list"))
+setClass("colocTWAS",
+         representation(result="data.frame", method="character", plot.data="list"))
 setClass("colocBayes",
          representation(ppp="numeric",
                         credible.interval="list",
