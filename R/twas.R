@@ -117,35 +117,34 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
                                 setdiff(colnames(df2),c(response2,stratum2))),
                       response1="Y", response2="Y",
                       stratum1=NULL, stratum2=NULL,
-                      family1="binomial", family2="binomial",
                       r2.window=200,
                       bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                       plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
     snps <- unique(snps)
-  n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
-  if(n.orig<nsnps)
-    stop("require at least ",nsnps," SNPs to do colocalisation testing")
-  df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
-  df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
-
-  ## remove missings
-  message("remove any incomplete observations")
-  rmmiss <- function(x){
-      use <- complete.cases(x)
-      if(!all(use))
-          x <- x[which(use),]
-    return(x)
-  }
-  df1 <- rmmiss(df1)
-  df2 <- rmmiss(df2)
+    n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
+    if(n.orig<nsnps)
+        stop("require at least ",nsnps," SNPs to do colocalisation testing")
+    df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
+    df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
+    
+    ## remove missings
+    message("remove any incomplete observations")
+    rmmiss <- function(x){
+        use <- complete.cases(x)
+        if(!all(use))
+            x <- x[which(use),]
+        return(x)
+    }
+    df1 <- rmmiss(df1)
+    df2 <- rmmiss(df2)
 
   ## remove rares (<0.05) and invariants
-  message("remove rare variants (MAF < 0.05)")
+  message("remove rare variants (MAF < 0.01)")
   x <- rbind(df1[,snps],df2[,snps])
   v <- apply(x,2,var)
   m <- colMeans(x)
-  drop <- which(v==0 | m < 0.05/2 | m > 2 - 0.05/2 )
+  drop <- which(v==0 | m < 0.01/2 | m > 2 - 0.01/2 )
   if(length(drop)) {
       snps <- snps[-drop]
       x <- rbind(df1[,snps],df2[,snps])
@@ -157,96 +156,179 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
     x <- new("SnpMatrix",round(as.matrix(x)+1))
     r2 <- ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
     hf <- flashClust::hclust(as.dist(1-r2),method="single")
-  hfc <- cutree(hf,h=0.9)
-  g<-split(names(hfc),hfc)
+    hfc <- cutree(hf,h=0.9)
+    g<-split(names(hfc),hfc)
     message("   ",length(g)," groups found")
 
-    message("quantify support for eQTL within each group")   
+    message("quantify support for association within each group")   
     RESULTS <- vector("list",length(g))
-  sink("/dev/null")
-  for(i in seq_along(g)) {
-      d1 <- getstats(g[[i]],df1,response1,stratum1)
-      d2 <- getstats(g[[i]],df2,response2,stratum2)
+    sink("/dev/null")
+    for(i in seq_along(g)) {
+      d1 <- coloc:::getstats(g[[i]],df1,response1,stratum1)
+      d2 <- coloc:::getstats(g[[i]],df2,response2,stratum2)
       RESULTS[[i]] <- coloc.abf(d1,d2)$summary
-  }
+    }
   sink()
   results <- as.data.frame(do.call("rbind",RESULTS))
-  results$id <- 1:nrow(results)
-  results$sumH1 <- with(results,(PP.H1.abf + PP.H3.abf + PP.H4.abf))
-  ## with(results,qplot(sumH1))
-  use <- results$sumH1>0.05
-  if(!(any(use)))
-      stop("no evidence for eQTL")
-  snps <- unlist(g[use])
-  message("   taking ",sum(use)," group(s) of ",length(snps)," SNPs (total) forward for coloc testing")
-  
-  ## now tag
-  message("tag selected groups")
-  x <- x[,snps]
-  #summary(x)
-  r2 <- ld(x,x,stat="R.squared")
-  h <- flashClust::hclust(as.dist(1-r2))
-  hc <- cutree(h,h=0.5)
-  g <- split(names(hc),hc)
-  length(g)
-  snps <- sapply(g,"[[",1)
-  groupsize <- sapply(g,length)
-  message("   after tagging, ", length(snps), " remain")
-  
-
-## evaluate all pairs of interesting SNPs
-    cmb <- combn(1:length(snps),2)
-    message("evaluating ",ncol(cmb)," models")
-csize <- groupsize[cmb[1,]] * groupsize[cmb[2,]]
-cmb <- combn((snps),2)
-ln1 <- log(nrow(df1))
-ln2 <- log(nrow(df2))
-if(is.character(family2))
-    family2 <- if(family2=="binomial") { binomial() } else { gaussian() }
-if(is.character(family1))
-    family1 <- if(family1=="binomial") { binomial() } else { gaussian() }
-RESULTS <- vector("list",ncol(cmb))
-  drop1 <- drop2 <- 1
-if(!is.null(stratum1))
-    drop1 <- c(1,2)
-if(!is.null(stratum2))
-    drop2 <- c(1,2)
-  bic01 <- speedglm::speedglm(paste(response1," ~ ."), data=df1[,c(response1,stratum1),drop=FALSE], family=family1,
-                    k=ln1)$aic
-bic02 <- speedglm::speedglm(paste(response2," ~ ."), data=df2[,c(response2,stratum2),drop=FALSE], family=family2,
-                  k=ln2)$aic
-for(j in 1:ncol(cmb)) {
-    m1 <- speedglm::speedglm(paste(response1," ~ ."), data=df1[,c(response1,stratum1,cmb[,j])], family=family1,
-                   k=ln1)
-    b1 <- coefficients(m1)[-drop1]
-    v1 <- vcov(m1)[-drop1,-drop1]
-    m2 <- speedglm::speedglm(paste(response2," ~ ."), data=df2[,c(response2,stratum2,cmb[,j])], family=family2,
-                   k=ln2)
-    b2 <- coefficients(m2)[-drop2]
-    v2 <- vcov(m2)[-drop2,-drop2]
-    this.coloc <-  coloc.test.summary(b1,b2,v1,v2, plot.coeff=FALSE,bma=TRUE,n.approx=1001)
-   RESULTS[[j]] <- c(this.coloc@result, abf1=(m1$aic - bic01)/2, abf2= (m2$aic-bic01)/2)
+    ##results$id <- 1:nrow(results)
+    ##results$sumH1 <- with(results,(PP.H1.abf + PP.H3.abf + PP.H4.abf))
+    ## with(results,qplot(sumH1))
+    use <- results$PP.H0.abf<0.1
+    if(!(any(use)))
+        stop("no evidence for association")
+    plot.data <- vector("list",length(use))
+    for(i in which(use)) {
+        pcs <- pcs.prepare(df1[,snps], df2[,snps])
+        pcs.1 <- pcs.model(pcs, group=1, Y=df1[,response1], threshold=0.8, family=family1, stratum=stratum1)
+        pcs.2 <- pcs.model(pcs, group=2, Y=df2[,response2], threshold=0.8, family=family2, stratum=stratum2)
+        ct.pcs <- coloc.test(pcs.1,pcs.2)
+        if(!all(names(ct.pcs@result) %in% names(results)))
+            results[,names(ct.pcs@result)] <- NA
+        results[use,names(ct.pcs@result)] <- ct.pcs@result
+        plot.data[[i]] <- ct.pcs@plot.data
+    }
+    return(new("colocTWAS", result=results, plot.data=plot.data))
 }
 
-results <- as.data.frame(do.call("rbind",RESULTS))
-results$tagsize <- csize
 
-probs <- with(results,abf1 + abf2 + log(tagsize))
-psum <- logsum(probs)
-results$probs <- exp(probs - psum)
 
-## average p value
-with(results,sum(pchisq(chisquare,n-1) * probs))
-with(results,sum(eta.hat * probs))
-stats <- with(results,
-              c(eta.hat=sum(eta.hat * probs),
-                n=2,
-                p=sum(pchisq(chisquare,n-1) * probs)))
-return(new("coloc",
-           result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
-           method="BMA"))
+## coloc.twas.bad <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,stratum1)),
+##                                 setdiff(colnames(df2),c(response2,stratum2))),
+##                       response1="Y", response2="Y",
+##                       stratum1=NULL, stratum2=NULL,
+##                       family1="binomial", family2="binomial",
+##                       r2.window=200,
+##                       bayes=!is.null(bayes.factor),
+##                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
+##                       plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
+##     snps <- unique(snps)
+##   n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
+##   if(n.orig<nsnps)
+##     stop("require at least ",nsnps," SNPs to do colocalisation testing")
+##   df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
+##   df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
 
-}
+##   ## remove missings
+##   message("remove any incomplete observations")
+##   rmmiss <- function(x){
+##       use <- complete.cases(x)
+##       if(!all(use))
+##           x <- x[which(use),]
+##     return(x)
+##   }
+##   df1 <- rmmiss(df1)
+##   df2 <- rmmiss(df2)
+
+##   ## remove rares (<0.05) and invariants
+##   message("remove rare variants (MAF < 0.05)")
+##   x <- rbind(df1[,snps],df2[,snps])
+##   v <- apply(x,2,var)
+##   m <- colMeans(x)
+##   drop <- which(v==0 | m < 0.05/2 | m > 2 - 0.05/2 )
+##   if(length(drop)) {
+##       snps <- snps[-drop]
+##       x <- rbind(df1[,snps],df2[,snps])
+##   }
+
+##   ## cluster SNPs, and calc posterior prob for association
+##   message("cluster SNPs to define groups for coloc testing")
+##  ## system.time(r2 <- WGCNA::cor(x)^2)
+##     x <- new("SnpMatrix",round(as.matrix(x)+1))
+##     r2 <- ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
+##     hf <- flashClust::hclust(as.dist(1-r2),method="single")
+##     hfc <- cutree(hf,h=0.9)
+##     g<-split(names(hfc),hfc)
+##     message("   ",length(g)," groups found")
+
+##     message("quantify support for eQTL within each group")   
+##     RESULTS <- vector("list",length(g))
+##     sink("/dev/null")
+##     for(i in seq_along(g)) {
+##       d1 <- coloc:::getstats(g[[i]],df1,response1,stratum1)
+##       d2 <- coloc:::getstats(g[[i]],df2,response2,stratum2)
+##       RESULTS[[i]] <- coloc.abf(d1,d2)$summary
+##     }
+##   sink()
+##   results <- as.data.frame(do.call("rbind",RESULTS))
+##   results$id <- 1:nrow(results)
+##   results$sumH1 <- with(results,(PP.H1.abf + PP.H3.abf + PP.H4.abf))
+##   ## with(results,qplot(sumH1))
+##   use <- results$sumH1>0.05
+##   if(!(any(use)))
+##       stop("no evidence for eQTL")
+##   snps <- unlist(g[use])
+##   message("   taking ",sum(use)," group(s) of ",length(snps)," SNPs (total) forward for coloc testing")
+  
+##   ## now tag
+##   message("tag selected groups")
+##   x <- x[,snps]
+##   #summary(x)
+##   r2 <- ld(x,x,stat="R.squared")
+##   h <- flashClust::hclust(as.dist(1-r2))
+##   hc <- cutree(h,h=0.5)
+##   g <- split(names(hc),hc)
+##   length(g)
+##   snps <- sapply(g,"[[",1)
+##   groupsize <- sapply(g,length)
+##   message("   after tagging, ", length(snps), " remain")
+  
+
+## ## evaluate all pairs of interesting SNPs
+##     cmb <- combn(1:length(snps),2)
+##     message("evaluating ",ncol(cmb)," models")
+## csize <- groupsize[cmb[1,]] * groupsize[cmb[2,]]
+## cmb <- combn((snps),2)
+## ln1 <- log(nrow(df1))
+## ln2 <- log(nrow(df2))
+## if(is.character(family2))
+##     family2 <- if(family2=="binomial") { binomial() } else { gaussian() }
+## if(is.character(family1))
+##     family1 <- if(family1=="binomial") { binomial() } else { gaussian() }
+## RESULTS <- vector("list",ncol(cmb))
+##   drop1 <- drop2 <- 1
+## if(!is.null(stratum1))
+##     drop1 <- c(1,2)
+## if(!is.null(stratum2))
+##     drop2 <- c(1,2)
+##   bic01 <- speedglm::speedglm(paste(response1," ~ ."), data=df1[,c(response1,stratum1),drop=FALSE], family=family1,
+##                     k=ln1)$aic
+## bic02 <- speedglm::speedglm(paste(response2," ~ ."), data=df2[,c(response2,stratum2),drop=FALSE], family=family2,
+##                   k=ln2)$aic
+## for(j in 1:ncol(cmb)) {
+##     m1 <- speedglm::speedglm(paste(response1," ~ ."), data=df1[,c(response1,stratum1,cmb[,j])], family=family1,
+##                    k=ln1)
+##     b1 <- coefficients(m1)[-drop1]
+##     v1 <- vcov(m1)[-drop1,-drop1]
+##     m2 <- speedglm::speedglm(paste(response2," ~ ."), data=df2[,c(response2,stratum2,cmb[,j])], family=family2,
+##                    k=ln2)
+##     b2 <- coefficients(m2)[-drop2]
+##     v2 <- vcov(m2)[-drop2,-drop2]
+##     this.coloc <-  coloc.test.summary(b1,b2,v1,v2, plot.coeff=FALSE,bma=TRUE,n.approx=1001)
+##    RESULTS[[j]] <- c(this.coloc@result, abf1=(m1$aic - bic01)/2, abf2= (m2$aic-bic01)/2)
+## }
+
+## results <- as.data.frame(do.call("rbind",RESULTS))
+## results$tagsize <- csize
+##     p1 <- results$abf1 + log(results$tagsize)
+##     p1 <- p1 - logsum(p1)
+##     p2 <- results$abf2 + log(results$tagsize)
+##     p2 <- p2 - logsum(p2)
+    
+##     probs <- exp(p1) + exp(p2)
+##     results$probs <- probs/sum(probs)
+
+## ## average p value
+## with(results,sum(pchisq(chisquare,n-1) * probs))
+## with(results,sum(eta.hat * probs))
+## stats <- with(results,
+##               c(eta.hat=sum(eta.hat * probs),
+##                 n=2,
+##                 p=sum(pchisq(chisquare,n-1) * probs)))
+## return(new("coloc",
+##            result=c(stats["eta.hat"],chisquare=NA,stats["n"],stats["p"]),
+##            method="BMA"))
+
+## }
 
   ## ## require x matrices to be of full rank - but this is nuts when ncol(x) >> nrow(x)
   ## ranker <- function(x) {

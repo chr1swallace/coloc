@@ -102,11 +102,11 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL
   p <- ggplot(df,aes(x=x,y=y,xmin=x-1.96*x.se,xmax=x+1.96*x.se,ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha)) +
     geom_hline(yintercept=0) + geom_vline(xintercept=0) +
       geom_errorbar(col="steelblue4") + 
-      geom_errorbarh(col="steelblue4") +theme(legend.position="none") + labs(x="beta.1",y="beta.2")
-  if(!is.null(slope))
-    p <- p + geom_abline(slope=slope,colour="blue",linetype="dashed")
-  if(!is.null(annot))
-    p <- p + annotate("text", y= max(df$y+1.96*df$y.se), x =max(df$x+1.96*df$x.se),label=annot,hjust=1)
+  geom_errorbarh(col="steelblue4") +theme(legend.position="none") +
+   geom_abline(slope=eta,colour="blue",linetype="dashed") +
+  labs(x="beta.1",y="beta.2")
+    if(!is.null(annot))
+        p <- p + annotate("text", y= max(df$y+1.96*df$y.se), x =max(df$x+1.96*df$x.se),label=annot,hjust=1)
   
   return(p)
   

@@ -3,6 +3,8 @@
 \docType{methods}
 \name{plot}
 \alias{plot}
+\alias{plot,colocTWAS,missing-method}
+\alias{plot,coloc,missing-method}
 \alias{plot,coloc,missing-method}
 \alias{plot,colocABF,missing-method}
 \alias{plot,coloc,missing-method}
@@ -11,6 +13,8 @@
 \title{Plotting functions for the coloc package}
 \usage{
 plot(x, y, ...)
+
+\S4method{plot}{colocTWAS,missing}(x)
 
 \S4method{plot}{coloc,missing}(x, y, ...)
 

@@ -8,9 +8,8 @@ structure.}
 coloc.twas(df1, df2, snps = intersect(setdiff(colnames(df1), c(response1,
   stratum1)), setdiff(colnames(df2), c(response2, stratum2))),
   response1 = "Y", response2 = "Y", stratum1 = NULL, stratum2 = NULL,
-  family1 = "binomial", family2 = "binomial", r2.window = 200,
-  bayes = !is.null(bayes.factor), thr = 0.01, nsnps = 2,
-  n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
+  r2.window = 200, bayes = !is.null(bayes.factor), thr = 0.01,
+  nsnps = 2, n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
   r2.trim = 0.95, quiet = FALSE, bma = FALSE, ...)
 }
 \arguments{
@@ -25,8 +24,6 @@ potential explanatory variables for two independent datasets.}
 \item{stratum1}{optional column name of df1 that gives stratum information}
 
 \item{stratum2}{optional column name of df2 that gives stratum information}
-
-\item{family1, family2}{the error family for use in \code{glm}}
 
 \item{bayes}{Logical, indicating whether to perform Bayesian
 inference for the coefficient of proportionality, eta.  If
@@ -61,6 +58,8 @@ trimmed for BMA}
 \item{bma}{if true (default), average over models}
 
 \item{...}{other parameters passed to \code{coloc.test}}
+
+\item{family1, family2}{the error family for use in \code{glm}}
 }
 \value{
 a \code{coloc} or \code{colocBayes} object
