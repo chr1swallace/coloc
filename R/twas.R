@@ -116,6 +116,7 @@
 coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,stratum1)),
                                 setdiff(colnames(df2),c(response2,stratum2))),
                       response1="Y", response2="Y",
+                      family1="gaussian",family2="binomial",
                       stratum1=NULL, stratum2=NULL,
                       r2.window=200,
                       bayes=!is.null(bayes.factor),
