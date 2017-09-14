@@ -77,6 +77,9 @@ setMethod("plot", signature(x="colocPCs",y="missing"),
 ##             }
           })
 
+setMethod("show","colocTWAS", function(object) {
+    print(object@result)
+})
 
 setMethod("show","colocPCs",function(object) {
   tt <- table(object@group)

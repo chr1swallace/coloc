@@ -187,6 +187,7 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
         results[use,names(ct.pcs@result)] <- ct.pcs@result
         plot.data[[i]] <- ct.pcs@plot.data
     }
+    results[,"p"] <- pchisq(results[,"chisquare"],df=results[,"n"]-1,lower.tail=FALSE)
     return(new("colocTWAS", result=results, plot.data=plot.data))
 }
 
