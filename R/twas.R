@@ -33,8 +33,15 @@
 #' 
 #'@inheritParams coloc.bma
 #' @param snps The SNPs to consider as potential explanatory variables
-#' @param stratum1 optional column name of df1 that gives stratum information
-#' @param stratum2 optional column name of df2 that gives stratum information
+#' @param stratum1 optional column name of df1 that gives stratum
+#'     information
+#' @param stratum2 optional column name of df2 that gives stratum
+#'     information
+#' @param r2.window window (number of SNPs) within which to calculate
+#'     rsq to define LD blocks
+#' @param pca.thr proportion of variance explained threshold used to
+#'     select principal components to include in the test
+#' @param bayes not used
 #' @param thr posterior probability threshold used to trim SNP list.
 #'     Only SNPs with a marginal posterior probability of inclusion
 #'     greater than this with one or other trait will be included in
@@ -119,6 +126,7 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
                       family1="gaussian",family2="binomial",
                       stratum1=NULL, stratum2=NULL,
                       r2.window=200,
+                      pca.thr=0.8,
                       bayes=!is.null(bayes.factor),
                       thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
                       plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
@@ -178,10 +186,12 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
     if(!(any(use)))
         stop("no evidence for association")
     plot.data <- vector("list",length(use))
+    s1 <- if(is.null(stratum1)) { NULL } else { df1[,stratum1] }
+    s2 <- if(is.null(stratum2)) { NULL } else { df2[,stratum2] }
     for(i in which(use)) {
         pcs <- pcs.prepare(df1[,snps], df2[,snps])
-        pcs.1 <- pcs.model(pcs, group=1, Y=df1[,response1], threshold=0.8, family=family1, stratum=stratum1)
-        pcs.2 <- pcs.model(pcs, group=2, Y=df2[,response2], threshold=0.8, family=family2, stratum=stratum2)
+        pcs.1 <- pcs.model(pcs, group=1, Y=df1[,response1], threshold=pca.thr, family=family1, stratum=s1)
+        pcs.2 <- pcs.model(pcs, group=2, Y=df2[,response2], threshold=pca.thr, family=family2, stratum=s2)
         ct.pcs <- coloc.test(pcs.1,pcs.2)
         if(!all(names(ct.pcs@result) %in% names(results)))
             results[,names(ct.pcs@result)] <- NA
