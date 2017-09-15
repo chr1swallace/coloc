@@ -125,14 +125,14 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
                       response1="Y", response2="Y",
                       family1="gaussian",family2="binomial",
                       stratum1=NULL, stratum2=NULL,
-                      r2.window=200,
+                      r2.window=140,
                       pca.thr=0.8,
                       bayes=!is.null(bayes.factor),
-                      thr=0.01,nsnps=2,n.approx=1001, bayes.factor=NULL,
+                      thr=0.01,n.approx=1001, bayes.factor=NULL,
                       plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
     snps <- unique(snps)
     n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
-    if(n.orig<nsnps)
+    if(n.orig<2)
         stop("require at least ",nsnps," SNPs to do colocalisation testing")
     df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
     df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
@@ -163,7 +163,7 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
   message("cluster SNPs to define groups for coloc testing")
  ## system.time(r2 <- WGCNA::cor(x)^2)
     x <- new("SnpMatrix",round(as.matrix(x)+1))
-    r2 <- ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
+    r2 <- snpStats::ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
     hf <- flashClust::hclust(as.dist(1-r2),method="single")
     hfc <- cutree(hf,h=0.9)
     g<-split(names(hfc),hfc)
@@ -189,13 +189,15 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
     s1 <- if(is.null(stratum1)) { NULL } else { df1[,stratum1] }
     s2 <- if(is.null(stratum2)) { NULL } else { df2[,stratum2] }
     for(i in which(use)) {
-        pcs <- pcs.prepare(df1[,snps], df2[,snps])
+        pcs <- pcs.prepare(df1[,g[[i]]], df2[,g[[i]]])
         pcs.1 <- pcs.model(pcs, group=1, Y=df1[,response1], threshold=pca.thr, family=family1, stratum=s1)
         pcs.2 <- pcs.model(pcs, group=2, Y=df2[,response2], threshold=pca.thr, family=family2, stratum=s2)
         ct.pcs <- coloc.test(pcs.1,pcs.2)
-        if(!all(names(ct.pcs@result) %in% names(results)))
-            results[,names(ct.pcs@result)] <- NA
-        results[use,names(ct.pcs@result)] <- ct.pcs@result
+        for(v in c("eta.hat","chisquare","n")) {
+            if(!(v %in% names(results)))
+                results[[v]] <- NA
+            results[i,v] <- ct.pcs@result[v]
+        }
         plot.data[[i]] <- ct.pcs@plot.data
     }
     results[,"p"] <- pchisq(results[,"chisquare"],df=results[,"n"]-1,lower.tail=FALSE)
