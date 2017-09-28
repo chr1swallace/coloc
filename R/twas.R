@@ -128,6 +128,10 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
     ## system.time(r2 <- WGCNA::cor(x)^2)
     x <- new("SnpMatrix",round(as.matrix(x)+1))
     r2 <- snpStats::ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
+    if(any(is.na(r2))) {
+        message("NAs in r2 matrix.  setting to 0.  might be risky...")
+        r2[is.na(r2)] <- 0
+    }
     hf <- flashClust::hclust(as.dist(1-r2),method="single")
     hfc <- cutree(hf,h=0.9)
     g<-split(names(hfc),hfc)
