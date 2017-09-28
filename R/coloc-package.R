@@ -30,9 +30,9 @@
 #' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
 #' @importFrom methods setMethod setClass
 #' @import ggplot2
-#' @importFrom graphics abline axis box
+#' @importFrom graphics abline axis box par
 #' @importFrom methods as is new slot
-#' @importFrom stats as.formula coef coefficients cor glm integrate lm optimize pchisq pf prcomp qnorm var vcov
+#' @importFrom stats as.dist as.formula coef coefficients complete.cases cor cutree glm integrate lm optimize pchisq pf prcomp qnorm sd var vcov
 #' @importFrom utils combn
 NULL
 

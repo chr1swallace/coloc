@@ -5,13 +5,15 @@ Imports:
     snpStats,
     BMA,
     reshape,
-    methods
+    methods,
+    flashClust,
+    speedglm
 Suggests:
     knitr,
     testthat
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 2.4
-Date: 2017-03-21
+Version: 3.0
+Date: 2017-09-23
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",

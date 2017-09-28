@@ -385,9 +385,9 @@ faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.ext
   ppp <- NULL ; cred.int <- list()
   if(bayes) {
       ## cauchy prior for theta
-      ## prior <- function(theta) { tt <- tan(theta);
-      ##                            k*(1+tt^2) / (2*pi*(1 + k^2 * tt^2)) }
-      ## priorV <- Vectorize(prior,"theta")
+      prior <- function(theta) { tt <- tan(theta);
+                                 k*(1+tt^2) / (2*pi*(1 + k^2 * tt^2)) }
+      priorV <- Vectorize(prior,"theta")
       
       ## posterior for theta
       p <- length(b1)

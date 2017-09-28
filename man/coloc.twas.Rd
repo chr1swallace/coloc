@@ -5,25 +5,46 @@
 \title{Wrapper to use colocalization testing within a Bayesian model averaging
 structure.}
 \usage{
-coloc.twas(df1, df2, snps = intersect(setdiff(colnames(df1), c(response1,
-  stratum1)), setdiff(colnames(df2), c(response2, stratum2))),
-  response1 = "Y", response2 = "Y", stratum1 = NULL, stratum2 = NULL,
-  r2.window = 200, bayes = !is.null(bayes.factor), thr = 0.01,
-  nsnps = 2, n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
+coloc.twas(df1, df2, snps = intersect(colnames(df1), colnames(df2)),
+  maf.min = 0.01, response1 = "Y", response2 = "Y",
+  family1 = "gaussian", family2 = "binomial", stratum1 = NULL,
+  stratum2 = NULL, r2.window = min(length(snps) - 1, 140), pca.thr = 0.8,
+  nsnps = 2, bayes = !is.null(bayes.factor), thr = 0.01,
+  n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
   r2.trim = 0.95, quiet = FALSE, bma = FALSE, ...)
 }
 \arguments{
-\item{df1, df2}{Each is a dataframe, containing response and
+\item{df1}{Each is a dataframe, containing response and
+potential explanatory variables for two independent datasets.}
+
+\item{df2}{Each is a dataframe, containing response and
 potential explanatory variables for two independent datasets.}
 
 \item{snps}{The SNPs to consider as potential explanatory variables}
 
-\item{response1, response2}{The names of the response variables in
+\item{maf.min}{SNPs with MAF < min.maf will be dropped before testing.}
+
+\item{response1}{The names of the response variables in
 \code{df1} and \code{df2} respectively}
+
+\item{response2}{The names of the response variables in
+\code{df1} and \code{df2} respectively}
+
+\item{family1}{the error family for use in \code{glm}}
+
+\item{family2}{the error family for use in \code{glm}}
 
 \item{stratum1}{optional column name of df1 that gives stratum information}
 
 \item{stratum2}{optional column name of df2 that gives stratum information}
+
+\item{r2.window}{window (number of SNPs) within which to calculate
+rsq to define LD blocks}
+
+\item{pca.thr}{proportion of variance explained threshold used to
+select principal components to include in the test}
+
+\item{nsnps}{number of SNPs required to model both traits.}
 
 \item{bayes}{Logical, indicating whether to perform Bayesian
 inference for the coefficient of proportionality, eta.  If
@@ -36,10 +57,6 @@ time in simulations, for example.}
 Only SNPs with a marginal posterior probability of inclusion
 greater than this with one or other trait will be included in
 the full BMA analysis}
-
-\item{nsnps}{number of SNPs required to model both traits.  The BMA
-analysis will average over all possible \code{nsnp} SNP models,
-subject to \code{thr} above.}
 
 \item{n.approx}{number of values at which to numerically
 approximate the posterior}
@@ -58,11 +75,9 @@ trimmed for BMA}
 \item{bma}{if true (default), average over models}
 
 \item{...}{other parameters passed to \code{coloc.test}}
-
-\item{family1, family2}{the error family for use in \code{glm}}
 }
 \value{
-a \code{coloc} or \code{colocBayes} object
+a \code{colocTWAS}
 }
 \description{
 Performs the colocalisation tests described in Plagnol et al (2009)
@@ -73,28 +88,16 @@ data, and where the number of SNPs may be very large.
 \details{
 The adaptations are first to split the SNPs according to LD, then
 take through to colocalisation testing only those with some
-evidence for association to the eQTL.  This is done by summing the
-posterior support for H1, H3 and H4 given by the coloc.abf function
-within each SNP group and using only SNPs in groups with posterior support of at least 0.05.
+evidence for association to either trait.  This is done by summing
+the posterior support for H1, H2, H3 and H4 given by the coloc.abf
+function within each SNP group and using only SNPs in groups with
+summed posterior support of at least 0.1.
 
-Note that SNPs groups that show association only to the GWAS trait
-are ignored, because it is possible for GWAS variants acting
-through different pathways to be physically proximal, and our focus
-is on whether the eQTL can explain the GWAS trait.  Note that there
-*may* exist GWAS variants that are proximal in evolutionary
-distance (ie in some LD) that act through different pathways.  In
-that case, this test should reject colocalisation.  This is not
-appropriate, but developing a test that copes with this better will
-require further work.
-
-The second adaptation is to generate faster (though less accurate)
-approximations to the Bayes Factors for multi SNP models that are
-used to weight the colocalistaion test result for each pair of SNPs
-by using the approximation that
-
-ABF = ( BIC1 - BIC0 ) / 2
-
-This is for reasons of speed, as more SNPs may enter this test.
+Note that there *may* exist GWAS variants that are proximal in
+evolutionary distance (ie in some LD) that act through different
+pathways.  In that case, this test should reject colocalisation.
+This is not appropriate, but developing a test that copes with this
+better will require further work.
 }
 \examples{
 
@@ -121,20 +124,18 @@ set.seed(1)
 df1=as.data.frame(cbind(Y1=Y1,X1))
 df2=as.data.frame(cbind(Y2=Y2,X2))
 
-result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+result <- coloc.twas( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 family1="gaussian", family2="gaussian",
 nsnps=2,bayes.factor=c(1,2,3))
 result
-plot(result)
 
 ## test colocalisation when one dataset contains a stratifying factor in column named "s"
 df1$s <- rbinom(500,1,0.5)
-result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+result <- coloc.twas( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 stratum1="s",
 family1="gaussian", family2="gaussian",
 nsnps=2,bayes.factor=c(1,2,3))
 result
-plot(result)
 
 }
 \references{

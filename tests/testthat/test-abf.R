@@ -4,6 +4,7 @@ X <- Autosomes[,101:201]
 cs <- col.summary(X)
 X <- X[, cs[,"MAF"]>0.05 & cs[,"Call.rate"]>0.9]
 maf <- col.summary(X)[,"MAF"]
+set.seed(42)
 
 ## quantitative trait
 Y<-rnorm(nrow(X),mean=as(X[,8],"numeric"),sd=4) + rnorm(nrow(X),sd=2)

@@ -8,66 +8,31 @@
 #'
 #' The adaptations are first to split the SNPs according to LD, then
 #' take through to colocalisation testing only those with some
-#' evidence for association to the eQTL.  This is done by summing the
-#' posterior support for H1, H3 and H4 given by the coloc.abf function
-#' within each SNP group and using only SNPs in groups with posterior support of at least 0.05.
+#' evidence for association to either trait.  This is done by summing
+#' the posterior support for H1, H2, H3 and H4 given by the coloc.abf
+#' function within each SNP group and using only SNPs in groups with
+#' summed posterior support of at least 0.1.
 #'
-#' Note that SNPs groups that show association only to the GWAS trait
-#' are ignored, because it is possible for GWAS variants acting
-#' through different pathways to be physically proximal, and our focus
-#' is on whether the eQTL can explain the GWAS trait.  Note that there
-#' *may* exist GWAS variants that are proximal in evolutionary
-#' distance (ie in some LD) that act through different pathways.  In
-#' that case, this test should reject colocalisation.  This is not
-#' appropriate, but developing a test that copes with this better will
-#' require further work.
+#' Note that there *may* exist GWAS variants that are proximal in
+#' evolutionary distance (ie in some LD) that act through different
+#' pathways.  In that case, this test should reject colocalisation.
+#' This is not appropriate, but developing a test that copes with this
+#' better will require further work.
 #'
-#' The second adaptation is to generate faster (though less accurate)
-#' approximations to the Bayes Factors for multi SNP models that are
-#' used to weight the colocalistaion test result for each pair of SNPs
-#' by using the approximation that
-#'
-#' ABF = ( BIC1 - BIC0 ) / 2
-#'
-#' This is for reasons of speed, as more SNPs may enter this test.
-#' 
 #'@inheritParams coloc.bma
-#' @param snps The SNPs to consider as potential explanatory variables
-#' @param stratum1 optional column name of df1 that gives stratum
-#'     information
-#' @param stratum2 optional column name of df2 that gives stratum
-#'     information
+#' @param maf.min SNPs with MAF < min.maf will be dropped before testing.
 #' @param r2.window window (number of SNPs) within which to calculate
 #'     rsq to define LD blocks
 #' @param pca.thr proportion of variance explained threshold used to
 #'     select principal components to include in the test
-#' @param bayes not used
-#' @param thr posterior probability threshold used to trim SNP list.
-#'     Only SNPs with a marginal posterior probability of inclusion
-#'     greater than this with one or other trait will be included in
-#'     the full BMA analysis
-#' @param nsnps number of SNPs required to model both traits.  The BMA
-#'     analysis will average over all possible \code{nsnp} SNP models,
-#'     subject to \code{thr} above.
 #' @param n.approx number of values at which to numerically
 #'     approximate the posterior
 #' @param bayes.factor if true, compare specific models
-#' @param plot.coeff deprecated
-#' @param r2.trim for pairs SNPs with r2>\code{r2.trim}, only one SNP
-#'     will be retained.  This avoids numerical instability problems
-#'     caused by including two highly correlated SNPs in the model.
-#' @param quiet suppress messages about how the model spaced is
-#'     trimmed for BMA
-#' @param bma if true (default), average over models
 #' @param ... other parameters passed to \code{coloc.test}
-#' @param df1,df2 Each is a dataframe, containing response and
-#'     potential explanatory variables for two independent datasets.
-#' @param response1,response2 The names of the response variables in
-#'     \code{df1} and \code{df2} respectively
-#' @param family1,family2 the error family for use in \code{glm}
-#'@return a \code{coloc} or \code{colocBayes} object
-#'@author Chris Wallace
-#'@references Wallace et al (2012).  Statistical colocalisation of
+#' @param nsnps number of SNPs required to model both traits.  
+#' @return a \code{colocTWAS}
+#' @author Chris Wallace
+#' @references Wallace et al (2012).  Statistical colocalisation of
 #'     monocyte gene expression and genetic risk variants for type 1
 #'     diabetes.  Hum Mol Genet 21:2815-2824.
 #'     \url{http://europepmc.org/abstract/MED/22403184}
@@ -101,38 +66,37 @@
 #'df1=as.data.frame(cbind(Y1=Y1,X1))
 #'df2=as.data.frame(cbind(Y2=Y2,X2))
 #'
-#'result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+#'result <- coloc.twas( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 #'family1="gaussian", family2="gaussian",
 #'nsnps=2,bayes.factor=c(1,2,3))
 #'result
-#'plot(result)
 #'
 #' ## test colocalisation when one dataset contains a stratifying factor in column named "s"
 #' df1$s <- rbinom(500,1,0.5)
-#'result <- coloc.bma( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
+#'result <- coloc.twas( df1, df2, snps=colnames(X1), response1="Y1", response2="Y2",
 #' stratum1="s",
 #'family1="gaussian", family2="gaussian",
 #'nsnps=2,bayes.factor=c(1,2,3))
 #'result
-#'plot(result)
 #'
 #'@export
 #' @importFrom flashClust hclust
 #' @importFrom speedglm speedglm
 #' @importFrom snpStats ld snp.rhs.estimates
-coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,stratum1)),
-                                setdiff(colnames(df2),c(response2,stratum2))),
-                      response1="Y", response2="Y",
+coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
+                       maf.min=0.01,
+                       response1="Y", response2="Y",
                       family1="gaussian",family2="binomial",
                       stratum1=NULL, stratum2=NULL,
-                      r2.window=140,
+                      r2.window=min(length(snps)-1,140),
                       pca.thr=0.8,
+                      nsnps=2,
                       bayes=!is.null(bayes.factor),
                       thr=0.01,n.approx=1001, bayes.factor=NULL,
                       plot.coeff=FALSE,r2.trim=0.95,quiet=FALSE,bma=FALSE,...) {
-    snps <- unique(snps)
-    n.orig <- length(setdiff(snps,c(response1,response2,stratum1,stratum2)))
-    if(n.orig<2)
+    snps <- unique(setdiff(snps,c(response1,response2,stratum1,stratum2)))
+    n.orig <- length(snps)
+    if(n.orig<nsnps)
         stop("require at least ",nsnps," SNPs to do colocalisation testing")
     df1 <- as.data.frame(df1[,c(response1,stratum1,snps)])
     df2 <- as.data.frame(df2[,c(response2,stratum2,snps)])
@@ -148,20 +112,20 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
     df1 <- rmmiss(df1)
     df2 <- rmmiss(df2)
 
-  ## remove rares (<0.05) and invariants
-  message("remove rare variants (MAF < 0.01)")
+  ## remove rares (<0.01) and invariants
+  message("remove rare variants : MAF < ,",maf.min)
   x <- rbind(df1[,snps],df2[,snps])
   v <- apply(x,2,var)
   m <- colMeans(x)
-  drop <- which(v==0 | m < 0.01/2 | m > 2 - 0.01/2 )
+  drop <- which(v==0 | m < maf.min/2 | m > 2 - maf.min/2 )
   if(length(drop)) {
       snps <- snps[-drop]
       x <- rbind(df1[,snps],df2[,snps])
   }
 
   ## cluster SNPs, and calc posterior prob for association
-  message("cluster SNPs to define groups for coloc testing")
- ## system.time(r2 <- WGCNA::cor(x)^2)
+    message("cluster SNPs to define groups for coloc testing")
+    ## system.time(r2 <- WGCNA::cor(x)^2)
     x <- new("SnpMatrix",round(as.matrix(x)+1))
     r2 <- snpStats::ld(x,depth=min(r2.window,ncol(x)),symmetric=TRUE,stat="R.squared")
     hf <- flashClust::hclust(as.dist(1-r2),method="single")
@@ -173,18 +137,17 @@ coloc.twas <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,
     RESULTS <- vector("list",length(g))
     sink("/dev/null")
     for(i in seq_along(g)) {
-      d1 <- coloc:::getstats(g[[i]],df1,response1,stratum1)
-      d2 <- coloc:::getstats(g[[i]],df2,response2,stratum2)
+      d1 <- getstats(g[[i]],df1,response1,stratum1)
+      d2 <- getstats(g[[i]],df2,response2,stratum2)
       RESULTS[[i]] <- coloc.abf(d1,d2)$summary
     }
   sink()
   results <- as.data.frame(do.call("rbind",RESULTS))
-    ##results$id <- 1:nrow(results)
-    ##results$sumH1 <- with(results,(PP.H1.abf + PP.H3.abf + PP.H4.abf))
-    ## with(results,qplot(sumH1))
     use <- results$PP.H0.abf<0.1
-    if(!(any(use)))
-        stop("no evidence for association")
+    if(!(any(use))) {
+        message("no evidence for association")
+        return(results)
+    }
     plot.data <- vector("list",length(use))
     s1 <- if(is.null(stratum1)) { NULL } else { df1[,stratum1] }
     s2 <- if(is.null(stratum2)) { NULL } else { df2[,stratum2] }
