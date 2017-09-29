@@ -113,7 +113,7 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
     df2 <- rmmiss(df2)
 
   ## remove rares (<0.01) and invariants
-  message("remove rare variants : MAF < ,",maf.min)
+  message("remove rare variants : MAF < ",maf.min)
   x <- rbind(df1[,snps],df2[,snps])
   v <- apply(x,2,var)
   m <- colMeans(x)
@@ -133,9 +133,15 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
         r2[is.na(r2)] <- 0
     }
     hf <- flashClust::hclust(as.dist(1-r2),method="single")
-    hfc <- cutree(hf,h=0.9)
-    g<-split(names(hfc),hfc)
-    message("   ",length(g)," groups found")
+    for(hi in seq(0.9,1,by=0.01)) {
+        hfc <- cutree(hf,h=hi)
+        g<-split(names(hfc),hfc)
+        sapply(g,length)
+        minl <- min(sapply(g,length))
+        if(minl>2)
+            break
+    }
+    message("   ",length(g)," groups found, minimim size ", minl)
 
     message("quantify support for association within each group")   
     RESULTS <- vector("list",length(g))
@@ -156,6 +162,7 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
     s1 <- if(is.null(stratum1)) { NULL } else { df1[,stratum1] }
     s2 <- if(is.null(stratum2)) { NULL } else { df2[,stratum2] }
     for(i in which(use)) {
+        message(i,"\t",length(g[[i]]))
         pcs <- pcs.prepare(df1[,g[[i]]], df2[,g[[i]]])
         pcs.1 <- pcs.model(pcs, group=1, Y=df1[,response1], threshold=pca.thr, family=family1, stratum=s1)
         pcs.2 <- pcs.model(pcs, group=2, Y=df2[,response2], threshold=pca.thr, family=family2, stratum=s2)
