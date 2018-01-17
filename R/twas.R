@@ -28,7 +28,7 @@
 #' @param n.approx number of values at which to numerically
 #'     approximate the posterior
 #' @param bayes.factor if true, compare specific models
-#' @param ... other parameters passed to \code{coloc.test}
+#' @param ... other parameters passed to \code{coloc.abf}
 #' @param nsnps number of SNPs required to model both traits.  
 #' @return a \code{colocTWAS}
 #' @author Chris Wallace
@@ -149,7 +149,7 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
     for(i in seq_along(g)) {
       d1 <- getstats(g[[i]],df1,response1,stratum1)
       d2 <- getstats(g[[i]],df2,response2,stratum2)
-      RESULTS[[i]] <- coloc.abf(d1,d2)$summary
+      RESULTS[[i]] <- coloc.abf(d1,d2,...)$summary
     }
   sink()
   results <- as.data.frame(do.call("rbind",RESULTS))
@@ -175,7 +175,7 @@ coloc.twas <- function(df1,df2,snps=intersect(colnames(df1), colnames(df2)),
         plot.data[[i]] <- ct.pcs@plot.data
     }
     results[,"p"] <- pchisq(results[,"chisquare"],df=results[,"n"]-1,lower.tail=FALSE)
-    return(new("colocTWAS", result=results, plot.data=plot.data))
+    return(new("colocTWAS", result=results, plot.data=plot.data,snp.blocks=g))
 }
 
 
