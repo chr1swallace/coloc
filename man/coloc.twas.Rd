@@ -74,7 +74,7 @@ trimmed for BMA}
 
 \item{bma}{if true (default), average over models}
 
-\item{...}{other parameters passed to \code{coloc.test}}
+\item{...}{other parameters passed to \code{coloc.abf}}
 }
 \value{
 a \code{colocTWAS}
