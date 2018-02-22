@@ -12,8 +12,8 @@ Suggests:
     knitr,
     testthat
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 3.0
-Date: 2018-01-15
+Version: 3.1
+Date: 2018-02-22
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",

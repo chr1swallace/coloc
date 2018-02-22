@@ -1,3 +1,9 @@
+2018-02-22    <chris@froome>
+
+	* v3.1 improved clarity of error messages in coloc.abf() sub functions
+	added finemap.abf to fine map a single trait
+	fixed warnings caused by CRAN disliking the BioConductor devel branch
+
 2017-03-21 Chris Wallace <cew54@cam.ac.uk>
 
 	* v2.4 added stratification to proportional testing approaches
