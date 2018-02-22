@@ -1,264 +1,387 @@
-<!DOCTYPE html>
-<html>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
-<title>Table of Contents</title>
-
-<script type="text/javascript">
-window.onload = function() {
-  var imgs = document.getElementsByTagName('img'), i, img;
-  for (i = 0; i < imgs.length; i++) {
-    img = imgs[i];
-    // center an image if it is the only element of its parent
-    if (img.parentElement.childElementCount === 1)
-      img.parentElement.style.textAlign = 'center';
+<style type="text/css">
+.knitr .inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage .left {
+  text-align: left;
+}
+.rimage .right {
+  text-align: right;
+}
+.rimage .center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<!-- 2018-02-22 Thu 12:07 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coloc: a package for colocalisation analyses</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Chris Wallace" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
   }
-};
-</script>
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
 
-<!-- Styles for R syntax highlighter -->
-<style type="text/css">
-   pre .operator,
-   pre .paren {
-     color: rgb(104, 118, 135)
-   }
-
-   pre .literal {
-     color: #990073
-   }
-
-   pre .number {
-     color: #099;
-   }
-
-   pre .comment {
-     color: #998;
-     font-style: italic
-   }
-
-   pre .keyword {
-     color: #900;
-     font-weight: bold
-   }
-
-   pre .identifier {
-     color: rgb(0, 0, 0);
-   }
-
-   pre .string {
-     color: #d14;
-   }
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
 </style>
-
-<!-- R syntax highlighter -->
 <script type="text/javascript">
-var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
-hljs.initHighlightingOnLoad();
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
 
-<!-- MathJax scripts -->
-<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
 </script>
-
-
-<style type="text/css">
-body, td {
-   font-family: sans-serif;
-   background-color: white;
-   font-size: 13px;
-}
-
-body {
-  max-width: 800px;
-  margin: auto;
-  padding: 1em;
-  line-height: 20px;
-}
-
-tt, code, pre {
-   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
-}
-
-h1 {
-   font-size:2.2em;
-}
-
-h2 {
-   font-size:1.8em;
-}
-
-h3 {
-   font-size:1.4em;
-}
-
-h4 {
-   font-size:1.0em;
-}
-
-h5 {
-   font-size:0.9em;
-}
-
-h6 {
-   font-size:0.8em;
-}
-
-a:visited {
-   color: rgb(50%, 0%, 50%);
-}
-
-pre, img {
-  max-width: 100%;
-}
-pre {
-  overflow-x: auto;
-}
-pre code {
-   display: block; padding: 0.5em;
-}
-
-code {
-  font-size: 92%;
-  border: 1px solid #ccc;
-}
-
-code[class] {
-  background-color: #F8F8F8;
-}
-
-table, td, th {
-  border: none;
-}
-
-blockquote {
-   color:#666666;
-   margin:0;
-   padding-left: 1em;
-   border-left: 0.5em #EEE solid;
-}
-
-hr {
-   height: 0px;
-   border-bottom: none;
-   border-top-width: thin;
-   border-top-style: dotted;
-   border-top-color: #999999;
-}
-
-@media print {
-   * {
-      background: transparent !important;
-      color: black !important;
-      filter:none !important;
-      -ms-filter: none !important;
-   }
-
-   body {
-      font-size:12pt;
-      max-width:100%;
-   }
-
-   a, a:visited {
-      text-decoration: underline;
-   }
-
-   hr {
-      visibility: hidden;
-      page-break-before: always;
-   }
-
-   pre, blockquote {
-      padding-right: 1em;
-      page-break-inside: avoid;
-   }
-
-   tr, img {
-      page-break-inside: avoid;
-   }
-
-   img {
-      max-width: 100% !important;
-   }
-
-   @page :left {
-      margin: 15mm 20mm 15mm 10mm;
-   }
-
-   @page :right {
-      margin: 15mm 10mm 15mm 20mm;
-   }
-
-   p, h2, h3 {
-      orphans: 3; widows: 3;
-   }
-
-   h2, h3 {
-      page-break-after: avoid;
-   }
-}
-</style>
-
-
-
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
-
 <body>
+<div id="content">
+<h1 class="title">Coloc: a package for colocalisation analyses</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline1">1. A brief outline of colocalisation analysis</a></li>
-<li><a href="#orgheadline2">2. Usage</a></li>
-<li><a href="#orgheadline6">3. Proportional testing</a>
+<li><a href="#org625e13b">1. A brief outline of colocalisation analysis</a></li>
+<li><a href="#org4556e8b">2. Usage</a></li>
+<li><a href="#orge4f7b37">3. An aside: fine mapping under a single causal variant assumption</a></li>
+<li><a href="#orgd7ccd86">4. (Approximate) Bayes Factor colocalisation analyses</a>
 <ul>
-<li><a href="#orgheadline3">3.1. Principal components</a></li>
-<li><a href="#orgheadline4">3.2. Bayesian model averaging</a></li>
-<li><a href="#orgheadline5">3.3. Using Bayes Factors to compare specific values of \(\eta\)</a></li>
+<li><a href="#org60a2de9">4.1. Introduction</a></li>
+<li><a href="#orgdf02ab1">4.2. The basic <code>coloc.abf</code> function</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline9">4. (Approximate) Bayes Factor colocalisation analyses</a>
+<li><a href="#org0d7a9b3">5. Proportional testing</a>
 <ul>
-<li><a href="#orgheadline7">4.1. Introduction</a></li>
-<li><a href="#orgheadline8">4.2. The basic <code>coloc.abf</code> function</a></li>
+<li><a href="#orgc65e323">5.1. Using Bayes Factors to compare specific values of \(\eta\)</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline10">5. The difference between proportional and ABF approaches</a></li>
+<li><a href="#org0fab162">6. The difference between proportional and ABF approaches</a></li>
 </ul>
 </div>
-
-<p></div></p>
-
-<!--
+</div>
+<div class="html">
+<p>
+&lt;!&#x2013;
 %\VignetteEngine{knitr}
 %\VignetteIndexEntry{Colocalisation vignette}
--->
+&#x2013;&gt;
+</p>
 
-<h1>A brief outline of colocalisation analysis<a id="orgheadline1"></a></h1>
+</div>
 
-<p><font color="grey">
-<em>Chris Wallace // <a href="http://chr1swallace.github.io">web</a> // <a href="mailto:cew54%20at%20cam.ac.uk">email</a></em><br/>
-</font></p>
+<div id="outline-container-org625e13b" class="outline-2">
+<h2 id="org625e13b"><span class="section-number-2">1</span> A brief outline of colocalisation analysis</h2>
+<div class="outline-text-2" id="text-1">
+<div class="html">
+<p>
+&lt;font color="grey"&gt;
+<b>Chris Wallace <i>/ [web](<a href="http://chr1swallace.github.io">http://chr1swallace.github.io</a>) /</i> [email](<a href="mailto:cew54">mailto:cew54</a> at cam.ac.uk)</b>  
+&lt;/font&gt;
+</p>
 
-<p>The coloc package can be used to perform genetic colocalisation
+</div>
+
+<p>
+The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region.  There are a
 few key references which this vignette will not duplicate (see below),
-but, in brief, two approaches are implemented.</p>
+but, in brief, two approaches are implemented.
+</p>
 
-<p>First, the proportional approach uses the fact that for two traits
+<p>
+First, the proportional approach uses the fact that for two traits
 sharing causal variants, regression coefficients for either trait
 against any set of SNPs in the neighbourhood of those variants must be
 proportional.  This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
-in the context of evaluating whether expression of the gene <em>RPS26</em>
+in the context of evaluating whether expression of the gene <i>RPS26</i>
 mediated the association of type 1 diabetes to a region on chromosome
 12q13 as had recently been proposed.  The test addressed a common
 issue in genetics, and meant researchers could avoid the need to
 squint at parallel manhattan plots to decide whether two traits share
 causal variants.  The function <code>coloc.test()</code> in this package evolved
-from code released by Vincent, but no longer available.</p>
+from code released by Vincent, but no longer available.
+</p>
 
-<p>However, choosing <strong>which</strong> SNPs to use for the test is a problem.
+<p>
+However, choosing <b>which</b> SNPs to use for the test is a problem.
 The obvious choice is to use those most strongly associated with one
 or other trait to maximise information, but doing so induces bias in
 the regression coefficients, which in turn leads to increased
@@ -269,17 +392,20 @@ component summary of genetic variation in the region to overcome the
 need to select a small set of test SNPs, implemented in <code>coloc.pcs()</code>
 and associated functions, or to use the ideas of Bayesian model
 averaging to average p values over SNP selections, generating
-posterior predictive p values, implemented in <code>coloc.bma()</code>.</p>
+posterior predictive p values, implemented in <code>coloc.bma()</code>.
+</p>
 
-<p>Proportional testing, however, requires individual level genotype
+<p>
+Proportional testing, however, requires individual level genotype
 data, which are not always available.  Claudia Giambartolomei and
 Vincent Plagnol have proposed an alternative method, which makes use
-of Jon Wakefield&#39;s work on determining approximate Bayes Factors from
+of Jon Wakefield's work on determining approximate Bayes Factors from
 p values <sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a Bayesian colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>,
 implemented in the function <code>coloc.summaries()</code>.  Note that it is
 possible to use Bayesian analysis for proportional testing too, in
 determining the posterior distribution of the proportionality
-constant \(\eta\).</p>
+constant \(\eta\).
+</p>
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption class="t-above"><span class="table-number">Table 1:</span> Suitability of functions in this package for different data structures</caption>
@@ -301,7 +427,6 @@ constant \(\eta\).</p>
 <th scope="col" class="org-left">Dependence</th>
 </tr>
 
-
 <tr>
 <th scope="col" class="org-left">&#xa0;</th>
 <th scope="col" class="org-left">&#xa0;</th>
@@ -309,7 +434,6 @@ constant \(\eta\).</p>
 <th scope="col" class="org-left">between datasets</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
 <td class="org-left">coloc.abf</td>
@@ -318,14 +442,12 @@ constant \(\eta\).</p>
 <td class="org-left">independent</td>
 </tr>
 
-
 <tr>
 <td class="org-left">coloc.abf.datasets</td>
 <td class="org-left">Bayesian</td>
 <td class="org-left">raw genotypes</td>
 <td class="org-left">independent</td>
 </tr>
-
 
 <tr>
 <td class="org-left">coloc.bma</td>
@@ -334,7 +456,6 @@ constant \(\eta\).</p>
 <td class="org-left">independent</td>
 </tr>
 
-
 <tr>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">over models</td>
@@ -342,14 +463,12 @@ constant \(\eta\).</p>
 <td class="org-left">&#xa0;</td>
 </tr>
 
-
 <tr>
 <td class="org-left">coloc.pcs/coloc.test</td>
 <td class="org-left">Proportional, based on</td>
 <td class="org-left">raw genotypes</td>
 <td class="org-left">independent</td>
 </tr>
-
 
 <tr>
 <td class="org-left">&#xa0;</td>
@@ -359,106 +478,412 @@ constant \(\eta\).</p>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 
-<h1>Usage<a id="orgheadline2"></a></h1>
+<div id="outline-container-org4556e8b" class="outline-2">
+<h2 id="org4556e8b"><span class="section-number-2">2</span> Usage</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Let's simulate a small dataset, and compare the three methods.
+</p>
 
-<p>Let&#39;s simulate a small dataset, and compare the three methods.</p>
-
-<pre><code>## Class &quot;simdata&quot; [in &quot;.GlobalEnv&quot;]
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="output"><pre class="knitr r">## Class &quot;simdata&quot; [in &quot;.GlobalEnv&quot;]
 ## 
 ## Slots:
 ##                             
 ## Name:         df1        df2
 ## Class: data.frame data.frame
-</code></pre>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] &quot;show&quot;
+</pre></div>
+<div class="output"><pre class="knitr r">## Generate 1 small sets of data
+</pre></div>
+</div></div>
 
-<pre><code>## [1] &quot;show&quot;
-</code></pre>
-
-<pre><code>## Generate 1 small sets of data
-</code></pre>
-
-<p>If you are not familiar with the analysis of genetic data in R, I
+<p>
+If you are not familiar with the analysis of genetic data in R, I
 would suggest beginning with the <a href="http://www.bioconductor.org/packages/release/bioc/html/snpStats.html">snpStats package</a>, which has
 functions for reading data in a variety of formats and contains a
 vignette on data input.  Once you have your genetic data loaded as a
 SnpMatrix, <code>X</code>, and phenotype information in a vector <code>Y</code>, then
-conversion to a <code>data.frame</code> as used above follows</p>
+conversion to a <code>data.frame</code> as used above follows
+</p>
+<pre class="example">
+df &lt;- as.data.frame(cbind(Y=Y, as(X,"numeric")))
 
-<pre><code>df &lt;- as.data.frame(cbind(Y=Y, as(X,&quot;numeric&quot;)))
-</code></pre>
+</pre>
+</div>
+</div>
 
-<h1>Proportional testing<a id="orgheadline6"></a></h1>
+<div id="outline-container-orge4f7b37" class="outline-2">
+<h2 id="orge4f7b37"><span class="section-number-2">3</span> An aside: fine mapping under a single causal variant assumption</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared.  Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.
+</p>
 
-<h2>Principal components<a id="orgheadline3"></a></h2>
+<p>
+First we analyse a single trait from our simulated data to generate summary statistics:
+</p>
 
-<p>The code below first prepares a principal component object by combining
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">requireNamespace</span><span class="hl std">(</span><span class="hl str">&quot;snpStats&quot;</span><span class="hl std">)) {</span>
+<span class="hl kwd">library</span><span class="hl std">(snpStats)</span>
+<span class="hl std">Y1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl opt">$</span><span class="hl std">Y</span>
+<span class="hl std">X1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">new</span><span class="hl std">(</span><span class="hl str">&quot;SnpMatrix&quot;</span><span class="hl std">,</span><span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">]))</span>
+<span class="hl std">p1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">snpStats</span><span class="hl opt">::</span><span class="hl kwd">p.value</span><span class="hl std">(</span><span class="hl kwd">single.snp.tests</span><span class="hl std">(</span><span class="hl kwc">phenotype</span><span class="hl std">=Y1,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X1),</span><span class="hl kwc">df</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl std">maf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">col.summary</span><span class="hl std">(X1)[,</span><span class="hl str">&quot;MAF&quot;</span><span class="hl std">]</span>
+
+<span class="hl std">get.beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">) {</span>
+   <span class="hl std">tmp</span> <span class="hl kwb">&lt;-</span> <span class="hl std">snpStats</span><span class="hl opt">::</span><span class="hl kwd">snp.rhs.estimates</span><span class="hl std">(...,</span> <span class="hl kwc">family</span><span class="hl std">=</span><span class="hl str">&quot;gaussian&quot;</span><span class="hl std">)</span>
+   <span class="hl std">beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tmp,</span><span class="hl str">&quot;[[&quot;</span><span class="hl std">,</span><span class="hl str">&quot;beta&quot;</span><span class="hl std">)</span>
+   <span class="hl std">varbeta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tmp,</span> <span class="hl str">&quot;[[&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Var.beta&quot;</span><span class="hl std">)</span>
+   <span class="hl kwd">return</span><span class="hl std">(</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=beta,</span><span class="hl kwc">varbeta</span><span class="hl std">=varbeta))</span>
+<span class="hl std">}</span>
+<span class="hl std">b1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(Y1</span> <span class="hl opt">~</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X1)</span>
+<span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span>
+<span class="hl std">Y1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl opt">$</span><span class="hl std">Y</span>
+<span class="hl std">X1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">])</span>
+<span class="hl std">tests1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">lapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">ncol</span><span class="hl std">(X1),</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">i</span><span class="hl std">)</span> <span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(Y1</span> <span class="hl opt">~</span> <span class="hl std">X1[,i]))</span><span class="hl opt">$</span><span class="hl std">coefficients[</span><span class="hl num">2</span><span class="hl std">,])</span>
+<span class="hl std">p1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tests1,</span><span class="hl str">&quot;[&quot;</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">)</span>
+<span class="hl std">maf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">colMeans</span><span class="hl std">(X2)</span><span class="hl opt">/</span><span class="hl num">2</span>
+
+<span class="hl std">get.beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">) {</span>
+   <span class="hl std">beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(x,</span><span class="hl str">&quot;[&quot;</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">)</span>
+   <span class="hl std">varbeta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(x,</span> <span class="hl str">&quot;[&quot;</span><span class="hl std">,</span> <span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">^</span><span class="hl num">2</span>
+   <span class="hl kwd">return</span><span class="hl std">(</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=beta,</span><span class="hl kwc">varbeta</span><span class="hl std">=varbeta))</span>
+<span class="hl std">}</span>
+<span class="hl std">b1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(tests1)</span>
+<span class="hl std">}</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## coercing object of mode  numeric  to SnpMatrix
+</pre></div>
+</div></div>
+
+<p>
+Then we analyse them:
+</p>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">my.res</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">finemap.abf</span><span class="hl std">(</span><span class="hl kwc">dataset</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">beta,</span> <span class="hl kwc">varbeta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">varbeta,</span> <span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X1),</span><span class="hl kwc">sdY</span><span class="hl std">=</span><span class="hl kwd">sd</span><span class="hl std">(Y1),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">))</span>
+<span class="hl kwd">head</span><span class="hl std">(my.res)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##            V.          z.        r.      lABF.   snp prior       SNP.PP
+## s1 0.03924328  5.78083831 0.7567274 11.9374068 SNP.1 1e-04 9.979937e-01
+## s2 0.03880072  4.01220890 0.7588092  5.3965036 SNP.2 1e-04 1.440289e-03
+## s3 0.04455547 -0.06333058 0.7326023 -0.6580400 SNP.3 1e-04 3.380608e-06
+## s4 0.04602953  0.83093858 0.7261782 -0.3969407 SNP.4 1e-04 4.389234e-06
+## s5 0.04237982 -1.83425483 0.7422945  0.5707526 SNP.5 1e-04 1.155188e-05
+## s6 0.04495749 -0.22493863 0.7308390 -0.6377335 SNP.6 1e-04 3.449958e-06
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tail</span><span class="hl std">(my.res)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##             V.          z.        r.       lABF.    snp  prior
+## s46 0.04560292 -0.00230155 0.7280258 -0.65102205 SNP.46 0.0001
+## s47 0.05248414 -1.20366960 0.6993259 -0.09426528 SNP.47 0.0001
+## s48 0.04101521 -0.03458088 0.7485056 -0.68971972 SNP.48 0.0001
+## s49 0.04530207  0.58219760 0.7293344 -0.52983015 SNP.49 0.0001
+## s50 0.04467786 -1.08347773 0.7320646 -0.22881057 SNP.50 0.0001
+## 1           NA          NA        NA  1.00000000   null 0.9950
+##           SNP.PP
+## s46 3.404416e-06
+## s47 5.940719e-06
+## s48 3.275190e-06
+## s49 3.843046e-06
+## s50 5.192862e-06
+## 1   1.774485e-05
+</pre></div>
+</div></div>
+
+<p>
+The <code>SNP.PP</code> column shows the posterior probability that exactly that SNP is causal.  Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.
+</p>
+
+<p>
+Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too.  One package that allows you to do this is <a href="http://github.com/chr1swallace/GUESSFM">GUESSFM</a>, described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup> 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd7ccd86" class="outline-2">
+<h2 id="orgd7ccd86"><span class="section-number-2">4</span> (Approximate) Bayes Factor colocalisation analyses</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org60a2de9" class="outline-3">
+<h3 id="org60a2de9"><span class="section-number-3">4.1</span> Introduction</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+The idea behind the ABF analysis is that the association of
+each trait with SNPs in a region may be summarised by a vector of 0s
+and at most a single 1, with the 1 indicating the causal SNP (so,
+assuming a single causal SNP for each trait).  The posterior
+probability of each possible configuration can be calculated and so,
+crucially, can the posterior probabilities that the traits share
+their configurations.  This allows us to estimate the support for the
+following cases:
+</p>
+
+<ul class="org-ul">
+<li>\(H_0\): neither trait has a genetic association in the region</li>
+<li>\(H_1\): only trait 1 has a genetic association in the region</li>
+<li>\(H_2\): only trait 2 has a genetic association in the region</li>
+<li>\(H_3\): both traits are associated, but with different causal variants</li>
+<li>\(H_4\): both traits are associated and share a single causal variant</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgdf02ab1" class="outline-3">
+<h3 id="orgdf02ab1"><span class="section-number-3">4.2</span> The basic <code>coloc.abf</code> function</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+The function <code>coloc.abf</code> is ideally suited to the case when only
+summary data are available, and requires, for each trait, either:
+</p>
+<ul class="org-ul">
+<li>p values for each SNP</li>
+<li>each SNP's minor allele frequency</li>
+<li>sample size</li>
+<li>ratio of cases:controls (if using a case-control trait)</li>
+</ul>
+<p>
+or:
+</p>
+<ul class="org-ul">
+<li>regression coefficients for each SNP</li>
+<li>variance of these regression coefficients.</li>
+</ul>
+
+<p>
+If regression coefficients and their variance are available, please
+use these, but we can also approximate Bayes Factors from p values and
+minor allele frequencies, although, note, such approximation can be
+less accurate when imputed data are used.  NB, you can mix and match,
+depending on the data available from each study.
+</p>
+
+<p>
+A wrapper function is avalailable to run all these steps but we will
+first generate the p values manually to give all the details. We use the snpStats library from
+Bioconductor to calculate the p values quickly.  We will also calculate the coefficients and their standard errors to compare the two approaches (but you should use only one - the coefficients if available, otherwise the p values).
+</p>
+
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">requireNamespace</span><span class="hl std">(</span><span class="hl str">&quot;snpStats&quot;</span><span class="hl std">)) {</span>
+<span class="hl kwd">library</span><span class="hl std">(snpStats)</span>
+
+<span class="hl std">Y1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl opt">$</span><span class="hl std">Y</span>
+<span class="hl std">Y2</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl opt">$</span><span class="hl std">Y</span>
+
+<span class="hl std">X1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">new</span><span class="hl std">(</span><span class="hl str">&quot;SnpMatrix&quot;</span><span class="hl std">,</span><span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">]))</span>
+<span class="hl std">X2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">new</span><span class="hl std">(</span><span class="hl str">&quot;SnpMatrix&quot;</span><span class="hl std">,</span><span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">]))</span>
+
+<span class="hl std">p1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">snpStats</span><span class="hl opt">::</span><span class="hl kwd">p.value</span><span class="hl std">(</span><span class="hl kwd">single.snp.tests</span><span class="hl std">(</span><span class="hl kwc">phenotype</span><span class="hl std">=Y1,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X1),</span><span class="hl kwc">df</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl std">p2</span> <span class="hl kwb">&lt;-</span> <span class="hl std">snpStats</span><span class="hl opt">::</span><span class="hl kwd">p.value</span><span class="hl std">(</span><span class="hl kwd">single.snp.tests</span><span class="hl std">(</span><span class="hl kwc">phenotype</span><span class="hl std">=Y2,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X2),</span><span class="hl kwc">df</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+
+<span class="hl std">maf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">col.summary</span><span class="hl std">(X2)[,</span><span class="hl str">&quot;MAF&quot;</span><span class="hl std">]</span>
+
+<span class="hl std">get.beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">) {</span>
+   <span class="hl std">tmp</span> <span class="hl kwb">&lt;-</span> <span class="hl std">snpStats</span><span class="hl opt">::</span><span class="hl kwd">snp.rhs.estimates</span><span class="hl std">(...,</span> <span class="hl kwc">family</span><span class="hl std">=</span><span class="hl str">&quot;gaussian&quot;</span><span class="hl std">)</span>
+   <span class="hl std">beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tmp,</span><span class="hl str">&quot;[[&quot;</span><span class="hl std">,</span><span class="hl str">&quot;beta&quot;</span><span class="hl std">)</span>
+   <span class="hl std">varbeta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tmp,</span> <span class="hl str">&quot;[[&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Var.beta&quot;</span><span class="hl std">)</span>
+   <span class="hl kwd">return</span><span class="hl std">(</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=beta,</span><span class="hl kwc">varbeta</span><span class="hl std">=varbeta))</span>
+<span class="hl std">}</span>
+<span class="hl std">b1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(Y1</span> <span class="hl opt">~</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X1)</span>
+<span class="hl std">b2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(Y2</span> <span class="hl opt">~</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">snp.data</span><span class="hl std">=X2)</span>
+<span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span>
+<span class="hl std">Y1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl opt">$</span><span class="hl std">Y</span>
+<span class="hl std">Y2</span> <span class="hl kwb">&lt;-</span> <span class="hl std">data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl opt">$</span><span class="hl std">Y</span>
+
+<span class="hl std">X1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">])</span>
+<span class="hl std">X2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.matrix</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">])</span>
+
+<span class="hl std">tests1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">lapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">ncol</span><span class="hl std">(X1),</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">i</span><span class="hl std">)</span> <span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(Y1</span> <span class="hl opt">~</span> <span class="hl std">X1[,i]))</span><span class="hl opt">$</span><span class="hl std">coefficients[</span><span class="hl num">2</span><span class="hl std">,])</span>
+<span class="hl std">tests2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">lapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">ncol</span><span class="hl std">(X2),</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">i</span><span class="hl std">)</span> <span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(Y2</span> <span class="hl opt">~</span> <span class="hl std">X2[,i]))</span><span class="hl opt">$</span><span class="hl std">coefficients[</span><span class="hl num">2</span><span class="hl std">,])</span>
+
+<span class="hl std">p1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tests1,</span><span class="hl str">&quot;[&quot;</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">)</span>
+<span class="hl std">p2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(tests2,</span><span class="hl str">&quot;[&quot;</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">)</span>
+
+<span class="hl std">maf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">colMeans</span><span class="hl std">(X2)</span><span class="hl opt">/</span><span class="hl num">2</span>
+
+<span class="hl std">get.beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">) {</span>
+   <span class="hl std">beta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(x,</span><span class="hl str">&quot;[&quot;</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">)</span>
+   <span class="hl std">varbeta</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sapply</span><span class="hl std">(x,</span> <span class="hl str">&quot;[&quot;</span><span class="hl std">,</span> <span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">^</span><span class="hl num">2</span>
+   <span class="hl kwd">return</span><span class="hl std">(</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=beta,</span><span class="hl kwc">varbeta</span><span class="hl std">=varbeta))</span>
+<span class="hl std">}</span>
+<span class="hl std">b1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(tests1)</span>
+<span class="hl std">b2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">get.beta</span><span class="hl std">(tests2)</span>
+<span class="hl std">}</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## coercing object of mode  numeric  to SnpMatrix
+## coercing object of mode  numeric  to SnpMatrix
+</pre></div>
+</div></div>
+
+<p>
+Note that we are using the second dataset in that case to compute the minor allele frequencies.
+This is unlikely to make any significant difference but one could have used dataset 1 instead.
+It is now possible to compute the probabilities of interest.
+</p>
+
+<p>
+With coefficients, and std. deviation of Y known, we have the most accurate inference.  Note that if you have a case-control trait, set type="cc" and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.
+</p>
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">my.res</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.abf</span><span class="hl std">(</span><span class="hl kwc">dataset1</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">beta,</span> <span class="hl kwc">varbeta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">varbeta,</span> <span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X1),</span><span class="hl kwc">sdY</span><span class="hl std">=</span><span class="hl kwd">sd</span><span class="hl std">(Y1),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">dataset2</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=b2</span><span class="hl opt">$</span><span class="hl std">beta,</span> <span class="hl kwc">varbeta</span><span class="hl std">=b2</span><span class="hl opt">$</span><span class="hl std">varbeta,</span> <span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X2),</span><span class="hl kwc">sdY</span><span class="hl std">=</span><span class="hl kwd">sd</span><span class="hl std">(Y2),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">MAF</span><span class="hl std">=maf)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+##  2.92e-05  4.47e-04  6.73e-05  3.08e-05  9.99e-01 
+## [1] &quot;PP abf for shared variant: 99.9%&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">print</span><span class="hl std">(my.res[[</span><span class="hl num">1</span><span class="hl std">]])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
+## 5.000000e+01 2.915837e-05 4.466024e-04 6.726224e-05 3.079177e-05 
+##    PP.H4.abf 
+## 9.994262e-01
+</pre></div>
+</div></div>
+
+<p>
+When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:
+</p>
+
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">my.res</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.abf</span><span class="hl std">(</span><span class="hl kwc">dataset1</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">beta,</span> <span class="hl kwc">varbeta</span><span class="hl std">=b1</span><span class="hl opt">$</span><span class="hl std">varbeta,</span> <span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X1),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">dataset2</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">beta</span><span class="hl std">=b2</span><span class="hl opt">$</span><span class="hl std">beta,</span> <span class="hl kwc">varbeta</span><span class="hl std">=b2</span><span class="hl opt">$</span><span class="hl std">varbeta,</span> <span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X2),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">MAF</span><span class="hl std">=maf)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
+## varbeta, please directly supply sdY if known
+
+## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
+## varbeta, please directly supply sdY if known
+</pre></div>
+<div class="output"><pre class="knitr r">## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+##  2.54e-06  1.48e-04  1.75e-05  2.00e-05  1.00e+00 
+## [1] &quot;PP abf for shared variant: 100%&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">print</span><span class="hl std">(my.res[[</span><span class="hl num">1</span><span class="hl std">]])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
+## 5.000000e+01 2.535953e-06 1.476540e-04 1.751478e-05 1.997285e-05 
+##    PP.H4.abf 
+## 9.998123e-01
+</pre></div>
+</div></div>
+
+<p>
+When only p values are available, we can use the form:
+</p>
+
+<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">my.res</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.abf</span><span class="hl std">(</span><span class="hl kwc">dataset1</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">pvalues</span><span class="hl std">=p1,</span><span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X1),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">dataset2</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">pvalues</span><span class="hl std">=p2,</span><span class="hl kwc">N</span><span class="hl std">=</span><span class="hl kwd">nrow</span><span class="hl std">(X2),</span><span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">),</span>
+                    <span class="hl kwc">MAF</span><span class="hl std">=maf)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+##  1.01e-05  2.61e-04  4.00e-05  2.71e-05  1.00e+00 
+## [1] &quot;PP abf for shared variant: 100%&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">print</span><span class="hl std">(my.res[[</span><span class="hl num">1</span><span class="hl std">]])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
+## 5.000000e+01 1.014723e-05 2.605269e-04 3.998959e-05 2.705757e-05 
+##    PP.H4.abf 
+## 9.996623e-01
+</pre></div>
+</div></div>
+
+<p>
+Here, as we have simulated full genotype data in snpStats format, we can use
+the wrapper function <code>coloc.abf.datasets()</code> to combine all the steps
+shown above.
+</p>
+
+<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">ct.abf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.abf.datasets</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">, data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">,</span> <span class="hl kwc">response1</span><span class="hl std">=</span><span class="hl str">&quot;Y&quot;</span><span class="hl std">,</span> <span class="hl kwc">response2</span><span class="hl std">=</span><span class="hl str">&quot;Y&quot;</span><span class="hl std">,</span>
+                             <span class="hl kwc">type1</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">,</span> <span class="hl kwc">type2</span><span class="hl std">=</span><span class="hl str">&quot;quant&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## coercing object of mode  numeric  to SnpMatrix
+## coercing object of mode  numeric  to SnpMatrix
+## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+##  1.08e-05  2.61e-04  4.25e-05  2.72e-05  1.00e+00 
+## [1] &quot;PP abf for shared variant: 100%&quot;
+</pre></div>
+</div></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0d7a9b3" class="outline-2">
+<h2 id="org0d7a9b3"><span class="section-number-2">5</span> Proportional testing</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The code below first prepares a principal component object by combining
 the genotypes in the two dataset, then models the most informative
 components (the minimum set required to capture 80% of the genetic
 variation) in each dataset, before finally testing whether there is
-colocalisation between these models.</p>
+colocalisation between these models.
+</p>
 
-<pre><code class="r">## run a coloc with pcs
-pcs &lt;- pcs.prepare(data@df1[,-1], data@df2[,-1])
-pcs.1 &lt;- pcs.model(pcs, group=1, Y=data@df1[,1], threshold=0.8)
-</code></pre>
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">## run a coloc with pcs</span>
+<span class="hl std">pcs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">pcs.prepare</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">], data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">[,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">])</span>
+<span class="hl std">pcs.1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">pcs.model</span><span class="hl std">(pcs,</span> <span class="hl kwc">group</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">Y</span><span class="hl std">=data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">[,</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl kwc">threshold</span><span class="hl std">=</span><span class="hl num">0.8</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## selecting 38 components out of 50 to capture 0.8094953 of total variance.
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">pcs.2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">pcs.model</span><span class="hl std">(pcs,</span> <span class="hl kwc">group</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">Y</span><span class="hl std">=data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">[,</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl kwc">threshold</span><span class="hl std">=</span><span class="hl num">0.8</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## selecting 38 components out of 50 to capture 0.8094953 of total variance.
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">ct.pcs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.test</span><span class="hl std">(pcs.1,pcs.2)</span>
+</pre></div>
+</div></div>
 
-<pre><code>## selecting 38 components out of 50 to capture 0.8094953 of total variance.
-</code></pre>
-
-<pre><code class="r">pcs.2 &lt;- pcs.model(pcs, group=2, Y=data@df2[,1], threshold=0.8)
-</code></pre>
-
-<pre><code>## selecting 38 components out of 50 to capture 0.8094953 of total variance.
-</code></pre>
-
-<pre><code class="r">ct.pcs &lt;- coloc.test(pcs.1,pcs.2)
-</code></pre>
-
-<p>The plot shows the estimated coefficients for each principal component
+<p>
+The plot shows the estimated coefficients for each principal component
 modeled for traits 1 and 2 on the x and y axes, with circles showing
 the 95% confidence region.  The points lie close to the line through
-the origin, which supports a hypothesis of colocalisation.</p>
+the origin, which supports a hypothesis of colocalisation.
+</p>
 
-<p>A little more information is stored in the <code>ct.pcs</code> object:</p>
+<p>
+A little more information is stored in the <code>ct.pcs</code> object:
+</p>
 
-<pre><code class="r">ct.pcs
-</code></pre>
-
-<pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
+<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">ct.pcs</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           eta.hat         chisquare                 n p.value.chisquare 
 ##         1.0346897        35.3484010        38.0000000         0.5465861
-</code></pre>
-
-<pre><code class="r">str(summary(ct.pcs))
-</code></pre>
-
-<pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">str</span><span class="hl std">(</span><span class="hl kwd">summary</span><span class="hl std">(ct.pcs))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           eta.hat         chisquare                 n p.value.chisquare 
 ##         1.0346897        35.3484010        38.0000000         0.5465861 
 ##  Named num [1:4] 1.035 35.348 38 0.547
 ##  - attr(*, &quot;names&quot;)= chr [1:4] &quot;eta.hat&quot; &quot;chisquare&quot; &quot;n&quot; &quot;p.value.chisquare&quot;
-</code></pre>
+</pre></div>
+</div></div>
 
-<p>The best estimate for the coefficient of proportionality,
+<p>
+The best estimate for the coefficient of proportionality,
 \(\hat{\eta}\), is 1.13, and the null hypothesis of colocalisation is
 not rejected with a chisquare statistic of 5.27 based on 7 degrees of
 freedom (\(n-1\) where the \(n\) is the number of components tested, and
 one degree of freedom was used in estimating \(\eta\)), giving a p value
 of 0.63.  The <code>summary()</code> method returns a named vector of length 4
-containing this information.</p>
+containing this information.
+</p>
 
-<p>If more information is needed about \(\eta\), then this is available if
-the <code>bayes</code> argument is supplied:</p>
+<p>
+If more information is needed about \(\eta\), then this is available if
+the <code>bayes</code> argument is supplied:
+</p>
 
-<pre><code class="r">ct.pcs.bayes &lt;- coloc.test(pcs.1,pcs.2, bayes=TRUE)
-</code></pre>
-
-<pre><code>## ............
-</code></pre>
-
-<pre><code class="r">ci(ct.pcs.bayes)
-</code></pre>
-
-<pre><code>## $eta.mode
+<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">ct.pcs.bayes</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.test</span><span class="hl std">(pcs.1,pcs.2,</span> <span class="hl kwc">bayes</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## ............
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">ci</span><span class="hl std">(ct.pcs.bayes)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $eta.mode
 ## [1] 1.039993
 ## 
 ## $lower
@@ -472,362 +897,961 @@ the <code>bayes</code> argument is supplied:</p>
 ## 
 ## $interior
 ## [1] TRUE
-</code></pre>
+</pre></div>
+</div></div>
+</div>
 
-<h2>Bayesian model averaging<a id="orgheadline4"></a></h2>
-
-<p>This approach appears simpler.  There is no need to do any
-preparatory work, you require only a single function:</p>
-
-<pre><code class="r">ct.bma &lt;- coloc.bma(data@df1, data@df2, 
-            family1=&quot;gaussian&quot;, family2=&quot;gaussian&quot;,
-            plot.coeff=TRUE)
-</code></pre>
-
-<pre><code>## Dropped 0 of 50 SNPs due to LD: r2 &gt; 0.95.
-</code></pre>
-
-<pre><code>## 50 SNPs remain.
-</code></pre>
-
-<pre><code>## Restricting model space.
-</code></pre>
-
-<pre><code>## 48 SNPs have single SNP posterior probabilities &lt; 0.01
-</code></pre>
-
-<pre><code>## Models containing only these SNPs will not be explored.
-</code></pre>
-
-<pre><code>## Fitting 97 multi SNP models to dataset 1 
-## Fitting 97 multi SNP models to dataset 2 
-## Averaging coloc testing over 3 models with posterior probabilities &gt;= 1e-229 
-## ...
-</code></pre>
-
-<pre><code>## Plots generated directly are deprecated.  Please plot returned object instead.
-</code></pre>
-
-<pre><code class="r">ct.bma.bayes &lt;- coloc.bma(data@df1, data@df2, 
-              family1=&quot;gaussian&quot;, family2=&quot;gaussian&quot;, 
-              bayes=TRUE)
-</code></pre>
-
-<pre><code>## Dropped 0 of 50 SNPs due to LD: r2 &gt; 0.95.
-</code></pre>
-
-<pre><code>## 50 SNPs remain.
-</code></pre>
-
-<pre><code>## Restricting model space.
-</code></pre>
-
-<pre><code>## 48 SNPs have single SNP posterior probabilities &lt; 0.01
-</code></pre>
-
-<pre><code>## Models containing only these SNPs will not be explored.
-</code></pre>
-
-<pre><code>## Fitting 97 multi SNP models to dataset 1 
-## Fitting 97 multi SNP models to dataset 2 
-## Averaging coloc testing over 3 models with posterior probabilities &gt;= 1e-229 
-## ...
-</code></pre>
-
-<p>The <code>family1/2</code> parameters are used to specify the model and link
-function, =&ldquo;gaussian&rdquo;= (with identity link) or =&ldquo;binomial&rdquo;= (with
-logit link) are accepted values.  The plot here shows all models
-considered simultaneously, and does not attempt to discriminate
-between models with strong and weak support.  It&#39;s rather confusing,
-and is off by default.</p>
-
-<p>However, <code>coloc.bma()</code> is doing
-quite some work to cover the model space efficiently, and it is
-important to understand how it does this.  First, the <code>r2.trim</code>
-parameter is used to &ldquo;tag&rdquo; the SNPs - a subset of SNPs are selected so
-that no pair have \(r^2>\) <code>r2.trim</code>.  The default value is 0.95 and the
-idea is that models containing SNPs with very similar genotypes
-provide little additional information, so the \(p\) value need be
-averaged over only one of each such group.  Lower values of <code>r2.trim</code>
-will produce a sparser model space and so decrease computation.
-Second, the <code>thr</code> parameter is used to discard SNPs which are
-uninformative with regards the phenotype, that is, if \(pp_{ij}\) is the
-posterior probability of inclusion in single SNP models for SNP \(i\),
-trait \(j\), the set of discarded SNPs is formed by those for which
-\(pp_{i1}<\) <code>thr</code> and \(pp_{i2}<\) <code>thr</code>.  Models containing <strong>only</strong> SNPs
-from this set will be ignored.  Note that models containing one SNP
-from this set and one SNP <em>not</em> in the set <strong>will</strong> be evaluated.</p>
-
-<p>Finally, you should tell <code>coloc.bma()</code> how many SNPs should be
-included in each model.  The default is <code>nsnps=2</code>, 3 appears slightly
-more powerful but will generally require considerably more
-computation, whilst values of 4 and above are both unlikely to
-provide more information and very unlikely to be computed in any
-reasonable time for interactive work.</p>
-
-<h2>Using Bayes Factors to compare specific values of \(\eta\)<a id="orgheadline5"></a></h2>
-
-<p>It may be that specific values of \(\eta\) are of interest.  For
+<div id="outline-container-orgc65e323" class="outline-3">
+<h3 id="orgc65e323"><span class="section-number-3">5.1</span> Using Bayes Factors to compare specific values of \(\eta\)</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+It may be that specific values of \(\eta\) are of interest.  For
 example, when comparing eQTLs in two tissues, or when comparing risk
 of two related diseases, the value \(\eta=1\) is of particular
 interest.  In proportional testing, we can use Bayes Factors to
-compare the support for different values of \(\eta\).  Eg</p>
+compare the support for different values of \(\eta\).  Eg
+</p>
 
-<pre><code class="r">## compare individual values of eta
-ct.pcs &lt;- coloc.test(pcs.1,pcs.2, bayes.factor=c(-1,0,1))
-</code></pre>
-
-<pre><code>## ............
-</code></pre>
-
-<pre><code class="r">bf(ct.pcs)
-</code></pre>
-
-<pre><code>##           values.against
+<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">## compare individual values of eta</span>
+<span class="hl std">ct.pcs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.test</span><span class="hl std">(pcs.1,pcs.2,</span> <span class="hl kwc">bayes.factor</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## ............
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">bf</span><span class="hl std">(ct.pcs)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           values.against
 ## values.for           -1            0            1
 ##         -1 1.000000e+00 4.495343e-33 9.816601e-73
 ##         0  2.224524e+32 1.000000e+00 2.183727e-40
 ##         1  1.018683e+72 4.579328e+39 1.000000e+00
-</code></pre>
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">## compare ranges of eta</span>
+<span class="hl std">ct.bma</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">coloc.bma</span><span class="hl std">(data</span><span class="hl opt">@</span><span class="hl kwc">df1</span><span class="hl std">, data</span><span class="hl opt">@</span><span class="hl kwc">df2</span><span class="hl std">,</span>
+                    <span class="hl kwc">family1</span><span class="hl std">=</span><span class="hl str">&quot;gaussian&quot;</span><span class="hl std">,</span> <span class="hl kwc">family2</span><span class="hl std">=</span><span class="hl str">&quot;gaussian&quot;</span><span class="hl std">,</span>
+                    <span class="hl kwc">bayes.factor</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl num">0.1</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">),</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0.9</span><span class="hl std">,</span><span class="hl num">1.1</span><span class="hl std">)))</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Dropped 0 of 50 SNPs due to LD: r2 &gt; 0.95.
+</pre></div>
+<div class="message"><pre class="knitr r">## 50 SNPs remain.
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code class="r">## compare ranges of eta
-ct.bma &lt;- coloc.bma(data@df1, data@df2, 
-            family1=&quot;gaussian&quot;, family2=&quot;gaussian&quot;,
-            bayes.factor=list(c(-0.1,1), c(0.9,1.1)))
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## Dropped 0 of 50 SNPs due to LD: r2 &gt; 0.95.
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## 50 SNPs remain.
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## Restricting model space.
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## 48 SNPs have single SNP posterior probabilities &lt; 0.01
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## Models containing only these SNPs will not be explored.
-</code></pre>
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
 
-<pre><code>## Fitting 97 multi SNP models to dataset 1 
-## Fitting 97 multi SNP models to dataset 2 
-## Averaging coloc testing over 3 models with posterior probabilities &gt;= 1e-229 
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+</pre></div>
+<div class="message"><pre class="knitr r">## Restricting model space.
+</pre></div>
+<div class="message"><pre class="knitr r">## 48 SNPs have single SNP posterior probabilities &lt; 0.01
+</pre></div>
+<div class="message"><pre class="knitr r">## Models containing only these SNPs will not be explored.
+</pre></div>
+<div class="output"><pre class="knitr r">## Fitting 97 multi SNP models to dataset 1
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+</pre></div>
+<div class="output"><pre class="knitr r">## Fitting 97 multi SNP models to dataset 2
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+
+## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
+##   Use c() or as.vector() instead.
+</pre></div>
+<div class="output"><pre class="knitr r">## Averaging coloc testing over 3 models with posterior probabilities &gt;= 1e-229 
 ## ...
-</code></pre>
-
-<pre><code class="r">bf(ct.bma)
-</code></pre>
-
-<pre><code>##              values.against
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">bf</span><span class="hl std">(ct.bma)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##              values.against
 ## values.for    c(-0.1, 1) c(0.9, 1.1)
 ##   c(-0.1, 1)     1.00000  0.08537724
 ##   c(0.9, 1.1)   11.71272  1.00000000
-</code></pre>
+</pre></div>
+</div></div>
+</div>
+</div>
+</div>
 
-<h1>(Approximate) Bayes Factor colocalisation analyses<a id="orgheadline9"></a></h1>
 
-<h2>Introduction<a id="orgheadline7"></a></h2>
+<div id="outline-container-org0fab162" class="outline-2">
+<h2 id="org0fab162"><span class="section-number-2">6</span> The difference between proportional and ABF approaches</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+So what are the differences between proportional and ABF approaches?
+Which should you choose?
+</p>
 
-<p>The idea behind the ABF analysis is that the association of
-each trait with SNPs in a region may be summarised by a vector of 0s
-and at most a single 1, with the 1 indicating the causal SNP (so,
-assuming a single causal SNP for each trait).  The posterior
-probability of each possible configuration can be calculated and so,
-crucially, can the posterior probabilities that the traits share
-their configurations.  This allows us to estimate the support for the
-following cases:</p>
-
-<ul>
-<li>  \(H_0\): neither trait has a genetic association in the region</li>
-<li>  \(H_1\): only trait 1 has a genetic association in the region</li>
-<li>  \(H_2\): only trait 2 has a genetic association in the region</li>
-<li>  \(H_3\): both traits are associated, but with different causal variants</li>
-<li>  \(H_4\): both traits are associated and share a single causal variant</li>
-</ul>
-
-<h2>The basic <code>coloc.abf</code> function<a id="orgheadline8"></a></h2>
-
-<p>The function <code>coloc.abf</code> is ideally suited to the case when only
-summary data are available, and requires, for each trait, either:</p>
-
-<ul>
-<li>  p values for each SNP</li>
-<li>  each SNP&#39;s minor allele frequency</li>
-<li>  sample size</li>
-<li>  ratio of cases:controls (if using a case-control trait)</li>
-</ul>
-
-<p>or:</p>
-
-<ul>
-<li>  regression coefficients for each SNP</li>
-<li>  variance of these regression coefficients.</li>
-</ul>
-
-<p>If regression coefficients and their variance are available, please
-use these, but we can also approximate Bayes Factors from p values and
-minor allele frequencies, although, note, such approximation can be
-less accurate when imputed data are used.  NB, you can mix and match,
-depending on the data available from each study.</p>
-
-<p>A wrapper function is avalailable to run all these steps but we will
-first generate the p values manually to give all the details. We use the snpStats library from
-Bioconductor to calculate the p values quickly.  We will also calculate the coefficients and their standard errors to compare the two approaches (but you should use only one - the coefficients if available, otherwise the p values).</p>
-
-<pre><code class="r">if(requireNamespace(&quot;snpStats&quot;)) {
-library(snpStats)
-
-Y1 &lt;- data@df1$Y
-Y2 &lt;- data@df2$Y
-
-X1 &lt;- new(&quot;SnpMatrix&quot;,as.matrix(data@df1[,-1]))
-X2 &lt;- new(&quot;SnpMatrix&quot;,as.matrix(data@df2[,-1]))
-
-p1 &lt;- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
-p2 &lt;- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
-
-maf &lt;- col.summary(X2)[,&quot;MAF&quot;]
-
-get.beta &lt;- function(...) {
-   tmp &lt;- snpStats::snp.rhs.estimates(..., family=&quot;gaussian&quot;)
-   beta &lt;- sapply(tmp,&quot;[[&quot;,&quot;beta&quot;)
-   varbeta &lt;- sapply(tmp, &quot;[[&quot;, &quot;Var.beta&quot;)
-   return(list(beta=beta,varbeta=varbeta))
-}
-b1 &lt;- get.beta(Y1 ~ 1, snp.data=X1)
-b2 &lt;- get.beta(Y2 ~ 1, snp.data=X2)
-} else {
-Y1 &lt;- data@df1$Y
-Y2 &lt;- data@df2$Y
-
-X1 &lt;- as.matrix(data@df1[,-1])
-X2 &lt;- as.matrix(data@df2[,-1])
-
-tests1 &lt;- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
-tests2 &lt;- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
-
-p1 &lt;- sapply(tests1,&quot;[&quot;,4)
-p2 &lt;- sapply(tests2,&quot;[&quot;,4)
-
-maf &lt;- colMeans(X2)/2
-
-get.beta &lt;- function(x) {
-   beta &lt;- sapply(x,&quot;[&quot;,1)
-   varbeta &lt;- sapply(x, &quot;[&quot;, 2)^2
-   return(list(beta=beta,varbeta=varbeta))
-}
-b1 &lt;- get.beta(tests1)
-b2 &lt;- get.beta(tests2)
-}
-</code></pre>
-
-<pre><code>## Loading required package: survival
-</code></pre>
-
-<pre><code>## Loading required package: Matrix
-</code></pre>
-
-<pre><code>## coercing object of mode  numeric  to SnpMatrix
-## coercing object of mode  numeric  to SnpMatrix
-</code></pre>
-
-<p>Note that we are using the second dataset in that case to compute the minor allele frequencies.
-This is unlikely to make any significant difference but one could have used dataset 1 instead.
-It is now possible to compute the probabilities of interest.</p>
-
-<p>With coefficients, and std. deviation of Y known, we have the most accurate inference.  Note that if you have a case-control trait, set type=&ldquo;cc&rdquo; and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.</p>
-
-<pre><code class="r">my.res &lt;- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type=&quot;quant&quot;),
-            dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type=&quot;quant&quot;),
-            MAF=maf)
-</code></pre>
-
-<pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  2.92e-05  4.47e-04  6.73e-05  3.08e-05  9.99e-01 
-## [1] &quot;PP abf for shared variant: 99.9%&quot;
-</code></pre>
-
-<pre><code class="r">print(my.res[[1]])
-</code></pre>
-
-<pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 2.915837e-05 4.466024e-04 6.726224e-05 3.079177e-05 
-##    PP.H4.abf 
-## 9.994262e-01
-</code></pre>
-
-<p>When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:</p>
-
-<pre><code class="r">my.res &lt;- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type=&quot;quant&quot;),
-            dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type=&quot;quant&quot;),
-            MAF=maf)
-</code></pre>
-
-<pre><code>## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
-## varbeta, please directly supply sdY if known
-
-## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
-## varbeta, please directly supply sdY if known
-</code></pre>
-
-<pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  2.54e-06  1.48e-04  1.75e-05  2.00e-05  1.00e+00 
-## [1] &quot;PP abf for shared variant: 100%&quot;
-</code></pre>
-
-<pre><code class="r">print(my.res[[1]])
-</code></pre>
-
-<pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 2.535953e-06 1.476540e-04 1.751478e-05 1.997285e-05 
-##    PP.H4.abf 
-## 9.998123e-01
-</code></pre>
-
-<p>When only p values are available, we can use the form:</p>
-
-<pre><code class="r">my.res &lt;- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type=&quot;quant&quot;),
-            dataset2=list(pvalues=p2,N=nrow(X2),type=&quot;quant&quot;),
-            MAF=maf)
-</code></pre>
-
-<pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  1.01e-05  2.61e-04  4.00e-05  2.71e-05  1.00e+00 
-## [1] &quot;PP abf for shared variant: 100%&quot;
-</code></pre>
-
-<pre><code class="r">print(my.res[[1]])
-</code></pre>
-
-<pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 1.014723e-05 2.605269e-04 3.998959e-05 2.705757e-05 
-##    PP.H4.abf 
-## 9.996623e-01
-</code></pre>
-
-<p>Here, as we have simulated full genotype data, we can use
-the wrapper function <code>coloc.abf.datasets()</code> to combine all the steps
-shown above.</p>
-
-<pre><code class="r">ct.abf &lt;- coloc.abf.datasets(data@df1, data@df2, response1=&quot;Y&quot;, response2=&quot;Y&quot;,
-                 type1=&quot;quant&quot;, type2=&quot;quant&quot;)
-</code></pre>
-
-<pre><code>## coercing object of mode  numeric  to SnpMatrix
-## coercing object of mode  numeric  to SnpMatrix
-## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  1.08e-05  2.61e-04  4.25e-05  2.72e-05  1.00e+00 
-## [1] &quot;PP abf for shared variant: 100%&quot;
-</code></pre>
-
-<h1>The difference between proportional and ABF approaches<a id="orgheadline10"></a></h1>
-
-<p>So what are the differences between proportional and ABF approaches?
-Which should you choose?</p>
-
-<p>Well, if you only have p values, then you must use ABF.  But be aware
+<p>
+Well, if you only have p values, then you must use ABF.  But be aware
 that a single causal variant is assumed, and that for accurate
 inference, the causal variant needs to be included, so either very
 dense or imputed genotyping data is needed.  The ABF approach has
@@ -837,16 +1861,18 @@ proportional testing, when the null of colocalisation is not rejected,
 you cannot be sure whether this reflects true colocalisation or a lack
 of power.  The proportional approach is much less affected by
 spareness of genotyping data, with power only slightly decreased, but
-type 1 error rates unaffected.</p>
+type 1 error rates unaffected.
+</p>
 
-<p>The behaviour of the two approaches only really differs when there are
+<p>
+The behaviour of the two approaches only really differs when there are
 two or more causal variants.  When both are shared, proportional
 testing has the same type 1 error rate, and whilst ABF tends to still
 favour \(H_4\) (shared variant), it tends to put some more weight on
 \(H_3\) (distinct variants).  But when at least one is specific to one
 trait and at least one is shared, their behaviour differs more
 substantially.  Of course, neither approach was designed with this
-case in mind, and so there is no &ldquo;right&rdquo; answer, but it is instructive
+case in mind, and so there is no "right" answer, but it is instructive
 to understand their expected behaviour.  Proportional testing tends to
 reject colocalisation, whilst ABF tends to favour sharing.  Until the
 methods are extended to incorporate this specific case, it can be
@@ -855,28 +1881,47 @@ genotyping data are available.  When the results differ, we have
 tended to identify a combination of shared and distinct causal
 variants.  The ABF approach can still be applied in this case, if p
 values are available conditioning on the strongest signal, as
-demonstrated in our paper <sup><a id="fnr.4.100" class="footref" href="#fn.4">4</a></sup>.</p>
+demonstrated in our paper <sup><a id="fnr.4.100" class="footref" href="#fn.4">4</a></sup>.
+</p>
 
-<p>You can see more about the ABF approach on
-<a href="http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/">this blogpost</a>.</p>
-
+<p>
+You can see more about the ABF approach on
+<a href="http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/">this blogpost</a>.
+</p>
+</div>
+</div>
 <div id="footnotes">
 <h2 class="footnotes">Footnotes: </h2>
 <div id="text-footnotes">
 
-<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><http://www.ncbi.nlm.nih.gov/pubmed/19039033></div></div>
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+<a href="http://www.ncbi.nlm.nih.gov/pubmed/19039033">http://www.ncbi.nlm.nih.gov/pubmed/19039033</a>
+</p></div></div>
 
-<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract></div></div>
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+<a href="http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract">http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract</a>
+</p></div></div>
 
-<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><http://www.ncbi.nlm.nih.gov/pubmed/18642345></div></div>
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+<a href="http://www.ncbi.nlm.nih.gov/pubmed/18642345">http://www.ncbi.nlm.nih.gov/pubmed/18642345</a>
+</p></div></div>
 
-<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383></div></div>
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">
+<a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383</a>
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
+<a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272">http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272</a> 
+</p></div></div>
 
 
 </div>
-
-<p></div></p>
-
+</div></div>
+<div id="postamble" class="status">
+<p class="date">Date: 2016-05-19 Thu</p>
+<p class="author">Author: Chris Wallace</p>
+<p class="date">Created: 2018-02-22 Thu 12:07</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
 </body>
-
 </html>

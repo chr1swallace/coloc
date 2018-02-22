@@ -177,7 +177,13 @@ Then we analyse them:
 
 #+BEGIN_SRC R
 my.res <- finemap.abf(dataset=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"))
+head(my.res)
+tail(my.res)
 #+END_SRC
+
+The =SNP.PP= column shows the posterior probability that exactly that SNP is causal.  Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.
+
+Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too.  One package that allows you to do this is [[http://github.com/chr1swallace/GUESSFM][GUESSFM]], described in[fn:5] 
 
 * (Approximate) Bayes Factor colocalisation analyses
 
@@ -307,7 +313,7 @@ ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y",
 
 * Proportional testing
 
-** Principal components
+# ** Principal components
 
 The code below first prepares a principal component object by combining
 the genotypes in the two dataset, then models the most informative
@@ -351,50 +357,50 @@ ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
 ci(ct.pcs.bayes)
 #+end_src
 
-** Bayesian model averaging
+# ** Bayesian model averaging
 
-This approach appears simpler.  There is no need to do any
-preparatory work, you require only a single function:
+# This approach appears simpler.  There is no need to do any
+# preparatory work, you require only a single function:
 
-#+begin_src R :ravel fig=TRUE
-ct.bma <- coloc.bma(data@df1, data@df2, 
-                    family1="gaussian", family2="gaussian",
-		    plot.coeff=TRUE)
-ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
-                          family1="gaussian", family2="gaussian", 
-                          bayes=TRUE)
-#+end_src
+# #+begin_src R :ravel fig=TRUE
+# ct.bma <- coloc.bma(data@df1, data@df2, 
+#                     family1="gaussian", family2="gaussian",
+# 		    plot.coeff=TRUE)
+# ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
+#                           family1="gaussian", family2="gaussian", 
+#                           bayes=TRUE)
+# #+end_src
 
-The =family1/2= parameters are used to specify the model and link
-function, ="gaussian"= (with identity link) or ="binomial"= (with
-logit link) are accepted values.  The plot here shows all models
-considered simultaneously, and does not attempt to discriminate
-between models with strong and weak support.  It's rather confusing,
-and is off by default.
+# The =family1/2= parameters are used to specify the model and link
+# function, ="gaussian"= (with identity link) or ="binomial"= (with
+# logit link) are accepted values.  The plot here shows all models
+# considered simultaneously, and does not attempt to discriminate
+# between models with strong and weak support.  It's rather confusing,
+# and is off by default.
 
-However, =coloc.bma()= is doing
-quite some work to cover the model space efficiently, and it is
-important to understand how it does this.  First, the =r2.trim=
-parameter is used to "tag" the SNPs - a subset of SNPs are selected so
-that no pair have $r^2>$ =r2.trim=.  The default value is 0.95 and the
-idea is that models containing SNPs with very similar genotypes
-provide little additional information, so the $p$ value need be
-averaged over only one of each such group.  Lower values of =r2.trim=
-will produce a sparser model space and so decrease computation.
-Second, the =thr= parameter is used to discard SNPs which are
-uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
-posterior probability of inclusion in single SNP models for SNP $i$,
-trait $j$, the set of discarded SNPs is formed by those for which
-$pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing *only* SNPs
-from this set will be ignored.  Note that models containing one SNP
-from this set and one SNP /not/ in the set *will* be evaluated.
+# However, =coloc.bma()= is doing
+# quite some work to cover the model space efficiently, and it is
+# important to understand how it does this.  First, the =r2.trim=
+# parameter is used to "tag" the SNPs - a subset of SNPs are selected so
+# that no pair have $r^2>$ =r2.trim=.  The default value is 0.95 and the
+# idea is that models containing SNPs with very similar genotypes
+# provide little additional information, so the $p$ value need be
+# averaged over only one of each such group.  Lower values of =r2.trim=
+# will produce a sparser model space and so decrease computation.
+# Second, the =thr= parameter is used to discard SNPs which are
+# uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
+# posterior probability of inclusion in single SNP models for SNP $i$,
+# trait $j$, the set of discarded SNPs is formed by those for which
+# $pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing *only* SNPs
+# from this set will be ignored.  Note that models containing one SNP
+# from this set and one SNP /not/ in the set *will* be evaluated.
 
-Finally, you should tell =coloc.bma()= how many SNPs should be
-included in each model.  The default is =nsnps=2=, 3 appears slightly
-more powerful but will generally require considerably more
-computation, whilst values of 4 and above are both unlikely to
-provide more information and very unlikely to be computed in any
-reasonable time for interactive work.
+# Finally, you should tell =coloc.bma()= how many SNPs should be
+# included in each model.  The default is =nsnps=2=, 3 appears slightly
+# more powerful but will generally require considerably more
+# computation, whilst values of 4 and above are both unlikely to
+# provide more information and very unlikely to be computed in any
+# reasonable time for interactive work.
 
 ** Using Bayes Factors to compare specific values of $\eta$
 
@@ -457,6 +463,7 @@ You can see more about the ABF approach on
 
 * Footnotes
 
+
 [fn:1] http://www.ncbi.nlm.nih.gov/pubmed/19039033
 
 [fn:2] http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract
@@ -464,6 +471,8 @@ You can see more about the ABF approach on
 [fn:3] http://www.ncbi.nlm.nih.gov/pubmed/18642345
 
 [fn:4] http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383
+
+[fn:5] http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272 
 
 # Local Variables:
 # firestarter: (org-ravel-md-knitr-dispatch)

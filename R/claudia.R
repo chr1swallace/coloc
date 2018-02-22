@@ -177,7 +177,7 @@ process.dataset <- function(d, suffix) {
           stop("dataset ",suffix,": ","s must be between 0 and 1")
   }
   if(d$type=="quant") {
-      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd ))
+      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
   
@@ -274,14 +274,22 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-  if(!is.list(dataset1))
+  if(!is.list(dataset))
     stop("dataset must be a list.")
   
-  df <- process.dataset(d=dataset, suffix="")
+    df <- process.dataset(d=dataset, suffix="")
+    nsnps <- nrow(df)
+    df <- rbind(df,
+                data.frame("V."=NA,
+                           z.=NA,
+                           r.=NA,
+                           lABF.=1,
+                           snp="null"))
+    df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
 
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
-  my.denom.log.abf <- logsum(df$lABF)
-  df$SNP.PP.H4 <- exp(df$lABF - my.denom.log.abf)
+  my.denom.log.abf <- logsum(df$lABF + df$prior)
+  df$SNP.PP <- exp(df$lABF - my.denom.log.abf)
  
   return(df)
 }
