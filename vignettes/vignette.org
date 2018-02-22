@@ -137,117 +137,47 @@ SnpMatrix, =X=, and phenotype information in a vector =Y=, then
 conversion to a =data.frame= as used above follows
 : df <- as.data.frame(cbind(Y=Y, as(X,"numeric")))
 
-* Proportional testing
+* An aside: fine mapping under a single causal variant assumption
+The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared.  Of course, this means we can look at each trait on its own quite simply, and we can do that with the function =finemap.abf=.
 
-** Principal components
-
-The code below first prepares a principal component object by combining
-the genotypes in the two dataset, then models the most informative
-components (the minimum set required to capture 80% of the genetic
-variation) in each dataset, before finally testing whether there is
-colocalisation between these models.
-
-#+begin_src R :ravel fig=TRUE
-## run a coloc with pcs
-pcs <- pcs.prepare(data@df1[,-1], data@df2[,-1])
-pcs.1 <- pcs.model(pcs, group=1, Y=data@df1[,1], threshold=0.8)
-pcs.2 <- pcs.model(pcs, group=2, Y=data@df2[,1], threshold=0.8)
-ct.pcs <- coloc.test(pcs.1,pcs.2)
-#+end_src
-
-The plot shows the estimated coefficients for each principal component
-modeled for traits 1 and 2 on the x and y axes, with circles showing
-the 95% confidence region.  The points lie close to the line through
-the origin, which supports a hypothesis of colocalisation.
-
-A little more information is stored in the =ct.pcs= object:
+First we analyse a single trait from our simulated data to generate summary statistics:
 
 #+begin_src R
-ct.pcs
-str(summary(ct.pcs))
+if(requireNamespace("snpStats")) {
+library(snpStats)
+Y1 <- data@df1$Y
+X1 <- new("SnpMatrix",as.matrix(data@df1[,-1]))
+p1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
+maf <- col.summary(X1)[,"MAF"]
+
+get.beta <- function(...) {
+   tmp <- snpStats::snp.rhs.estimates(..., family="gaussian")
+   beta <- sapply(tmp,"[[","beta")
+   varbeta <- sapply(tmp, "[[", "Var.beta")
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(Y1 ~ 1, snp.data=X1)
+} else {
+Y1 <- data@df1$Y
+X1 <- as.matrix(data@df1[,-1])
+tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
+p1 <- sapply(tests1,"[",4)
+maf <- colMeans(X2)/2
+
+get.beta <- function(x) {
+   beta <- sapply(x,"[",1)
+   varbeta <- sapply(x, "[", 2)^2
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(tests1)
+}
 #+end_src
 
-The best estimate for the coefficient of proportionality,
-$\hat{\eta}$, is 1.13, and the null hypothesis of colocalisation is
-not rejected with a chisquare statistic of 5.27 based on 7 degrees of
-freedom ($n-1$ where the $n$ is the number of components tested, and
-one degree of freedom was used in estimating $\eta$), giving a p value
-of 0.63.  The =summary()= method returns a named vector of length 4
-containing this information.
+Then we analyse them:
 
-If more information is needed about $\eta$, then this is available if
-the =bayes= argument is supplied:
-
-#+begin_src R
-ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
-ci(ct.pcs.bayes)
-#+end_src
-
-** Bayesian model averaging
-
-This approach appears simpler.  There is no need to do any
-preparatory work, you require only a single function:
-
-#+begin_src R :ravel fig=TRUE
-ct.bma <- coloc.bma(data@df1, data@df2, 
-                    family1="gaussian", family2="gaussian",
-		    plot.coeff=TRUE)
-ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
-                          family1="gaussian", family2="gaussian", 
-                          bayes=TRUE)
-#+end_src
-
-The =family1/2= parameters are used to specify the model and link
-function, ="gaussian"= (with identity link) or ="binomial"= (with
-logit link) are accepted values.  The plot here shows all models
-considered simultaneously, and does not attempt to discriminate
-between models with strong and weak support.  It's rather confusing,
-and is off by default.
-
-However, =coloc.bma()= is doing
-quite some work to cover the model space efficiently, and it is
-important to understand how it does this.  First, the =r2.trim=
-parameter is used to "tag" the SNPs - a subset of SNPs are selected so
-that no pair have $r^2>$ =r2.trim=.  The default value is 0.95 and the
-idea is that models containing SNPs with very similar genotypes
-provide little additional information, so the $p$ value need be
-averaged over only one of each such group.  Lower values of =r2.trim=
-will produce a sparser model space and so decrease computation.
-Second, the =thr= parameter is used to discard SNPs which are
-uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
-posterior probability of inclusion in single SNP models for SNP $i$,
-trait $j$, the set of discarded SNPs is formed by those for which
-$pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing *only* SNPs
-from this set will be ignored.  Note that models containing one SNP
-from this set and one SNP /not/ in the set *will* be evaluated.
-
-Finally, you should tell =coloc.bma()= how many SNPs should be
-included in each model.  The default is =nsnps=2=, 3 appears slightly
-more powerful but will generally require considerably more
-computation, whilst values of 4 and above are both unlikely to
-provide more information and very unlikely to be computed in any
-reasonable time for interactive work.
-
-** Using Bayes Factors to compare specific values of $\eta$
-
-It may be that specific values of $\eta$ are of interest.  For
-example, when comparing eQTLs in two tissues, or when comparing risk
-of two related diseases, the value $\eta=1$ is of particular
-interest.  In proportional testing, we can use Bayes Factors to
-compare the support for different values of $\eta$.  Eg
-
-#+begin_src R
-## compare individual values of eta
-ct.pcs <- coloc.test(pcs.1,pcs.2, bayes.factor=c(-1,0,1))
-bf(ct.pcs)
-
-## compare ranges of eta
-ct.bma <- coloc.bma(data@df1, data@df2, 
-                    family1="gaussian", family2="gaussian",
-                    bayes.factor=list(c(-0.1,1), c(0.9,1.1)))
-bf(ct.bma)
-#+end_src
-
+#+BEGIN_SRC R
+my.res <- finemap.abf(dataset=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"))
+#+END_SRC
 
 * (Approximate) Bayes Factor colocalisation analyses
 
@@ -374,6 +304,118 @@ shown above.
 ct.abf <- coloc.abf.datasets(data@df1, data@df2, response1="Y", response2="Y",
                              type1="quant", type2="quant")
 #+end_src
+
+* Proportional testing
+
+** Principal components
+
+The code below first prepares a principal component object by combining
+the genotypes in the two dataset, then models the most informative
+components (the minimum set required to capture 80% of the genetic
+variation) in each dataset, before finally testing whether there is
+colocalisation between these models.
+
+#+begin_src R :ravel fig=TRUE
+## run a coloc with pcs
+pcs <- pcs.prepare(data@df1[,-1], data@df2[,-1])
+pcs.1 <- pcs.model(pcs, group=1, Y=data@df1[,1], threshold=0.8)
+pcs.2 <- pcs.model(pcs, group=2, Y=data@df2[,1], threshold=0.8)
+ct.pcs <- coloc.test(pcs.1,pcs.2)
+#+end_src
+
+The plot shows the estimated coefficients for each principal component
+modeled for traits 1 and 2 on the x and y axes, with circles showing
+the 95% confidence region.  The points lie close to the line through
+the origin, which supports a hypothesis of colocalisation.
+
+A little more information is stored in the =ct.pcs= object:
+
+#+begin_src R
+ct.pcs
+str(summary(ct.pcs))
+#+end_src
+
+The best estimate for the coefficient of proportionality,
+$\hat{\eta}$, is 1.13, and the null hypothesis of colocalisation is
+not rejected with a chisquare statistic of 5.27 based on 7 degrees of
+freedom ($n-1$ where the $n$ is the number of components tested, and
+one degree of freedom was used in estimating $\eta$), giving a p value
+of 0.63.  The =summary()= method returns a named vector of length 4
+containing this information.
+
+If more information is needed about $\eta$, then this is available if
+the =bayes= argument is supplied:
+
+#+begin_src R
+ct.pcs.bayes <- coloc.test(pcs.1,pcs.2, bayes=TRUE)
+ci(ct.pcs.bayes)
+#+end_src
+
+** Bayesian model averaging
+
+This approach appears simpler.  There is no need to do any
+preparatory work, you require only a single function:
+
+#+begin_src R :ravel fig=TRUE
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+		    plot.coeff=TRUE)
+ct.bma.bayes <- coloc.bma(data@df1, data@df2, 
+                          family1="gaussian", family2="gaussian", 
+                          bayes=TRUE)
+#+end_src
+
+The =family1/2= parameters are used to specify the model and link
+function, ="gaussian"= (with identity link) or ="binomial"= (with
+logit link) are accepted values.  The plot here shows all models
+considered simultaneously, and does not attempt to discriminate
+between models with strong and weak support.  It's rather confusing,
+and is off by default.
+
+However, =coloc.bma()= is doing
+quite some work to cover the model space efficiently, and it is
+important to understand how it does this.  First, the =r2.trim=
+parameter is used to "tag" the SNPs - a subset of SNPs are selected so
+that no pair have $r^2>$ =r2.trim=.  The default value is 0.95 and the
+idea is that models containing SNPs with very similar genotypes
+provide little additional information, so the $p$ value need be
+averaged over only one of each such group.  Lower values of =r2.trim=
+will produce a sparser model space and so decrease computation.
+Second, the =thr= parameter is used to discard SNPs which are
+uninformative with regards the phenotype, that is, if $pp_{ij}$ is the
+posterior probability of inclusion in single SNP models for SNP $i$,
+trait $j$, the set of discarded SNPs is formed by those for which
+$pp_{i1}<$ =thr= and $pp_{i2}<$ =thr=.  Models containing *only* SNPs
+from this set will be ignored.  Note that models containing one SNP
+from this set and one SNP /not/ in the set *will* be evaluated.
+
+Finally, you should tell =coloc.bma()= how many SNPs should be
+included in each model.  The default is =nsnps=2=, 3 appears slightly
+more powerful but will generally require considerably more
+computation, whilst values of 4 and above are both unlikely to
+provide more information and very unlikely to be computed in any
+reasonable time for interactive work.
+
+** Using Bayes Factors to compare specific values of $\eta$
+
+It may be that specific values of $\eta$ are of interest.  For
+example, when comparing eQTLs in two tissues, or when comparing risk
+of two related diseases, the value $\eta=1$ is of particular
+interest.  In proportional testing, we can use Bayes Factors to
+compare the support for different values of $\eta$.  Eg
+
+#+begin_src R
+## compare individual values of eta
+ct.pcs <- coloc.test(pcs.1,pcs.2, bayes.factor=c(-1,0,1))
+bf(ct.pcs)
+
+## compare ranges of eta
+ct.bma <- coloc.bma(data@df1, data@df2, 
+                    family1="gaussian", family2="gaussian",
+                    bayes.factor=list(c(-0.1,1), c(0.9,1.1)))
+bf(ct.bma)
+#+end_src
+
 
 * The difference between proportional and ABF approaches
 
