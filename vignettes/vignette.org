@@ -129,24 +129,6 @@ data <- sim.data(nsamples=1000,nsim=1)
 library(coloc)
 #+end_src
 
-#+RESULTS:
-| coloc      |
-| BMA        |
-| rrcov      |
-| inline     |
-| robustbase |
-| leaps      |
-| survival   |
-| MASS       |
-| colorspace |
-| stats      |
-| graphics   |
-| grDevices  |
-| utils      |
-| datasets   |
-| methods    |
-| base       |
-
 If you are not familiar with the analysis of genetic data in R, I
 would suggest beginning with the [[http://www.bioconductor.org/packages/release/bioc/html/snpStats.html][snpStats package]], which has
 functions for reading data in a variety of formats and contains a
@@ -307,6 +289,7 @@ first generate the p values manually to give all the details. We use the snpStat
 Bioconductor to calculate the p values quickly.  We will also calculate the coefficients and their standard errors to compare the two approaches (but you should use only one - the coefficients if available, otherwise the p values).
 
 #+begin_src R
+if(requireNamespace("snpStats")) {
 library(snpStats)
 
 Y1 <- data@df1$Y
@@ -328,6 +311,29 @@ get.beta <- function(...) {
 }
 b1 <- get.beta(Y1 ~ 1, snp.data=X1)
 b2 <- get.beta(Y2 ~ 1, snp.data=X2)
+} else {
+Y1 <- data@df1$Y
+Y2 <- data@df2$Y
+
+X1 <- as.matrix(data@df1[,-1])
+X2 <- as.matrix(data@df2[,-1])
+
+tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
+tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
+
+p1 <- sapply(tests1,"[",4)
+p2 <- sapply(tests2,"[",4)
+
+maf <- colMeans(X2)/2
+
+get.beta <- function(x) {
+   beta <- sapply(x,"[",1)
+   varbeta <- sapply(x, "[", 2)^2
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(tests1)
+b2 <- get.beta(tests2)
+}
 #+end_src
 
 Note that we are using the second dataset in that case to compute the minor allele frequencies.

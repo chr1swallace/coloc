@@ -177,8 +177,8 @@ process.dataset <- function(d, suffix) {
           stop("dataset ",suffix,": ","s must be between 0 and 1")
   }
   if(d$type=="quant") {
-      if(!("MAF" %in% nd || "sdY" %in% nd))
-          stop("dataset ",suffix,": ","must give MAF or sdY for type quant")
+      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd ))
+          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
   
   if("beta" %in% nd && "varbeta" %in% nd && ("MAF" %in% nd || "sdY" %in% nd)) {
@@ -217,6 +217,75 @@ process.dataset <- function(d, suffix) {
 
   stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
 }
+
+##' Bayesian finemapping analysis
+##'
+##' This function calculates posterior probabilities of different
+##' causal variant for a single trait.
+##'
+##' If regression coefficients and variances are available, it
+##' calculates Bayes factors for association at each SNP.  If only p
+##' values are available, it uses an approximation that depends on the
+##' SNP's MAF and ignores any uncertainty in imputation.  Regression
+##' coefficients should be used if available.
+##' 
+##' @title Bayesian finemapping analysis
+##' @param dataset a list with the following elements
+##' \describe{
+##' 
+##'   \item{pvalues}{P-values for each SNP in dataset 1}
+##'
+##'   \item{N}{Number of samples in dataset 1}
+##'
+##'   \item{MAF}{minor allele frequency of the variants}
+##'
+##' \item{beta}{regression coefficient for each SNP from dataset 1}
+##' 
+##' \item{varbeta}{variance of beta}
+##' 
+##' \item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
+##'
+##' \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
+##'
+##'  \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
+##' 
+##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
+##'
+##' }
+##'
+##' Some of these items may be missing, but you must give
+##' \itemize{
+##' \item{always}{\code{type}}
+##' \item{if \code{type}=="cc"}{\code{s}}
+##' \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
+##' \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
+##' and then either
+##' \item{}{\code{pvalues}, \code{MAF}}
+##' \item{}{\code{beta}, \code{varbeta}}
+##' }
+##' 
+##'
+##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
+##' @return a \code{data.frame}:
+##' \itemize{
+##' \item an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability of the SNP being causal
+##' }
+##' @author Chris Wallace
+##' @export
+finemap.abf <- function(dataset, p1=1e-4) {
+
+  if(!is.list(dataset1))
+    stop("dataset must be a list.")
+  
+  df <- process.dataset(d=dataset, suffix="")
+
+  ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
+  my.denom.log.abf <- logsum(df$lABF)
+  df$SNP.PP.H4 <- exp(df$lABF - my.denom.log.abf)
+ 
+  return(df)
+}
+
 
 ##' Bayesian colocalisation analysis
 ##'
