@@ -13,7 +13,7 @@ Suggests:
     testthat
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 3.1
-Date: 2018-02-22
+Date: 2018-02-23
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -21,8 +21,10 @@ Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     person("Vincent","Plagnol", role="ctb",
     email="v.plagnol@ucl.ac.uk"))
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
-Description: Performs the colocalisation tests described in Plagnol et al
-    (2009), Wallace et al (2013) and Giambartolomei et al (2013).
+Description: Performs the colocalisation tests described in
+    Plagnol et al (2009) <doi:10.1093/biostatistics/kxn039>,
+    Wallace et al (2013) <doi:10.1002/gepi.21765> and
+    Giambartolomei et al (2013) <doi:10.1371/journal.pgen.1004383>.
 License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
