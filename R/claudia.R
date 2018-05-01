@@ -1,4 +1,4 @@
-##' variance of MLE of beta for quantitative trait, assuming var(y)=0
+##' variance of MLE of beta for quantitative trait, assuming var(y)=1
 ##'
 ##' Internal function
 ##' @title Var.data
@@ -168,20 +168,24 @@ process.dataset <- function(d, suffix) {
 
   if(!(d$type %in% c("quant","cc")))
       stop("dataset ",suffix,": ","type must be quant or cc")
+  
   if(d$type=="cc") {
       if(! "s" %in% nd)
           stop("dataset ",suffix,": ","please give s, proportion of samples who are cases")
-      if(! "MAF" %in% nd)
-          stop("dataset ",suffix,": ","please give MAF for type cc")
+      if("pvalues" %in% nd && !( "MAF" %in% nd))
+          stop("dataset ",suffix,": ","please give MAF if using p values")
       if(d$s<=0 || d$s>=1)
           stop("dataset ",suffix,": ","s must be between 0 and 1")
   }
+  
   if(d$type=="quant") {
       if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+      if(!('sdY' %in% nd)) 
+          d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
   }
   
-  if("beta" %in% nd && "varbeta" %in% nd && ("MAF" %in% nd || "sdY" %in% nd)) {
+  if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
     if(length(d$beta) != length(d$varbeta))
       stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
     if(!("snp" %in% nd))
@@ -189,20 +193,15 @@ process.dataset <- function(d, suffix) {
     if(length(d$snp) != length(d$beta))
       stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
  
-    if(d$type == 'quant' & !('sdY' %in% nd)) 
-      d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
-    
     df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                               V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
     df$snp <- as.character(d$snp)
     return(df)
   }
 
-  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd) {
+  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd) { ## no beta/varbeta: use p value / MAF approximation
     if (length(d$pvalues) != length(d$MAF))
       stop('Length of the P-value vectors and MAF vector must match')
-    if(d$type=="cc" & !("s" %in% nd))
-      stop("Must specify s if type=='cc' and you want to use approximate Bayes Factors")
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
     df <- data.frame(pvalues = d$pvalues,
