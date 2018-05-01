@@ -1,3 +1,3 @@
 test_that("examples", {
-    test_examples(path="../../man")
+    test_examples(path="../..")
 })

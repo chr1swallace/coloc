@@ -181,8 +181,6 @@ process.dataset <- function(d, suffix) {
   if(d$type=="quant") {
       if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
-      if(!('sdY' %in% nd)) 
-          d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
   }
   
   if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
@@ -193,7 +191,9 @@ process.dataset <- function(d, suffix) {
     if(length(d$snp) != length(d$beta))
       stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
  
-    df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
+    if(d$type=="quant" && !('sdY' %in% nd)) 
+          d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
+   df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                               V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
     df$snp <- as.character(d$snp)
     return(df)
