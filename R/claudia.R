@@ -278,12 +278,17 @@ finemap.abf <- function(dataset, p1=1e-4) {
   
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
-    df <- rbind(df,
-                data.frame("V."=NA,
-                           z.=NA,
-                           r.=NA,
-                           lABF.=1,
-                           snp="null"))
+  dfnull <- df[1,]
+    for(nm in colnames(df))
+        dfnull[,nm] <- NA
+    dfnull[,"snp"] <- "null"
+    dfnull[,"lABF."] <- 1
+    df <- rbind(df,dfnull)
+                ## data.frame("V."=NA,
+                ##            z.=NA,
+                ##            r.=NA,
+                ##            lABF.=1,
+                ##            snp="null"))
     df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
 
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
