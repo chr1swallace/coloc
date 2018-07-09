@@ -10,7 +10,8 @@ Imports:
     speedglm
 Suggests:
     knitr,
-    testthat
+    testthat,
+    rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 3.1
 Date: 2018-02-23
@@ -29,3 +30,5 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
+URL: https://github.com/chr1swallace/coloc
+BugReports: https://github.com/chr1swallace/coloc/issues
