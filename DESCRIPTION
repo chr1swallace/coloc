@@ -4,6 +4,7 @@ Imports:
     ggplot2,
     snpStats,
     BMA,
+    data.table,
     reshape,
     methods,
     flashClust,

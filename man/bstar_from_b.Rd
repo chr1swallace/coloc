@@ -21,10 +21,10 @@ bstar_from_b(b1, b2, v1, v2, rho)
 list of b1, b2 in bivariate regression
 }
 \description{
-.. content for \description{} (no empty lines) ..
+estimate bivariate logistic regression beta vector from univariate summary stats
 }
 \details{
-.. content for \details{} ..
+supply beta and var(beta) for two univariate logistic regressions, and an estimate of the correlation between explanatory variables in controls
 }
 \author{
 Chris Wallace

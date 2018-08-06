@@ -1,5 +1,5 @@
-## delete this
-devtools::load_all("~/RP/coloc")
+## ## delete this
+## devtools::load_all("~/RP/coloc")
 
 ## start here
 (load(system.file("testdata","test-coloccc.RData",package="coloc")))

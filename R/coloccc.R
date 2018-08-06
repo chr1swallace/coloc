@@ -10,14 +10,10 @@ bhat.from.bstar <- function(b1star, b2star, v1star, v2star, rho) {
 cor2 <- function (x) {
     1/(NROW(x) - 1) * crossprod( scale(x, TRUE, TRUE) )
 }
-##' .. content for \description{} (no empty lines) ..
+##' approximate bayes factor for bivariate normal
 ##'
-##' .. content for \details{} ..
-##' @title recreate bivariate logistic regression from univariate summary stats
-##' @param b1 beta_1
-##' @param b2 beta_2
-##' @param v1 v(beta_1)
-##' @param v2 v(beta_2)
+##' @title ABF for bivariate normal
+##' @inheritParams bstar_from_b
 ##' @param rho cor(snp1,snp2)
 ##' @param w1 prior variance on b1 (beta_1 ~ N(b1,v); b1 ~ N(0,w1))
 ##' @param w2 prior variance on b2
@@ -30,9 +26,9 @@ bf2 <- function(b1,b2,v1,v2,rho,w1=0.04,w2=0.04) {
     DR <- (-rho ^ 2 * s1 ^ 2 * s2 ^ 2 + s1 ^ 2 * s2 ^ 2 + s1 ^ 2 * w2 + s2 ^ 2 * w1 + w1 * w2) / (-rho ^ 2 * s1 ^ 2 * s2 ^ 2 + s1 ^ 2 * s2 ^ 2)
     (-zdiff -log(DR))/2
 }
-##' .. content for \description{} (no empty lines) ..
+##' estimate bivariate logistic regression beta vector from univariate summary stats
 ##'
-##' .. content for \details{} ..
+##' supply beta and var(beta) for two univariate logistic regressions, and an estimate of the correlation between explanatory variables in controls
 ##' @title recreate bivariate logistic regression from univariate summary stats
 ##' @param b1 beta_1
 ##' @param b2 beta_2
@@ -172,21 +168,18 @@ lbf.h3.corr <- function(bA1,bB1,bA2,bB2,vA1,vB1,vA2,vB2,share.factor,rho=1,W) {
 ##'
 ##' assume allele freq known in controls
 ##' @title vcov estimation for H4, multinomial approx
-##' @param b1
-##' @param b2
-##' @param n00
-##' @param n1
-##' @param n2
-##' @param f0
+##' @inheritParams bstar_from_b
+##' @inheritParams coloc.cc
+##' @param f0 MAF of SNP
 ##' @return list with diagnonal and off diagonal elements of vcov matrix
 ##' @author Chris Wallace
 approxv2.multinom <- function(b1,b2,n00,n1,n2,f0) {
     ## geno is matrix giving relative frequency of individuals with
     ## genotype i,j in population, where i is count of SNP 1 alt
     ## allele, and j is count of SNP2 alt allele
-    geno00 <- estgeno.4(n00,f0,f0,rho=1)
-    geno1 <- estgeno.4(n1,f0,f0,rho=1,OR=exp(b1))
-    geno2 <- estgeno.4(n2,f0,f0,rho=1,OR=exp(b2))
+    geno00 <- estgeno.4(n00,f0)
+    geno1 <- estgeno.4(n1,f0,OR=exp(b1))
+    geno2 <- estgeno.4(n2,f0,OR=exp(b2))
     geno <- geno00 + geno1 + geno2
     ## estimate a1, a2 
     bvec <- c(0,1,2)
@@ -264,16 +257,17 @@ vstar_from_v <- function(v1,v2,r) {
     ov <- -r*sqrt(v1*v2)
     matrix(c(v1,ov,ov,v2),2,2) / (1-r^2)
 }
-##' .. content for \description{} (no empty lines) ..
+##' Genotype count matrix estimation for H3
 ##'
-##' .. content for \details{} ..
-##' @title
+##' @title estimate genotype counts for two SNPs (H3)
 ##' @param n total number of individuals
 ##' @param fA af of SNP A in controls
 ##' @param fB af of SNP B in controls
-##' @param rho corr(A,B) in controls (set rho=1 and fB=fA for a single SNP)
-##' @param OR OR for A (set OR=1 for controls)
-##' @return 
+##' @param rho corr(A,B) in controls (set rho=1 and fB=fA for a single
+##'     SNP)
+##' @param ORA
+##' @param ORB
+##' @return Estimated genotype count matrix
 ##' @author Chris Wallace
 estgeno.3 <- function(n,fA,fB,rho,ORA=1,ORB=1) {
     ## allele <- match.arg(allele)
@@ -295,7 +289,15 @@ estgeno.3 <- function(n,fA,fB,rho,ORA=1,ORB=1) {
     }
     G
 }
-estgeno.4 <- function(n,fA,fB,rho,OR=1) {
+##' Genotype count matrix estimation for H4
+##'
+##' @title estimate genotype counts for one SNP (H4)
+##' @param n total number of individuals
+##' @param fA af of SNP A in controls
+##' @param OR OR for A (set OR=1 for controls)
+##' @return Estimated genotype count matrix - only care about the diag
+##' @author Chris Wallace
+estgeno.4 <- function(n,fA,OR=1) {
     ## allele <- match.arg(allele)
     rr <- rho * sqrt(fA * (1 - fA) * fB * (1 - fB))
     condB <-  c((fB * (1-fA) - rr)/(1-fA), (fB * fA + rr)/fA)
@@ -304,10 +306,6 @@ estgeno.4 <- function(n,fA,fB,rho,OR=1) {
                     fA * (1-condB[2]), fA * condB[2]),
                   nrow=2,ncol=2,dimnames=list(c("A0","A1"),c("B0","B1")))
     }
-    ## h11 <- H[1,1]
-    ## h12 <- H[1,2]
-    ## h21 <- H[2,1]
-    ## h22 <- H[2,2]
     if(OR!=1) {
         ## adjust overall allele freqs, using both OR
         ## g0 <-  OR * fA / (OR * fA + 1-fA)

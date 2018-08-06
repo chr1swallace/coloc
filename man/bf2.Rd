@@ -2,7 +2,7 @@
 % Please edit documentation in R/coloccc.R
 \name{bf2}
 \alias{bf2}
-\title{recreate bivariate logistic regression from univariate summary stats}
+\title{ABF for bivariate normal}
 \usage{
 bf2(b1, b2, v1, v2, rho, w1 = 0.04, w2 = 0.04)
 }
@@ -25,10 +25,7 @@ bf2(b1, b2, v1, v2, rho, w1 = 0.04, w2 = 0.04)
 log ABF of data under alternative vs null (w1=w2=0)
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+approximate bayes factor for bivariate normal
 }
 \author{
 Chris Wallace

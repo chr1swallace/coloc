@@ -6,6 +6,19 @@
 \usage{
 approxv2.multinom(b1, b2, n00, n1, n2, f0)
 }
+\arguments{
+\item{b1}{beta_1}
+
+\item{b2}{beta_2}
+
+\item{n00}{number of shared controls}
+
+\item{n1}{number of cases for dataset 1}
+
+\item{n2}{number of cases for dataset 2}
+
+\item{f0}{MAF of SNP}
+}
 \value{
 list with diagnonal and off diagonal elements of vcov matrix
 }
