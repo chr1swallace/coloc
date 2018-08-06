@@ -15,7 +15,7 @@ Var.data(f, N)
 variance of MLE beta
 }
 \description{
-variance of MLE of beta for quantitative trait, assuming var(y)=0
+variance of MLE of beta for quantitative trait, assuming var(y)=1
 }
 \details{
 Internal function
