@@ -366,7 +366,9 @@ estgeno.4 <- function(n,fA,OR=1) {
 ##' @export
 ##' @author Chris Wallace
 coloc.cc <- function(dataset1,dataset2,
-                     n1=args$ncse,n2=args$ncse,n00=(1-dataset1$s)*dataset1$N, n01=0,n02=0,
+                     n1=dataset1$s*dataset1$N,
+                     n2=dataset2$s*dataset2$N,
+                     n00=(1-dataset1$s)*dataset1$N, n01=0,n02=0,
                      MAF, LD,
                      p1=1e-4, p2=1e-4, p12=1e-5,
                      method=c("multinom","corr")) {
@@ -403,7 +405,10 @@ coloc.cc <- function(dataset1,dataset2,
     df3 <- as.data.table(as.data.frame(expand.grid(snps,snps)))
     setnames(df3,c("snp1","snp2"))
     df3 <- df3[snp1!=snp2,]
-    df3[,r:=LD[cbind(as.character(snp1),as.character(snp2))]]
+    df3[,isnp1:=match(as.character(snp1),rownames(LD))]
+    df3[,isnp2:=match(as.character(snp2),rownames(LD))]
+    df3[,r:=LD[cbind(isnpA,isnpB)]]
+  ## df3[,r:=LD[cbind(as.character(snp1),as.character(snp2))]]
     df3 <- merge(df3,df[,.(snp,f0,b1,v1)],
                 by.x="snp1",by.y="snp",all.x=TRUE) # trait 1, snp A
     setnames(df3,c("f0","b1","v1"),c("fA","bA1","vA1"))
