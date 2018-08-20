@@ -93,6 +93,8 @@ coloc.qq <- function(dataset1,dataset2,
     m <- match(df3.r1$snpA, df$snp)
     df3.r1[, lbf3:=df$lbf4[m]]
 
+    ## todo special case: r=0. Can fit two bivariate normals, which means we can vectorize
+    
     df3 <- df3[abs(r)<0.99,]
     ## reconstruct coefficients from bivariate models
     df3[,c("bA1old","bB1old","bA2old","bB2old"):=list(bA1,bB1,bA2,bB2)]
@@ -103,13 +105,12 @@ coloc.qq <- function(dataset1,dataset2,
     df3[,VAB := r * sqrt(VA) * sqrt(VB)]
     df3[,sumA2:=2*n*fA*(1+fA)] #sum(bvec^2 * rowSums(geno))
     df3[,sumB2:=2*n*fB*(1+fB)] #sum(bvec^2 * colSums(geno))
-    ## sumAB <- sum( (bvec %*% t(bvec)) * geno )
-    df3[,sumAB:=n*( sqrt(VA)*sqrt(VB)*r+4*fA*fB)]
+    df3[,sumAB:=n*( sqrt(VA)*sqrt(VB)*r+4*fA*fB)] # sum( (bvec %*% t(bvec)) * geno )
     df3[,det:=sumA2*sumB2-sumAB^2]
     df3[,EE:=covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB]
     df3[,sumA2:=EE*sumA2/det]
-    df3[,sumB2:=EE*sumA2/det]
-    df3[,sumAB:=EE*sumA2/det]
+    df3[,sumB2:=EE*sumB2/det]
+    df3[,sumAB:=EE*sumAB/det]
     df3[,W1:=VY1*0.15^2]
     df3[,W2:=VY2*0.15^2]
 
@@ -144,7 +145,8 @@ coloc.qq <- function(dataset1,dataset2,
         ## df3[j,lbf3:=tmp$reversed]
     } 
     ## put it all together
-    df3 <- rbind(df3.r1,df3)
+    o<-intersect(names(df3),names(df3.r1))
+    df3 <- rbind(df3.r1[,o,with=FALSE],df3[,o,with=FALSE])
     sdf <- df[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df),value=TRUE)]
     sdf3 <- df3[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df3),value=TRUE)]
     sdf <- rbind(melt(sdf,measure.vars=names(sdf)),
@@ -167,7 +169,7 @@ coloc.qq <- function(dataset1,dataset2,
     ## while checking, return this
     ## return(sdf)
     
-    ret <- c(length(snps), sdf[method=="lbf",]$pp)
+    ret <- c(nsnps=length(snps), sdf[method=="lbf",]$pp)
     names(ret) <- c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", 
                     "PP.H4.abf")
     ret
@@ -210,7 +212,7 @@ lbf.h3.qq2 <- function(bA1,bB1,bA2,bB2,vA1,vB1,vA2,vB2,W1,W2,sumA2,sumAB,sumB2,r
     ## VAB <- rho * sqrt(VA) * sqrt(VB)
     ## EE <- covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB
 
-   ## can vectorise above here TODO
+    ## can vectorise above here TODO
     V12 <- matrix(c(sumB2,-sumAB,-sumAB,sumA2),2,2) ## already inverse and x EE
     ## V12 <- EE * solve(WtW) # cov( (bA1,bA2), (bB1,bB2) )
     ## V12 <- EE * WtW # cov( (bA1,bA2), (bB1,bB2) )
