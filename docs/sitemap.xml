@@ -37,6 +37,9 @@
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.bma.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.qq.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.test.html</loc>
   </url>
   <url>
@@ -79,7 +82,22 @@
     <loc>http://chr1swallace.github.io/coloc/reference/process.dataset.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/qq.onesnp.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/qq.twosnp.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/sdY.est.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/tbf2.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/tbf4.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/colocqq-tests.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/vignette.html</loc>

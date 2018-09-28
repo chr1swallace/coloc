@@ -11,7 +11,7 @@ For usage, see the vignette at https://chr1swallace.github.io/coloc
 
 ### To generate vignettes:
 ```
-cp vignettes/colocqq-tests-tospin.R vignettes/colocqq-tests.R && Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'
+cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R && Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'
 ```
 
 ### To generate website:

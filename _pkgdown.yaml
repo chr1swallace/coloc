@@ -1,0 +1,20 @@
+title: coloc
+url: http://chr1swallace.github.io/coloc
+template:
+  params:
+    bootswatch: simplex
+reference:
+  - title: Bayesian enumeration of hypotheses
+    desc: Two trait colocalisation and single trait fine mapping under
+      single causal variant assumptions
+    contents:
+      - '`coloc.abf`'
+      - '`finemap.abf`'
+      - '`coloc.qq`'
+  - title: Proportional colocalisation
+    desc: Testing colocalisation through proportionality of coefficients
+    contents:
+      - '`coloc.test`'
+      - '`coloc.test.summary`'
+      - '`pcs.prepare`'
+      - '`pcs.model`'

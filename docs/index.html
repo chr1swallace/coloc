@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">3.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">3.2</span>
       </span>
     </div>
 
@@ -55,6 +55,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/colocqq-tests.html">Test for the single-&gt; joint linear regression calculations</a>
+    </li>
+    <li>
       <a href="articles/vignette.html">Coloc: a package for colocalisation analyses</a>
     </li>
   </ul>
@@ -85,6 +88,17 @@
 <p>For usage, see the vignette at <a href="https://chr1swallace.github.io/coloc" class="uri">https://chr1swallace.github.io/coloc</a></p>
 <p><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></p>
 <p><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></p>
+<div id="to-generate-vignettes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#to-generate-vignettes" class="anchor"></a>To generate vignettes:</h3>
+<pre><code>cp vignettes/colocqq-tests-tospin.R vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
+</div>
+<div id="to-generate-website" class="section level3">
+<h3 class="hasAnchor">
+<a href="#to-generate-website" class="anchor"></a>To generate website:</h3>
+<p><a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
+<pre><code>Rscript -e "pkgdown::build_site()"</code></pre>
+</div>
 </div>
   </div>
 

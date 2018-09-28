@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bayesian colocalisation analysis using data.frames — coloc.abf.datasets • coloc</title>
+<title>Bayes factor for two snp model with t distribution — tbf4 • coloc</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,12 @@
 
 
 
-<meta property="og:title" content="Bayesian colocalisation analysis using data.frames — coloc.abf.datasets" />
+<meta property="og:title" content="Bayes factor for two snp model with t distribution — tbf4" />
 
-<meta property="og:description" content="Bayesian colocalisation analysis using data.frames" />
+<meta property="og:description" content="Calculate the relative likelihood of a vector of regression
+coefficients given their var-covariance matrix under a prior that
+the true effect is 0 or is unknown, sampled from a normal with
+known variance (W)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -112,57 +115,99 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Bayesian colocalisation analysis using data.frames</h1>
-    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/claudia.R'><code>R/claudia.R</code></a></small>
-    <div class="hidden name"><code>coloc.abf.datasets.Rd</code></div>
+    <h1>Bayes factor for two snp model with t distribution</h1>
+    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/colocqq.R'><code>R/colocqq.R</code></a></small>
+    <div class="hidden name"><code>tbf4.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Bayesian colocalisation analysis using data.frames</p>
+    <p>Calculate the relative likelihood of a vector of regression
+coefficients given their var-covariance matrix under a prior that
+the true effect is 0 or is unknown, sampled from a normal with
+known variance (W)</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.abf.datasets</span>(<span class='no'>df1</span>, <span class='no'>df2</span>, <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'>intersect</span>(<span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df1</span>),
-  <span class='no'>response1</span>), <span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df2</span>), <span class='no'>response2</span>)), <span class='kw'>response1</span> <span class='kw'>=</span> <span class='st'>"Y"</span>,
-  <span class='kw'>response2</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>tbf4</span>(<span class='no'>bA1</span>, <span class='no'>bB1</span>, <span class='no'>bA2</span>, <span class='no'>bB2</span>, <span class='no'>vA1</span>, <span class='no'>vA2</span>, <span class='no'>vA12</span>, <span class='no'>vB1</span>, <span class='no'>vB2</span>, <span class='no'>vB12</span>, <span class='no'>vAB1</span>, <span class='no'>vAB2</span>, <span class='no'>vAB12</span>, <span class='no'>W1</span>,
+  <span class='no'>W2</span>, <span class='no'>N</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>df1</th>
-      <td><p>dataset 1</p></td>
+      <th>bA1</th>
+      <td><p>coefficient snp A trait 1</p></td>
     </tr>
     <tr>
-      <th>df2</th>
-      <td><p>dataset 2</p></td>
+      <th>bB1</th>
+      <td><p>coefficient snp B trait 1</p></td>
     </tr>
     <tr>
-      <th>snps</th>
-      <td><p>col.names for snps</p></td>
+      <th>bA2</th>
+      <td><p>coefficient snp A trait 2</p></td>
     </tr>
     <tr>
-      <th>response1</th>
-      <td><p>col.name for response in dataset 1</p></td>
+      <th>bB2</th>
+      <td><p>coefficient snp B trait 2</p></td>
     </tr>
     <tr>
-      <th>response2</th>
-      <td><p>col.name for response in dataset 2</p></td>
+      <th>vA1</th>
+      <td><p>var(bA1)</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>parameters passed to <code><a href='coloc.abf.snpStats.html'>coloc.abf.snpStats</a></code></p></td>
+      <th>vA2</th>
+      <td><p>var(bA2)</p></td>
+    </tr>
+    <tr>
+      <th>vA12</th>
+      <td><p>var(bA1,bA2)</p></td>
+    </tr>
+    <tr>
+      <th>vB1</th>
+      <td><p>var(bB1)</p></td>
+    </tr>
+    <tr>
+      <th>vB2</th>
+      <td><p>var(bB2)</p></td>
+    </tr>
+    <tr>
+      <th>vB12</th>
+      <td><p>var(bB1,bB2)</p></td>
+    </tr>
+    <tr>
+      <th>vAB1</th>
+      <td><p>var(bA1,bB1)</p></td>
+    </tr>
+    <tr>
+      <th>vAB2</th>
+      <td><p>var(bA2,bB2)</p></td>
+    </tr>
+    <tr>
+      <th>vAB12</th>
+      <td><p>var(bA1,bB2) = var(bB1,bA2)</p></td>
+    </tr>
+    <tr>
+      <th>W1</th>
+      <td><p>prior variance for trait 1</p></td>
+    </tr>
+    <tr>
+      <th>W2</th>
+      <td><p>prior variance for trait 1</p></td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td><p>number of samples</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>output of <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>log ABF</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Converts genetic data to snpStats objects, generates p values via score tests, then runs <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>Assume SNPs are A and B, traits are 1 and 2</p>
     
 
   </div>

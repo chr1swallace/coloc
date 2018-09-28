@@ -27,6 +27,7 @@ est.Sxy <- function(b1,Sx,Sxx,N) {
 ##' @param v2 variance of trait 2
 ##' @param eta cor(trait1, trait2)
 ##' @param N number of samples
+##' @export
 ##' @return var(b1,b2)
 ##' @author Chris Wallace
 qq.onesnp <- function(b1,b2,vb1,vb2,fx,v1,v2,eta,N) {
@@ -50,6 +51,7 @@ qq.onesnp <- function(b1,b2,vb1,vb2,fx,v1,v2,eta,N) {
 ##' @param fz MAF of Z
 ##' @param rho cor(X,Z)
 ##' @param eta cor(Y1,Y2)
+##' @export
 ##' @return list of coefficients and their (co-)variances that would
 ##'     be expected from a joint model
 ##' @author Chris Wallace
@@ -169,45 +171,35 @@ det.VW <- ((-W2 - vB2) * vA1 - W1 * W2 - W1 * vB2 + vAB12 ^ 2) * vAB12 ^ 2 + (((
 ##' causal variant for each trait.
 ##'
 ##' Unlike coloc.abf, this specifically requires coefficients and
-##' their standard errors.
+##' their standard errors - ie p values and MAF are not enough,
+##' because the direction of effect matters
 ##'
-##' @title coloc.abf for two quantitative traits measured on same individuals
-##' @param dataset1 a list with the following elements
-##' \describe{
-##' 
-##' \item{beta}{regression coefficient for each SNP from dataset 1}
-##' 
-##' \item{varbeta}{variance of beta}
-##' 
-##' \item{snp}{a character vector of snp ids. It will be used to merge dataset1 and dataset2.}
-##'
-##' }
-##'
-##' @param dataset2 as above, for dataset 2
-##' @param n1 number of cases for dataset 1
-##' @param n2 number of cases for dataset 2
-##' @param n00 number of shared controls
-##' @param n01 number of controls unique to dataset 1
-##' @param n02 number of controls unique to dataset 2
+##' @param N number of samples
+##' @param VY1 variance of trait 1
+##' @param VY2 variance of trait 2
+##' @param corY cor(Y1,Y2)
 ##' @param MAF minor allele frequency of the variants, named vector
-##' @param LD matrix giving correlation between SNPs.  NB - this is r, not rsquared!  Expect a mix of positive and negative values.  This should be estimated from reference data.
+##' @param LD matrix giving correlation between SNPs.  NB - this is r,
+##'     not rsquared!  Expect a mix of positive and negative values.
+##'     This should be estimated from reference data.
 ##' @param p1 prior probability a SNP is associated with trait 1,
 ##'     default 1e-4
 ##' @param p2 prior probability a SNP is associated with trait 2,
 ##'     default 1e-4
 ##' @param p12 prior probability a SNP is associated with both traits,
 ##'     default 1e-5
-##' @param method "multonom" or "corr", depending on which
-##'     approximation (multinomial or correlation) you wish to use.
-##' @return a vector giving the number of SNPs analysed, and the
-##'     posterior probabilities of H0 (no causal variant), H1 (causal
-##'     variant for trait 1 only), H2 (causal variant for trait 2
-##'     only), H3 (two distinct causal variants) and H4 (one common
-##'     causal variant)
+##' @param W1 the effect size of any variant for trait 1 under the
+##'     assumption it is causal is assumed to follow a normal with
+##'     mean 0 and variance W1
+##' @param W2 as above, for trait 2
+##' @return a list, with main entry "results" a vector giving the
+##'     number of SNPs analysed, and the posterior probabilities of H0
+##'     (no causal variant), H1 (causal variant for trait 1 only), H2
+##'     (causal variant for trait 2 only), H3 (two distinct causal
+##'     variants) and H4 (one common causal variant)
 ##' @export
 ##' @author Chris Wallace
-coloc.qq <- function(dataset1,dataset2,
-                     N=dataset1$N, VY1, VY2, corY,
+coloc.qq <- function(N, VY1, VY2, corY,
                      MAF, LD, 
                      p1=1e-4, p2=1e-4, p12=1e-5,
                      W1=0.15^2*VY1, W2=0.15^2*VY2) {
@@ -376,89 +368,3 @@ coloc.qq <- function(dataset1,dataset2,
 
 
 
-
-##' Calculate ABF under H3, paired quant traits
-##'
-##' Assumes SNP A is causal for disease 1, and SNP B is causal for disease 2
-##' @title Approximate LBF under H3, using multinomial approximation
-##' @param bA1 log OR for SNP A, disease 1 <--- causal for disease 1
-##' @param bB1 log OR for SNP B, disease 1
-##' @param bA2 log OR for SNP A, disease 2
-##' @param bB2 log OR for SNP A, disease 2 <-- causal for disease 2
-##' @param n00 number of shared controls 
-##' @param n1 number of disease 1 cases
-##' @param n2 number of disease 1 cases
-##' @param fA MAF of A in controls
-##' @param fB MAF of B in controls
-##' @param rho correlation (r) between A and B in controls
-##' @param W variance on normal prior for effect sizes at causal variants
-##' @return lBF for A, B from the prior involving W to a prior assuming true effect size is 0
-##' @author Chris Wallace
-lbf.h3.qq2 <- function(bA1,bB1,bA2,bB2,vA1,vB1,vA2,vB2,W1,W2,sumA2,sumAB,sumB2,rho) {
-    ## geno is matrix giving relative frequency of individuals with
-    ## genotype i,j in population, where i is count of SNP 1 alt
-    ## allele, and j is count of SNPB alt allele
-    ## bA1=bA1star; bB1=bB1star; bA2=bA2star; bB2=bB2star
-    ## geno <- estgeno.3(n,fA,fB,rho)
-    ## bvec <- c(0,1,2)
-    ## sumA2 <- 2*n*fA*(1+fA) #sum(bvec^2 * rowSums(geno))
-    ## sumB2 <- 2*n*fB*(1+fB) #sum(bvec^2 * colSums(geno))
-    ## ## sumAB <- sum( (bvec %*% t(bvec)) * geno )
-    ## sumAB <- n*( sqrt(VA)*sqrt(VB)*rho+4*fA*fB)
-    ## VA <- 2*fA*(1-fA)
-    ## VB <- 2*fB*(1-fB)
-    ## VAB <- rho * sqrt(VA) * sqrt(VB)
-    ## EE <- covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB
-
-    ## can vectorise above here TODO
-    V12 <- matrix(c(sumB2,-sumAB,-sumAB,sumA2),2,2) ## already inverse and x EE
-    ## V12 <- EE * solve(WtW) # cov( (bA1,bA2), (bB1,bB2) )
-    ## V12 <- EE * WtW # cov( (bA1,bA2), (bB1,bB2) )
-    V1 <- vstar_from_v(vA1,vB1,rho)
-    V2 <- vstar_from_v(vA2,vB2,rho)
-    V <- rbind(cbind(V1,V12), cbind(V12,V2))
-    B <- c(bA1,bB1,bA2,bB2)
-    Wmat <- diag(c(W1,0,0,W2))
-    ## Wmat <- diag(c(0.04,0,0,0.04))
-    dmvnorm(B, mean=rep(0,4), sigma=V + Wmat, log=TRUE) -
-      dmvnorm(B, mean=rep(0,4), sigma=V, log=TRUE)
-    ## Wmat <- diag(c(0,W1,W2,0))
-    ## ## Wmat <- diag(c(0,0.04,0.04,0))
-    ## ret2 <- dmvnorm(B, mean=rep(0,4), sigma=V + Wmat, log=TRUE) -
-    ##   dmvnorm(B, mean=rep(0,4), sigma=V, log=TRUE)
-    ## list(asis=ret1,reversed=ret2)
-}
-
-lbf.h3.qq <- function(bA1,bB1,bA2,bB2,vA1,vB1,vA2,vB2,n,vY1,vY2,covY,fA,fB,rho,W) {
-    ## geno is matrix giving relative frequency of individuals with
-    ## genotype i,j in population, where i is count of SNP 1 alt
-    ## allele, and j is count of SNPB alt allele
-    ## bA1=bA1star; bB1=bB1star; bA2=bA2star; bB2=bB2star
-    geno <- estgeno.3(n,fA,fB,rho)
-    bvec <- c(0,1,2)
-    sumA2 <- 2*n*fA*(1+fA) #sum(bvec^2 * rowSums(geno))
-    sumB2 <- 2*n*fB*(1+fB) #sum(bvec^2 * colSums(geno))
-    ## sumAB <- sum( (bvec %*% t(bvec)) * geno )
-    sumAB <- n*( sqrt(VA)*sqrt(VB)*rho+4*fA*fB)
-    VA <- 2*fA*(1-fA)
-    VB <- 2*fB*(1-fB)
-    VAB <- rho * sqrt(VA) * sqrt(VB)
-    EE <- covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB
-
-   ## can vectorise above here TODO
-    WtW <- matrix(c(sumA2,sumAB,sumAB,sumB2),2,2)
-    V12 <- EE * solve(WtW) # cov( (bA1,bA2), (bB1,bB2) )
-    V1 <- vstar_from_v(vA1,vB1,rho)
-    V2 <- vstar_from_v(vA2,vB2,rho)
-    V <- rbind(cbind(V1,V12), cbind(V12,V2))
-    B <- c(bA1,bB1,bA2,bB2)
-    Wmat <- diag(c(0.15^2*VY1,0,0,0.15^2*VY2))
-    ## Wmat <- diag(c(0.04,0,0,0.04))
-    ret1 <- dmvnorm(B, mean=rep(0,4), sigma=V + Wmat, log=TRUE) -
-      dmvnorm(B, mean=rep(0,4), sigma=V, log=TRUE)
-    Wmat <- diag(c(0,0.15^2*VY1,0.15^2*VY2,0))
-    ## Wmat <- diag(c(0,0.04,0.04,0))
-    ret2 <- dmvnorm(B, mean=rep(0,4), sigma=V + Wmat, log=TRUE) -
-      dmvnorm(B, mean=rep(0,4), sigma=V, log=TRUE)
-    list(asis=ret1,reversed=ret2)
-}

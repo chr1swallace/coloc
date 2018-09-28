@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bayesian colocalisation analysis using data.frames — coloc.abf.datasets • coloc</title>
+<title>Bayesian colocalisation analysis for two quantitative traits, measured on the same individuals — coloc.qq • coloc</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,11 @@
 
 
 
-<meta property="og:title" content="Bayesian colocalisation analysis using data.frames — coloc.abf.datasets" />
+<meta property="og:title" content="Bayesian colocalisation analysis for two quantitative traits, measured on the same individuals — coloc.qq" />
 
-<meta property="og:description" content="Bayesian colocalisation analysis using data.frames" />
+<meta property="og:description" content="This function calculates posterior probabilities of different
+causal variant configurations under the assumption of a single
+causal variant for each trait." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -112,57 +114,91 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Bayesian colocalisation analysis using data.frames</h1>
-    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/claudia.R'><code>R/claudia.R</code></a></small>
-    <div class="hidden name"><code>coloc.abf.datasets.Rd</code></div>
+    <h1>Bayesian colocalisation analysis for two quantitative traits, measured on the same individuals</h1>
+    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/colocqq.R'><code>R/colocqq.R</code></a></small>
+    <div class="hidden name"><code>coloc.qq.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Bayesian colocalisation analysis using data.frames</p>
+    <p>This function calculates posterior probabilities of different
+causal variant configurations under the assumption of a single
+causal variant for each trait.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.abf.datasets</span>(<span class='no'>df1</span>, <span class='no'>df2</span>, <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'>intersect</span>(<span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df1</span>),
-  <span class='no'>response1</span>), <span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df2</span>), <span class='no'>response2</span>)), <span class='kw'>response1</span> <span class='kw'>=</span> <span class='st'>"Y"</span>,
-  <span class='kw'>response2</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>coloc.qq</span>(<span class='no'>N</span>, <span class='no'>VY1</span>, <span class='no'>VY2</span>, <span class='no'>corY</span>, <span class='no'>MAF</span>, <span class='no'>LD</span>, <span class='kw'>p1</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>, <span class='kw'>p2</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>, <span class='kw'>p12</span> <span class='kw'>=</span> <span class='fl'>1e-05</span>,
+  <span class='kw'>W1</span> <span class='kw'>=</span> <span class='fl'>0.15</span>^<span class='fl'>2</span> * <span class='no'>VY1</span>, <span class='kw'>W2</span> <span class='kw'>=</span> <span class='fl'>0.15</span>^<span class='fl'>2</span> * <span class='no'>VY2</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>df1</th>
-      <td><p>dataset 1</p></td>
+      <th>N</th>
+      <td><p>number of samples</p></td>
     </tr>
     <tr>
-      <th>df2</th>
-      <td><p>dataset 2</p></td>
+      <th>VY1</th>
+      <td><p>variance of trait 1</p></td>
     </tr>
     <tr>
-      <th>snps</th>
-      <td><p>col.names for snps</p></td>
+      <th>VY2</th>
+      <td><p>variance of trait 2</p></td>
     </tr>
     <tr>
-      <th>response1</th>
-      <td><p>col.name for response in dataset 1</p></td>
+      <th>corY</th>
+      <td><p>cor(Y1,Y2)</p></td>
     </tr>
     <tr>
-      <th>response2</th>
-      <td><p>col.name for response in dataset 2</p></td>
+      <th>MAF</th>
+      <td><p>minor allele frequency of the variants, named vector</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>parameters passed to <code><a href='coloc.abf.snpStats.html'>coloc.abf.snpStats</a></code></p></td>
+      <th>LD</th>
+      <td><p>matrix giving correlation between SNPs.  NB - this is r,
+not rsquared!  Expect a mix of positive and negative values.
+This should be estimated from reference data.</p></td>
+    </tr>
+    <tr>
+      <th>p1</th>
+      <td><p>prior probability a SNP is associated with trait 1,
+default 1e-4</p></td>
+    </tr>
+    <tr>
+      <th>p2</th>
+      <td><p>prior probability a SNP is associated with trait 2,
+default 1e-4</p></td>
+    </tr>
+    <tr>
+      <th>p12</th>
+      <td><p>prior probability a SNP is associated with both traits,
+default 1e-5</p></td>
+    </tr>
+    <tr>
+      <th>W1</th>
+      <td><p>the effect size of any variant for trait 1 under the
+assumption it is causal is assumed to follow a normal with
+mean 0 and variance W1</p></td>
+    </tr>
+    <tr>
+      <th>W2</th>
+      <td><p>as above, for trait 2</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>output of <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>a list, with main entry "results" a vector giving the
+    number of SNPs analysed, and the posterior probabilities of H0
+    (no causal variant), H1 (causal variant for trait 1 only), H2
+    (causal variant for trait 2 only), H3 (two distinct causal
+    variants) and H4 (one common causal variant)</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Converts genetic data to snpStats objects, generates p values via score tests, then runs <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>Unlike coloc.abf, this specifically requires coefficients and
+their standard errors - ie p values and MAF are not enough,
+because the direction of effect matters</p>
     
 
   </div>

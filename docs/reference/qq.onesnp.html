@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bayesian colocalisation analysis using data.frames — coloc.abf.datasets • coloc</title>
+<title>qq.onesnp — qq.onesnp • coloc</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Bayesian colocalisation analysis using data.frames — coloc.abf.datasets" />
+<meta property="og:title" content="qq.onesnp — qq.onesnp" />
 
-<meta property="og:description" content="Bayesian colocalisation analysis using data.frames" />
+<meta property="og:description" content="reconstruct joint model ioutput for single snp. only vb1b2 really needed" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -112,57 +112,72 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Bayesian colocalisation analysis using data.frames</h1>
-    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/claudia.R'><code>R/claudia.R</code></a></small>
-    <div class="hidden name"><code>coloc.abf.datasets.Rd</code></div>
+    <h1>qq.onesnp</h1>
+    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/colocqq.R'><code>R/colocqq.R</code></a></small>
+    <div class="hidden name"><code>qq.onesnp.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Bayesian colocalisation analysis using data.frames</p>
+    <p>reconstruct joint model ioutput for single snp. only vb1b2 really needed</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.abf.datasets</span>(<span class='no'>df1</span>, <span class='no'>df2</span>, <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'>intersect</span>(<span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df1</span>),
-  <span class='no'>response1</span>), <span class='fu'>setdiff</span>(<span class='fu'>colnames</span>(<span class='no'>df2</span>), <span class='no'>response2</span>)), <span class='kw'>response1</span> <span class='kw'>=</span> <span class='st'>"Y"</span>,
-  <span class='kw'>response2</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>qq.onesnp</span>(<span class='no'>b1</span>, <span class='no'>b2</span>, <span class='no'>vb1</span>, <span class='no'>vb2</span>, <span class='no'>fx</span>, <span class='no'>v1</span>, <span class='no'>v2</span>, <span class='no'>eta</span>, <span class='no'>N</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>df1</th>
-      <td><p>dataset 1</p></td>
+      <th>b1</th>
+      <td><p>coef for snp X, trait 1</p></td>
     </tr>
     <tr>
-      <th>df2</th>
-      <td><p>dataset 2</p></td>
+      <th>b2</th>
+      <td><p>coef for snp X, trait 2</p></td>
     </tr>
     <tr>
-      <th>snps</th>
-      <td><p>col.names for snps</p></td>
+      <th>vb1</th>
+      <td><p>var(coef) for snp X, trait 1</p></td>
     </tr>
     <tr>
-      <th>response1</th>
-      <td><p>col.name for response in dataset 1</p></td>
+      <th>vb2</th>
+      <td><p>var(coef) for snp X, trait 2</p></td>
     </tr>
     <tr>
-      <th>response2</th>
-      <td><p>col.name for response in dataset 2</p></td>
+      <th>fx</th>
+      <td><p>MAF of X</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>parameters passed to <code><a href='coloc.abf.snpStats.html'>coloc.abf.snpStats</a></code></p></td>
+      <th>v1</th>
+      <td><p>variance of trait 1</p></td>
+    </tr>
+    <tr>
+      <th>v2</th>
+      <td><p>variance of trait 2</p></td>
+    </tr>
+    <tr>
+      <th>eta</th>
+      <td><p>cor(trait1, trait2)</p></td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td><p>number of samples</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>output of <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>var(b1,b2)</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Converts genetic data to snpStats objects, generates p values via score tests, then runs <code><a href='coloc.abf.html'>coloc.abf</a></code></p>
+    <p>The SNP is X, the traits are 1 and 2</p>
+<p>note in this case, the coefficients, and their variances, are
+equal in single or joint models.  it is just the var(b1,b2) term
+we need.</p>
+<p>This provides cor(b1,b2), and must be multiplied by
+sqrt(v(b1)*v(b2)) to get var(b1,b2)</p>
     
 
   </div>
