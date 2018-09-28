@@ -13,3 +13,9 @@ For usage, see the vignette at https://chr1swallace.github.io/coloc
 ```
 cp vignettes/colocqq-tests-tospin.R vignettes/colocqq-tests.R && Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'
 ```
+
+### To generate website:
+[[https://chr1swallace.github.io/coloc/]]
+```
+Rscript -e "pkgdown::build_site()"
+```
