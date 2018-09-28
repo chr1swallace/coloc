@@ -1,5 +1,14 @@
 2018-02-22    <chris@froome>
 
+	* v3.2 added colocqq for quantitative traits measured on the same individuals
+
+	risky online change to process datasets to fix bug which suggested
+	MAF was needed for cc data (seems ok)
+
+	added pkgdown
+
+2018-02-22    <chris@froome>
+
 	* v3.1 improved clarity of error messages in coloc.abf() sub functions
 	added finemap.abf to fine map a single trait
 	fixed warnings caused by CRAN disliking the BioConductor devel branch
