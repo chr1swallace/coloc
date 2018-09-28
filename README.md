@@ -15,7 +15,7 @@ cp vignettes/colocqq-tests-tospin.R vignettes/colocqq-tests.R && Rscript -e 'kni
 ```
 
 ### To generate website:
-[[https://chr1swallace.github.io/coloc/]]
+https://chr1swallace.github.io/coloc/
 ```
 Rscript -e "pkgdown::build_site()"
 ```
