@@ -2,8 +2,8 @@
 
 	* v3.2 added colocqq for quantitative traits measured on the same individuals
 
-	risky online change to process datasets to fix bug which suggested
-	MAF was needed for cc data (seems ok)
+	fix bug in process.datasets which suggested MAF was needed for cc
+	data when beta/varbeta also present
 
 	added pkgdown
 
