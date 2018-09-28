@@ -13,8 +13,8 @@ Suggests:
     testthat,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 3.1
-Date: 2018-02-23
+Version: 3.2
+Date: 2018-09-28
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
