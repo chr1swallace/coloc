@@ -121,6 +121,7 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
   lH4.abf <- log(p12) + logsum(lsum)
 
   all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+  ## print(all.abf)
   my.denom.log.abf <- logsum(all.abf)
   pp.abf <- exp(all.abf - my.denom.log.abf)
   names(pp.abf) <- paste("PP.H", (1:length(pp.abf)) - 1, ".abf", sep = "")

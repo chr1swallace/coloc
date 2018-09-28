@@ -1,16 +1,177 @@
-## functions for running coloc with two quant traits measured on the same samples
+## helper functions
+est.sxx <- function(b,vb,fx,v,N) {
+    Sx <- 2*N*fx
+    ((vb * N + b ^ 2) * Sx ^ 2 + v * N ^ 2) / (vb * N + b ^ 2) / N
+}
+est.Sxy <- function(b1,Sx,Sxx,N) {
+    (N * Sxx * b1 - Sx ^ 2 * b1) / N
+} 
+##' reconstruct joint model ioutput for single snp. only vb1b2 really needed
+##'
+##' The SNP is X, the traits are 1 and 2
+##' 
+##' note in this case, the coefficients, and their variances, are
+##' equal in single or joint models.  it is just the var(b1,b2) term
+##' we need.
+##'
+##' This provides cor(b1,b2), and must be multiplied by
+##' sqrt(v(b1)*v(b2)) to get var(b1,b2)
+##'
+##' @title qq.onesnp
+##' @param b1 coef for snp X, trait 1
+##' @param b2 coef for snp X, trait 2
+##' @param vb1 var(coef) for snp X, trait 1
+##' @param vb2 var(coef) for snp X, trait 2
+##' @param fx MAF of X
+##' @param v1 variance of trait 1
+##' @param v2 variance of trait 2
+##' @param eta cor(trait1, trait2)
+##' @param N number of samples
+##' @return var(b1,b2)
+##' @author Chris Wallace
+qq.onesnp <- function(b1,b2,vb1,vb2,fx,v1,v2,eta,N) {
+    Sx <- 2*N*fx
+    Sxx <- est.sxx(b1,vb1,fx,v1,N) #2*N*fx*(1+fx)
+    Sy1 <- Sy2 <- 0
+    Sxy1 <- est.Sxy(b1,Sx,Sxx,N)
+    Sxy2 <- est.Sxy(b2,Sx,Sxx,N)
+    vbr=(4 * N ^ 2 * sqrt(v1 * v2) * eta * fx ^ 2 - N * sqrt(v1 * v2) * Sxx * eta + Sxy2 * Sxy1) / (4 * N * fx ^ 2 - Sxx) * ((4 * N ^ 2 * fx ^ 2 * v1 - N * Sxx * v1 + Sxy1 ^ 2) * (4 * N ^ 2 * fx ^ 2 * v2 - N * Sxx * v2 + Sxy2 ^ 2) / N ^ 2 / (4 * N * fx ^ 2 - Sxx) ^ 2) ^ (-0.5) / N
+}
+##' reconstruct joint model ioutput for two snp models
+##'
+##' The SNPs are X and Z, the traits are 1 and 2
+##'
+##' @title qq.twosnp
+##' @inheritParams qq.onesnp
+##' @param g1 coef for snp Z, trait 1
+##' @param g2 coef for snp Z, trait 2
+##' @param vg1 var(coef) for snp Z, trait 1
+##' @param vg2 var( coef ) for snp Z, trait 2
+##' @param fz MAF of Z
+##' @param rho cor(X,Z)
+##' @param eta cor(Y1,Y2)
+##' @return list of coefficients and their (co-)variances that would
+##'     be expected from a joint model
+##' @author Chris Wallace
+qq.twosnp <- function(b1,b2,g1,g2,vb1,vb2,vg1,vg2,fx,fz,rho,v1,v2,eta,N) {
+    Sz <- 2*N*fz
+    Sx <- 2*N*fx
+    Sxx <- est.sxx(b1,vb1,fx,v1,N) #2*N*fx*(1+fx)
+    Szz <- est.sxx(g1,vg1,fz,v1,N) #2*N*fx*(1+fx)
+    ## Sxz <- N*(2*rho*sqrt(fx*(1-fx)*fz*(1-fz)) + 4*fx*fz)
+    Sxz <- (rho * N ^ 2 * sqrt((N * Sxx - Sx ^ 2) * (Szz * N - Sz ^ 2) / N ^ 4) + Sx * Sz) / N
+    Sy1 <- Sy2 <- 0
+    Sy1y1 <- N*v1
+    Sy2y2 <- N*v2
+    Sy1y2 <- N * eta * sqrt(v1 * v2)
+    Sxy1 <- est.Sxy(b1,Sx,Sxx,N)
+    Sxy2 <- est.Sxy(b2,Sx,Sxx,N)
+    Szy1 <- est.Sxy(g1,Sz,Szz,N)
+    Szy2 <- est.Sxy(g2,Sz,Szz,N)
+    
+    b1star <-  (N * Sxy1 * Szz - N * Sxz * Szy1 + Sx * Sz * Szy1 - Sxy1 * Sz ^ 2) / (N * Szz * Sxx - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sx * Sxz * Sz - Sxx * Sz ^ 2)
+    g1star <- (N * Sxx * Szy1 - N * Sxy1 * Sxz - Sx ^ 2 * Szy1 + Sx * Sxy1 * Sz) / (N * Szz * Sxx - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sx * Sxz * Sz - Sxx * Sz ^ 2)
+    b2star <-  (N * Sxy2 * Szz - N * Sxz * Szy2 + Sx * Sz * Szy2 - Sxy2 * Sz ^ 2) / (N * Szz * Sxx - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sx * Sxz * Sz - Sxx * Sz ^ 2)
+    g2star <- (N * Sxx * Szy2 - N * Sxy2 * Sxz - Sx ^ 2 * Szy2 + Sx * Sxy2 * Sz) / (N * Szz * Sxx - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sx * Sxz * Sz - Sxx * Sz ^ 2)
+
+    GG1xx <-  (Szz * N - Sz ^ 2) / (N * Sxx * Szz - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx)
+    GG1zz <-(N * Sxx - Sx ^ 2) / (N * Sxx * Szz - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx) 
+    GG1xz <-  -(N * Sxz - Sx * Sz) / (N * Sxx * Szz - N * Sxz ^ 2 - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx)
 
 
-##' Bayesian colocalisation analysis for case control studies with (partially) shared controls
+    S11 <- (Sy1y1 -  ((Sxx * Szy1 ^ 2 + Sxy1 ^ 2 * Szz - 2 * Sxy1 * Sxz * Szy1) * N - (Sx * Szy1 - Sxy1 * Sz) ^ 2) / ((Sxx * Szz - Sxz ^ 2) * N - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx))/N
+    S22 <- (Sy2y2 - ((Sxx * Szy2 ^ 2 + Sxy2 ^ 2 * Szz - 2 * Sxy2 * Sxz * Szy2) * N - (Sx * Szy2 - Sxy2 * Sz) ^ 2) / ((Sxx * Szz - Sxz ^ 2) * N - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx))/N
+    S12 <- (Sy1y2 - (((Sxy2 * Szz - Sxz * Szy2) * Sxy1 + Szy1 * (Sxx * Szy2 - Sxy2 * Sxz)) * N - (Sx * Szy1 - Sxy1 * Sz) * (Sx * Szy2 - Sxy2 * Sz)) / ((Sxx * Szz - Sxz ^ 2) * N - Sx ^ 2 * Szz + 2 * Sz * Sx * Sxz - Sz ^ 2 * Sxx))/N
+    
+    list(b1=b1star,b2=b2star,g1=g1star,g2=g2star,
+         vb1=GG1xx * S11,
+         vb2=GG1xx * S22,
+         vb1b2=GG1xx * S12,
+         vg1=GG1zz * S11,
+         vg2=GG1zz * S22,
+         vg1g2=GG1zz*S12,
+         vb1g1=GG1xz*S11,
+         vb2g2=GG1xz*S22,
+         vb1g2=GG1xz*S12)
+}
+##' Calculate the relative likelihood of a vector of regression
+##' coefficients given their var-covariance matrix under a prior that
+##' the true effect is 0 or is unknown, sampled from a normal with
+##' known variance (W)
+##'
+##' This is for single snp models. Assume traits are 1 and 2
+##' @title Bayes factor for one snp model with t distribution
+##' @param b1 coefficient snp A trait 1
+##' @param b2 coefficient snp A trait 2
+##' @param v1 var(b1)
+##' @param v2 var(b2)
+##' @param rho cor(b1,b2)
+##' @param w1 prior variance for trait 1
+##' @param w2 prior variance for trait 2
+##' @param N number of samples
+##' @return log ABF
+##' @author Chris Wallace
+tbf2 <- function(b1,b2,v1,v2,rho,w1=0.04,w2=0.02,N) {
+    v12 <- sqrt(v1)*sqrt(v2)*rho
+    innerprod.V <- (b1 ^ 2 * v2 - 2 * b1 * b2 * v12 + b2 ^ 2 * v1) / (v1 * v2 - v12 ^ 2) 
+    innerprod.VW <-((v2 + w2) * b1 ^ 2 - 2 * b1 * b2 * v12 + b2 ^ 2 * (v1 + w1)) / ((v2 + w2) * v1 + w1 * v2 + w1 * w2 - v12 ^ 2)
+    p <- 2
+    nu <- N-p
+    det.V <- v1 * v2 - v12 ^ 2
+    det.VW <- v1 * v2 + v1 * w2 - v12 ^ 2 + w1 * v2 + w1 * w2
+    ll.V <- -(nu+p) * log(1 + innerprod.V/nu)/2 - log(det.V)/2
+    ll.VW <- -(nu+p) * log(1 + innerprod.VW/nu)/2 - log(det.VW)/2
+    ll.VW - ll.V
+}
+
+##' Calculate the relative likelihood of a vector of regression
+##' coefficients given their var-covariance matrix under a prior that
+##' the true effect is 0 or is unknown, sampled from a normal with
+##' known variance (W)
+##'
+##' Assume SNPs are A and B, traits are 1 and 2
+##' @title Bayes factor for two snp model with t distribution
+##' @param bA1 coefficient snp A trait 1
+##' @param bB1 coefficient snp B trait 1
+##' @param bA2 coefficient snp A trait 2
+##' @param bB2 coefficient snp B trait 2
+##' @param vA1 var(bA1)
+##' @param vA2 var(bA2)
+##' @param vA12 var(bA1,bA2)
+##' @param vB1 var(bB1)
+##' @param vB2 var(bB2)
+##' @param vB12 var(bB1,bB2)
+##' @param vAB1 var(bA1,bB1)
+##' @param vAB2 var(bA2,bB2)
+##' @param vAB12 var(bA1,bB2) = var(bB1,bA2)
+##' @param W1 prior variance for trait 1
+##' @param W2 prior variance for trait 1
+##' @param N number of samples
+##' @return log ABF
+##' @author Chris Wallace
+tbf4 <- function(bA1,bB1,bA2,bB2,vA1,vA2,vA12,vB1,vB2,vB12,vAB1,vAB2,vAB12,W1,W2,N) {
+    innerprod.V <-  ((-bA1 ^ 2 * vB2 + 2 * bA1 * bB2 * vAB12 - bB2 ^ 2 * vA1) * vAB12 ^ 2 + (2 * bA2 * bB1 * vAB12 ^ 2 + (-2 * bB1 * bB2 * vA12 - 2 * bA2 * bB2 * vAB1 - 2 * bA1 * (bA2 * vB12 + bB1 * vAB2)) * vAB12 + (2 * bB2 ^ 2 * vAB1 - 2 * bA1 * (-bB1 * vB2 + bB2 * vB12)) * vA12 - 2 * bA1 * (-bA2 * vB2 + bB2 * vAB2) * vAB1 + (2 * bA1 ^ 2 * vB12 + 2 * bB1 * bB2 * vA1) * vAB2 + 2 * bA2 * vA1 * (-bB1 * vB2 + bB2 * vB12)) * vAB12 + (-bA2 ^ 2 * vB1 - bB1 ^ 2 * vA2) * vAB12 ^ 2 + ((2 * vAB2 * bB1 ^ 2 - 2 * bA2 * (bB1 * vB12 - bB2 * vB1)) * vA12 + (2 * bA2 ^ 2 * vB12 - 2 * bA2 * bB1 * vAB2 + 2 * bB1 * bB2 * vA2) * vAB1 + 2 * (vAB2 * bA2 * vB1 + vA2 * (bB1 * vB12 - bB2 * vB1)) * bA1) * vAB12 + (-bB1 ^ 2 * vB2 + 2 * bB1 * bB2 * vB12 - bB2 ^ 2 * vB1) * vA12 ^ 2 + ((-2 * vAB2 * bB1 * bB2 - 2 * bA2 * (-bB1 * vB2 + bB2 * vB12)) * vAB1 - 2 * bA1 * ((bB1 * vB12 - bB2 * vB1) * vAB2 - bA2 * (-vB1 * vB2 + vB12 ^ 2))) * vA12 + (-bA2 ^ 2 * vB2 + 2 * bA2 * bB2 * vAB2 - bB2 ^ 2 * vA2) * vAB1 ^ 2 + 2 * bA1 * (vAB2 ^ 2 * bB1 - vB12 * bA2 * vAB2 + vA2 * (-bB1 * vB2 + bB2 * vB12)) * vAB1 + (-bA1 ^ 2 * vB1 - bB1 ^ 2 * vA1) * vAB2 ^ 2 + 2 * bA2 * vA1 * (bB1 * vB12 - bB2 * vB1) * vAB2 + (-bA1 ^ 2 * vA2 - bA2 ^ 2 * vA1) * vB12 ^ 2 - 2 * bB1 * bB2 * vA1 * vA2 * vB12 + bA1 ^ 2 * vA2 * vB1 * vB2 + vA1 * (bA2 ^ 2 * vB1 * vB2 + vA2 * (bB1 ^ 2 * vB2 + bB2 ^ 2 * vB1))) / ((-vA1 * vB2 + vAB12 ^ 2) * vAB12 ^ 2 + ((-2 * vA12 * vB12 - 2 * vAB1 * vAB2) * vAB12 + 2 * vA12 * vAB1 * vB2 + 2 * vA1 * vAB2 * vB12) * vAB12 - vA2 * vAB12 ^ 2 * vB1 + (2 * vA12 * vAB2 * vB1 + 2 * vA2 * vAB1 * vB12) * vAB12 + (-vB1 * vB2 + vB12 ^ 2) * vA12 ^ 2 - 2 * vA12 * vAB1 * vAB2 * vB12 + (-vA2 * vB2 + vAB2 ^ 2) * vAB1 ^ 2 - (vAB2 ^ 2 * vB1 + vA2 * (-vB1 * vB2 + vB12 ^ 2)) * vA1)
+    innerprod.VW <- (((vB2 + W2) * bA1 ^ 2 - 2 * bA1 * bB2 * vAB12 + bB2 ^ 2 * (vA1 + W1)) * vAB12 ^ 2 + (((-2 * vAB12 ^ 2 + 2 * (vB2 + W2) * (vA1 + W1)) * bB1 + ((-2 * vB2 - 2 * W2) * bA1 + 2 * vAB12 * bB2) * vAB1 - 2 * vB12 * (-vAB12 * bA1 + bB2 * (vA1 + W1))) * bA2 + (((-2 * vB2 - 2 * W2) * bA1 + 2 * vAB12 * bB2) * vA12 - 2 * (-vAB12 * bA1 + bB2 * (vA1 + W1)) * vAB2) * bB1 - 2 * (-bA1 * vB12 + bB2 * vAB1) * (-bA1 * vAB2 + bB2 * vA12)) * vAB12 + ((vB2 + W2) * vAB1 ^ 2 - 2 * vAB1 * vAB12 * vB12 + (vA1 + W1) * vB12 ^ 2 - (-vAB12 ^ 2 + (vB2 + W2) * (vA1 + W1)) * vB1) * bA2 ^ 2 + ((((-2 * vB2 - 2 * W2) * vAB1 + 2 * vB12 * vAB12) * vA12 - 2 * (vB12 * (vA1 + W1) - vAB1 * vAB12) * vAB2) * bB1 + (2 * vB12 * bB2 * vAB1 - 2 * bA1 * vB12 ^ 2 + 2 * ((vB2 + W2) * bA1 - vAB12 * bB2) * vB1) * vA12 + 2 * (-bB2 * vAB1 ^ 2 + vB12 * bA1 * vAB1 + (-vAB12 * bA1 + bB2 * (vA1 + W1)) * vB1) * vAB2) * bA2 + ((vB2 + W2) * vA12 ^ 2 - 2 * vA12 * vAB12 * vAB2 + (vA1 + W1) * vAB2 ^ 2 - (-vAB12 ^ 2 + (vB2 + W2) * (vA1 + W1)) * vA2) * bB1 ^ 2 + (-2 * vB12 * bB2 * vA12 ^ 2 + 2 * vAB2 * (bA1 * vB12 + bB2 * vAB1) * vA12 + (-2 * bA1 * vAB2 ^ 2 + 2 * ((vB2 + W2) * bA1 - vAB12 * bB2) * vA2) * vAB1 + 2 * vB12 * (-vAB12 * bA1 + bB2 * (vA1 + W1)) * vA2) * bB1 + bB2 ^ 2 * vA12 ^ 2 * vB1 - 2 * bA1 * bB2 * vA12 * vAB2 * vB1 + bB2 ^ 2 * vA2 * vAB1 ^ 2 - 2 * bA1 * bB2 * vA2 * vAB1 * vB12 + bA1 ^ 2 * vAB2 ^ 2 * vB1 - (-bA1 ^ 2 * vB12 ^ 2 + ((vB2 + W2) * bA1 ^ 2 - 2 * bA1 * bB2 * vAB12 + bB2 ^ 2 * (vA1 + W1)) * vB1) * vA2) / ((-vAB12 ^ 2 + (vB2 + W2) * (vA1 + W1)) * vAB12 ^ 2 + (((-2 * vB2 - 2 * W2) * vAB1 + 2 * vB12 * vAB12) * vA12 - 2 * (vB12 * (vA1 + W1) - vAB1 * vAB12) * vAB2) * vAB12 + (-vB12 ^ 2 + vB1 * (vB2 + W2)) * vA12 ^ 2 + 2 * vAB2 * (vAB1 * vB12 - vAB12 * vB1) * vA12 + (-vAB2 ^ 2 + vA2 * (vB2 + W2)) * vAB1 ^ 2 - 2 * vA2 * vAB1 * vAB12 * vB12 + vB1 * (vA1 + W1) * vAB2 ^ 2 - ((-W1 - vA1) * vB12 ^ 2 + (-vAB12 ^ 2 + (vB2 + W2) * (vA1 + W1)) * vB1) * vA2)
+ det.V <- (-vA1 * vB2 + vAB12 ^ 2) * vAB12 ^ 2 + ((-2 * vA12 * vB12 - 2 * vAB1 * vAB2) * vAB12 + 2 * vA12 * vAB1 * vB2 + 2 * vA1 * vAB2 * vB12) * vAB12 - vA2 * vAB12 ^ 2 * vB1 + (2 * vA12 * vAB2 * vB1 + 2 * vA2 * vAB1 * vB12) * vAB12 + (-vB1 * vB2 + vB12 ^ 2) * vA12 ^ 2 - 2 * vA12 * vAB1 * vAB2 * vB12 + (-vA2 * vB2 + vAB2 ^ 2) * vAB1 ^ 2 + (-vAB2 ^ 2 * vB1 + (vB1 * vB2 - vB12 ^ 2) * vA2) * vA1
+det.VW <- ((-W2 - vB2) * vA1 - W1 * W2 - W1 * vB2 + vAB12 ^ 2) * vAB12 ^ 2 + (((2 * W2 + 2 * vB2) * vAB1 - 2 * vB12 * vAB12) * vA12 + 2 * (vB12 * (vA1 + W1) - vAB1 * vAB12) * vAB2) * vAB12 + (((vB2 + W2) * vA1 + W1 * W2 + W1 * vB2 - vAB12 ^ 2) * vB1 + (-W2 - vB2) * vAB1 ^ 2 + 2 * vAB1 * vAB12 * vB12 - (vA1 + W1) * vB12 ^ 2) * vA2 + ((-W2 - vB2) * vA12 ^ 2 + 2 * vA12 * vAB12 * vAB2 - (vA1 + W1) * vAB2 ^ 2) * vB1 + (vA12 * vB12 - vAB1 * vAB2) ^ 2
+    p <- 4
+    nu <- N-p
+    ll.V <- -(nu+p) * log(1 + innerprod.V/nu)/2 - log(det.V)/2
+    ll.VW <- -(nu+p) * log(1 + innerprod.VW/nu)/2 - log(det.VW)/2
+    ll.VW - ll.V
+}
+
+
+##' Bayesian colocalisation analysis for two quantitative traits, measured on the same individuals
 ##'
 ##' This function calculates posterior probabilities of different
 ##' causal variant configurations under the assumption of a single
 ##' causal variant for each trait.
 ##'
 ##' Unlike coloc.abf, this specifically requires coefficients and
-##' their standard errors in the case of partially shared controls.
+##' their standard errors.
 ##'
-##' @title coloc.abf for two case control studies and (partially) shared controls
+##' @title coloc.abf for two quantitative traits measured on same individuals
 ##' @param dataset1 a list with the following elements
 ##' \describe{
 ##' 
@@ -46,9 +207,10 @@
 ##' @export
 ##' @author Chris Wallace
 coloc.qq <- function(dataset1,dataset2,
-                     n=dataset1$N, VY1, VY2, covY,
+                     N=dataset1$N, VY1, VY2, corY,
                      MAF, LD, 
-                     p1=1e-4, p2=1e-4, p12=1e-5) {
+                     p1=1e-4, p2=1e-4, p12=1e-5,
+                     W1=0.15^2*VY1, W2=0.15^2*VY2) {
     snps <- intersect(dataset1$snp,dataset2$snp)
     df <- data.table(snp=c(snps))
     df <- merge(df,as.data.table(as.data.frame(dataset1[c("snp","beta","varbeta")])),
@@ -62,11 +224,18 @@ coloc.qq <- function(dataset1,dataset2,
     df <- merge(df,fq[,.(snp,f0)],by.x="snp",by.y="snp",all.x=TRUE)
     
     ## H1, H2, H4 all two beta models
-    df[,erho:=(covY - 2*f0*(1-f0)*b1*b2)/(2*n*f0*(1+f0))]
-    ## lbf for h1,h2,h4 
-    df[, lbf1:=bf2(b1,b2,v1,v2,erho,w2=0)]
-    df[, lbf2:=bf2(b1,b2,v1,v2,erho,w1=0)]
-    df[, lbf4:=bf2(b1,b2,v1,v2,erho)]
+    ## estimate cor(b1,b2)
+    df[,erho:=qq.onesnp(b1,b2,v1,v2,f0,VY1,VY2,corY,N)]
+
+    ## t distribution
+    df[, lbf1:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=0,N=N)]
+    df[, lbf2:=tbf2(b1,b2,v1,v2,erho,w1=0,W2,N=N)]
+    df[, lbf4:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=W2,N=N)]
+    
+    ## normal approximation to t
+    ## df[, lbf1:=bf2(b1,b2,v1,v2,erho,w1=W1,w2=0)]
+    ## df[, lbf2:=bf2(b1,b2,v1,v2,erho,w1=0,W2)]
+    ## df[, lbf4:=bf2(b1,b2,v1,v2,erho,w1=W1,w2=W2)]
     
     ## for h3, we need pairs of snps
     df3 <- as.data.table(as.data.frame(expand.grid(snps,snps)))
@@ -93,26 +262,52 @@ coloc.qq <- function(dataset1,dataset2,
     m <- match(df3.r1$snpA, df$snp)
     df3.r1[, lbf3:=df$lbf4[m]]
 
-    ## todo special case: r=0. Can fit two bivariate normals, which means we can vectorize
-    
-    df3 <- df3[abs(r)<0.99,]
-    ## reconstruct coefficients from bivariate models
+    ## special case: r=0. Can fit two bivariate normals, which means we can vectorize
+    df3.r0 <- df3[abs(r)<0.001,]
+    mA <- match(df3.r0$snpA, df$snp)
+    mB <- match(df3.r0$snpB, df$snp)
+    df3.r0[, lbf3:=df$lbf1[mA] + df$lbf2[mB] ]
+
+    ## what's left requires 4 dim Gaussians
+    df3 <- df3[abs(r)<0.99 & abs(r)>=0.001,]
+    df3[,W1:=W1]
+    df3[,W2:=W2]
     df3[,c("bA1old","bB1old","bA2old","bB2old"):=list(bA1,bB1,bA2,bB2)]
-    df3[,c("bA1","bB1"):=bstar_from_b(bA1,bB1,vA1,vB1,r)]
-    df3[,c("bA2","bB2"):=bstar_from_b(bA2,bB2,vA2,vB2,r)]
-    df3[,VA:=2*fA*(1-fA)]
-    df3[,VB:=2*fB*(1-fB)]
-    df3[,VAB := r * sqrt(VA) * sqrt(VB)]
-    df3[,sumA2:=2*n*fA*(1+fA)] #sum(bvec^2 * rowSums(geno))
-    df3[,sumB2:=2*n*fB*(1+fB)] #sum(bvec^2 * colSums(geno))
-    df3[,sumAB:=n*( sqrt(VA)*sqrt(VB)*r+4*fA*fB)] # sum( (bvec %*% t(bvec)) * geno )
-    df3[,det:=sumA2*sumB2-sumAB^2]
-    df3[,EE:=covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB]
-    df3[,sumA2:=EE*sumA2/det]
-    df3[,sumB2:=EE*sumB2/det]
-    df3[,sumAB:=EE*sumAB/det]
-    df3[,W1:=VY1*0.15^2]
-    df3[,W2:=VY2*0.15^2]
+    df3[,c("bA1","bA2","bB1","bB2","vA1","vA2","vA12","vB1","vB2","vB12","vAB1","vAB2","vAB12"):=
+           qq.twosnp(b1=bA1,b2=bA2,g1=bB1,g2=bB2,vb1=vA1,vb2=vA2,vg1=vB1,vg2=vB2,fx=fA,fz=fB,rho=r,v1=VY1,v2=VY2,eta=corY,N=N)]
+
+    ## t distribution
+    df3[,lbf3:=tbf4(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
+                            vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
+                            vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
+                            W1=W1,W2=W2,N=N)]
+    ## Normal approximation to t
+    ## df3[,lbf3:=lbfh3.qq.vec(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
+    ##                         vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
+    ##                         vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
+    ##                         W1=W1,W2=W2)]
+    ## df3[,erho:=alt.twosnp(bA1,bB2,fA,fB,rho=r,eta=corY*sqrt(VY1*VY2),N=N)]
+    ## df3[, lbf3:=bf2(bA1,bB2,vA1,vB2,erho,w1=W1,w2=W2)]
+ 
+    
+
+    ## ## reconstruct coefficients from bivariate models
+    ## df3[,c("bA1old","bB1old","bA2old","bB2old"):=list(bA1,bB1,bA2,bB2)]
+    ## df3[,c("bA1","bB1"):=bstar_from_b(bA1,bB1,vA1,vB1,r)]
+    ## df3[,c("bA2","bB2"):=bstar_from_b(bA2,bB2,vA2,vB2,r)]
+    ## df3[,VA:=2*fA*(1-fA)]
+    ## df3[,VB:=2*fB*(1-fB)]
+    ## df3[,VAB := r * sqrt(VA) * sqrt(VB)]
+    ## df3[,sumA2:=2*n*fA*(1+fA)] #sum(bvec^2 * rowSums(geno))
+    ## df3[,sumB2:=2*n*fB*(1+fB)] #sum(bvec^2 * colSums(geno))
+    ## df3[,sumAB:=n*( sqrt(VA)*sqrt(VB)*r+4*fA*fB)] # sum( (bvec %*% t(bvec)) * geno )
+    ## df3[,det:=sumA2*sumB2-sumAB^2]
+    ## df3[,EE:=covY - bA1*bA2*VA - bB1*bB2*VB - (bA1*bB2 + bB1*bA2)*VAB]
+    ## df3[,sumA2:=EE*sumA2/det]
+    ## df3[,sumB2:=EE*sumB2/det]
+    ## df3[,sumAB:=EE*sumAB/det]
+    ## df3[,W1:=VY1*0.15^2]
+    ## df3[,W2:=VY2*0.15^2]
 
     ## wh <- head(which(df3$r < 0.99 & df3$snpA < df3$snpB),50)
     ## microbenchmark({for(i in wh) {
@@ -121,14 +316,16 @@ coloc.qq <- function(dataset1,dataset2,
     ##                                            vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
     ##                                            W1=W1,W2=W2,sumA2,sumAB,sumB2,r))})
 
-    for(i in 1:nrow(df3)) { #& df3$snpA < df3$snpB)) {
+     ## for(i in 1:nrow(df3)) { #& df3$snpA < df3$snpB)) {
+        ## df3[i,lbf3:=lbfh3.qq(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
+        ##                        vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
+        ##                        vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
+        ##                        W1=W1,W2=W2)]
+## }
         ## microbenchmark({tmp <- with(df3[i,],
         ##                             lbf.h3.qq2(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
         ##                                        vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
         ##                                        W1=W1,W2=W2,sumA2,sumAB,sumB2,r))})
-        df3[i,lbf3:=lbf.h3.qq2(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
-                                               vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
-                                               W1=W1,W2=W2,sumA2,sumAB,sumB2,r)]
         ## microbenchmark({df3[i,lbf3:=lbf.h3.qq2(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
         ##                                        vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
         ##                                        W1=W1,W2=W2,sumA2,sumAB,sumB2,r)]})
@@ -143,10 +340,10 @@ coloc.qq <- function(dataset1,dataset2,
         ##                        VY1,VY2,covY,fA,fB,r,W=0.04))})
         ## df3[i,lbf3:=tmp$asis]
         ## df3[j,lbf3:=tmp$reversed]
-    } 
+
     ## put it all together
     o<-intersect(names(df3),names(df3.r1))
-    df3 <- rbind(df3.r1[,o,with=FALSE],df3[,o,with=FALSE])
+    df3 <- rbind(df3.r1[,o,with=FALSE],df3.r0[,o,with=FALSE],df3[,o,with=FALSE])
     sdf <- df[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df),value=TRUE)]
     sdf3 <- df3[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df3),value=TRUE)]
     sdf <- rbind(melt(sdf,measure.vars=names(sdf)),
@@ -172,7 +369,8 @@ coloc.qq <- function(dataset1,dataset2,
     ret <- c(nsnps=length(snps), sdf[method=="lbf",]$pp)
     names(ret) <- c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", 
                     "PP.H4.abf")
-    ret
+    print(ret)
+    return(list(summary=ret,results=df,df3=df3,sdf=sdf))
 }
  
 

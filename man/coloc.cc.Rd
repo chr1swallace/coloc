@@ -4,9 +4,10 @@
 \alias{coloc.cc}
 \title{coloc.abf for two case control studies and (partially) shared controls}
 \usage{
-coloc.cc(dataset1, dataset2, n1 = args$ncse, n2 = args$ncse, n00 = (1 -
-  dataset1$s) * dataset1$N, n01 = 0, n02 = 0, MAF, LD, p1 = 1e-04,
-  p2 = 1e-04, p12 = 1e-05, method = c("multinom", "corr"))
+coloc.cc(dataset1, dataset2, n1 = dataset1$s * dataset1$N, n2 = dataset2$s *
+  dataset2$N, n00 = (1 - dataset1$s) * dataset1$N, n01 = 0, n02 = 0, MAF,
+  LD, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05, method = c("multinom",
+  "corr"))
 }
 \arguments{
 \item{dataset1}{a list with the following elements
