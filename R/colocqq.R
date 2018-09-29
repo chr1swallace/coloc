@@ -1,3 +1,4 @@
+#' @import data.table
 ## helper functions
 est.sxx <- function(b,vb,fx,v,N) {
     Sx <- 2*N*fx
@@ -203,6 +204,8 @@ coloc.qq <- function(N, VY1, VY2, corY,
                      MAF, LD, 
                      p1=1e-4, p2=1e-4, p12=1e-5,
                      W1=0.15^2*VY1, W2=0.15^2*VY2) {
+    erho <- b1 <- b2 <- v1 <- v2 <- lbf1 <- lbf2 <- lbf3 <- lbf4 <- f0 <- snpA <- snpB <- isnpA <- isnpB <- r <- bA1 <- bB1 <- bA <- bB2 <- vA1 <- vB1 <- vA2 <- vB2 <- fa <- fB <- vA12 <- vB12 <- vAB1 <- vAB2 <- vAB12 <- .SD  <- NULL
+
     snps <- intersect(dataset1$snp,dataset2$snp)
     df <- data.table(snp=c(snps))
     df <- merge(df,as.data.table(as.data.frame(dataset1[c("snp","beta","varbeta")])),

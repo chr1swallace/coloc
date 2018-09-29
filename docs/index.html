@@ -62,6 +62,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -84,14 +87,23 @@
     <div id="coloc" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#coloc" class="anchor"></a>coloc</h1></div>
-<p>Repo for the R package coloc</p>
-<p>For usage, see the vignette at <a href="https://chr1swallace.github.io/coloc" class="uri">https://chr1swallace.github.io/coloc</a></p>
+<p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
+<p>For usage and background, see the vignette at <a href="https://chr1swallace.github.io/coloc" class="uri">https://chr1swallace.github.io/coloc</a></p>
+<p>Key references are:</p>
+<ul>
+<li>original propostion of proportional colocalisation <a href="http://www.ncbi.nlm.nih.gov/pubmed/19039033">Plagnol et al (2009)</a>
+</li>
+<li>proportional colocalisation with type 1 error rate control <a href="http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract">Wallace et al (2013)</a>
+</li>
+<li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
+</li>
+</ul>
 <p><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></p>
 <p><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></p>
 <div id="to-generate-vignettes" class="section level3">
 <h3 class="hasAnchor">
 <a href="#to-generate-vignettes" class="anchor"></a>To generate vignettes:</h3>
-<pre><code>cp vignettes/colocqq-tests-tospin.R vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
+<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
 </div>
 <div id="to-generate-website" class="section level3">
 <h3 class="hasAnchor">

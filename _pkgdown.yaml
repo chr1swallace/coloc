@@ -3,6 +3,7 @@ url: http://chr1swallace.github.io/coloc
 template:
   params:
     bootswatch: simplex
+news:
 reference:
   - title: Bayesian enumeration of hypotheses
     desc: Two trait colocalisation and single trait fine mapping under

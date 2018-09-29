@@ -59,6 +59,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -82,7 +85,7 @@
       <h1>Test for the single-&gt; joint linear regression calculations</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2018-09-28</h4>
+            <h4 class="date">2018-09-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/colocqq-tests.Rmd"><code>vignettes/colocqq-tests.Rmd</code></a></small>
       <div class="hidden name"><code>colocqq-tests.Rmd</code></div>
@@ -152,13 +155,13 @@
 <p>each run produces output like</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simmer</span>()  </code></pre></div>
 <pre><code>##    maf.1 maf.2    N       eta        vb1b2    est.vb1b2
-## 1:   0.2   0.5 2000 0.2634769 0.0008318791 0.0008355578</code></pre>
+## 1:  0.45   0.3 5000 0.1455323 0.0001816654 0.0001818118</code></pre>
 <p>we will run it lots of times, and compare output</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">100</span>,<span class="cf">function</span>(i) <span class="kw">simmer</span>())  <span class="op">%&gt;%</span><span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/rbindlist">rbindlist</a></span>()</code></pre></div>
 <p>numerically almost identical results</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res[,<span class="st">"vb1b2"</span>],res[,<span class="st">"est.vb1b2"</span>]) <span class="co"># 0.984</span></code></pre></div>
 <pre><code>##       est.vb1b2
-## vb1b2 0.9999884</code></pre>
+## vb1b2 0.9999799</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(res,<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>vb1b2,<span class="dt">y=</span>est.vb1b2)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_abline">geom_abline</a></span>() </code></pre></div>
 <p><img src="colocqq-tests_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">################################################################################</code></pre></div>
@@ -236,9 +239,9 @@ ecn &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">"
 <span class="kw">structure</span>(<span class="kw">diag</span>(<span class="kw">cor</span>(res[,cn,<span class="dt">with=</span><span class="ot">FALSE</span>],res[,ecn,<span class="dt">with=</span><span class="ot">FALSE</span>])),
           <span class="dt">names=</span>ecn)</code></pre></div>
 <pre><code>##        b1        b2        g1        g2       vb1       vb2     vb1b2 
-## 1.0000000 1.0000000 0.9999999 0.9999997 1.0000000 0.9999988 0.9998912 
+## 1.0000000 1.0000000 0.9999999 0.9999997 1.0000000 0.9999991 0.9999168 
 ##       vg1       vg2     vg1g2     vb1g1     vb2g2     vb1g2 
-## 0.9999999 0.9999984 0.9998750 1.0000000 0.9999989 0.9998027</code></pre>
+## 0.9999999 0.9999984 0.9997624 1.0000000 0.9999992 0.9998546</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
 tmp &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/melt.data.table">melt</a></span>(res,<span class="dt">measure.vars=</span><span class="kw">list</span>(<span class="dt">direct=</span>cn,<span class="dt">backcalc=</span>ecn))
 tmp[,variable<span class="op">:</span><span class="er">=</span>cn[variable]]

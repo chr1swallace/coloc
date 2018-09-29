@@ -1,16 +1,16 @@
 Package: coloc
 Type: Package
 Imports:
+    data.table,
     ggplot2,
     snpStats,
     BMA,
     reshape,
-    methods,
-    flashClust,
-    speedglm
+    methods
 Suggests:
     knitr,
     testthat,
+    bindata,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 3.2
