@@ -37,6 +37,8 @@
 #' @importFrom MASS ginv
 #' @importFrom mvtnorm dmvnorm
 #' @importFrom Matrix bdiag
+#' @importFrom rootSolve uniroot multiroot
+#' @importFrom BB dfsane
 #' @import data.table
 NULL
 
