@@ -210,7 +210,8 @@ coloc.qq <- function(dataset1,dataset2,
                      N=dataset1$N, VY1, VY2, corY,
                      MAF, LD, 
                      p1=1e-4, p2=1e-4, p12=1e-5,
-                     W1=0.15^2*VY1, W2=0.15^2*VY2) {
+                     W1=0.15^2*VY1, W2=0.15^2*VY2,
+                     method="by4") {
     snps <- intersect(dataset1$snp,dataset2$snp)
     df <- data.table(snp=c(snps))
     df <- merge(df,as.data.table(as.data.frame(dataset1[c("snp","beta","varbeta")])),
@@ -277,10 +278,17 @@ coloc.qq <- function(dataset1,dataset2,
            qq.twosnp(b1=bA1,b2=bA2,g1=bB1,g2=bB2,vb1=vA1,vb2=vA2,vg1=vB1,vg2=vB2,fx=fA,fz=fB,rho=r,v1=VY1,v2=VY2,eta=corY,N=N)]
 
     ## t distribution
-    df3[,lbf3:=tbf4(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
+    if(method=="by2") {
+       ## df[, lbf4:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=W2,N=N)]
+     df3[,lbf3:=tbf2(bA1,bB2,
+                    vA1,vB2,vAB12/sqrt(vA1*vB2),
+                    w1=W1,w2=W2,N=N)]
+    } else {
+     df3[,lbf3:=tbf4(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
                             vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
                             vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
-                            W1=W1,W2=W2,N=N)]
+                     W1=W1,W2=W2,N=N)]
+    }
     ## Normal approximation to t
     ## df3[,lbf3:=lbfh3.qq.vec(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
     ##                         vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,

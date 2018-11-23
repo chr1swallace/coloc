@@ -307,6 +307,37 @@ estgeno.2.ctl <- function(fA, fB, rho){
                    nrow=3,ncol=3, byrow = TRUE)
 }
 
+bstar_from_g <- function(bA,bB,fA,fB,rho,n0,n1) {
+    G0 <- estgeno.2.ctl(fA,fB,rho)*n0
+    bm <- c(bA,bB)
+    calcb <- function(G,bm) {
+        G <- melt(G)
+        colnames(G) <- c("X","Z","w")
+        for(j in 1:2)
+            G[,j] <- G[,j] - sum(G[,j]*G[,"w"])/sum(G[,"w"])
+        xz <- sum(apply(G,1,prod))
+        x2 <- sum(apply(G[,c("X","X","w")],1,prod))
+        z2 <- sum(apply(G[,c("Z","Z","w")],1,prod))
+        V <- matrix(c(x2,xz,xz,z2),2,2)
+        D <- diag(diag(V))
+        solve(V) %*% D %*% bm
+    }
+    bold <- c(0,0)
+    bnew <- calcb(G0, bm)
+    ## estimate G in cases
+    while(max(abs(bold-bnew))>1e-4) {
+        bold <- bnew
+        G1 <- estgeno.2.cse(bnew,G0)*n1
+        bnew <- calcb(G0 + G1, bm)
+    }
+    bnew
+}
+
+    
+    
+        
+        
+    
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
@@ -398,7 +429,10 @@ cc.marg2joint <- function(bA,bB, vA,vB, n0,n1, fA,fB,rho) {
     G0 <- estgeno.2.ctl(fA,fB,rho)
     
     ## convert bhat to bstar
+    ## bstar.alt <- bstar_from_g(bA,bB,fA,fB,rho,n0,n1)
     bstar <- bstar_from_bhat(bA,bB,fA,fB,rho)
+    ## if(max(abs(log(bstar/bstar.alt))) > log(2))
+    ##     bstar <- c(0,0)
 
     solve_for_a <- function(b1, b2, n1, n0, geno) {
         b1m <- matrix(bvec*b1,3,3)
@@ -433,49 +467,147 @@ lbf.h3 <- function(bA1,bB1,bA2,bB2,
     
     ## ## est genotype counts in controls
     ## bvec <- 0:2
-    ## G0 <- estgeno.2.ctl(fA,fB,rho)
-    
-    ## ## convert bhat to bstar
-    ## bstar1 <- bstar_from_bhat(bA1,bB1,fA,fB,rho)
-    ## bstar2 <- bstar_from_bhat(bA2,bB2,fA,fB,rho)
-    ## solve_for_a <- function(b1, b2, n, n0, geno) {
-    ##     b1m <- matrix(bvec*b1,3,3)
-    ##     b2m <- matrix(bvec*b2,3,3,byrow=TRUE)
-    ##     fun <- function(a) {
-    ##         denom <- 1 + exp(a + b1m + b2m)
-    ##         num <- exp(a + b1m + b2m)
-    ##         abs(sum(geno*num/denom)) - n/(n + n0)
-    ##     }
-    ##     uniroot(fun, c(-10, 10),extendInt="yes")$root
-    ## }
-    ## G1 <- estgeno.2.cse(bstar1, G0)
-    ## G2 <- estgeno.2.cse(bstar2, G0)
-    ## astar1 <- solve_for_a(bstar1[1], bstar1[2],
-    ##                       n = n1, n0 = n00 + n01, geno = G1)
-    ## astar2 <- solve_for_a(bstar2[1], bstar2[2],
-    ##                       n = n2, n0 = n00 + n02, geno = G2)
+    G0 <- estgeno.2.ctl(fA,fB,rho)
+    G1 <- estgeno.2.cse(joint1$coef[-1], G0)
+    G2 <- estgeno.2.cse(joint2$coef[-1], G0)
+    ## I matrices depend on all subjects
+    G <- melt(G0*(n00+n01+n02) + G1*n1)
+    G[,1] <- G[,1]-1
+    G[,2] <- G[,2]-1
+    G <- cbind(G,pred=exp(joint1$coef[1] + joint1$coef[2]*G[,1] + joint1$coef[3]*G[,2]))
+    G[,"pred"] <- G[,"pred"]/(1+G[,"pred"])^2
+    I1 <- matrix(c(sum(G[,3] * G[,"pred"]), sum(G[,1]*G[,3] * G[,"pred"]), sum(G[,2]*G[,3] * G[,"pred"]),
+                   sum(G[,1]*G[,3] * G[,"pred"]), sum(G[,1]^2*G[,3] * G[,"pred"]), sum(G[,1]*G[,2]*G[,3] * G[,"pred"]),
+                   sum(G[,2]*G[,3] * G[,"pred"]), sum(G[,1]*G[,2]*G[,3] * G[,"pred"]), sum(G[,2]^2*G[,3] * G[,"pred"])),
+                  3,3)
+    ## p <- matrix(G[,"pred"],3,3)
+    ## I1 <- XX * p/(1+p)^2
 
-    ## ## within-trait vcov
-    ## ## https://czep.net/stat/mlelr.pdf (16)
-    ## V1 <- vmat(astar1,bstar1[1],bstar1[2],G0*(n00 + n01) + G1*(n1))[-1,-1]
-    ## V2 <- vmat(astar2,bstar2[1],bstar2[2],G0*(n00 + n02) + G2*(n2))[-1,-1]
-    
-    sxz <- rho * sqrt(fA * (1 - fA) * fB * (1 - fB)) + 4 * fA * fB
-    H2 <- matrix(c(1, 2*fA, 2*fB,
-                   2*fA, 2*fA*(1 + fA), sxz,
-                   2*fB, sxz, 2*fB*(1 + fB)),
-                 nrow = 3, byrow = TRUE)
-    H2.inv <- solve(H2)[-1,-1]
-    V12 <- n00 * (1 + exp(joint1$coef[1])) * (1 + exp(joint2$coef[1]))/((n00+n01+n1) * (n00+n02+n2)) * H2.inv
+    G <- melt(G0*(n00+n01+n02) + G2*n2)
+    G[,1] <- G[,1]-1
+    G[,2] <- G[,2]-1
+    G <- cbind(G,pred=exp(joint2$coef[1] + joint2$coef[2]*G[,1] + joint2$coef[3]*G[,2]))
+    G[,"pred"] <- G[,"pred"]/(1+G[,"pred"])^2
+    I2 <- matrix(c(sum(G[,3] * G[,"pred"]), sum(G[,1]*G[,3] * G[,"pred"]), sum(G[,2]*G[,3] * G[,"pred"]),
+                   sum(G[,1]*G[,3] * G[,"pred"]), sum(G[,1]^2*G[,3] * G[,"pred"]), sum(G[,1]*G[,2]*G[,3] * G[,"pred"]),
+                   sum(G[,2]*G[,3] * G[,"pred"]), sum(G[,1]*G[,2]*G[,3] * G[,"pred"]), sum(G[,2]^2*G[,3] * G[,"pred"])),
+                  3,3)
+    ## p <- matrix(G[,"pred"],3,3)
+    ## I2 <- XX * p/(1+p)^2
 
-    V <- rbind(cbind(joint1$V[-1,-1],V12),cbind(V12,joint2$V[-1,-1]))
-    B <- c(joint1$coef[-1],joint2$coef[-2])
+    ## cov depends only on shared controls
+    G <- melt(G0*n00)
+    G[,1] <- G[,1]-1
+    G[,2] <- G[,2]-1
+    G <- cbind(G,pred1=exp(joint1$coef[1] + joint1$coef[2]*G[,1] + joint1$coef[3]*G[,2]))
+    G <- cbind(G,pred2=exp(joint2$coef[1] + joint2$coef[2]*G[,1] + joint2$coef[3]*G[,2]))
+    p <- G[,"pred1"]/(1+G[,"pred1"]) * G[,"pred2"]/(1+G[,"pred2"]) 
+    cv <- matrix(c(sum(p * G[,3]), sum(p * G[,1]*G[,3]), sum(p * G[,2]*G[,3]),
+                   sum(p * G[,1]*G[,3]), sum(p * G[,1]^2*G[,3]), sum(p * G[,1]*G[,2]*G[,3]),
+                   sum(p * G[,2]*G[,3]), sum(p * G[,1]*G[,2]*G[,3]), sum(p * G[,2]^2*G[,3])),
+                  3,3)
+    ## cv <- (-p1/(1+p1)) * (-p2/(1+p2)) * XX
+
+    VV <- ( solve(I1) %*% cv %*% solve(I2) )[-1,-1]
+        
+    ## sxz <- rho * sqrt(fA * (1 - fA) * fB * (1 - fB)) + 4 * fA * fB
+    ## H2 <- matrix(c(1,     2*fA,           2*fB,
+    ##                2*fA,  2*fA*(1 + fA),  sxz,
+    ##                2*fB,  sxz,            2*fB*(1 + fB)),
+    ##              nrow = 3, byrow = TRUE)
+    ## H2.inv <- solve(H2)[-1,-1]
+    ## V12 <- n00 * (1 + exp(joint1$coef[1])) * (1 + exp(joint2$coef[1]))/((n00+n01+n1) * (n00+n02+n2)) * H2.inv
+    ## V <- rbind(cbind(joint1$V[-1,-1],V12),cbind(V12,joint2$V[-1,-1]))
+
+    B <- c(joint1$coef[-1],joint2$coef[-1])
     ## abf
     Wmat <- diag(c(W,0,0,W))
-    ## dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) -
-    ##   dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
+    ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
+    ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
+
+     VV[1,2] <- VV[2,1]
+    ## VV <- matrix(0,2,2)
+    ## V1 <- solve(I1)[-1,-1]
+    ## V2 <- solve(I2)[-1,-1]
+    ## V1[1,2] <- V1[2,1]
+    ## V2[1,2] <- V2[2,1]
+    ## V <- rbind(cbind(V1,VV),cbind(VV,V2))
+    V <- rbind(cbind(joint1$V[-1,-1],VV),cbind(VV,joint2$V[-1,-1]))
     dalt <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat, log=TRUE) 
     dnull <- dmvnorm(x=B,mean=rep(0,4), sigma=V, log=TRUE)
+    list(dalt,dnull,dalt-dnull)
+}
+
+lbf.h3.2var <- function(a1,a2,
+                   bA1,bB2,
+                   vA1,vB2,
+                   n00,n01,n02,n1,n2,
+                   fA,fB,rho,W=0.04) {
+
+    ## reconstruct joint models
+    ## joint1 <- cc.marg2joint(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho)
+    ## joint2 <- cc.marg2joint(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho)
+    
+    ## ## est genotype counts in controls
+    ## bvec <- 0:2
+    fA1 <- get_maf1(fA, bA1)
+    fB2 <- get_maf1(fB, bB2)
+    G00 <- estgeno.2.ctl(fA,fB,rho) # proportions
+    G0A <- estgeno.1(fA)
+    G0B <- estgeno.1(fB)
+    GA <- (n00+n01) * G0A + n1 * estgeno.1.cse(G0A,bA1) # counts
+    GB <- (n00+n02) * G0B + n2 * estgeno.1.cse(G0B,bB2) # counts
+     ## a1 <- univariate_a(bA1,n00+n01,n1,fA,fA1)
+     ## a2 <- univariate_a(bB2,n00+n02,n2,fB,fB2)
+    
+    ## I matrices depend on all subjects
+    p1 <- exp(a1 + bA1 * 0:2)
+    p <- p1/(1+p1)^2
+    I1 <- matrix(c(sum(GA * p), sum(p * 0:2 * GA), sum(p * 0:2 * GA), sum(p * (0:2)^2 * GA)), 2, 2)
+
+    p2 <- exp(a2 + bB2 * 0:2)
+    p <- p2/(1+p2)^2
+    I2 <- matrix(c(sum(GB * p), sum(p * 0:2 * GB), sum(p * 0:2 * GB), sum(p * (0:2)^2 * GB)), 2, 2)
+
+    ## cov depends only on shared controls
+    if(n00==0) {
+        VV <- 0
+    } else {
+        G <- melt(G00*n00)
+        G[,1] <- G[,1]-1
+        G[,2] <- G[,2]-1
+        G <- cbind(G,pred1=exp(a1 + bA1*G[,1]))
+        G <- cbind(G,pred2=exp(a2 + bB2*G[,2]))
+        p <- (G[,"pred1"]/(1+G[,"pred1"])) * (G[,"pred2"]/(1+G[,"pred2"]))
+        CV <- matrix(c(sum(G[,3] * p), sum(G[,1]*G[,3]*p),
+                       sum(G[,3]*G[,2]*p), sum(G[,1]*G[,2]*G[,3]*p)),
+                     2,2)
+        VV <- (solve(I1) %*% CV %*% solve(I2))[2,2]
+    }
+
+    V1 <- solve(I1)[-1,-1]
+    V2 <- solve(I2)[-1,-1]
+        
+    ## sxz <- rho * sqrt(fA * (1 - fA) * fB * (1 - fB)) + 4 * fA * fB
+    ## H2 <- matrix(c(1,     2*fA,           2*fB,
+    ##                2*fA,  2*fA*(1 + fA),  sxz,
+    ##                2*fB,  sxz,            2*fB*(1 + fB)),
+    ##              nrow = 3, byrow = TRUE)
+    ## H2.inv <- solve(H2)[-1,-1]
+    ## V12 <- n00 * (1 + exp(joint1$coef[1])) * (1 + exp(joint2$coef[1]))/((n00+n01+n1) * (n00+n02+n2)) * H2.inv
+    ## V <- rbind(cbind(joint1$V[-1,-1],V12),cbind(V12,joint2$V[-1,-1]))
+
+    B <- c(bA1,bB2)
+    ## abf
+    Wmat <- diag(c(W,W))
+    ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
+    ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
+    R <- VV/sqrt(V1*V2)
+    V <- matrix(c(vA1,R*sqrt(vA1*vB2), R*sqrt(vA1*vB2), vB2),2,2)
+    ## V <- rbind(cbind(V1,VV),cbind(VV,V2))
+    ## V <- rbind(cbind(joint1$V[-1,-1],VV),cbind(VV,joint2$V[-1,-1]))
+    dalt <- dmvnorm(x=B,mean=rep(0,2), sigma=V + Wmat, log=TRUE) 
+    dnull <- dmvnorm(x=B,mean=rep(0,2), sigma=V, log=TRUE)
     list(dalt,dnull,dalt-dnull)
 }
 
@@ -492,13 +624,21 @@ get_maf1 <- function(f0, b) {
     f0 * exp(b)/(1 - f0 + f0 * exp(b))
 }
 
-estgeno.1 <- function(n,f) {
-    n*c((1-f)^2,2*f*(1-f),f^2)
+estgeno.1 <- function(f) {
+    c((1-f)^2,2*f*(1-f),f^2)
 }
     
+estgeno.1.cse <- function(G0,b) {
+    g0 <- 1
+    g1 <- exp( b - log(G0[1]/G0[2]))
+    g2 <- exp( 2*b - log(G0[1]/G0[3]))
+    c(g0,g1,g2)/(g0+g1+g2)
+}
 
+    
 univariate_a <- function(b,n0,n1,f0,f1) {
-     G <-  estgeno.1(n0,f0) +  estgeno.1(n1,f1)
+    G0 <- estgeno.1(f0)
+    G <-  n0*G0 +  n1*estgeno.1.cse(G0,b)
      bvec <- c(0,1,2)*b
      fun <- function(a) {
         num <- exp(a + bvec)
@@ -590,12 +730,18 @@ coloc.cc <- function(dataset1,dataset2,
     ## get MAF in cases
     df[,f1:=get_maf1(f0, b1)]
     df[,f2:=get_maf1(f0, b2)]
+    ## intercept
+    for(i in 1:nrow(df)) {
+        df[i,a1:=univariate_a(b1,n00+n01,n1,f0,f1)]
+        df[i,a2:=univariate_a(b2,n00+n02,n2,f0,f2)]
+    }
 
     ## H1, H2, H4 all two beta models
     ## more accurate
-    for(i in 1:nrow(df)) {
-            df[i, c("v12"):=approx.h124(b1,b2,n00,n01,n02,n1,n2,f0,f1,f2)]
-    }
+    ## for(i in 1:nrow(df)) {
+    ##         df[i, c("v12"):=approx.h124(b1,b2,n00,n01,n02,n1,n2,f0,f1,f2)]
+    ## }
+    df[,v12:=(1+exp(a1)) * (1+exp(a2)) * n00 / ( 2 * f0 * (1-f0) * (n00+n01+n1) * (n00+n02+n2))]
     df[, erho:=v12/sqrt(v1*v2)]
     ## faster
     ## df[,erho:=n00*sqrt(n1*n2)/((n00+n01+n1)*(n00+n02+n2))]
@@ -614,22 +760,22 @@ coloc.cc <- function(dataset1,dataset2,
     df3[,r:=LD[cbind(isnpA,isnpB)]]
     
     ## special case: r==1. This won't allow a model to be fitted at all.  Instead, add in the bf from h4 for one of the two SNPs
-    df3.r1 <- df3[abs(r)>=0.95,]
+    df3.r1 <- df3[abs(r)>=0.9,]
     m <- match(df3.r1$snpA, df$snp)
     df3.r1[, lbf3:=df$lbf4[m]]
     
     ## special case: r=0. Can partition as [ H1 for SNP A ] * [ H2 for SNP B ]
-    df3.r0 <- df3[abs(r)<0.001,]
+    df3.r0 <- df3[abs(r)<0.01,]
     mA <- match(df3.r0$snpA, df$snp)
     mB <- match(df3.r0$snpB, df$snp)
     df3.r0[, lbf3:=df$lbf1[mA] + df$lbf2[mB] ]
     
-    ## what's left requires 4 dim Gaussians
-    df3 <- df3[abs(r)<0.95 & abs(r)>=0.001,]
-    df3 <- merge(df3,df[,.(snp,f0,f1,b1,v1)],
+    ## what's left requires 2 dim Gaussians
+    df3 <- df3[abs(r)<0.9 & abs(r)>=0.01,]
+    df3 <- merge(df3,df[,.(snp,f0,f1,a1,b1,v1)],
                  by.x="snpA",by.y="snp",all.x=TRUE) # trait 1, snp A
     setnames(df3,c("f0","f1","b1","v1"),c("fA","fA1","bA1","vA1"))
-    df3 <- merge(df3,df[,.(snp,f0,f2,b2,v2)],
+    df3 <- merge(df3,df[,.(snp,f0,f2,a2,b2,v2)],
                  by.x="snpB",by.y="snp",all.x=TRUE) # trait 2, snp B
     setnames(df3,c("f0","f2","b2","v2"),c("fB","fB2","bB2","vB2"))
     df3 <- merge(df3, df[,.(snp,f1,b1,v1)],
@@ -644,15 +790,21 @@ coloc.cc <- function(dataset1,dataset2,
     ## df3[,c("bA1star","bB1star"):=bstar_from_b(bA1,bB1,vA1,vB1,r)]
     ## df3[,c("bA2star","bB2star"):=bstar_from_b(bA2,bB2,vA2,vB2,r)]
     for(i in 1:nrow(df3)) 
+        ## df3[i,c("dalt","dnull","lbf3"):=lbf.h3(a1=a1,a2=a2,
+        ##                                        bA1=bA1,bB2=bB2,
+        ##                    vA1=vA1,vB2=vB2,
+        ##                    n00,n01,n02,n1,n2,
+        ##                    fA,fB,rho=r,W=0.04)]
         df3[i,c("dalt","dnull","lbf3"):=lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
                            vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
                            n00,n01,n02,n1,n2,
                            fA,fB,rho=r,W=0.04)]
-    ## attach(df3[isnpA==34 & isnpB==13,])
+     ## attach(df3[isnpA==31 & isnpB==24,]);
+     ## rho=r
 
     ## sometimes approx is very bad - typically extreme r combined with low MAF. Detect these cases as -Inf likelihood under null. replace with no information
     df3[!is.finite(dnull),lbf3:=0]
-    
+   
     ## put it all together
     o<-intersect(names(df3),names(df3.r1))
     df3 <- rbind(df3.r1[,o,with=FALSE],df3.r0[,o,with=FALSE],df3[,o,with=FALSE])
