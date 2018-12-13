@@ -6,7 +6,7 @@ est.sxx <- function(b,vb,fx,v,N) {
 est.Sxy <- function(b1,Sx,Sxx,N) {
     (N * Sxx * b1 - Sx ^ 2 * b1) / N
 } 
-##' reconstruct joint model ioutput for single snp. only vb1b2 really needed
+##' correlation between regression coefficients for the same snp, two quantitative traits
 ##'
 ##' The SNP is X, the traits are 1 and 2
 ##' 
@@ -14,7 +14,7 @@ est.Sxy <- function(b1,Sx,Sxx,N) {
 ##' equal in single or joint models.  it is just the var(b1,b2) term
 ##' we need.
 ##'
-##' This provides cor(b1,b2), and must be multiplied by
+##' This function provides cor(b1,b2), and must be multiplied by
 ##' sqrt(v(b1)*v(b2)) to get var(b1,b2)
 ##'
 ##' @title qq.onesnp
@@ -35,7 +35,7 @@ qq.onesnp <- function(b1,b2,vb1,vb2,fx,v1,v2,eta,N) {
     Sy1 <- Sy2 <- 0
     Sxy1 <- est.Sxy(b1,Sx,Sxx,N)
     Sxy2 <- est.Sxy(b2,Sx,Sxx,N)
-    vbr=(4 * N ^ 2 * sqrt(v1 * v2) * eta * fx ^ 2 - N * sqrt(v1 * v2) * Sxx * eta + Sxy2 * Sxy1) / (4 * N * fx ^ 2 - Sxx) * ((4 * N ^ 2 * fx ^ 2 * v1 - N * Sxx * v1 + Sxy1 ^ 2) * (4 * N ^ 2 * fx ^ 2 * v2 - N * Sxx * v2 + Sxy2 ^ 2) / N ^ 2 / (4 * N * fx ^ 2 - Sxx) ^ 2) ^ (-0.5) / N
+    (eta * (N * Sxx - Sx^2) * sqrt(v1 * v2) - Sxy1 * Sxy2) * N / ((N * Sxx - Sx^2)^2)
 }
 ##' reconstruct joint model ioutput for two snp models
 ##'
@@ -111,7 +111,7 @@ qq.twosnp <- function(b1,b2,g1,g2,vb1,vb2,vg1,vg2,fx,fz,rho,v1,v2,eta,N) {
 ##' @param N number of samples
 ##' @return log ABF
 ##' @author Chris Wallace
-tbf2 <- function(b1,b2,v1,v2,rho,w1=0.04,w2=0.02,N) {
+tbf2 <- function(b1,b2,v1,v2,rho,w1=0.04,w2=0.04,N) {
     v12 <- sqrt(v1)*sqrt(v2)*rho
     innerprod.V <- (b1 ^ 2 * v2 - 2 * b1 * b2 * v12 + b2 ^ 2 * v1) / (v1 * v2 - v12 ^ 2) 
     innerprod.VW <-((v2 + w2) * b1 ^ 2 - 2 * b1 * b2 * v12 + b2 ^ 2 * (v1 + w1)) / ((v2 + w2) * v1 + w1 * v2 + w1 * w2 - v12 ^ 2)
@@ -161,6 +161,28 @@ det.VW <- ((-W2 - vB2) * vA1 - W1 * W2 - W1 * vB2 + vAB12 ^ 2) * vAB12 ^ 2 + (((
     ll.VW - ll.V
 }
 
+tbf4.basic <- function(bA1,bB1,bA2,bB2,vA1,vA2,vA12,vB1,vB2,vB12,vAB1,vAB2,vAB12,W1,W2,N) {
+    n <- length(bA1)
+    ret <- numeric(n)
+    Wmat <- diag(c(W1[1],0,0,W2[1]))
+    ## print(dim(Wmat))
+    ## print(Wmat)
+    for(i in seq_along(bA1)) {
+        B <- c(bA1[i], bA2[i],bB1[i],bB2[i])
+        V <- matrix(c(vA1[i], vA12[i], vAB1[i], vAB12[i],
+                      vA12[i], vA2[i], vAB12[i], vAB2[i],
+                      vAB1[i], vAB12[i], vB1[i], vB12[i],
+                      vAB12[i], vAB2[i], vB12[i], vB2[i]),
+                    4,4,byrow=TRUE)
+        ## print(dim(V))
+        ## print(V)
+        ret[i] <- dmvt(B, delta=rep(0,4), sigma=V + Wmat, log=TRUE, df=N-4) -
+          dmvt(B, delta=rep(0,4), sigma=V, log=TRUE, df=N-4)
+    ## dmvnorm(B, 4), sigma=V + Wmat, log=TRUE) -
+    ##   dmvnorm(B, mean=rep(0,4), sigma=V, log=TRUE)
+    }
+    ret
+}
 
 ##' Bayesian colocalisation analysis for two quantitative traits, measured on the same individuals
 ##'
@@ -229,8 +251,10 @@ coloc.qq <- function(dataset1,dataset2,
     df[,erho:=qq.onesnp(b1,b2,v1,v2,f0,VY1,VY2,corY,N)]
 
     ## t distribution
+    ## df[, lbf1:=tbf2(b1,b2,v1,v2,0,w1=W1,w2=0,N=N)]
+    ## df[, lbf2:=tbf2(b1,b2,v1,v2,0,w1=0,w2=W2,N=N)]
     df[, lbf1:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=0,N=N)]
-    df[, lbf2:=tbf2(b1,b2,v1,v2,erho,w1=0,W2,N=N)]
+    df[, lbf2:=tbf2(b1,b2,v1,v2,erho,w1=0,w2=W2,N=N)]
     df[, lbf4:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=W2,N=N)]
     
     ## normal approximation to t
@@ -264,31 +288,37 @@ coloc.qq <- function(dataset1,dataset2,
     df3.r1[, lbf3:=df$lbf4[m]]
 
     ## special case: r=0. Can fit two bivariate normals, which means we can vectorize
-    df3.r0 <- df3[abs(r)<0.001,]
+    df3.r0 <- df3[abs(r)<0.01,]
     mA <- match(df3.r0$snpA, df$snp)
     mB <- match(df3.r0$snpB, df$snp)
     df3.r0[, lbf3:=df$lbf1[mA] + df$lbf2[mB] ]
 
     ## what's left requires 4 dim Gaussians
-    df3 <- df3[abs(r)<0.99 & abs(r)>=0.001,]
+    df3 <- df3[abs(r)<0.99 & abs(r)>=0.01,]
     df3[,W1:=W1]
     df3[,W2:=W2]
     df3[,c("bA1old","bB1old","bA2old","bB2old"):=list(bA1,bB1,bA2,bB2)]
     df3[,c("bA1","bA2","bB1","bB2","vA1","vA2","vA12","vB1","vB2","vB12","vAB1","vAB2","vAB12"):=
-           qq.twosnp(b1=bA1,b2=bA2,g1=bB1,g2=bB2,vb1=vA1,vb2=vA2,vg1=vB1,vg2=vB2,fx=fA,fz=fB,rho=r,v1=VY1,v2=VY2,eta=corY,N=N)]
+           qq.twosnp(b1=bA1old,b2=bA2old,g1=bB1old,g2=bB2old,vb1=vA1,vb2=vA2,vg1=vB1,vg2=vB2,fx=fA,fz=fB,rho=r,v1=VY1,v2=VY2,eta=corY,N=N)]
+    unlist(qq.twosnp(b1,b2,g1,g2,vb1,vb2,vg1,vg2,fx,fz,rho,v1,v2,eta,N))
 
     ## t distribution
-    if(method=="by2") {
-       ## df[, lbf4:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=W2,N=N)]
-     df3[,lbf3:=tbf2(bA1,bB2,
-                    vA1,vB2,vAB12/sqrt(vA1*vB2),
-                    w1=W1,w2=W2,N=N)]
-    } else {
-     df3[,lbf3:=tbf4(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
-                            vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
-                            vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
+    ## if(method=="by2") {
+    ##    ## df[, lbf4:=tbf2(b1,b2,v1,v2,erho,w1=W1,w2=W2,N=N)]
+    ##  df3[,lbf3:=tbf2(bA1,bB2,
+    ##                 vA1,vB2,vAB12/sqrt(vA1*vB2),
+    ##                 w1=W1,w2=W2,N=N)]
+    ## } else {
+    #attach(df3)
+    ## b1=bA1;b2=bA2;g1=bB1;g2=bB2;vb1=vA1;vb2=vA2;vg1=vB1;vg2=vB2;fx=fA;fz=fB;rho=r;v1=VY1;v2=VY2;eta=corY;N=N
+     df3[,lbf3:=tbf4.basic(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
+                     vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
+                     vAB1=vAB1,vAB2=vAB2,vAB12=vAB12,
                      W1=W1,W2=W2,N=N)]
-    }
+    mA <- match(df3$snpA, df$snp)
+    mB <- match(df3$snpB, df$snp)
+    df3[, lbf3.indeptrait:=df$lbf1[mA] + df$lbf2[mB] ]
+    ## }
     ## Normal approximation to t
     ## df3[,lbf3:=lbfh3.qq.vec(bA1=bA1,bA2=bA2,bB1=bB1,bB2=bB2,
     ##                         vA1=vA1,vA2=vA2,vA12=vA12,vB1=vB1,vB2=vB2,vB12=vB12,
@@ -298,7 +328,6 @@ coloc.qq <- function(dataset1,dataset2,
     ## df3[, lbf3:=bf2(bA1,bB2,vA1,vB2,erho,w1=W1,w2=W2)]
  
     
-
     ## ## reconstruct coefficients from bivariate models
     ## df3[,c("bA1old","bB1old","bA2old","bB2old"):=list(bA1,bB1,bA2,bB2)]
     ## df3[,c("bA1","bB1"):=bstar_from_b(bA1,bB1,vA1,vB1,r)]
