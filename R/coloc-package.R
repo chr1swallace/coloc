@@ -26,7 +26,6 @@
 #' 
 #'@keywords package
 #' @importFrom BMA glib glib.data.frame
-#' @importFrom reshape melt
 #' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
 #' @importFrom methods setMethod setClass
 #' @import ggplot2
@@ -37,9 +36,11 @@
 #' @importFrom MASS ginv
 #' @importFrom mvtnorm dmvnorm
 #' @importFrom Matrix bdiag
-#' @importFrom rootSolve uniroot multiroot
+#' @importFrom stats uniroot
 #' @importFrom BB dfsane
 #' @import data.table
+#' @useDynLib coloc
+#' @importFrom Rcpp sourceCpp
 NULL
 
 #'Class \code{"colocPCs"}

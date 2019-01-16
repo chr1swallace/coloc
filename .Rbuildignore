@@ -1,4 +1,5 @@
 R/junkyard.R
+Rjunk
 vignettes/.*.org
 errors
 ^\.travis\.yml$

@@ -3,6 +3,7 @@ Type: Package
 Imports:
     ggplot2,
     snpStats,
+    BB,
     BMA,
     data.table,
     reshape,
@@ -11,7 +12,8 @@ Imports:
     speedglm,
     MASS,
     Matrix,
-    mvtnorm
+    mvtnorm,
+    Rcpp
 Suggests:
     knitr,
     testthat
@@ -33,3 +35,4 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
+LinkingTo: Rcpp
