@@ -601,7 +601,7 @@ coloc.cc <- function(dataset1,dataset2,
     
     ## for h3, we need pairs of snps
     ## df3 <- as.data.table(as.data.frame(expand_half_grid(snps)))
-    df3 <- as.data.table(as.data.frame(expand_r(LD)))
+    df3 <- as.data.table(as.data.frame(coloc:::expand_r(LD)))
     setnames(df3,c("isnpA","isnpB","r"))
     df3[,snpA:=rownames(LD)[isnpA]]
     df3[,snpB:=rownames(LD)[isnpB]]
