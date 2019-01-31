@@ -640,6 +640,12 @@ coloc.cc <- function(dataset1,dataset2,
                  by.x="snpA",by.y="snp",all.x=TRUE) # trait 2, snp A
     setnames(df3,c("b2","v2"),c("bA2","vA2"))
     
+    ## set all fA, fB < 0.5 to avoid dividing by 0
+    asw <- df3$fA>0.5
+    bsw <- df3$fB>0.5
+    df3[asw, c("bA1","bA2","fA","r") := list(-bA1, -bA2, 1-fA, -r)]
+    df3[bsw, c("bB1","bB2","fB","r") := list(-bB1, -bB2, 1-fB, -r)]
+    
     ## reconstruct coefficients from bivariate binomial logistics 
     for(i in 1:nrow(df3)) 
       df3[i,c("lbf3"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
