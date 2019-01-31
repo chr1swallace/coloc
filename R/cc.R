@@ -130,14 +130,14 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     a2<-2*sum(G0[, 1])+sum(G0[, 2])
     b2<-2*sum(G0[, 3])+sum(G0[, 2])
     sys <- function(x) {
-        c1 <- 2 * sum(G0[1, ] * exp((1 : 3) * x[2])) +
-          sum(G0[2, ] * exp(x[1] + (1 : 3) * x[2]))
-        d1 <- 2 * sum(G0[3, ] * exp(2 * x[1] + (1 : 3) * x[2])) +
-          sum(G0[2, ] * exp(x[1] + (1 : 3) * x[2]))
-        c2 <- 2 * sum(G0[, 1] * exp((1 : 3) * x[1])) +
-          sum(G0[, 2] * exp((1 : 3) * x[1] + x[2]))
-        d2 <- 2 * sum(G0[, 3] * exp((1 : 3) * x[1] + 2 * x[2])) +
-          sum(G0[, 2] * exp((1 : 3) * x[1] + x[2]))
+        c1 <- 2 * sum(G0[1, ] * exp((0:2) * x[2])) +
+          sum(G0[2, ] * exp(x[1] + (0:2) * x[2]))
+        d1 <- 2 * sum(G0[3, ] * exp(2 * x[1] + (0:2) * x[2])) +
+          sum(G0[2, ] * exp(x[1] + (0:2) * x[2]))
+        c2 <- 2 * sum(G0[, 1] * exp((0:2) * x[1])) +
+          sum(G0[, 2] * exp((0:2) * x[1] + x[2]))
+        d2 <- 2 * sum(G0[, 3] * exp((0:2) * x[1] + 2 * x[2])) +
+          sum(G0[, 2] * exp((0:2) * x[1] + x[2]))
         f1 <- log(a1 * d1 /(b1 * c1)) - bA
         f2 <- log(a2 * d2 /(b2 * c2)) - bB
         c(f1 = f1 , f2 = f2)
