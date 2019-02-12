@@ -38,6 +38,7 @@
 #' @importFrom Matrix bdiag
 #' @importFrom stats uniroot
 #' @importFrom BB dfsane
+#' @importFrom igraph graph_from_adjacency_matrix clusters
 #' @import data.table
 #' @useDynLib coloc
 #' @importFrom Rcpp sourceCpp
