@@ -144,6 +144,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     }
     ans <- dfsane(par=c(0,0), fn=sys,control=list(trace=FALSE))
     ans$par
+## TODO : deal with failure to converge, which gives a warning
+
     ## optim(c(0,0),sys)
     ## multiroot(f = sys,start = c(0 ,0),verbose=TRUE)$root
 }
@@ -183,7 +185,10 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     astar <- uniroot(fun, c(-10, 10),extendInt="yes")$root
     ## within-trait vcov
     ## https://czep.net/stat/mlelr.pdf (16)
-    V <- solve(.vmat2(astar,bstar[1],bstar[2], G0*n0 + G1*n1))
+
+## TODO - deal with noninvertible vmat2 
+
+   V <- solve(.vmat2(astar,bstar[1],bstar[2], G0*n0 + G1*n1))
     return(list(coef=c(astar,bstar),V=V))
 }
 .makecov1 <- function(G, cf1, cf2) {
@@ -336,8 +341,12 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
                    fA,fB,rho,W=0.04) {
 
     ## reconstruct joint models - list of coef(a, b1, b2) and V=vcov(coef)
-        joint1 <- .cfv2(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho)
-        joint2 <- .cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho)
+    joint1 <- tryCatch(.cfv2(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho),
+                       error=function(e) return(NULL))
+    joint2 <- tryCatch(.cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho)
+                       error=function(e) return(NULL))
+    if(is.null(joint1) | is.null(joint2))
+        return(NA)
     
 ## ## est genotype counts in controls
     ## bvec <- 0:2
@@ -435,19 +444,6 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
    ##  list(logsum(c(dalt2-dnull, dalt-dnull)))
     
 }
-
-
-## ##' .. content for \description{} (no empty lines) ..
-## ##'
-## ##' .. content for \details{} ..
-## ##' @title estimate MAF in cases
-## ##' @param f0 MAF in controls
-## ##' @param b log BF
-## ##' @return MAF in cases
-## ##' @author Stasia Grinberg
-## get_maf1 <- function(f0, b) {
-##     f0 * exp(b)/(1 - f0 + f0 * exp(b))
-## }
 
 
 .vmat1 <- function(a,b,N) {
@@ -556,6 +552,14 @@ coloc.cc <- function(dataset1,dataset2,
     fq <- data.table(snp=snps)
     fq[,f0:=MAF[snp]]
     df <- merge(df,fq[,.(snp,f0)],by.x="snp",by.y="snp",all.x=TRUE)
+
+## don't allow MAF == 0 or == 1
+badmafs=df$f0==0 | df$f0==1
+if(any(badmafs)) {
+warning("SNPs with MAF==0 or MAF==1, dropping: ",sum(badmafs))
+df = df[!badmafs,]
+}
+
     ## get MAF in cases
     ## df[,f1:=get_maf1(f0, b1)]
     ## df[,f2:=get_maf1(f0, b2)]
@@ -649,25 +653,13 @@ coloc.cc <- function(dataset1,dataset2,
     ## reconstruct coefficients from bivariate binomial logistics 
     for(i in 1:nrow(df3)) 
       df3[i,c("lbf3"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
-                                vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
-                                n00,n01,n02,n1,n2,
-                              fA,fB,rho=r,W=0.04)]
-   ##  df3[i,c("bA1","bB1","bA2","bB2",
-   ##              "V11","V22","V12",
-   ##              "V33","V44","V34",
-   ##              "V13","V24","V14"):=.V.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
-   ##                                        vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
-   ##                                        n00,n01,n02,n1,n2,
-   ##                                        fA,fB,rho=r,W=0.04)]
-   ##  df3[,d0:=lhood.norm4(bA1,bB1,bA2,bB2,
-   ##                       V11, V22, V12, V33, V44, V34, V13, V24, V14)]
-   ## df3[,d3a:=lhood.norm4(bA1,bB1,bA2,bB2,
-   ##                       V11 + w, V22, V12, V33, V44 + w, V34, V13, V24, V14)]
-   ## df3[,d3b:=lhood.norm4(bA1,bB1,bA2,bB2,
-   ##                       V11, V22 + w, V12, V33 + w, V44, V34, V13, V24, V14)]
-   ##  df3[,lbf3:=logsum2( d3a-d0, d3b-d0 ) ]
-    ## attach(df3[i,]);
-    ## rho=r
+                               vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
+                               n00,n01,n02,n1,n2,
+                               fA,fB,rho=r,W=0.04)]
+    if(any(is.na(df3$lbf))) {
+        warning("Two snp models not compatible with input data values: ",sum(is.na(df3))," / ",nrow(df3)," models")
+        df3 <- df3[!is.na(lbf),]
+    }
     
     ## put it all together
     o<-intersect(names(df3),names(df3.r1))
