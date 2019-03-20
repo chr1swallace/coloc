@@ -343,7 +343,7 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## reconstruct joint models - list of coef(a, b1, b2) and V=vcov(coef)
     joint1 <- tryCatch(.cfv2(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho),
                        error=function(e) return(NULL))
-    joint2 <- tryCatch(.cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho)
+    joint2 <- tryCatch(.cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho),
                        error=function(e) return(NULL))
     if(is.null(joint1) | is.null(joint2))
         return(NA)
