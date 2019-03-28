@@ -181,7 +181,7 @@ coloc.detail <- function(dataset1, dataset2, MAF=NULL,
     df3 <- merge(df3,df1[,.(snp,lABF.df1)],by.x="snp1",by.y="snp")
     df3 <- merge(df3,df2[,.(snp,lABF.df2)],by.x="snp2",by.y="snp")
     df3[,lABF.h3:=lABF.df1+lABF.df2]
-    setnames(df,c("lABF.df1","lABF.df2"),c("lABF.h1","lABF.h2"))
+    setnames(df,c("lABF.df1","lABF.df2"),c("lABF.h1","lABF.h2"),skip_absent=TRUE)
     
 ############################## 
 
@@ -247,14 +247,14 @@ group.indep.signals <- function(...,LD,r2thr=0.5) {
 }
 
 
-coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
+coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
     ## which format?
     if("results" %in% names(result)) {
         result$df <- result$results
         setnames(result$df3,c("snpA","snpB"),c("snp1","snp2"))
     }
-        setnames(result$df,paste0("lABF.h",c(1,2,4)),paste0("lbf",c(1,2,4)))
-        setnames(result$df3,paste0("lABF.h",3),paste0("lbf",3))
+    setnames(result$df,paste0("lABF.h",c(1,2,4)),paste0("lbf",c(1,2,4)),skip_absent=TRUE)
+    setnames(result$df3,paste0("lABF.h",3),paste0("lbf",3),skip_absent=TRUE)
     ## overall coloc on a given set of snp results
     .f <- function(df,df3) {
         lH0.abf <- 0
@@ -273,14 +273,94 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4
         cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE))
     }
 
-    if(is.null(hits1) | length(hits1)==1)
+    if(is.list(signals))
+        signals <- unlist(signals)
+
+    ## 
+    ldfriends <-  abs(LD[signals,,drop=FALSE])
+    masks <- lapply(seq_along(signals),function(i) signals[-i])
+    todo <- expand.grid(i=seq_along(signals),j=seq_along(signals))
+    todo <- t(todo) #[i<=j,])
+    ret <- lapply(1:ncol(todo), function(r) {
+        ij <- todo[,r]
+        ldin <- apply(ldfriends[ signals[ ij ], ,drop=FALSE ],2,max)
+        ldout <- apply(ldfriends[ signals[ -ij ], , drop=FALSE ],2,max)
+        dropsnps <- colnames(ldfriends)[ldin < ldout]
+        if(length(setdiff(result$df$snp, dropsnps)) <= 1)
+            return(NULL)
+        ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
+        ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
+        ## dropsnps <- rownames(LD)[which(friends)]
+        cbind(.f(df=result$df[ !(snp %in% dropsnps), ],
+                 df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
+              hit1=signals[todo[1,r] ],
+              hit2=signals[ todo[2,r] ])
+    })  %>% rbindlist()
+
+    ret
+}
+## 599-701
+## 928-976
+
+## ret[,e:=PP.H4.abf/(PP.H4.abf+PP.H3.abf)]
+## a <- dcast(ret,hit1 ~ hit2, value.var="PP.H4.abf")
+## am <- as.matrix(a[,-1])
+## rownames(am) <- a$hit1
+## pheatmap(am)
+
+## 0
+## ## ret <- myouter(mods[[1]], mods[[2]], do.coloc)
+## ## ret$g1 <- args$g1
+## ## ret$g2 <- args$g2
+## ## ret
+
+    
+##     if(is.null(hitgroups))
+##         return(cbind(.f(result$df,result$df3),unmask=""))
+##     sresult <- lapply(seq_along(hitgroups), function(i) {
+##         mask <- unlist(hitgroups[-i])
+##         dropsnps <- rownames(LD)[ apply(LD[mask,]>r2thr,2,any) ]
+##         .f(df=result$df[ !(snp %in% dropsnps), ],
+##                  df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ])
+##     })
+##     sresult <- do.call("rbind",sresult)
+##     sresult$unmask <- sapply(hitgroups,paste,collapse="%")
+##     sresult 
+## }
+coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
+    ## which format?
+    if("results" %in% names(result)) {
+        result$df <- result$results
+        setnames(result$df3,c("snpA","snpB"),c("snp1","snp2"))
+    }
+        setnames(result$df,paste0("lABF.h",c(1,2,4)),paste0("lbf",c(1,2,4)),skip_absent=TRUE)
+        setnames(result$df3,paste0("lABF.h",3),paste0("lbf",3),skip_absent=TRUE)
+    ## overall coloc on a given set of snp results
+    .f <- function(df,df3) {
+        lH0.abf <- 0
+        lH1.abf <- log(p1) + logsum(df$lbf1)
+        lH2.abf <- log(p2) + logsum(df$lbf2)
+        lH3.abf <- log(p1) + log(p2) + logsum(df3$lbf3)
+        lH4.abf <- log(p12) + logsum(df$lbf4)
+        all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+        best1 <- df[which.max(lbf1),]$snp
+        best2 <- df[which.max(lbf2),]$snp
+        best4 <- df[which.max(lbf4),]$snp
+        my.denom.log.abf <- logsum(all.abf)
+        pp.abf <- c(as.list(exp(all.abf - my.denom.log.abf)),list(best1=best1,best2=best2,best4=best4))
+        names(pp.abf) <- c(paste("PP.H", (1:(length(pp.abf)-3)) - 1, ".abf", sep = ""),
+                           "best1","best2","best4")
+        cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE))
+    }
+
+    if(is.null(hits1))
         hits1 <- ""
-    if(is.null(hits2) | length(hits2)==1)
+    if(is.null(hits2))
         hits2 <- ""
     
     ## one signal per trait
     if(length(hits1)<=1 & length(hits2)<=1)
-        return(cbind(.f(result$df,result$df3),mask="",
+        return(cbind(.f(result$df,result$df3),
                      hit1=hits1,hit2=hits2))
 
     ## ## multi signals per trait, but same masks
@@ -299,23 +379,29 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4
 
     
     ## otherwise mask all but one signal from each trait with  >1 signal
-    mask1 <- lapply(seq_along(hits1),function(i) hits1[-i])
-    mask2 <- lapply(seq_along(hits2),function(i) hits2[-i])
-    todo <- expand.grid(i=seq_along(mask1),j=seq_along(mask2))
-    ret <- lapply(1:nrow(todo), function(r) {
-        mask <- setdiff(c(mask1[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
-        friends <-  apply(abs(LD[mask,,drop=FALSE]) > sqrt(r2thr),2,any)
-        dropsnps <- rownames(LD)[which(friends)]
+      ## 
+    ldfriends <-  LD[setdiff(unique(c(hits1,hits2)),""),,drop=FALSE]^2
+    todo <- expand.grid(i=seq_along(hits1),j=seq_along(hits2))
+    todo <- t(todo) #[i<=j,])
+    ret <- lapply(1:ncol(todo), function(r) {
+        i <- todo[1,r]
+        j <- todo[2,r]
+        ldin <- apply(ldfriends[ setdiff(c(hits1[ i ],hits2[j]),""), ,drop=FALSE ],2,max)
+        ldout <- apply(ldfriends[ setdiff(c(hits1[-i],hits2[-j]),""), , drop=FALSE ],2,max)
+        dropsnps <- colnames(ldfriends)[ldout > r2thr & ldin < ldout]
+        if(length(setdiff(result$df$snp, dropsnps)) <= 1)
+            return(NULL)
+        ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
+        ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
+        ## dropsnps <- rownames(LD)[which(friends)]
         cbind(.f(df=result$df[ !(snp %in% dropsnps), ],
                  df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
-              mask=paste(mask,collapse="/"),
-              hit1=hits1[ todo[r,1] ],
-              hit2=hits2[ todo[r,2] ])
+              hit1=hits1[todo[1,r] ],
+              hit2=hits2[ todo[2,r] ])
     })  %>% rbindlist()
-
+    
     ret
 }
-
 
 ## ret <- myouter(mods[[1]], mods[[2]], do.coloc)
 ## ret$g1 <- args$g1
