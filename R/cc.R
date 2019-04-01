@@ -656,9 +656,9 @@ df = df[!badmafs,]
                                vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
                                n00,n01,n02,n1,n2,
                                fA,fB,rho=r,W=0.04)]
-    if(any(is.na(df3$lbf))) {
-        warning("Two snp models not compatible with input data values: ",sum(is.na(df3$lbf))," / ",nrow(df3)," models")
-        df3 <- df3[!is.na(df3$lbf),]
+    if(any(is.na(df3$lbf3))) {
+        warning("Two snp models not compatible with input data values: ",sum(is.na(df3$lbf3))," / ",nrow(df3)," models")
+        df3 <- df3[!is.na(df3$lbf3),]
     }
     
     ## put it all together

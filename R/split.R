@@ -327,7 +327,7 @@ coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e
 ##     sresult$unmask <- sapply(hitgroups,paste,collapse="%")
 ##     sresult 
 ## }
-coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
+coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-5) {
     ## which format?
     if("results" %in% names(result)) {
         result$df <- result$results
@@ -386,16 +386,30 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.1,p1=1e-4
     ret <- lapply(1:ncol(todo), function(r) {
         i <- todo[1,r]
         j <- todo[2,r]
-        ldin <- apply(ldfriends[ setdiff(c(hits1[ i ],hits2[j]),""), ,drop=FALSE ],2,max)
+        ## ldin <- apply(ldfriends[ setdiff(c(hits1[ i ],hits2[j]),""), ,drop=FALSE ],2,max)
         ldout <- apply(ldfriends[ setdiff(c(hits1[-i],hits2[-j]),""), , drop=FALSE ],2,max)
-        dropsnps <- colnames(ldfriends)[ldout > r2thr & ldin < ldout]
+        ## ld1 <- apply(ldfriends[ setdiff(hits1[-i],""), , drop=FALSE ],2,max)
+        ## ld2 <- apply(ldfriends[ setdiff(hits2[-i],""), , drop=FALSE ],2,max)
+        ## drop1 <- colnames(ldfriends)[ld1 > r2thr]
+        ## drop2 <- colnames(ldfriends)[ld2 > r2thr]
+        dropsnps <- colnames(ldfriends)[ldout > r2thr] # | (ldout > 0.5 & ldin < ldout)]
+        
+        df <- copy(result$df)
+        df3 <- copy(result$df3)
+        df[snp %in% dropsnps, c("lbf1","lbf2","lbf4"):=list(log(1/1000),log(1/1000),log(1/1000))]
+        ## df[snp %in% drop2, c("lbf2","lbf4"):=list(log(1/1000),log(1/1000))]
+        ## df3[snp1 %in% drop1, lABF.df1:=0]
+        ## df3[snp2 %in% drop2, lABF.df2:=0]
+        df3[snp1 %in% dropsnps | snp2 %in% dropsnps,lbf3:=log(1/1000)]
         if(length(setdiff(result$df$snp, dropsnps)) <= 1)
             return(NULL)
         ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
         ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
         ## dropsnps <- rownames(LD)[which(friends)]
-        cbind(.f(df=result$df[ !(snp %in% dropsnps), ],
-                 df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
+        ## cbind(.f(result$df[ !(snp %in% dropsnps), ],
+        ##          result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
+        cbind(.f(df,
+                 df3),
               hit1=hits1[todo[1,r] ],
               hit2=hits2[ todo[2,r] ])
     })  %>% rbindlist()
