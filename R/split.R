@@ -210,6 +210,8 @@ finemap.indep.signals <- function(D,LD,
         if(!is.null(mask)) {
             friends <- apply(abs(LD[,mask,drop=FALSE])>sqrt(r2thr),1,any,na.rm=TRUE)
             use <- use & !friends
+            if(!any(use))
+                return(NULL)
             imask <- match(mask,x$snp)
             expectedz <- LD[,mask,drop=FALSE] %*% x$z[imask]
         }
@@ -285,7 +287,8 @@ coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e
         ij <- todo[,r]
         ldin <- apply(ldfriends[ signals[ ij ], ,drop=FALSE ],2,max)
         ldout <- apply(ldfriends[ signals[ -ij ], , drop=FALSE ],2,max)
-        dropsnps <- colnames(ldfriends)[ldin < ldout]
+        ## dropsnps <- colnames(ldfriends)[ldin < ldout]
+        dropsnps <- colnames(ldfriends)[ldout > r2thr]
         if(length(setdiff(result$df$snp, dropsnps)) <= 1)
             return(NULL)
         ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
