@@ -171,6 +171,7 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## convert bhat to bstar
     bstar <- bstar_from_bhat(bA,bB,fA,fB,rho)
     G1 <- estgeno.2.cse(bstar, G0)
+    G <-  n0*G0 + n1*G1
 
     ## solve_for_a <- function(b1, b2, n1, n0, geno) {
     b1m <- matrix(bvec*bstar[1],3,3)
@@ -178,7 +179,10 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     fun <- function(a) {
         denom <- 1 + exp(a + b1m + b2m)
         num <- exp(a + b1m + b2m)
-        sum(G1*num/denom) - n1/(n1 + n0)
+        sum(G*num/denom) - n1
+        ## 25/4/19 changed from
+        ## sum(G1*num/denom) - n1/(n0+n1)
+        ## ie eqn top of p8 in paper is wrong - need to sum over ctls and cases
     }
         ## ans <- dfsane(par=0, fn=fun,control=list(trace=FALSE))
         ## ans$par
@@ -463,7 +467,10 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     fun <- function(a) {
         num <- exp(a + bvec)
         denom <- 1+exp(a + bvec)
-        sum(G1*num/denom) - n1/(n1+n0)
+        ## 25/4/19 changed from
+        ## sum(G1*num/denom) - n1/(n0+n1)
+        ## ie eqn top of p8 in paper is wrong - need to sum over ctls and cases
+        sum(G*num/denom) - n1
     }
     ## microbenchmark(ans <- optimize(fun,c(-100,100)))
     ## ans <- optimize(fun,c(-100,100))
@@ -527,8 +534,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
 ##' @export
 ##' @author Chris Wallace
 coloc.cc <- function(dataset1,dataset2,
-                     n1=dataset1$s*dataset1$N,
-                     n2=dataset2$s*dataset2$N,
+                     n1=round(dataset1$s*dataset1$N),
+                     n2=round(dataset2$s*dataset2$N),
                      n00=0,
                      n01=round((1-dataset1$s)*dataset1$N - n00),
                      n02=round((1-dataset2$s)*dataset2$N - n00),
@@ -568,6 +575,8 @@ df = df[!badmafs,]
     for(i in 1:nrow(df)) {
     ## commented from here
         ## df[i, c("V11","V22"):=.V.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
+        ## tmp <- with(df[i, ], .lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0))
+        ## df[i, c("lbf1","lbf2","lbf4"):=tmp]
         df[i, c("lbf1","lbf2","lbf4"):=.lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
     ## to here
         ## df[i,a1:=univariate_a(b1,n00+n01,n1,f0,f1)]

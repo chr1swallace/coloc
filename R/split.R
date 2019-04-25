@@ -195,115 +195,205 @@ coloc.detail <- function(dataset1, dataset2, MAF=NULL,
          )
 }
 
-finemap.indep.signals <- function(D,LD,
-                                  r2thr=0.1,
-                                  zthr=qnorm(1e-6/2,lower.tail = FALSE)) {
+map_mask <- function(x,LD,r2thr=0.01,sigsnps=NULL) {
+     use <- rep(TRUE,nrow(x))
+     if(!is.null(sigsnps)) {
+         expectedz <- rep(0,nrow(x))
+         friends <- apply(abs(LD[,sigsnps,drop=FALSE])>sqrt(r2thr),1,any,na.rm=TRUE)
+         use <- use & !friends
+         if(!any(use))
+             return(NULL)
+         imask <- match(sigsnps,x$snp)
+         expectedz <- LD[,sigsnps,drop=FALSE] %*% x$z[imask]
+         zdiff <- abs(x$z[use]) - abs(expectedz[use])
+     } else {
+         zdiff <- abs(x$z)
+     }
+     wh <- which.max(zdiff)
+     ## if(zdiff[wh] > zthr)
+         structure(x$z[use][wh],names=x$snp[use][wh])
+     ## else
+     ##     NULL
+}
+
+est_cond <- function(x,LD,N,VY,sigsnps) {
+    use <- !(rownames(LD) %in% sigsnps) #setdiff(rownames(LD),sigsnps)
+    nuse <- match(sigsnps,x$snp)
+    VX <- 2 * x$MAF * (1-x$MAF) # expected variance of X
+
+    ## joint effects at sigsnps
+    W1 <- LD[nuse,nuse,drop=FALSE] * sqrt(matrix(VX[nuse],ncol=1) %*% matrix(VX[nuse],nrow=1)) # cov(X[,use],X[,nuse])
+    V1 <-  if(length(nuse)==1) {
+               diag(N * VX[nuse],nrow=1,ncol=1)
+           } else {
+               diag(N * VX[nuse])
+           }
+    b1 <- solve(N * W1) %*% V1 %*% matrix(x$beta[nuse],ncol=1)
+
+    ## conditional effects 2 | 1
+    W2 <- LD[use,use,drop=FALSE] * sqrt(matrix(VX[use],ncol=1) %*% matrix(VX[use],nrow=1)) # cov(X[,use],X[,use])
+    W12 <- LD[use,nuse,drop=FALSE] * sqrt(matrix(VX[use],ncol=1) %*% matrix(VX[nuse],nrow=1)) # cov(X[,use],X[,nuse])
+    V2 <-  if(sum(use)==1) {
+               diag(N * VX[use],nrow=1,ncol=1)
+           } else {
+               diag(N * VX[use])
+           }
+    b2 <- x$beta[use] - W12 %*% solve(W1) %*% V1 %*% matrix(x$beta[nuse],ncol=1) / (VX[use]*N)
+
+    ## residual and conditional b2 variance
+    Sc <- c(N * VY -
+            matrix(b1,nrow=1) %*% V1 %*% matrix(x$beta[nuse],ncol=1))
+    Sc <- ( Sc -  b2 * N * VX[use] * x$beta[use] ) / (N - length(sigsnps) - 1)
+    vb2 <- c(Sc) * ( VX[use] * N - N * diag(W12 %*% solve(W1) %*% t(W12)) ) / (N * VX[use])^2
+    data.table(snp=x$snp[use],beta=c(b2),varbeta=vb2)
+}
+
+map_cond <- function(x,LD,N,VY,sigsnps=NULL) {
+    if(is.null(sigsnps)) { # take max unconditional abs(z)
+        wh <- which.max(x$z)
+        ## if(x$z[wh] > zthr)
+            return(structure(x$z[wh],names=x$snp[wh]))
+        ## else
+        ##     return(NULL)
+    }
+    est <- est_cond(x,LD,N,VY,sigsnps)
+    Z <- est$beta/sqrt(est$varbeta)
+    wh <- which.max(Z)
+    ## if(Z[wh] > zthr)
+        structure(Z[wh],names=est$snp[wh])
+    ## else
+    ##     NULL
+}
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title
+##' @param D list of summary stats for a single disease, as defined
+##'     for coloc.abf
+##' @param LD matrix of signed r values (not rsq!) giving correlation
+##'     between SNPs
+##' @param aligned if TRUE, the LD matrix is considered aligned to the
+##'     effect estimates in D, so that conditional analysis can be
+##'     used
+##' @param mask use masking if TRUE, otherwise conditioning. defaults
+##'     to !aligned
+##' @param r2thr if mask==TRUE, all snps will be masked with r2 >
+##'     r2thr with any sigsnps. Otherwise ignored
+##' @param sigsnps SNPs already deemed significant, to condition on
+##' @param pthr when p > pthr, stop successive conditioning
+##' @param zthr alternative to specifying pthr, stop when abs(z) <
+##'     zthr
+##' @param maxhits maximum depth of conditioning. procedure will stop
+##'     if p > pthr OR abs(z)<zthr OR maxhits hits have been found.
+##' @return list of successive significance fine mapped SNPs, named by
+##'     the SNPs
+##' @author Chris Wallace
+finemap.indep.signals <- function(D,LD,aligned=FALSE,
+                                  mask=!aligned,r2thr=0.01,
+                                  sigsnps=NULL,
+                                  pthr=1e-6,
+                                  zthr=qnorm(pthr/2,lower.tail = FALSE),
+                                  maxhits=10) {
     ## make nicer data table
-    x <- as.data.table(D[c("beta","varbeta","snp")])
+    x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     x[,z:=beta/sqrt(varbeta)]
     ## check LD in matching order
     LD <- LD[x$snp,x$snp]
     hits <- NULL
-    expectedz <- rep(0,nrow(x))
-    .f <- function(x,mask=NULL) {
-        use <- rep(TRUE,nrow(x))
-        if(!is.null(mask)) {
-            friends <- apply(abs(LD[,mask,drop=FALSE])>sqrt(r2thr),1,any,na.rm=TRUE)
-            use <- use & !friends
-            if(!any(use))
-                return(NULL)
-            imask <- match(mask,x$snp)
-            expectedz <- LD[,mask,drop=FALSE] %*% x$z[imask]
-        }
-        zdiff <- abs(x$z[use] - expectedz[use])
-        wh <- which.max(zdiff)
-        if(zdiff[wh] > zthr)
-            x$snp[use][wh]
-        else
-            NULL
-    }
     while(length(hits)<10) {
-       newhit=.f(x,mask=hits)
-        if(is.null(newhit))
+        newhit=if(mask) {
+                   map_mask(x,LD,r2thr,sigsnps=names(hits))
+               } else {
+                   map_cond(x,LD,D$N,
+                            VY=if(D$type=="quant") {
+                                   D$sdY^2
+                               } else {
+                                   D$s * ( 1 - D$s )
+                               }, # var(Y)
+                            sigsnps=names(hits))
+               }
+        if(is.null(newhit) || abs(newhit) < zthr )
             break
-       hits <- c(hits,newhit)
+        hits <- c(hits,newhit)
     }
     hits
 }
 
 
-group.indep.signals <- function(...,LD,r2thr=0.5) {
-    hits <- list(...)
-    nhits <- sapply(hits,length)
-    hs <- unique(unlist(hits[nhits>1]))
-    if(!length(hs)) {
-        message("no multiple hits found for any trait")
-        return(NULL)
-    }
-    hld <- LD[hs,hs] > r2thr
-    diag(hld) <- FALSE
-    g <- graph_from_adjacency_matrix(hld)
-    ## plot(g)
-    cl <- clusters(g)$membership
-    split(names(cl),cl)
-}
+## group.indep.signals <- function(...,LD,r2thr=0.5) {
+##     hits <- list(...)
+##     nhits <- sapply(hits,length)
+##     hs <- unique(unlist(hits[nhits>1]))
+##     if(!length(hs)) {
+##         message("no multiple hits found for any trait")
+##         return(NULL)
+##     }
+##     hld <- LD[hs,hs] > r2thr
+##     diag(hld) <- FALSE
+##     g <- graph_from_adjacency_matrix(hld)
+##     ## plot(g)
+##     cl <- clusters(g)$membership
+##     split(names(cl),cl)
+## }
 
 
-coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
-    ## which format?
-    if("results" %in% names(result)) {
-        result$df <- result$results
-        setnames(result$df3,c("snpA","snpB"),c("snp1","snp2"))
-    }
-    setnames(result$df,paste0("lABF.h",c(1,2,4)),paste0("lbf",c(1,2,4)),skip_absent=TRUE)
-    setnames(result$df3,paste0("lABF.h",3),paste0("lbf",3),skip_absent=TRUE)
-    ## overall coloc on a given set of snp results
-    .f <- function(df,df3) {
-        lH0.abf <- 0
-        lH1.abf <- log(p1) + logsum(df$lbf1)
-        lH2.abf <- log(p2) + logsum(df$lbf2)
-        lH3.abf <- log(p1) + log(p2) + logsum(df3$lbf3)
-        lH4.abf <- log(p12) + logsum(df$lbf4)
-        all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
-        best1 <- df[which.max(lbf1),]$snp
-        best2 <- df[which.max(lbf2),]$snp
-        best4 <- df[which.max(lbf4),]$snp
-        my.denom.log.abf <- logsum(all.abf)
-        pp.abf <- c(as.list(exp(all.abf - my.denom.log.abf)),list(best1=best1,best2=best2,best4=best4))
-        names(pp.abf) <- c(paste("PP.H", (1:(length(pp.abf)-3)) - 1, ".abf", sep = ""),
-                           "best1","best2","best4")
-        cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE))
-    }
+## coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e-4,p12=1e-5) {
+##     ## which format?
+##     if("results" %in% names(result)) {
+##         result$df <- result$results
+##         setnames(result$df3,c("snpA","snpB"),c("snp1","snp2"))
+##     }
+##     setnames(result$df,paste0("lABF.h",c(1,2,4)),paste0("lbf",c(1,2,4)),skip_absent=TRUE)
+##     setnames(result$df3,paste0("lABF.h",3),paste0("lbf",3),skip_absent=TRUE)
+##     ## overall coloc on a given set of snp results
+##     .f <- function(df,df3) {
+##         lH0.abf <- 0
+##         lH1.abf <- log(p1) + logsum(df$lbf1)
+##         lH2.abf <- log(p2) + logsum(df$lbf2)
+##         lH3.abf <- log(p1) + log(p2) + logsum(df3$lbf3)
+##         lH4.abf <- log(p12) + logsum(df$lbf4)
+##         all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+##         best1 <- df[which.max(lbf1),]$snp
+##         best2 <- df[which.max(lbf2),]$snp
+##         best4 <- df[which.max(lbf4),]$snp
+##         my.denom.log.abf <- logsum(all.abf)
+##         pp.abf <- c(as.list(exp(all.abf - my.denom.log.abf)),list(best1=best1,best2=best2,best4=best4))
+##         names(pp.abf) <- c(paste("PP.H", (1:(length(pp.abf)-3)) - 1, ".abf", sep = ""),
+##                            "best1","best2","best4")
+##         cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE))
+##     }
 
-    if(is.list(signals))
-        signals <- unlist(signals)
+##     if(is.list(signals))
+##         signals <- unlist(signals)
 
-    ## 
-    ldfriends <-  abs(LD[signals,,drop=FALSE])
-    masks <- lapply(seq_along(signals),function(i) signals[-i])
-    todo <- expand.grid(i=seq_along(signals),j=seq_along(signals))
-    todo <- t(todo) #[i<=j,])
-    ret <- lapply(1:ncol(todo), function(r) {
-        ij <- todo[,r]
-        ldin <- apply(ldfriends[ signals[ ij ], ,drop=FALSE ],2,max)
-        ldout <- apply(ldfriends[ signals[ -ij ], , drop=FALSE ],2,max)
-        ## dropsnps <- colnames(ldfriends)[ldin < ldout]
-        dropsnps <- colnames(ldfriends)[ldout > r2thr]
-        if(length(setdiff(result$df$snp, dropsnps)) <= 1)
-            return(NULL)
-        ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
-        ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
-        ## dropsnps <- rownames(LD)[which(friends)]
-        cbind(.f(df=result$df[ !(snp %in% dropsnps), ],
-                 df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
-              hit1=signals[todo[1,r] ],
-              hit2=signals[ todo[2,r] ])
-    })  %>% rbindlist()
+##     ## 
+##     ldfriends <-  abs(LD[signals,,drop=FALSE])
+##     masks <- lapply(seq_along(signals),function(i) signals[-i])
+##     todo <- expand.grid(i=seq_along(signals),j=seq_along(signals))
+##     todo <- t(todo) #[i<=j,])
+##     ret <- lapply(1:ncol(todo), function(r) {
+##         ij <- todo[,r]
+##         ldin <- apply(ldfriends[ signals[ ij ], ,drop=FALSE ],2,max)
+##         ldout <- apply(ldfriends[ signals[ -ij ], , drop=FALSE ],2,max)
+##         ## dropsnps <- colnames(ldfriends)[ldin < ldout]
+##         dropsnps <- colnames(ldfriends)[ldout > r2thr]
+##         if(length(setdiff(result$df$snp, dropsnps)) <= 1)
+##             return(NULL)
+##         ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
+##         ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
+##         ## dropsnps <- rownames(LD)[which(friends)]
+##         cbind(.f(df=result$df[ !(snp %in% dropsnps), ],
+##                  df3=result$df3[ !(snp1 %in% dropsnps | snp2 %in% dropsnps), ]),
+##               hit1=signals[todo[1,r] ],
+##               hit2=signals[ todo[2,r] ])
+##     })  %>% rbindlist()
 
-    ret
-}
-## 599-701
-## 928-976
+##     ret
+## }
+## ## 599-701
+## ## 928-976
 
 ## ret[,e:=PP.H4.abf/(PP.H4.abf+PP.H3.abf)]
 ## a <- dcast(ret,hit1 ~ hit2, value.var="PP.H4.abf")
@@ -330,9 +420,24 @@ coloc.process.signals <- function(result,signals,LD=NULL,r2thr=0.1,p1=1e-4,p2=1e
 ##     sresult$unmask <- sapply(hitgroups,paste,collapse="%")
 ##     sresult 
 ## }
-coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-5) {
+
+##' Post process a coloc.details result using masking
+##'
+##' .. content for \details{} ..
+##' @title
+##' @param result
+##' @param hits1
+##' @param hits2
+##' @param LD
+##' @param r2thr
+##' @param p1
+##' @param p2
+##' @param p12
+##' @return 
+##' @author Chris Wallace
+coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-5,LD1=LD,LD2=LD) {
     ## which format?
-    if("results" %in% names(result)) {
+    if("results" %in% names(result)) { # for legacy objects
         result$df <- result$results
         setnames(result$df3,c("snpA","snpB"),c("snp1","snp2"))
     }
@@ -383,19 +488,25 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-
     
     ## otherwise mask all but one signal from each trait with  >1 signal
       ## 
-    ldfriends <-  LD[setdiff(unique(c(hits1,hits2)),""),,drop=FALSE]^2
+    ldfriends1 <-  LD1[setdiff(unique(c(hits1)),""),,drop=FALSE]^2
+    ldfriends2 <-  LD2[setdiff(unique(c(hits2)),""),,drop=FALSE]^2
     todo <- expand.grid(i=seq_along(hits1),j=seq_along(hits2))
     todo <- t(todo) #[i<=j,])
     ret <- lapply(1:ncol(todo), function(r) {
         i <- todo[1,r]
         j <- todo[2,r]
+        message(r)
         ## ldin <- apply(ldfriends[ setdiff(c(hits1[ i ],hits2[j]),""), ,drop=FALSE ],2,max)
-        ldout <- apply(ldfriends[ setdiff(c(hits1[-i],hits2[-j]),""), , drop=FALSE ],2,max)
+        ldout1 <- apply(ldfriends1[ setdiff(c(hits1[-i]),""), , drop=FALSE ],2,max)
+        ldout2 <- apply(ldfriends2[ setdiff(c(hits2[-j]),""), , drop=FALSE ],2,max)
         ## ld1 <- apply(ldfriends[ setdiff(hits1[-i],""), , drop=FALSE ],2,max)
         ## ld2 <- apply(ldfriends[ setdiff(hits2[-i],""), , drop=FALSE ],2,max)
         ## drop1 <- colnames(ldfriends)[ld1 > r2thr]
         ## drop2 <- colnames(ldfriends)[ld2 > r2thr]
-        dropsnps <- colnames(ldfriends)[ldout > r2thr] # | (ldout > 0.5 & ldin < ldout)]
+        dropsnps <- c(colnames(ldfriends1)[ldout1 > r2thr],
+                      colnames(ldfriends2)[ldout2 > r2thr])
+        dropsnps <- unique(dropsnps)
+                                        # | (ldout > 0.5 & ldin < ldout)]
         
         df <- copy(result$df)
         df3 <- copy(result$df3)
@@ -419,6 +530,126 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-
     
     ret
 }
+
+est_all_cond <- function(D,FM) {
+    x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
+    x[,z:=beta/sqrt(varbeta)]
+    if(length(FM)==1)
+        return(structure(list(x),names=names(FM)))
+    cond1 <- lapply(seq_along(FM), function(i) {
+        tmp <- est_cond(x,D$LD,D$N,
+                 VY=if(D$type=="quant") {
+                        D$sdY^2
+                    } else {
+                        D$s * ( 1 - D$s )
+                    }, 
+                 sigsnps=names(FM)[-i])
+       tmp$MAF <- x$MAF[ match(tmp$snp, x$snp) ] 
+        tmp
+    })
+    names(cond1) <- names(FM)
+    cond1
+}
+
+
+coloc.signals <- function(dataset1, dataset2,
+                          MAF=NULL, LD=NULL, method="mask",
+                          p1=1e-4, p2=1e-4, p12=1e-5, ...) {
+    ## error checking
+    if(!is.list(dataset1) || !is.list(dataset2))
+        stop("dataset1 and dataset2 must be lists.")
+    if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
+        dataset1$MAF <- MAF
+    if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
+        dataset2$MAF <- MAF
+    if(!("LD" %in% names(dataset1)) & !is.null(LD))
+        dataset1$LD <- LD
+    if(!("LD" %in% names(dataset2)) & !is.null(LD))
+        dataset2$LD <- LD
+    if(!("method" %in% names(dataset1)) & !is.null(method))
+        dataset1$method <- method
+    if(!("method" %in% names(dataset2)) & !is.null(method))
+        dataset2$method <- method
+
+    ## fine map
+    w1 <- which(names(dataset1)=="LD")
+    fm1 <- finemap.indep.signals(dataset1[-w1],dataset1$LD,
+                                 aligned=dataset1$method!="mask",...)
+    w2 <- which(names(dataset2)=="LD")
+    fm2 <- finemap.indep.signals(dataset2[-w2],dataset2$LD,
+                                 aligned=dataset2$method!="mask",...)
+
+    ## conditionals if needed
+    if(dataset1$method=="cond") 
+        cond1 <- est_all_cond(dataset1,fm1)
+    if(dataset2$method=="cond") 
+        cond2 <- est_all_cond(dataset2,fm2)
+
+    ## double mask
+    if(dataset1$method=="mask" & dataset2$method=="mask") {
+        col <- coloc.detail(dataset1[-w1],dataset2[-w2], p1=p1,p2=p2,p12=p12)
+        res <- coloc.process(col, hits1=names(fm1), hits2=names(fm2),
+                             LD1=dataset1$LD, LD2=dataset2$LD, ...)
+    } 
+
+    ## double cond
+    X1 <- dataset1[ setdiff(names(dataset1),names(cond1[[1]])) ]
+    X2 <- dataset2[ setdiff(names(dataset2),names(cond2[[1]])) ]
+    if(dataset1$method=="cond" & dataset2$method=="cond") {
+        todo <- expand.grid(i=seq_along(cond1),j=seq_along(cond2))
+        res <- vector("list",nrow(todo))
+        for(k in 1:nrow(todo)) {
+            col <- coloc.detail(c(cond1[[ todo[k,"i"] ]],X1),
+                                c(cond2[[ todo[k,"j"] ]],X2),
+                                p1=p1,p2=p2,p12=p12)
+            res[[k]] <- coloc.process(col,
+                                 hits1=names(fm1)[ todo[k,"i"] ],
+                                 hits2=names(fm2)[ todo[k,"j"] ],
+                                 LD1=dataset1$LD, LD2=dataset2$LD) #, ...)
+        }
+        res <- rbindlist(res)
+    }
+
+    ## cond-mask
+    if(dataset1$method=="cond" & dataset2$method=="mask") {
+        res <- vector("list",length(cond1))
+        for(k in 1:length(res)) {
+            col <- coloc.detail(c(cond1[[ todo[k,"i"] ]],X1),
+                                dataset2[-w2],
+                                p1=p1,p2=p2,p12=p12)
+            res[[k]] <- coloc.process(col,
+                                 hits1=names(fm1)[ k ],
+                                 hits2=names(fm2),
+                                 LD1=dataset1$LD, LD2=dataset2$LD) #, ...)
+        }
+        res <- rbindlist(res)
+    }
+
+    ## mask-cond
+    if(dataset1$method=="mask" & dataset2$method=="cond") {
+        res <- vector("list",length(cond2))
+        for(k in 1:length(res)) {
+            col <- coloc.detail(dataset1[-w1],
+                                c(cond2[[ todo[k,"j"] ]],X2),
+                                p1=p1,p2=p2,p12=p12)
+            res[[k]] <- coloc.process(col,
+                                 hits1=names(fm1),,
+                                 hits2=names(fm2)[ k ],
+                                 LD1=dataset1$LD, LD2=dataset2$LD) #, ...)
+        }
+        res <- rbindlist(res)
+    }
+
+   res 
+}
+
+
+    
+
+
+## NB - LD in separate datasets now
+        
+    
 
 ## ret <- myouter(mods[[1]], mods[[2]], do.coloc)
 ## ret$g1 <- args$g1
