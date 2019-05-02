@@ -153,6 +153,49 @@ sdY.est <- function(vbeta, maf, n) {
     return(sqrt(cf))
 }
 
+##' Check dataset inputs for errors
+##'
+##' Will call stop() unless a series of expectations on dataset input format are met
+##' @title check.dataset
+##' @param d
+##' @param suffix
+##' @return NULL
+##' @author Chris Wallace
+check.dataset <- function(d,suffix) {
+   if(!is.list(d) )
+       stop("dataset ",suffix,": is not a list")
+   nd <- names(d)
+   if (! 'type' %in% nd)
+       stop("dataset ",suffix,": variable type not set")
+   
+  if(!(d$type %in% c("quant","cc")))
+      stop("dataset ",suffix,": ","type must be quant or cc")
+  
+  if(d$type=="cc") {
+      if(! "s" %in% nd)
+          stop("dataset ",suffix,": ","s, proportion of samples who are cases, not found")
+      if(d$s<=0 || d$s>=1)
+          stop("dataset ",suffix,": ","s must be between 0 and 1")
+      if("pvalues" %in% nd && !( "MAF" %in% nd))
+          stop("dataset ",suffix,": ","p values found, but no MAF")
+  }
+  
+  if(d$type=="quant") {
+      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
+          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+  }
+
+   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+   for(v in c("MAF","pvalues","beta","varbeta")) {
+       if(v %in% nd && any(is.na(d[[v]])))
+           stop("dataset ",suffix,": ",v," contains missing values")
+   }
+
+   ## if we reach here, no badness detected
+   NULL
+}
+
+
 ##' Internal function, process each dataset list for coloc.abf
 ##'
 ##' @title process.dataset
@@ -162,28 +205,8 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
   #message('Processing dataset')
-
   nd <- names(d)
-  if (! 'type' %in% nd)
-    stop("dataset ",suffix,": ",'The variable type must be set, otherwise the Bayes factors cannot be computed')
-
-  if(!(d$type %in% c("quant","cc")))
-      stop("dataset ",suffix,": ","type must be quant or cc")
-  
-  if(d$type=="cc") {
-      if(! "s" %in% nd)
-          stop("dataset ",suffix,": ","please give s, proportion of samples who are cases")
-      if("pvalues" %in% nd && !( "MAF" %in% nd))
-          stop("dataset ",suffix,": ","please give MAF if using p values")
-      if(d$s<=0 || d$s>=1)
-          stop("dataset ",suffix,": ","s must be between 0 and 1")
-  }
-  
-  if(d$type=="quant") {
-      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
-          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
-  }
-  
+    
   if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
     if(length(d$beta) != length(d$varbeta))
       stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
@@ -274,12 +297,11 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-  if(!is.list(dataset))
-    stop("dataset must be a list.")
+    check.dataset(dataset,"")
   
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
-  dfnull <- df[1,]
+    dfnull <- df[1,]
     for(nm in colnames(df))
         dfnull[,nm] <- NA
     dfnull[,"snp"] <- "null"
@@ -362,17 +384,17 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##' @export
 coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
                       p1=1e-4, p2=1e-4, p12=1e-5) {
+    
+    if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
+        dataset1$MAF <- MAF
+    if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
+        dataset2$MAF <- MAF
+    check.dataset(d=dataset1,1)
+    check.dataset(d=dataset2,2)
 
-  if(!is.list(dataset1) || !is.list(dataset2))
-    stop("dataset1 and dataset2 must be lists.")
-  if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
-    dataset1$MAF <- MAF
-  if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
-    dataset2$MAF <- MAF
-  
-  df1 <- process.dataset(d=dataset1, suffix="df1")
-  df2 <- process.dataset(d=dataset2, suffix="df2")
-  merged.df <- merge(df1,df2)
+    df1 <- process.dataset(d=dataset1, suffix="df1")
+    df2 <- process.dataset(d=dataset2, suffix="df2")
+    merged.df <- merge(df1,df2)
 
    if(!nrow(merged.df))
     stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
