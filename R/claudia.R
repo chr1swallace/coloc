@@ -161,7 +161,7 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @param suffix
 ##' @return NULL
 ##' @author Chris Wallace
-check.dataset <- function(d,suffix) {
+check.dataset <- function(d,suffix="") {
    if(!is.list(d) )
        stop("dataset ",suffix,": is not a list")
    nd <- names(d)
