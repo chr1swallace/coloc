@@ -37,6 +37,31 @@ lhood.norm4<-function(bA1,bB1,bA2,bB2,
 estgeno.1.ctl <- function(f) {
     c((1-f)^2,2*f*(1-f),f^2)
 }
+## vectorized version
+vestgeno.1.ctl <- function(f) {
+    cbind((1-f)^2,2*f*(1-f),f^2)
+}
+
+##' @param G0 single snp frequency in controls (vector of length 3) - obtained from estgeno.1.ctl
+##' @param b log odds ratio
+##' @export
+##' @rdname estgeno1
+##' @examples
+##' G0=estgeno.1.ctl(f=0.5)
+##' estgeno.1.cse (G0=G0, b=log(2))
+estgeno.1.cse <- function(G0,b) {
+    g0 <- 1
+    g1 <- exp( b - log(G0[1]/G0[2]))
+    g2 <- exp( 2*b - log(G0[1]/G0[3]))
+    c(g0,g1,g2)/(g0+g1+g2)
+}
+## vectorized version
+vestgeno.1.cse <- function(G0,b) {
+    g0 <- 1
+    g1 <- exp( b - log(G0[,1]/G0[,2]))
+    g2 <- exp( 2*b - log(G0[,1]/G0[,3]))
+    cbind(g0,g1,g2)/(g0+g1+g2)
+}
 
 ##' @param G0 single snp frequency in controls (vector of length 3) - obtained from estgeno.1.ctl
 ##' @param b log odds ratio
@@ -222,8 +247,11 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
                          f0,W=0.04,method="by4") {
 
     ## reconstruct joint models - list of coef(a, b1, b2) and V=vcov(coef)
-        joint1 <- .cfv1(b1,n0=n00+n01,n1=n1,f0=f0)
-        joint2 <- .cfv1(b2,n0=n00+n02,n1=n2,f0=f0)
+    a1 <- .alphav1(b1,n0=n00+n01,n1=n1,f0=f0)
+    a2 <- .alphav1(b2,n0=n00+n02,n1=n2,f0=f0)
+    ## v12 <- n00 * (1+exp(a1)) * (1+exp(a2)) / ((n00+n01+n1)*(n00+n02+n2)*2*f0*(1-f0))
+    joint1 <- .cfv1(b1,n0=n00+n01,n1=n1,f0=f0)
+    joint2 <- .cfv1(b2,n0=n00+n02,n1=n2,f0=f0)
     ## print(joint1)
     ## print(joint2)
     ##   cr <- sqrt(exp(joint1$coef[1] + joint2$coef[2]))*n00/sqrt((n00+n01+n1)*(n00+n02+n2))
@@ -249,7 +277,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## VV <- ( solve(I1) %*% cv %*% solve(I2) )
     VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
 
-    list(v11=joint1$V[2,2], v12=VV, v22=joint2$V[2,2])
+    ## list(v11=joint1$V[2,2], v12=VV, v22=joint2$V[2,2])
+    list(v11=v1, v12=VV, v22=v2)
 }
 
     ## ## B <- c(joint1$coef,joint2$coef)
@@ -286,56 +315,49 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
                          f0,W=0.04,method="by4") {
 
     ## reconstruct joint models - list of coef(a, b1, b2) and V=vcov(coef)
-        joint1 <- .cfv1(b1,n0=n00+n01,n1=n1,f0=f0)
-        joint2 <- .cfv1(b2,n0=n00+n02,n1=n2,f0=f0)
-    ##   cr <- sqrt(exp(joint1$coef[1] + joint2$coef[2]))*n00/sqrt((n00+n01+n1)*(n00+n02+n2))
-    ## VV <- cr * sqrt(joint1$V * joint2$V)
-
+    ## a1 <- .alphav1(b1,n0=n00+n01,n1=n1,f0=f0)
+    ## a2 <- .alphav1(b2,n0=n00+n02,n1=n2,f0=f0)
+    ## ## cov(b1,b2)
+    ## v12 <- n00 * (1+exp(a1)) * (1+exp(a2)) / ((n00+n01+n1)*(n00+n02+n2)*2*f0*(1-f0))
+    ## V1 <- matrix(c(v1,v12,v12,v2),2,2)
  
-## ## est genotype counts in controls
+    ## V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    joint1 <- .cfv1(b1,n0=n00+n01,n1=n1,f0=f0)
+    joint2 <- .cfv1(b2,n0=n00+n02,n1=n2,f0=f0)
     bvec <- 0:2
     G0 <- estgeno.1.ctl(f0)
-    ## G1 <- estgeno.1.cse(G0,b1)
-    ## G2 <- estgeno.1.cse(G0,b2)
-     ## I matrices depend on all subjects
-    ## I1 <- makeI2(G0*(n00+n01) + G1*n1, joint1$coef)
-    
-    ## ## p <- matrix(G[,"pred"],3,3)
-    ## ## I1 <- XX * p/(1+p)^2
-    ## I2 <- makeI2(G0*(n00+n02) + G2*n2, joint2$coef)
-    
     ## ## ## cov depends only on shared controls
     cv <- .makecov1(G0*n00,joint1$coef,joint2$coef)
-        
-    ## ## cross trait vcov
-    ## VV <- ( solve(I1) %*% cv %*% solve(I2) )
     VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
-        
-    ## B <- c(joint1$coef,joint2$coef)
-    ## ## abf
-    ## ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
-    ## ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
-
-    ## ensure VV is symmetric
-    ## VV[1,2] <- VV[2,1]  <- mean(VV[1,2],VV[2,1])
-
+    V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    ## V <- matrix(c(v1,VV,VV,v2),2,2)
+    ## V3 <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    ## cr <- n00 * sqrt(n1*n2/((n00+n01)*(n00+n02)*(n00+n0+n1)*(n00+n02+n2)))
+    ## cv <- cr*sqrt(v1)*sqrt(v2)
+    ## V4 <- matrix(c(v1,cv,cv,v2),2,2)
+    ## print(V)
+    ## print(Wmat1)
+    B <- c(joint1$coef[-1],joint2$coef[-1])
     Wmat0 <- diag(c(0,0))
     Wmat1 <- diag(c(W,0))
     Wmat2 <- diag(c(0,W))
     Wmat4 <- diag(c(W,W))
-    V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
-    ## print(V)
-    ## print(Wmat1)
-    B <- c(joint1$coef[-1],joint2$coef[-1])
+    ## B <- c(b1,b2)
+    ## V <- V1
+    ## V <- V2
+    ## V <- V3
+    ## V <- V4
         dalt1 <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat1), log=TRUE) 
         dalt2 <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat2), log=TRUE) 
         dalt4 <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat4), log=TRUE) 
-        dnull <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat0), log=TRUE)
+        dnull <- dmvnorm(x=B,mean=rep(0,2), sigma=(V), log=TRUE)
         ## dalt1 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat1, log=TRUE) 
         ## dalt2 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat2, log=TRUE) 
         ## dalt4 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat4, log=TRUE) 
         ## dnull <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat0, log=TRUE)
     list(dalt1-dnull, dalt2-dnull, dalt4-dnull)
+    ## V <- matrix(c(v1,VV,VV,v2), 2,2)
+
     
 }
 
@@ -368,7 +390,7 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## cross trait vcov
     VV <- ( joint1$V %*% cv %*% joint2$V )
         
-    B <- c(joint1$coef,joint2$coef)
+    B <- c(joint1$coef,joint2$coef) # A1 B1 A2 B2
    ##  ## abf
    ##  ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
    ##  ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
@@ -380,8 +402,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
 
     WA <- 10 # prior variance on intercept - BIG because we want to approx a flat prior
         Wmat0 <- diag(c(WA,0,0,WA,0,0))
-        Wmat1 <- diag(c(WA,W,0,WA,0,W))
-        Wmat2 <- diag(c(WA,0,W,WA,W,0))
+        Wmat1 <- diag(c(WA,W,0,WA,0,W)) # A1 B2
+        Wmat2 <- diag(c(WA,0,W,WA,W,0)) # A2 B1
         V <- rbind(matrix(c(joint1$V,VV),3,6),matrix(c(VV,joint2$V),3,6))
         dalt <- dmvnorm(x=B[c(2:3,5:6)],mean=rep(0,4), sigma=(V + Wmat1)[c(2:3,5:6),c(2:3,5:6)], log=TRUE) 
         dalt2 <- dmvnorm(x=B[c(2:3,5:6)],mean=rep(0,4), sigma=(V + Wmat2)[c(2:3,5:6),c(2:3,5:6)], log=TRUE) 
@@ -389,7 +411,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
         ## dalt <- dmvnorm(x=B,mean=rep(0,6), sigma=V + Wmat1, log=TRUE) 
         ## dalt2 <- dmvnorm(x=B,mean=rep(0,6), sigma=V + Wmat2, log=TRUE) 
         ## dnull <- dmvnorm(x=B,mean=rep(0,6), sigma=V + Wmat0, log=TRUE)
-    list(logsum(c(dalt2-dnull, dalt-dnull)))
+    ## list(logsum(c(dalt2-dnull, dalt-dnull)))
+    list(dalt-dnull, dalt2-dnull) # A1-B2 , A2-B1
     
 }
 
@@ -480,6 +503,25 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## astar <- ans$par
     list(coef=c(astar,b),V=solve(.vmat1(astar,b,G)))
 }
+.alphav1 <- function(b,n0,n1,f0) {
+    G0 <- estgeno.1.ctl(f0)
+    G1 <- estgeno.1.cse(G0,b)
+    G <-  n0*G0 + n1*G1
+    bvec <- c(0,1,2)*b
+    fun <- function(a) {
+        num <- exp(a + bvec)
+        denom <- 1+exp(a + bvec)
+        ## 25/4/19 changed from
+        ## sum(G1*num/denom) - n1/(n0+n1)
+        ## ie eqn top of p8 in paper is wrong - need to sum over ctls and cases
+        sum(G*num/denom) - n1
+    }
+    ## microbenchmark(ans <- optimize(fun,c(-100,100)))
+    ## ans <- optimize(fun,c(-100,100))
+    ##uniroot(fun, c(-10,10))$root
+    uniroot(fun, c(-10, 10),extendInt="yes")$root
+}
+
 
 ##' Bayesian colocalisation analysis for case control studies with (partially) shared controls
 ##'
@@ -548,24 +590,27 @@ coloc.cc <- function(dataset1,dataset2,
         abf <- b1 <- b2 <- bA1 <- bA2 <- bB1 <- bB2 <- f0 <- fA <- fB <- h <- isnpA <- isnpB <- lbf3 <- 
   method <- pp <- r <- snp <- snpA <- snpB <- v1 <- v2 <- vA1 <- vA2 <- value <- variable <- vB1 <- vB2 <- NA
 
-    snps <- intersect(dataset1$snp,dataset2$snp)
-    df <- data.table(snp=c(snps))
-    df <- merge(df,as.data.table(as.data.frame(dataset1[c("snp","beta","varbeta")])),
+    if(is.null(names(MAF)) && length(MAF)==length(dataset1$snp) && identical(dataset1$snp,dataset2$snp)) {
+        warning("MAF unnamed, assuming has same order as SNPs in dataset1. To remove this warning, supply a named MAF vector")
+        df <- data.table(snp=dataset1$snp,f0=MAF)
+    } else{ 
+        snps <- intersect(dataset1$snp,dataset2$snp)
+        df <- data.table(snp=snps)
+        df[,f0:=MAF[snp]]
+    }
+    df <- merge(df,as.data.table(dataset1[c("snp","beta","varbeta")]),
                 by.x="snp",by.y="snp",all.x=TRUE)
     setnames(df,c("beta","varbeta"),c("b1","v1"))
-    df <- merge(df,as.data.table(as.data.frame(dataset2[c("beta","varbeta","snp")])),
+    df <- merge(df,as.data.table(dataset2[c("beta","varbeta","snp")]),
                 by.x="snp",by.y="snp",all.x=TRUE) 
     setnames(df,c("beta","varbeta"),c("b2","v2"))
-    fq <- data.table(snp=snps)
-    fq[,f0:=MAF[snp]]
-    df <- merge(df,fq[,.(snp,f0)],by.x="snp",by.y="snp",all.x=TRUE)
 
-## don't allow MAF == 0 or == 1
-badmafs=df$f0==0 | df$f0==1
-if(any(badmafs)) {
-warning("SNPs with MAF==0 or MAF==1, dropping: ",sum(badmafs))
-df = df[!badmafs,]
-}
+    ## don't allow MAF == 0 or == 1
+    badmafs=df$f0==0 | df$f0==1
+    if(any(badmafs)) {
+        warning("SNPs with MAF==0 or MAF==1, dropping: ",sum(badmafs)," / ",length(badmafs)," SNPs")
+        df = df[!badmafs,]
+    }
 
     ## get MAF in cases
     ## df[,f1:=get_maf1(f0, b1)]
@@ -573,69 +618,30 @@ df = df[!badmafs,]
     ## ## intercept
     ## uncommented from here
     for(i in 1:nrow(df)) {
-    ## commented from here
-        ## df[i, c("V11","V22"):=.V.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
-        ## tmp <- with(df[i, ], .lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0))
-        ## df[i, c("lbf1","lbf2","lbf4"):=tmp]
         df[i, c("lbf1","lbf2","lbf4"):=.lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
-    ## to here
-        ## df[i,a1:=univariate_a(b1,n00+n01,n1,f0,f1)]
-        ## df[i,a2:=univariate_a(b2,n00+n02,n2,f0,f2)]
-        ## df[i,d0:=dmvnorm(c(b1,b2),sigma=matrix(c(V11,V12,V12,V22),2,2),log=TRUE)]
-        ## df[i,lbf1:=dmvnorm(c(b1,b2),sigma=matrix(c(V11+w,V12,V12,V22),2,2),log=TRUE) - d0]
-        ## df[i,lbf2:=dmvnorm(c(b1,b2),sigma=matrix(c(V11,V12,V12,V22+w),2,2),log=TRUE) - d0]
-        ## df[i,lbf4:=dmvnorm(c(b1,b2),sigma=matrix(c(V11+w,V12,V12,V22+w),2,2),log=TRUE) - d0]
-        ## df[,lbf1:=lhood.norm2(b1,b2,V11+w,V22,V12) - d0]
-        ## df[,lbf2:=lhood.norm2(b1,b2,V11,V22+w,V12) - d0]
-        ## df[,lbf4:=lhood.norm2(b1,b2,V11+w,V22+w,V12) - d0]
     }
-    ## df[,d0:=lhood.norm2(b1,b2,V11,V22,V12)]
-    ## df[,lbf1:=lhood.norm2(b1,b2,V11+w,V22,V12) - d0]
-    ## df[,lbf2:=lhood.norm2(b1,b2,V11,V22+w,V12) - d0]
-    ## df[,lbf4:=lhood.norm2(b1,b2,V11+w,V22+w,V12) - d0]
 
-    ## ## H1, H2, H4 all two beta models
-    ## ## more accurate
-    ## ## for(i in 1:nrow(df)) {
-    ##         df[i, c("v12"):=approx.h124(b1,b2,n00,n01,n02,n1,n2,f0,f1,f2)]
-    ## }
-    ## ## df[,v12:=(1+exp(a1)) * (1+exp(a2)) * n00 / ( 2 * f0 * (1-f0) * (n00+n01+n1) * (n00+n02+n2))]
-    ## df[, erho:=v12/sqrt(v1*v2)]
-    ## df[erho > 1, erho:=0.99]
-    ## df[erho < -1, erho:=-0.99]
-    ## ## faster
-    ## ## df[,erho:=n00*sqrt(n1*n2)/((n00+n01+n1)*(n00+n02+n2))]
-    
-    ## ## lbf for h1,h2,h4
-    ## df[, lbf1:=bf2(b1,b2,v1,v2,erho,w2=0)]
-    ## df[, lbf2:=bf2(b1,b2,v1,v2,erho,w1=0)]
-    ## df[, lbf4:=bf2(b1,b2,v1,v2,erho)]
-    ## to here
-    
     ## for h3, we need pairs of snps
-    ## df3 <- as.data.table(as.data.frame(expand_half_grid(snps)))
+    ## data frame listing unique ordered pairs of snps.
+    ## ie snp A always < snp B (according to some ordering function) and snp A != snp B
     df3 <- as.data.table(as.data.frame(coloc:::expand_r(LD)))
     setnames(df3,c("isnpA","isnpB","r"))
     df3[,snpA:=rownames(LD)[isnpA]]
     df3[,snpB:=rownames(LD)[isnpB]]
-    ## setnames(df3,c("snpA","snpB"))
-    ## df3[,isnpA:=match(as.character(snpA),rownames(LD))]
-    ## df3[,isnpB:=match(as.character(snpB),rownames(LD))]
-    ## ## df3 <- df3[isnpA<isnpB,]
-    ## df3[,r:=LD[cbind(isnpA,isnpB)]]
-    
+
     ## special case: r==1. This won't allow a model to be fitted at all.  Instead, add in the bf from h4 for one of the two SNPs
     df3.r1 <- df3[abs(r)>=rhigh,] # r=0.95 -> r2=0.9
     mA <- match(df3.r1$snpA, df$snp)
     mB <- match(df3.r1$snpB, df$snp)
-    df3.r1[, lbf3:=logsum2(df$lbf4[mA],df$lbf4[mB])]
+    df3.r1[, lbf3.AB:=df$lbf4[mA]] # 2 pairs
+    df3.r1[, lbf3.BA:=df$lbf4[mB]] # 2 pairs
     
     ## special case: r=0. Can partition as [ H1 for SNP A ] * [ H2 for SNP B ]
     df3.r0 <- df3[abs(r)<=rlow,] # r=0.1 -> r2=0.01
     mA <- match(df3.r0$snpA, df$snp)
     mB <- match(df3.r0$snpB, df$snp)
-    df3.r0[, lbf3:=logsum2(df$lbf1[mA]+df$lbf2[mB],
-                           df$lbf2[mA]+df$lbf1[mB])]
+    df3.r0[, lbf3.AB:=df$lbf1[mA]+df$lbf2[mB]]
+    df3.r0[,lbf3.BA:=df$lbf2[mA]+df$lbf1[mB]] # 2 pairs
     
     ## what's left requires 4 dim Gaussians
     df3 <- df3[abs(r)<rhigh & abs(r)>rlow,]
@@ -653,7 +659,7 @@ df = df[!badmafs,]
                  by.x="snpA",by.y="snp",all.x=TRUE) # trait 2, snp A
     setnames(df3,c("b2","v2"),c("bA2","vA2"))
     
-    ## set all fA, fB < 0.5 to avoid dividing by 0
+    ## set all fA, fB <= 0.5 to avoid dividing by 0
     asw <- df3$fA>0.5
     bsw <- df3$fB>0.5
     df3[asw, c("bA1","bA2","fA","r") := list(-bA1, -bA2, 1-fA, -r)]
@@ -661,7 +667,7 @@ df = df[!badmafs,]
     
     ## reconstruct coefficients from bivariate binomial logistics 
     for(i in 1:nrow(df3)) 
-      df3[i,c("lbf3"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
+      df3[i,c("lbf3.AB","lbf3.BA"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
                                vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
                                n00,n01,n02,n1,n2,
                                fA,fB,rho=r,W=0.04)]
@@ -673,6 +679,7 @@ df = df[!badmafs,]
     ## put it all together
     o<-intersect(names(df3),names(df3.r1))
     df3 <- rbind(df3.r1[,o,with=FALSE],df3.r0[,o,with=FALSE],df3[,o,with=FALSE])
+    df3[,lbf3:=coloc:::logsum2(lbf3.AB,lbf3.BA)]
     sdf <- df[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df),value=TRUE)]
     sdf3 <- df3[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df3),value=TRUE)]
     sdf <- rbind(melt(sdf,measure.vars=names(sdf)),
@@ -695,7 +702,7 @@ df = df[!badmafs,]
     ## while checking, return this
     ## return(sdf)
     
-    ret <- c(nsnps=length(snps), sdf[method=="lbf",]$pp)
+    ret <- c(nsnps=nrow(df), sdf[method=="lbf",]$pp)
     names(ret) <- c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", 
                     "PP.H4.abf")
     print(ret)

@@ -165,11 +165,12 @@ check.dataset <- function(d,suffix="") {
    if(!is.list(d) )
        stop("dataset ",suffix,": is not a list")
    nd <- names(d)
-   if (! 'type' %in% nd)
+
+   ## type of data
+   if (! ('type' %in% nd))
        stop("dataset ",suffix,": variable type not set")
-   
-  if(!(d$type %in% c("quant","cc")))
-      stop("dataset ",suffix,": ","type must be quant or cc")
+   if(!(d$type %in% c("quant","cc")))
+       stop("dataset ",suffix,": ","type must be quant or cc")
   
   if(d$type=="cc") {
       if(! "s" %in% nd)
