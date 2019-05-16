@@ -228,6 +228,16 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     matrix(c(sum(pred), sum(x1 * pred),
              sum(x1 * pred), sum(x1^2 * pred)), 2,2)
 }
+.makecovAB <- function(G, cf1, cf2) {
+    x1 <- 0:2
+    pred1 <- exp(cf1[1] + cf1[2]*x1)
+    pred2 <- exp(cf2[1] + cf2[2]*x1)
+    pred <- G * tcrossprod(pred1 /(1+pred1) , pred2/(1+pred2))
+    matrix(c(sum(pred),
+             sum(matrix(x1,3,3) * pred),
+             sum(matrix(x1,3,3,byrow=TRUE) * pred),
+             sum(tcrossprod(x1,x1) * pred)), 2,2)
+}
 .makecov2 <- function(G, cf1, cf2) {
     x1 <- c(0,1,2,0,1,2,0,1,2)
     x2 <- c(0,0,0,1,1,1,2,2,2)
@@ -362,6 +372,59 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
 }
 
 .lbf.h3 <- function(bA1,bB1,bA2,bB2,
+                   vA1,vB1,vA2,vB2,
+                   n00,n01,n02,n1,n2,
+                   fA,fB,rho,W=0.04) {
+
+    ## reconstruct joint models - list of coef(a1, b1) and V=vcov(coef)
+     ## a1 <- .alphav1(b1,n0=n00+n01,n1=n1,f0=f0)
+    ## a2 <- .alphav1(b2,n0=n00+n02,n1=n2,f0=f0)
+    ## ## cov(b1,b2)
+    ## v12 <- n00 * (1+exp(a1)) * (1+exp(a2)) / ((n00+n01+n1)*(n00+n02+n2)*2*f0*(1-f0))
+    ## V1 <- matrix(c(v1,v12,v12,v2),2,2)
+ 
+    ## V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    joint1 <- .cfv1(bA1,n0=n00+n01,n1=n1,f0=fA)
+    joint2 <- .cfv1(bB2,n0=n00+n02,n1=n2,f0=fB)
+    ## joint1 <- tryCatch(.cfv2(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho),
+    ##                    error=function(e) return(NULL))
+    ## joint2 <- tryCatch(.cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho),
+    ##                    error=function(e) return(NULL))
+    ## if(is.null(joint1) | is.null(joint2))
+    ##     return(NA)
+    
+## ## est genotype counts in controls
+    ## bvec <- 0:2
+    G0 <- estgeno.2.ctl(fA,fB,rho)
+
+    ## approximate - we don't use this, but could if we needed - if we didn't know propn of shared controls - better to est no. of shared controls
+    ## cr <- sqrt(exp(joint1$coef[1] + joint2$coef[2]))*n00/sqrt((n00+n01+n1)*(n00+n02+n2))
+    ## VV <- cr * sqrt(joint1$V * joint2$V)
+    
+    ## cov depends only on shared controls
+    cv <- .makecovAB(G0*n00,joint1$coef,joint2$coef)
+        
+    ## cross trait vcov
+    VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
+    V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    
+    B <- c(joint1$coef[2],joint2$coef[2]) # A1 B1 A2 B2
+   ##  ## abf
+   ##  ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
+   ##  ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
+
+    Wmat0 <- diag(c(0,0))
+    Wmat1 <- diag(c(W,0)) # A1 B2
+    Wmat2 <- diag(c(0,W)) # A2 B1
+    dalt <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat1), log=TRUE) 
+    dalt2 <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat2), log=TRUE) 
+    dnull <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat0), log=TRUE)
+    list(dalt-dnull, dalt2-dnull) # A1-B2 , A2-B1
+    
+}
+
+
+.lbf.h3.old <- function(bA1,bB1,bA2,bB2,
                    vA1,vB1,vA2,vB2,
                    n00,n01,n02,n1,n2,
                    fA,fB,rho,W=0.04) {
