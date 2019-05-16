@@ -282,7 +282,7 @@ finemap.abf <- function(dataset, p1=1e-4) {
     for(nm in colnames(df))
         dfnull[,nm] <- NA
     dfnull[,"snp"] <- "null"
-    dfnull[,"lABF."] <- 1
+    dfnull[,"lABF."] <- 0
     df <- rbind(df,dfnull)
                 ## data.frame("V."=NA,
                 ##            z.=NA,
@@ -292,8 +292,11 @@ finemap.abf <- function(dataset, p1=1e-4) {
     df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
 
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
-  my.denom.log.abf <- logsum(df$lABF + df$prior)
-  df$SNP.PP <- exp(df$lABF - my.denom.log.abf)
+    ## BUGFIX 16/5/19
+    ## my.denom.log.abf <- logsum(df$lABF + df$prior)
+    ## df$SNP.PP <- exp(df$lABF - my.denom.log.abf)
+  my.denom.log.abf <- logsum(df$lABF + log(df$prior))
+  df$SNP.PP <- exp(df$lABF + log(df$prior) - my.denom.log.abf)
  
   return(df)
 }
