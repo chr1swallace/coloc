@@ -1,3 +1,7 @@
+# coloc 3.2-1
+* BUGFIX: finemap.abf()
+- in low power situations, the posterior for H0 was previously too low.  This will only affect datasets where the minimum p value was > 1e-7 - ie where the posterior for H0 would be expected to be much above 0.
+
 # coloc 3.2 
 *new function: colocqq*
 - added colocqq for quantitative traits measured on the same individuals
