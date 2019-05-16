@@ -339,7 +339,9 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## ## ## cov depends only on shared controls
     cv <- .makecov1(G0*n00,joint1$coef,joint2$coef)
     VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
-    V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    rV <- VV * sqrt(v1 * v2) /sqrt(joint1$V[2,2] * joint2$V[2,2])
+    V <- matrix(c(v1,rV,rV,v2),2,2)
+    ## V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
     ## V <- matrix(c(v1,VV,VV,v2),2,2)
     ## V3 <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
     ## cr <- n00 * sqrt(n1*n2/((n00+n01)*(n00+n02)*(n00+n0+n1)*(n00+n02+n2)))
@@ -347,7 +349,8 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## V4 <- matrix(c(v1,cv,cv,v2),2,2)
     ## print(V)
     ## print(Wmat1)
-    B <- c(joint1$coef[-1],joint2$coef[-1])
+    ## B <- c(joint1$coef[-1],joint2$coef[-1])
+    B <- c(b1,b2)
     Wmat0 <- diag(c(0,0))
     Wmat1 <- diag(c(W,0))
     Wmat2 <- diag(c(0,W))
@@ -406,9 +409,11 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
         
     ## cross trait vcov
     VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
-    V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
+    rV <- VV * sqrt(vA1 * vB2) /sqrt(joint1$V[2,2] * joint2$V[2,2])
+    V <- matrix(c(vA1,rV,rV,vB2),2,2)
     
-    B <- c(joint1$coef[2],joint2$coef[2]) # A1 B1 A2 B2
+    ## B <- c(joint1$coef[2],joint2$coef[2]) # A1 B1 A2 B2
+    B <- c(bA1,bB2) # A1 B1 A2 B2
    ##  ## abf
    ##  ## dalt <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V + Wmat, log=TRUE) 
    ##  ## dnull <- dmvt(x=B,df=min(n00+n01,n00+n02)+min(n1,n2), sigma=V, log=TRUE)
