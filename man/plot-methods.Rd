@@ -5,9 +5,7 @@
 \alias{plot}
 \alias{plot,colocTWAS,missing-method}
 \alias{plot,coloc,missing-method}
-\alias{plot,coloc,missing-method}
 \alias{plot,colocABF,missing-method}
-\alias{plot,coloc,missing-method}
 \alias{plot,colocPCs,missing-method}
 \alias{abf.plot}
 \title{Plotting functions for the coloc package}

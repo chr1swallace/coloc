@@ -3,7 +3,6 @@
 \docType{class}
 \name{colocPCs-class}
 \alias{colocPCs-class}
-\alias{colocPCs-class}
 \title{Class \code{"colocPCs"}}
 \description{
 %% ~~ A concise (1-5 lines) description of what the class is. ~~ Class

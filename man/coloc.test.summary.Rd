@@ -5,8 +5,9 @@
 \title{Colocalisation testing using regression coefficients}
 \usage{
 coloc.test.summary(b1, b2, V1, V2, k = 1, plot.coeff = FALSE,
-  plots.extra = NULL, bayes = !is.null(bayes.factor), n.approx = 1001,
-  level.ci = 0.95, bayes.factor = NULL, bma = FALSE)
+  plots.extra = NULL, bayes = !is.null(bayes.factor),
+  n.approx = 1001, level.ci = 0.95, bayes.factor = NULL,
+  bma = FALSE)
 }
 \arguments{
 \item{b1}{regression coefficients for trait 1}

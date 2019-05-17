@@ -2,3 +2,5 @@ R/junkyard.R
 vignettes/.*.org
 errors
 ^\.travis\.yml$
+_pkgdown.yaml
+docs

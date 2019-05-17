@@ -7,8 +7,8 @@ structure.}
 \usage{
 coloc.bma(df1, df2, snps = intersect(setdiff(colnames(df1), c(response1,
   stratum1)), setdiff(colnames(df2), c(response2, stratum2))),
-  response1 = "Y", response2 = "Y", stratum1 = NULL, stratum2 = NULL,
-  family1 = "binomial", family2 = "binomial",
+  response1 = "Y", response2 = "Y", stratum1 = NULL,
+  stratum2 = NULL, family1 = "binomial", family2 = "binomial",
   bayes = !is.null(bayes.factor), thr = 0.01, nsnps = 2,
   n.approx = 1001, bayes.factor = NULL, plot.coeff = FALSE,
   r2.trim = 0.95, quiet = FALSE, bma = FALSE, ...)

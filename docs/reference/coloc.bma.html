@@ -66,7 +66,7 @@ Wallace et al (2012)." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2.1</span>
       </span>
     </div>
 
@@ -132,8 +132,8 @@ Wallace et al (2012).</p>
 
     <pre class="usage"><span class='fu'>coloc.bma</span>(<span class='no'>df1</span>, <span class='no'>df2</span>, <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sets'>intersect</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sets'>setdiff</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/colnames'>colnames</a></span>(<span class='no'>df1</span>), <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='no'>response1</span>,
   <span class='no'>stratum1</span>)), <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sets'>setdiff</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/colnames'>colnames</a></span>(<span class='no'>df2</span>), <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='no'>response2</span>, <span class='no'>stratum2</span>))),
-  <span class='kw'>response1</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='kw'>response2</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='kw'>stratum1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>stratum2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>family1</span> <span class='kw'>=</span> <span class='st'>"binomial"</span>, <span class='kw'>family2</span> <span class='kw'>=</span> <span class='st'>"binomial"</span>,
+  <span class='kw'>response1</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='kw'>response2</span> <span class='kw'>=</span> <span class='st'>"Y"</span>, <span class='kw'>stratum1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>stratum2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>family1</span> <span class='kw'>=</span> <span class='st'>"binomial"</span>, <span class='kw'>family2</span> <span class='kw'>=</span> <span class='st'>"binomial"</span>,
   <span class='kw'>bayes</span> <span class='kw'>=</span> !<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/NULL'>is.null</a></span>(<span class='no'>bayes.factor</span>), <span class='kw'>thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>, <span class='kw'>nsnps</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>n.approx</span> <span class='kw'>=</span> <span class='fl'>1001</span>, <span class='kw'>bayes.factor</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>plot.coeff</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>r2.trim</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>bma</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
