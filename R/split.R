@@ -477,7 +477,7 @@ finemap.indep.signals <- function(D,LD=D$LD,aligned=FALSE,
 ##' @param p12
 ##' @return 
 ##' @author Chris Wallace
-coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-5,LD1=LD,LD2=LD) {
+coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-6,LD1=LD,LD2=LD) {
     ## which format?
     ## if("results" %in% names(result)) { # for legacy objects
     ##     result$df <- result$results
@@ -500,7 +500,7 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-
         pp.abf <- c(as.list(exp(all.abf - my.denom.log.abf)),list(best1=best1,best2=best2,best4=best4))
         names(pp.abf) <- c(paste("PP.H", (1:(length(pp.abf)-3)) - 1, ".abf", sep = ""),
                            "best1","best2","best4")
-        cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE))
+        as.data.table(cbind(nsnps=nrow(df),as.data.frame(pp.abf,stringsAsFactors=FALSE)))
     }
 
     if(is.null(hits1))
@@ -533,23 +533,25 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-
         }
         if(length(hits2)>1) {
             ldout2 <- apply(ldfriends2[ setdiff(c(hits2[-j]),""), , drop=FALSE ],2,max)
-            drop1 <- colnames(ldfriends1)[ldout2 > r2thr]
+            drop2 <- colnames(ldfriends1)[ldout2 > r2thr]
         }
         ## ld1 <- apply(ldfriends[ setdiff(hits1[-i],""), , drop=FALSE ],2,max)
         ## ld2 <- apply(ldfriends[ setdiff(hits2[-i],""), , drop=FALSE ],2,max)
         ## drop1 <- colnames(ldfriends)[ld1 > r2thr]
         ## drop2 <- colnames(ldfriends)[ld2 > r2thr]
         dropsnps <- unique(c(drop1,drop2))
-        
+
+        message("dropping ",length(dropsnps),"/",nrow(result$df)," : ",length(drop1)," + ",length(drop2))
+        if(length(setdiff(result$df$snp, dropsnps)) <= 1)
+            return(NULL)
         df <- copy(result$df)
         df3 <- copy(result$df3)
-        df[snp %in% dropsnps, c("lbf1","lbf2","lbf4"):=list(log(1/1000),log(1/1000),log(1/1000))]
+        df[snp %in% drop1, c("lbf1","lbf4"):=list(0,0)]
+        df[snp %in% drop2, c("lbf2","lbf4"):=list(0,0)]
         ## df[snp %in% drop2, c("lbf2","lbf4"):=list(log(1/1000),log(1/1000))]
         ## df3[snp1 %in% drop1, lABF.df1:=0]
         ## df3[snp2 %in% drop2, lABF.df2:=0]
-        df3[snp1 %in% dropsnps | snp2 %in% dropsnps,lbf3:=log(1/1000)]
-        if(length(setdiff(result$df$snp, dropsnps)) <= 1)
-            return(NULL)
+        df3[snp1 %in% drop1 | snp2 %in% drop2,lbf3:=0]
         ## mask <- masks[[ todo[r,1] ]], mask2[[ todo[r,2] ]]),"")
         ## friends <-  apply(abs(LD[masks[,,drop=FALSE]) > sqrt(r2thr),2,any)
         ## dropsnps <- rownames(LD)[which(friends)]
@@ -602,8 +604,8 @@ bin2lin <- function(D) {
     vxy <- D$s*ex1 - ex * D$s
 
     D1 <- D
-    D1$beta.bin <- D1$beta
-    D1$varbeta.bin <- D1$varbeta
+    ## D1$beta.bin <- D1$beta
+    ## D1$varbeta.bin <- D1$varbeta
     D1$beta <- c(vxy/vx)
     D1$varbeta <- c(vy/vx - vxy^2/vx^2)/D$N
     D1
@@ -634,7 +636,7 @@ est_all_cond <- function(D,FM) {
 
 
 coloc.signals <- function(dataset1, dataset2,
-                          MAF=NULL, LD=NULL, method="mask",
+                          MAF=NULL, LD=NULL, method="",
                           p1=1e-4, p2=1e-4, p12=NULL, maxhits=10, r2thr=0.01,
                           pthr = 1e-06, zthr = qnorm(pthr/2,lower.tail=FALSE),
                           ...) {
@@ -659,15 +661,21 @@ coloc.signals <- function(dataset1, dataset2,
     
     ## fine map
     fm1 <- finemap.indep.signals(dataset1,
-                                 aligned=dataset1$method!="mask",pthr=1e-4,
+                                 method=dataset1$method,
                                  maxhits=maxhits,r2thr=r2thr,zthr=zthr,...)
     fm2 <- finemap.indep.signals(dataset2,
-                                 aligned=dataset2$method!="mask",pthr=1e-4,
+                                 method=dataset2$method,
                                  maxhits=maxhits,r2thr=r2thr,zthr=zthr,...)
+    print(fm1)
+    print(fm2)
     if(is.null(fm1) || is.null(fm2)) {
-        warning("no sufficient signals p<1e-4 in both datasets")
+        warning("not sufficient signals p <",pthr,"in both datasets")
         return(NULL)
     }
+    if(dataset1$method=="")
+        fm1 <- fm1[1]
+    if(dataset2$method=="")
+        fm2 <- fm2[1]
 
     ## conditionals if needed
     if(dataset1$method=="cond") {
@@ -703,6 +711,21 @@ coloc.signals <- function(dataset1, dataset2,
         res <- rbindlist(res)
     }
 
+    ## cond-
+    if(dataset1$method=="cond" & dataset2$method=="") {
+        res <- vector("list",length(cond1))
+        for(k in 1:length(res)) {
+            col <- coloc.detail(c(cond1[[ k ]],X1),
+                                dataset2,
+                                p1=p1,p2=p2,p12=p12)
+            res[[k]] <- coloc.process(col,
+                                 hits1=names(fm1)[ k ],
+                                 hits2=names(fm2)[1],
+                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+        }
+        res <- rbindlist(res)
+    }
+
     ## cond-mask
     if(dataset1$method=="cond" & dataset2$method=="mask") {
         res <- vector("list",length(cond1))
@@ -718,11 +741,26 @@ coloc.signals <- function(dataset1, dataset2,
         res <- rbindlist(res)
     }
 
+    ## -cond
+    if(dataset1$method=="" & dataset2$method=="cond") {
+        res <- vector("list",length(cond2))
+        for(k in 1:length(res)) {
+            col <- coloc.detail(dataset1,
+                                c(cond2[[ k ]],X2),
+                                p1=p1,p2=p2,p12=p12)
+            res[[k]] <- coloc.process(col,
+                                 hits1=names(fm1)[1],
+                                 hits2=names(fm2)[ k ],
+                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+        }
+        res <- rbindlist(res)
+    }
+
     ## mask-cond
     if(dataset1$method=="mask" & dataset2$method=="cond") {
         res <- vector("list",length(cond2))
         for(k in 1:length(res)) {
-            col <- coloc.detail(dataset1[-w1],
+            col <- coloc.detail(dataset1,
                                 c(cond2[[ k ]],X2),
                                 p1=p1,p2=p2,p12=p12)
             res[[k]] <- coloc.process(col,
@@ -733,7 +771,7 @@ coloc.signals <- function(dataset1, dataset2,
         res <- rbindlist(res)
     }
 
-    p1 <- data.table(hit1=names(fm1),hit1.margz=c(fm1))
+     p1 <- data.table(hit1=names(fm1),hit1.margz=c(fm1))
     res <- merge(res,p1,by="hit1")
     p2 <- data.table(hit2=names(fm2),hit2.margz=c(fm2))
     res <- merge(res,p2,by="hit2")

@@ -1,22 +1,17 @@
 prior.adjust <- function(summ,newp12,p1=1e-4,p2=1e-4,p12=1e-6) {
     if(is.list(summ) && "summary" %in% names(summ))
         summ <- summ$summary
-    if(!identical(names(summ), c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", "PP.H4.abf")))
+    if(is.vector(summ))
+        summ <- t(as(summ,"matrix"))
+    if(!identical(colnames(summ), c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", "PP.H4.abf")))
         stop("not a coloc summary vector")
     ## back calculate likelihoods
     f <- function(p12)
-        prior.snp2hyp(summ["nsnps"],p12=p12,p1=p1,p2=p2)
-    pr0 <- c(f(p12))
-    PP <- summ[-1]
-    ## g <- function(newp12) {
-    adj <- f(newp12) 
-    ## if(is.null(nrow(adj))) {
-    ##     newpp <- adj * PP / pr0
-    ##     newpp/sum(newpp)
-    ## } else {
-    newpp <- t(t(adj) * PP/pr0) # prop to, not equal to
+        prior.snp2hyp(summ[,"nsnps"],p12=p12,p1=p1,p2=p2)
+    pr0 <- f(p12)
+    pr1 <- f(newp12) 
+    newpp <- summ[,-1] * pr1/pr0 # prop to, not equal to
     newpp/rowSums(newpp)
-    ## }
 }
 
 

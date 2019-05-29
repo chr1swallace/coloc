@@ -339,7 +339,7 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     ## ## ## cov depends only on shared controls
     cv <- .makecov1(G0*n00,joint1$coef,joint2$coef)
     VV <- ( joint1$V[,2] %*% cv %*% joint2$V[2,] )
-    rV <- VV * sqrt(v1 * v2) /sqrt(joint1$V[2,2] * joint2$V[2,2])
+    rV <- VV * sqrt(v1 * v2) / sqrt(joint1$V[2,2] * joint2$V[2,2])
     V <- matrix(c(v1,rV,rV,v2),2,2)
     ## V <- matrix(c(joint1$V[2,2],VV,VV,joint2$V[2,2]),2,2)
     ## V <- matrix(c(v1,VV,VV,v2),2,2)
@@ -368,13 +368,13 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
         ## dalt2 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat2, log=TRUE) 
         ## dalt4 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat4, log=TRUE) 
         ## dnull <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat0, log=TRUE)
-    list(dalt1-dnull, dalt2-dnull, dalt4-dnull)
+    list(dalt1-dnull, dalt2-dnull, dalt4-dnull, rV/sqrt(v1*v2))
     ## V <- matrix(c(v1,VV,VV,v2), 2,2)
 
     
 }
 
-.lbf.h3 <- function(bA1,bB1,bA2,bB2,
+.lbf.h3.try2 <- function(bA1,bB1,bA2,bB2,
                    vA1,vB1,vA2,vB2,
                    n00,n01,n02,n1,n2,
                    fA,fB,rho,W=0.04) {
@@ -424,7 +424,56 @@ bstar_from_bhat <- function(bA,bB,fA,fB,rho) {
     dalt <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat1), log=TRUE) 
     dalt2 <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat2), log=TRUE) 
     dnull <- dmvnorm(x=B,mean=rep(0,2), sigma=(V + Wmat0), log=TRUE)
-    list(dalt-dnull, dalt2-dnull) # A1-B2 , A2-B1
+    list(dalt-dnull, dalt2-dnull, rV/sqrt(vA1*vB2)) # A1-B2 , A2-B1
+    
+}
+
+
+.lbf.h3.old <- function(bA1,bB1,bA2,bB2,
+                   vA1,vB1,vA2,vB2,
+                   n00,n01,n02,n1,n2,
+                   fA,fB,rho,W=0.04) {
+
+    ## reconstruct joint models - list of coef(a, b1, b2) and V=vcov(coef)
+    joint1 <- tryCatch(.cfv2(bA1,bB1,vA1,vB1,n0=n00+n01,n1=n1,fA,fB,rho),
+                       error=function(e) return(NULL))
+    joint2 <- tryCatch(.cfv2(bA2,bB2,vA2,vB2,n0=n00+n02,n1=n2,fA,fB,rho),
+                       error=function(e) return(NULL))
+    if(is.null(joint1) | is.null(joint2))
+        return(NA)
+    
+## ## est genotype counts in controls
+    G0 <- estgeno.2.ctl(fA,fB,rho)
+    
+    ## cov depends only on shared controls
+    cv <- .makecov2(G0*n00,joint1$coef,joint2$coef)
+        
+    ## cross trait vcov
+    VV <- ( joint1$V %*% cv %*% joint2$V )
+        
+    B <- c(joint1$coef,joint2$coef) # A1 B1 A2 B2
+
+    ## ensure VV is symmetric
+    VV[1,2] <- VV[2,1]  <- mean(VV[1,2],VV[2,1])
+    VV[3,2] <- VV[2,3]  <- mean(VV[3,2],VV[2,3])
+    VV[1,3] <- VV[3,1]  <- mean(VV[1,3],VV[3,1])
+    Vtmp <- rbind(matrix(c(joint1$V,VV),3,6),matrix(c(VV,joint2$V),3,6))
+
+    ## WA <- 10 # prior variance on intercept - BIG because we want to approx a flat prior
+    ## Wmat0 <- diag(c(WA,0,0,WA,0,0))
+    ## Wmat1 <- diag(c(WA,W,0,WA,0,W)) # A1 B2
+    ## Wmat2 <- diag(c(WA,0,W,WA,W,0)) # A2 B1
+    ## dalt <- dmvnorm(x=B[c(2:3,5:6)],mean=rep(0,4), sigma=(V + Wmat1)[c(2:3,5:6),c(2:3,5:6)], log=TRUE) 
+    ## dalt2 <- dmvnorm(x=B[c(2:3,5:6)],mean=rep(0,4), sigma=(V + Wmat2)[c(2:3,5:6),c(2:3,5:6)], log=TRUE) 
+    ## dnull <- dmvnorm(x=B[c(2:3,5:6)],mean=rep(0,4), sigma=(V + Wmat0)[c(2:3,5:6),c(2:3,5:6)], log=TRUE)
+    Wmat0 <- diag(c(0,0,0,0))
+    Wmat1 <- diag(c(W,0,0,W)) # A1 B2
+    Wmat2 <- diag(c(0,W,W,0)) # A2 B1
+    dalt1 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat1, log=TRUE) 
+    dalt2 <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat2, log=TRUE) 
+    dnull <- dmvnorm(x=B,mean=rep(0,4), sigma=V + Wmat0, log=TRUE)
+    ## list(logsum(c(dalt2-dnull, dalt-dnull)))
+    list(dalt1-dnull, dalt2-dnull) # A1-B2 , A2-B1
     
 }
 
@@ -686,7 +735,7 @@ coloc.cc <- function(dataset1,dataset2,
     ## ## intercept
     ## uncommented from here
     for(i in 1:nrow(df)) {
-        df[i, c("lbf1","lbf2","lbf4"):=.lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
+        df[i, c("lbf1","lbf2","lbf4","rV"):=.lbf.h124(b1,b2,v1,v2,n00,n01,n02,n1,n2,f0)]
     }
 
     ## for h3, we need pairs of snps
@@ -712,7 +761,8 @@ coloc.cc <- function(dataset1,dataset2,
     df3.r0[,lbf3.BA:=df$lbf2[mA]+df$lbf1[mB]] # 2 pairs
     
     ## what's left requires 4 dim Gaussians
-    df3 <- df3[abs(r)<rhigh & abs(r)>rlow,]
+    ## df3 <- df3[abs(r)<rhigh & abs(r)>rlow,]
+    df3 <- df3[abs(r)>rlow,]
     ## df3 <- df3[abs(r)<rhigh,]
     df3 <- merge(df3,df[,.(snp,f0,b1,v1)],
                  by.x="snpA",by.y="snp",all.x=TRUE) # trait 1, snp A
@@ -735,7 +785,7 @@ coloc.cc <- function(dataset1,dataset2,
     
     ## reconstruct coefficients from bivariate binomial logistics 
     for(i in 1:nrow(df3)) 
-      df3[i,c("lbf3.AB","lbf3.BA"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
+      df3[i,c("lbf3.AB","lbf3.BA","rV"):=.lbf.h3(bA1=bA1,bB1=bB1,bA2=bA2,bB2=bB2,
                                vA1=vA1,vB1=vB1,vA2=vA2,vB2=vB2,
                                n00,n01,n02,n1,n2,
                                fA,fB,rho=r,W=0.04)]
@@ -746,7 +796,8 @@ coloc.cc <- function(dataset1,dataset2,
     
     ## put it all together
     o<-intersect(names(df3),names(df3.r1))
-    df3 <- rbind(df3.r1[,o,with=FALSE],df3.r0[,o,with=FALSE],df3[,o,with=FALSE])
+    df3 <- rbind(#df3.r1[,o,with=FALSE],
+df3.r0[,o,with=FALSE],df3[,c(o,"rV"),with=FALSE],fill=TRUE)
     df3[,lbf3:=coloc:::logsum2(lbf3.AB,lbf3.BA)]
     sdf <- df[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df),value=TRUE)]
     sdf3 <- df3[, lapply(.SD, logsum), .SDcols=grep("lbf",names(df3),value=TRUE)]
