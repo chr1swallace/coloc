@@ -669,8 +669,7 @@ coloc.signals <- function(dataset1, dataset2,
     print(fm1)
     print(fm2)
     if(is.null(fm1) || is.null(fm2)) {
-        warning("not sufficient signals p <",pthr,"in both datasets")
-        return(NULL)
+        warning("signals with p <",pthr,"not present in both datasets")
     }
     if(dataset1$method=="")
         fm1 <- fm1[1]
