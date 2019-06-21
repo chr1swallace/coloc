@@ -305,6 +305,34 @@ map_cond <- function(D,LD,N,YY,sigsnps=NULL) {
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
+##' @title find.best.signal
+##' @param D list of summary stats for a single disease, as defined
+##'     for coloc.abf
+##' @return z at most significant snp, named by that snp id
+##' @author Chris Wallace
+find.best.signal<- function(D) {
+    ## make nicer data table
+    ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
+    ## x[,z:=beta/sqrt(varbeta)]
+    if(D$type=="cc" & method=="cond") {
+        message("approximating linear analysis of binary trait")
+        D <- bin2lin(D)
+    }
+    YY=if(D$type=="quant") {
+           D$N * D$sdY^2
+       } else {
+           D$N * D$s * (1 - D$s)
+       }
+    z <- D$beta/sqrt(D$varbeta)
+    zdiff <- abs(z)
+    wh <- which.max(zdiff)
+    structure(z[wh],names=D$snp[wh])
+}
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
 ##' @title
 ##' @param D list of summary stats for a single disease, as defined
 ##'     for coloc.abf
@@ -319,8 +347,6 @@ map_cond <- function(D,LD,N,YY,sigsnps=NULL) {
 ##'     r2thr with any sigsnps. Otherwise ignored
 ##' @param sigsnps SNPs already deemed significant, to condition on
 ##' @param pthr when p > pthr, stop successive conditioning
-##' @param zthr alternative to specifying pthr, stop when abs(z) <
-##'     zthr
 ##' @param maxhits maximum depth of conditioning. procedure will stop
 ##'     if p > pthr OR abs(z)<zthr OR maxhits hits have been found.
 ##' @return list of successive significance fine mapped SNPs, named by
@@ -331,8 +357,8 @@ finemap.indep.signals <- function(D,LD=D$LD,aligned=FALSE,
                                   r2thr=0.01,
                                   sigsnps=NULL,
                                   pthr=1e-6,
-                                  zthr=qnorm(pthr/2,lower.tail = FALSE),
-                                  maxhits=10) {
+                                  maxhits=3) {
+    zthr=qnorm(pthr/2,lower.tail = FALSE)
     ## make nicer data table
     ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     ## x[,z:=beta/sqrt(varbeta)]
@@ -634,12 +660,32 @@ est_all_cond <- function(D,FM) {
     cond
 }
 
-
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title
+##' @inheritParams coloc.abf
+##' @param LD required if method="cond". matrix of genotype
+##'     *correlation* (ie r, not r^2) between SNPs. If dataset1 and
+##'     dataset2 may have different LD, you can instead add LD=LD1 to
+##'     the list of dataset1 and similar for dataset2
+##' @param method default "" means do no conditioning, should return
+##'     similar to coloc.abf.  if method="cond", then use conditioning
+##'     to coloc multiple signals.  if method="mask", use masking to
+##'     coloc multiple signals. if different datasets need different
+##'     methods (eg LD is only available for one of them) you can set
+##'     method on a per-dataset basis by adding method="..." to the
+##'     list for that dataset.
+##' @param maxhits maximum number of levels to condition/mask
+##' @param r2thr if masking, the threshold on r2 should be used to call two signals independent.  our experience is that this needs to be set low to avoid double calling the same strong signal.
+##' @param pthr if masking or conditioning, what p value threshold to call a secondary hit "significant"
+##' @export
+##' @return data.table of coloc results
+##' @author Chris Wallace
 coloc.signals <- function(dataset1, dataset2,
                           MAF=NULL, LD=NULL, method="",
-                          p1=1e-4, p2=1e-4, p12=NULL, maxhits=10, r2thr=0.01,
-                          pthr = 1e-06, zthr = qnorm(pthr/2,lower.tail=FALSE),
-                          ...) {
+                          p1=1e-4, p2=1e-4, p12=NULL, maxhits=3, r2thr=0.01,
+                          pthr = 1e-06) {
     if(is.null(p12))
         stop("default value for p12 has been removed. please read ... and choose a value appropriate for your study")
     ## error checking
@@ -658,18 +704,24 @@ coloc.signals <- function(dataset1, dataset2,
         dataset2$method <- method
     check.dataset(dataset1,1)
     check.dataset(dataset2,2)
-    
+    zthr = qnorm(pthr/2,lower.tail=FALSE)    
+
     ## fine map
     fm1 <- finemap.indep.signals(dataset1,
                                  method=dataset1$method,
-                                 maxhits=maxhits,r2thr=r2thr,zthr=zthr,...)
+                                 maxhits=maxhits,r2thr=r2thr,pthr=pthr)
     fm2 <- finemap.indep.signals(dataset2,
                                  method=dataset2$method,
-                                 maxhits=maxhits,r2thr=r2thr,zthr=zthr,...)
-    print(fm1)
-    print(fm2)
-    if(is.null(fm1) || is.null(fm2)) {
-        warning("signals with p <",pthr,"not present in both datasets")
+                                 maxhits=maxhits,r2thr=r2thr,pthr=pthr)
+    ## print(fm1)
+    ## print(fm2)
+    if(is.null(fm1)){
+        ## warning("no signal with p <",pthr," in dataset1")
+        fm1 <- find.best.signal(dataset1)
+    }
+    if(is.null(fm2)){
+        ## warning("no signal with p <",pthr," in dataset1")
+        fm2 <- find.best.signal(dataset2)
     }
     if(dataset1$method=="")
         fm1 <- fm1[1]
@@ -677,21 +729,20 @@ coloc.signals <- function(dataset1, dataset2,
         fm2 <- fm2[1]
 
     ## conditionals if needed
-    if(dataset1$method=="cond") {
+    if(!is.null(fm1) && dataset1$method=="cond") {
         cond1 <- est_all_cond(dataset1,fm1)
         X1 <- dataset1[ setdiff(names(dataset1),names(cond1[[1]])) ]
     }
-    if(dataset2$method=="cond")  {
+    if(!is.null(fm2) && dataset2$method=="cond")  {
         cond2 <- est_all_cond(dataset2,fm2)
         X2 <- dataset2[ setdiff(names(dataset2),names(cond2[[1]])) ]
     }
 
-    
     ## double mask
     if(dataset1$method=="mask" & dataset2$method=="mask") {
         col <- coloc.detail(dataset1,dataset2, p1=p1,p2=p2,p12=p12)
         res <- coloc.process(col, hits1=names(fm1), hits2=names(fm2),
-                             LD1=dataset1$LD, LD2=dataset2$LD, r2thr=r2thr, ...)
+                             LD1=dataset1$LD, LD2=dataset2$LD, r2thr=r2thr)
     } 
 
     ## double cond
@@ -705,13 +756,24 @@ coloc.signals <- function(dataset1, dataset2,
             res[[k]] <- coloc.process(col,
                                  hits1=names(fm1)[ todo[k,"i"] ],
                                  hits2=names(fm2)[ todo[k,"j"] ],
-                                 LD1=dataset1$LD, LD2=dataset2$LD) #, ...)
+                                 LD1=dataset1$LD, LD2=dataset2$LD) 
         }
         res <- rbindlist(res)
     }
 
+    ## double -
+    if(dataset1$method=="" && dataset2$method=="") {
+        col <- coloc.detail(dataset1,
+                            dataset2,
+                            p1=p1,p2=p2,p12=p12)
+        res <- coloc.process(col,
+                             hits1=names(fm1)[ 1 ],
+                             hits2=names(fm2)[1],
+                             LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr)
+    }
+        
     ## cond-
-    if(dataset1$method=="cond" & dataset2$method=="") {
+    if(dataset1$method=="cond" && dataset2$method=="") {
         res <- vector("list",length(cond1))
         for(k in 1:length(res)) {
             col <- coloc.detail(c(cond1[[ k ]],X1),
@@ -726,7 +788,7 @@ coloc.signals <- function(dataset1, dataset2,
     }
 
     ## cond-mask
-    if(dataset1$method=="cond" & dataset2$method=="mask") {
+    if(dataset1$method=="cond" && dataset2$method=="mask") {
         res <- vector("list",length(cond1))
         for(k in 1:length(res)) {
             col <- coloc.detail(c(cond1[[ k ]],X1),
@@ -741,7 +803,7 @@ coloc.signals <- function(dataset1, dataset2,
     }
 
     ## -cond
-    if(dataset1$method=="" & dataset2$method=="cond") {
+    if(dataset1$method=="" && dataset2$method=="cond") {
         res <- vector("list",length(cond2))
         for(k in 1:length(res)) {
             col <- coloc.detail(dataset1,
@@ -756,7 +818,7 @@ coloc.signals <- function(dataset1, dataset2,
     }
 
     ## mask-cond
-    if(dataset1$method=="mask" & dataset2$method=="cond") {
+    if(dataset1$method=="mask" && dataset2$method=="cond") {
         res <- vector("list",length(cond2))
         for(k in 1:length(res)) {
             col <- coloc.detail(dataset1,
