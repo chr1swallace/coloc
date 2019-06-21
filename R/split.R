@@ -314,7 +314,7 @@ find.best.signal<- function(D) {
     ## make nicer data table
     ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     ## x[,z:=beta/sqrt(varbeta)]
-    if(D$type=="cc" & method=="cond") {
+    if(D$type=="cc" & D$method=="cond") {
         message("approximating linear analysis of binary trait")
         D <- bin2lin(D)
     }
