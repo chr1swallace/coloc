@@ -6,6 +6,8 @@
 ##' This function replicates coloc.abf, but outputs more detail for
 ##' further processing using coloc.process
 ##'
+##' Intended to be called internally by coloc.signals
+##'
 ##' @title Bayesian colocalisation analysis with detailed output
 ##' @inheritParams coloc.abf
 ##' @return a list of three \code{data.tables}s:
@@ -16,7 +18,6 @@
 ##' }
 ##' @author Chris Wallace
 ##' @seealso \code{\link{coloc.process}}, \code{\link{coloc.abf}} 
-##' @export
 coloc.detail <- function(dataset1, dataset2, MAF=NULL, 
                       p1=1e-4, p2=1e-4, p12=1e-5) {
 
@@ -56,7 +57,15 @@ coloc.detail <- function(dataset1, dataset2, MAF=NULL,
          priors=c(p1=p1,p2=p2,p12=p12)
          )
 }
-
+##' Internal helper function for finemap.signals
+##'
+##' @title find the next most significant SNP, masking a list of sigsnps
+##' @param D dataset in standard coloc format
+##' @param LD named matrix of r
+##' @param r2thr mask all snps with r2 > r2thr with any in sigsnps
+##' @param sigsnps names of snps to mask
+##' @return named numeric - Z score named by snp
+##' @author Chris Wallace
 map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
     ## make nicer data table
     x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
@@ -81,6 +90,14 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
      ##     NULL
 }
 
+##' Internal helper function for map_cond
+##' 
+##' @title generate conditional summary stats
+##' @param x data.table created from standard coloc dataset
+##' @inheritParams map_cond
+##' @param cc TRUE if case control
+##' @return data.table giving snp, beta and varbeta on remaining snps after conditioning
+##' @author Chris Wallace
 est_cond <- function(x,LD,N,YY,sigsnps,cc=FALSE) {
     LD <- LD[x$snp,x$snp]
     use <- !(rownames(LD) %in% sigsnps) #setdiff(rownames(LD),sigsnps)
@@ -133,6 +150,17 @@ est_cond <- function(x,LD,N,YY,sigsnps,cc=FALSE) {
     ##     ret[na,c("beta","varbeta"):=list(NA,NA)]
 }
 
+##' Internal helper function for finemap.signals
+##'
+##' @title find the next most significant SNP, conditioning on a list
+##'     of sigsnps
+##' @param D dataset in standard coloc format
+##' @param LD named matrix of r
+##' @param N sample size
+##' @param YY sum(y^2)
+##' @param sigsnps names of snps to mask
+##' @return named numeric - Z score named by snp
+##' @author Chris Wallace
 map_cond <- function(D,LD,N,YY,sigsnps=NULL) {
     ## make nicer data table
     x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
@@ -163,15 +191,13 @@ map_cond <- function(D,LD,N,YY,sigsnps=NULL) {
 }
 
 
-##' .. content for \description{} (no empty lines) ..
+##' Internal helper function
 ##'
-##' .. content for \details{} ..
-##' @title find.best.signal
-##' @param D list of summary stats for a single disease, as defined
-##'     for coloc.abf
+##' @title Pick out snp with most extreme Z score
+##' @param D standard format coloc dataset
 ##' @return z at most significant snp, named by that snp id
 ##' @author Chris Wallace
-find.best.signal<- function(D) {
+find.best.signal <- function(D) {
     ## make nicer data table
     ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     ## x[,z:=beta/sqrt(varbeta)]
@@ -191,29 +217,29 @@ find.best.signal<- function(D) {
 }
 
 
-##' .. content for \description{} (no empty lines) ..
+##' This is an analogue to finemap.abf, adapted to find multiple
+##' signals where they exist, via conditioning or masking - ie a
+##' stepwise procedure
 ##'
-##' .. content for \details{} ..
-##' @title
+##' @title Finemap multiple signals in a single dataset
 ##' @param D list of summary stats for a single disease, as defined
 ##'     for coloc.abf
 ##' @param LD matrix of signed r values (not rsq!) giving correlation
 ##'     between SNPs
-##' @param aligned if TRUE, the LD matrix is considered aligned to the
-##'     effect estimates in D, so that conditional analysis can be
-##'     used
 ##' @param mask use masking if TRUE, otherwise conditioning. defaults
-##'     to !aligned
+##'     to TRUE
 ##' @param r2thr if mask==TRUE, all snps will be masked with r2 >
 ##'     r2thr with any sigsnps. Otherwise ignored
-##' @param sigsnps SNPs already deemed significant, to condition on
-##' @param pthr when p > pthr, stop successive conditioning
+##' @param sigsnps SNPs already deemed significant, to condition on or
+##'     mask
+##' @param pthr when p > pthr, stop successive searching
 ##' @param maxhits maximum depth of conditioning. procedure will stop
 ##'     if p > pthr OR abs(z)<zthr OR maxhits hits have been found.
-##' @return list of successive significance fine mapped SNPs, named by
+##' @export
+##' @return list of successively significant fine mapped SNPs, named by
 ##'     the SNPs
 ##' @author Chris Wallace
-finemap.indep.signals <- function(D,LD=D$LD,aligned=FALSE,
+finemap.signals <- function(D,LD=D$LD,aligned=FALSE,
                                   method=if(aligned) { "cond" } else { "mask" },
                                   r2thr=0.01,
                                   sigsnps=NULL,
@@ -251,19 +277,16 @@ finemap.indep.signals <- function(D,LD=D$LD,aligned=FALSE,
 }
 
 
-##' Post process a coloc.details result using masking
+##'  Internal helper function
 ##'
-##' .. content for \details{} ..
-##' @title
-##' @param result
-##' @param hits1
-##' @param hits2
-##' @param LD
-##' @param r2thr
-##' @param p1
-##' @param p2
-##' @param p12
-##' @return 
+##' @title Post process a coloc.details result using masking
+##' @param result object returned by coloc.detail()
+##' @param hits1 lead snps for trait 1. If length > 1, will use masking
+##' @param hits2 lead snps for trait 2. If length > 1, will use masking
+##' @param LD named LD matrix (for masking)
+##' @param r2thr r2 threshold at which to mask
+##' @inheritParams coloc.abf
+##' @return data.table of coloc results
 ##' @author Chris Wallace
 coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-6,LD1=LD,LD2=LD) {
     ## which format?
@@ -373,7 +396,7 @@ coloc.process <- function(result,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-
 ##' sets beta = cov(x,y)/var(x)
 ##' varbeta = (var(y)/var(x) - cov(x,y)^2/var(x)^2)/N
 ##' @title binomial to linear regression conversion
-##' @param D
+##' @param D standard format coloc dataset
 ##' @return D, with original beta and varbeta in beta.bin, varbeta.bin, and beta and varbeta updated to linear estimates
 ##' @author Chris Wallace
 bin2lin <- function(D) {
@@ -422,15 +445,16 @@ est_all_cond <- function(D,FM) {
     cond
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' New coloc function, builds on coloc.abf() by allowing for multiple
+##' independent causal variants per trait through conditioning or
+##' masking.
 ##'
-##' .. content for \details{} ..
-##' @title
+##' @title Coloc with multiple signals per trait
 ##' @inheritParams coloc.abf
 ##' @param LD required if method="cond". matrix of genotype
 ##'     *correlation* (ie r, not r^2) between SNPs. If dataset1 and
 ##'     dataset2 may have different LD, you can instead add LD=LD1 to
-##'     the list of dataset1 and similar for dataset2
+##'     the list of dataset1 and a different LD matrix for dataset2
 ##' @param method default "" means do no conditioning, should return
 ##'     similar to coloc.abf.  if method="cond", then use conditioning
 ##'     to coloc multiple signals.  if method="mask", use masking to
@@ -439,10 +463,15 @@ est_all_cond <- function(D,FM) {
 ##'     method on a per-dataset basis by adding method="..." to the
 ##'     list for that dataset.
 ##' @param maxhits maximum number of levels to condition/mask
-##' @param r2thr if masking, the threshold on r2 should be used to call two signals independent.  our experience is that this needs to be set low to avoid double calling the same strong signal.
-##' @param pthr if masking or conditioning, what p value threshold to call a secondary hit "significant"
+##' @param r2thr if masking, the threshold on r2 should be used to
+##'     call two signals independent.  our experience is that this
+##'     needs to be set low to avoid double calling the same strong
+##'     signal.
+##' @param pthr if masking or conditioning, what p value threshold to
+##'     call a secondary hit "significant"
 ##' @export
-##' @return data.table of coloc results
+##' @return data.table of coloc results, one row per pair of lead snps
+##'     detected in each dataset
 ##' @author Chris Wallace
 coloc.signals <- function(dataset1, dataset2,
                           MAF=NULL, LD=NULL, method="",
@@ -469,10 +498,10 @@ coloc.signals <- function(dataset1, dataset2,
     zthr = qnorm(pthr/2,lower.tail=FALSE)    
 
     ## fine map
-    fm1 <- finemap.indep.signals(dataset1,
+    fm1 <- finemap.signals(dataset1,
                                  method=dataset1$method,
                                  maxhits=maxhits,r2thr=r2thr,pthr=pthr)
-    fm2 <- finemap.indep.signals(dataset2,
+    fm2 <- finemap.signals(dataset2,
                                  method=dataset2$method,
                                  maxhits=maxhits,r2thr=r2thr,pthr=pthr)
     ## print(fm1)
@@ -594,12 +623,12 @@ coloc.signals <- function(dataset1, dataset2,
         res <- rbindlist(res)
     }
 
-     p1 <- data.table(hit1=names(fm1),hit1.margz=c(fm1))
+    p1 <- data.table(hit1=names(fm1),hit1.margz=c(fm1))
     res <- merge(res,p1,by="hit1")
     p2 <- data.table(hit2=names(fm2),hit2.margz=c(fm2))
     res <- merge(res,p2,by="hit2")
     
-   res 
+    res 
 }
 
 

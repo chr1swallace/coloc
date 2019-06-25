@@ -6,6 +6,9 @@
 \usage{
 bin2lin(D)
 }
+\arguments{
+\item{D}{standard format coloc dataset}
+}
 \value{
 D, with original beta and varbeta in beta.bin, varbeta.bin, and beta and varbeta updated to linear estimates
 }

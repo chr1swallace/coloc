@@ -66,6 +66,8 @@ Bayesian colocalisation analysis, detailed output
 \details{
 This function replicates coloc.abf, but outputs more detail for
 further processing using coloc.process
+
+Intended to be called internally by coloc.signals
 }
 \seealso{
 \code{\link{coloc.process}}, \code{\link{coloc.abf}}
