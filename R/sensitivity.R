@@ -40,8 +40,8 @@ manh.plot <- function(df,wh,
                                    1:nrow(df)
                                }) {
     znm <- if(wh==1) { "z.df1" } else {"z.df2" }
-    print(znm)
-    print(head(df))
+    ## print(znm)
+    ## print(head(df))
     p <- pnorm(abs(df[[znm]]),lower=FALSE)*2
     ## mycol <- ifelse(A$snp %in% nCV, "red","black")
     Pal <- colorRampPalette(c('white','blue'))
