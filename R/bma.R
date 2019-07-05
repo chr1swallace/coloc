@@ -136,8 +136,8 @@ coloc.bma <- function(df1,df2,snps=intersect(setdiff(colnames(df1),c(response1,s
     lm2 <- glm(f2, data=df2, family=family2)
   }
 
-  x1 <- df1[,snps]
-  x2 <- df2[,snps]
+  x1 <- df1[,snps,drop=FALSE]
+  x2 <- df2[,snps,drop=FALSE]
   n.clean <- length(snps)
  
   ## step1, select marginally interesting single SNPs
@@ -314,7 +314,7 @@ marg.bf <- function(models,x,y,stratum=NULL,family) {
   } else {
     mods1 <- glib(x, y, error="gaussian", link="identity",models=models)
   }
-  cbind(pp=mods1$bf$postprob[,2],twologB10=mods1$bf$twologB10[,2])
+  cbind(pp=c(mods1$bf$postprob[,2]),twologB10=c(mods1$bf$twologB10[,2]))
 }
 
 

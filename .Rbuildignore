@@ -1,4 +1,5 @@
 R/junkyard.R
 vignettes/.*.org
+vignettes/simdata.Rmd
 errors
 ^\.travis\.yml$

@@ -33,35 +33,73 @@ prior.snp2hyp <- function(nsnp,p12=1e-6,p1=1e-4,p2=1e-4) {
     tmp
 }
 
+manh.plot <- function(df,wh,
+                      position=if("position" %in% names(df)) {
+                                   df$position
+                               } else {
+                                   1:nrow(df)
+                               }) {
+    znm <- if(wh==1) { "z.df1" } else {"z.df2" }
+    print(znm)
+    print(head(df))
+    p <- pnorm(abs(df[[znm]]),lower=FALSE)*2
+    ## mycol <- ifelse(A$snp %in% nCV, "red","black")
+    Pal <- colorRampPalette(c('white','blue'))
+
+    ##This adds a column of color values
+    ## based on the y values
+    Col <- Pal(100)[ceiling(100*df$SNP.PP.H4)]
+    plot(position,-log10(p),col="gray20",
+         bg = Col, # Fill colour
+         pch = 21, # Shape: circles that can filed
+         frame.plot = FALSE, # Remove the frame 
+         xlab=if("position" %in% names(df)) {
+                                   "Chromosome position"
+                               } else {
+                                   "SNP number"
+                               },
+         ylab="-log10(p)",
+         xaxt='n')
+         ## main=paste("Trait",wh))
+    axis(side=1,labels=FALSE) 
+}
+
 ##' Shows how prior and posterior per-hypothesis probabilities change as a function of p12
 ##'
-##' Function is called mainly for plotting side effect.  It draws two
-##' plots, showing how prior and posterior probabilities of each coloc
-##' hypothesis change with changing p12.  A decision rule sets the
-##' values of the posterior probabilities considered acceptable, and
-##' is used to shade in green the region of the plot for which the p12
-##' prior would give and acceptable result.  The user is encouraged to
-##' consider carefully whether some prior values shown within the
-##' green shaded region are sensible before accepting the hypothesis.
-##' If no shading is shown, then no priors give rise to an accepted
-##' result.
+##' Function is called mainly for plotting side effect.  It draws two plots, showing how prior and posterior probabilities of each coloc hypothesis change with changing p12.  A decision rule sets the values of the posterior probabilities considered acceptable, and is used to shade in green the region of the plot for which the p12 prior would give and acceptable result.  The user is encouraged to consider carefully whether some prior values shown within the green shaded region are sensible before accepting the hypothesis.  If no shading is shown, then no priors give rise to an accepted result.
 ##' @title Prior sensitivity for coloc
 ##' @param obj output of coloc.detail or coloc.process
-##' @param rule a decision rule.  This states what values of posterior
-##'     probabilities "pass" some threshold.  This is a string which
-##'     will be parsed and evaluated, better explained by examples.
-##'     "H4 > 0.5" says post prob of H4 > 0.5 is a pass.
-##'     "H4 > 0.9 & H4/H3 > 3" says post prob of H4 must be > 0.9 AND
-##'     it must be at least 3 times the post prob of H3."
+##' @param rule a decision rule.  This states what values of posterior probabilities "pass" some threshold.  This is a string which will be parsed and evaluated, better explained by examples.  "H4 > 0.5" says post prob of H4 > 0.5 is a pass.  "H4 > 0.9 & H4/H3 > 3" says post prob of H4 must be > 0.9 AND it must be at least 3 times the post prob of H3."
 ##' @param npoints the number of points over which to evaluate the prior values for p12, equally spaced on a log scale between p1*p2 and min(p1,p2) - these are logical limits on p12, but not scientifically sensible values.
 ##' @param doplot draw the plot. set to FALSE if you want to just evaluate the prior and posterior matrices and work with them yourself
+##' @param plot.manhattans if TRUE, show Manhattans of input data
+##' @param preserve.par if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample
 ##' @return list of prior and posterior matrices returned invisibly
+##' @export
 ##' @author Chris Wallace
-sensitivity.coloc <- function(obj,rule="H4 > 0.5",
-                       npoints=100,doplot=TRUE,preserve.par=FALSE,...) {
+sensitivity <- function(obj,rule="",
+                        npoints=100,doplot=TRUE,plot.manhattans=TRUE
+                       ,preserve.par=FALSE,
+                        row=0) {
+    stopifnot("priors" %in% names(obj))
+    stopifnot("summary" %in% names(obj))
+    if(rule=="")
+        stop("please supply a rule to define colocalisation, eg 'H4 > thr' where thr is some probability of H4 that you accept as colocalisation")
     rule.init <- rule
     rule <- gsub("(H.)","PP.\\1.abf",rule,perl=TRUE)
-    pp <- obj$summary
+
+    ## multiple signals?
+    if(is.data.table(obj$summary)) {
+        if(row > nrow(obj$summary))
+            stop("row > nrow(summary)")
+        pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
+        obj$results[["SNP.PP.H4"]]  <- obj$results[[paste0("SNP.PP.H4.row",row)]]
+        obj$results[["z.df1"]]  <- obj$results[[paste0("z.df1.row",row)]]
+        obj$results[["z.df2"]]  <- obj$results[[paste0("z.df2.row",row)]]
+    } else {
+        pp <- obj$summary
+    }
+    
     p12 <- obj$priors["p12"]
     p1 <- obj$priors["p1"]
     p2 <- obj$priors["p2"]
@@ -80,16 +118,27 @@ sensitivity.coloc <- function(obj,rule="H4 > 0.5",
         H <- as.character(0:4)
         ## palette(c("#ffffffff","#000000ff","#666666ff",viridis::viridis(4,alpha=1)[c(2,4)]))
         palette(c("#ffffffff",viridis::viridis(5,alpha=1)[-1]))
-        if(!preserve.par)
-            par(mfrow=c(2,1))
-       par(mar = c(3, 3, 2, 1), # Dist' from plot to side of page
-    mgp = c(2, 0.4, 0), # Dist' plot to label
-    las = 1, # Rotate y-axis text
-    tck = -.01 # Reduce tick length
-    )
+        op <- par('mfcol', 'mar', 'mfrow','mar','mgp','las','tck')
+        on.exit(par(op))
+        if(!preserve.par) {
+            if(plot.manhattans)
+                layout(mat = matrix(1:4,2,2),
+                       heights = c(1, 1), # Heights of the two rows
+                       widths = c(2, 3)) # Widths of the two columns
+            else
+                par(mfcol=c(1,2))
+        }
+        par(mar = c(3, 3, 2, 1) # Dist' from plot to side of page
+            ,mgp = c(2, 0.4, 0) # Dist' plot to label
+            ,las = 1 # Rotate y-axis text
+            ,tck = -.01 # Reduce tick length
+            )
+        if(plot.manhattans) {
+            manh.plot(obj$results,1)
+            manh.plot(obj$results,2)
+        }
         m <- list(testH,as.matrix(testpp))
-        ti <- list("Prior probabilities",
-                   "Posterior probabilities")
+        ti <-   list("Prior probabilities", "Posterior probabilities")
         for(i in 1:2) {
             ym <- if(i==1) { max(m[[i]][,-1]) } else { max(m[[i]]) }
         matplot(testp12,m[[i]],log="x",xlab="p12",ylab="Prob",

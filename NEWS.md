@@ -1,10 +1,16 @@
+# coloc 4.0-0
+*new functions: coloc.signals, finemap.abf*
+- analogues of coloc.abf and finemap.abf that allow for multiple causal variants.  See vignette on conditioning/masking
+*new function: sensitivity*
+- post-hoc, determine the sensitivity of coloc results to changes in the prior.  See vignette on sensitivity
+
+2019-06-25
+
 # coloc 3.2-1
 * BUGFIX: finemap.abf()
 - in low power situations, the posterior for H0 was previously too low.  This will only affect datasets where the minimum p value was > 1e-7 - ie where the posterior for H0 would be expected to be much above 0.
 
 # coloc 3.2 
-*new function: colocqq*
-- added colocqq for quantitative traits measured on the same individuals
 - fix bug in process.datasets which suggested MAF was needed for cc data when beta/varbeta also present
 - added pkgdown
 	

@@ -11,10 +11,11 @@ Suggests:
     knitr,
     testthat,
     bindata,
+    mvtnorm,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 3.2-1
-Date: 2019-05-16
+Version: 4.0-0
+Date: 2019-06-25
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",

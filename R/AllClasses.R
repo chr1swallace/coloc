@@ -1,3 +1,40 @@
+## abf
+
+
+### coloc_in class
+
+## #' Class \code{"coloc_in"} holds the list of items in a dataset used
+## #' by coloc.signals
+## #'
+## #'@name coloc_in-class
+## #'@aliases coloc_in-class
+## #'@docType class
+## #'@author Chris Wallace
+## #'@seealso \code{\link{coloc.abf}} \code{\link{finemap.abf}} \code{\link{coloc.signals}}
+## #'@keywords classes
+## #'@examples
+## #'showClass("coloc_in")
+## #'@exportClass coloc_in
+## setClass("coloc_in",
+##          representation(beta="numeric",
+##                         varbeta="numeric",
+##                         MAF="numeric",
+##                         position="numeric", # optional
+##                         ## length 1
+##                         N="numeric",
+##                         type="character",
+##                         sdY="numeric", #either
+##                         s="numeric", #or
+##                         method="character", # optional
+##                         ## matrix nxn
+##                         LD="matrix" # optional
+##                         ))
+
+
+################################################################################
+
+## proportionality testing
+
 validColoc <- function(object) {
   if(length(object@result) != 3 ||
      !all(c("eta.hat","chisquare","n") %in% names(object@result))) {
@@ -148,3 +185,5 @@ setClass("colocPCs",
                         use="logical",
                         vars="numeric"),
          validity=validColocPCs)
+
+

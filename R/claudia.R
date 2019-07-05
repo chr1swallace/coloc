@@ -196,6 +196,8 @@ process.dataset <- function(d, suffix) {
    df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                               V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
     df$snp <- as.character(d$snp)
+    if("position" %in% nd)
+        df <- cbind(df,position=d$position)
     return(df)
   }
 
@@ -211,6 +213,8 @@ process.dataset <- function(d, suffix) {
     df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
     abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
+    if("position" %in% nd)
+        df <- cbind(df,position=d$position)
     return(df)  
   }
 
@@ -273,8 +277,7 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-  if(!is.list(dataset))
-    stop("dataset must be a list.")
+    check.dataset(dataset,"")
   
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
@@ -365,13 +368,13 @@ finemap.abf <- function(dataset, p1=1e-4) {
 coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
                       p1=1e-4, p2=1e-4, p12=1e-5) {
 
-  if(!is.list(dataset1) || !is.list(dataset2))
-    stop("dataset1 and dataset2 must be lists.")
-  if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
-    dataset1$MAF <- MAF
-  if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
-    dataset2$MAF <- MAF
-  
+    if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
+        dataset1$MAF <- MAF
+    if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
+        dataset2$MAF <- MAF
+    check.dataset(d=dataset1,1)
+    check.dataset(d=dataset2,2)
+    
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
   merged.df <- merge(df1,df2)
@@ -391,7 +394,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
-  output<-list(summary=results, results=merged.df)
+    output<-list(summary=results,
+                 results=merged.df,
+                 priors=c(p1=p1,p2=p2,p12=p12))
+    class(output) <- c(class(output),"colocabf")
   return(output)
 }
 
@@ -466,3 +472,51 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
   coloc.abf(dataset1=list(pvalues=pval1, N=nrow(X1), MAF=maf1, snp=snps, type=type1, s=s1),
             dataset2=list(pvalues=pval2, N=nrow(X2), MAF=maf2, snp=snps, type=type2, s=s2))
 }
+
+##' Check dataset inputs for errors
+##'
+##' Will call stop() unless a series of expectations on dataset input format are met
+##' @title check.dataset
+##' @param d
+##' @param suffix
+##' @return NULL
+##' @author Chris Wallace
+check.dataset <- function(d,suffix="") {
+   if(!is.list(d) )
+       stop("dataset ",suffix,": is not a list")
+   nd <- names(d)
+
+  ## sample size
+   if (!('N' %in% nd) || is.null(d$N) || is.na(d$N))
+       stop("dataset ",suffix,": sample size N not set")
+
+   ## type of data
+   if (! ('type' %in% nd))
+       stop("dataset ",suffix,": variable type not set")
+   if(!(d$type %in% c("quant","cc")))
+       stop("dataset ",suffix,": ","type must be quant or cc")
+  
+  if(d$type=="cc") {
+      if(! "s" %in% nd)
+          stop("dataset ",suffix,": ","s, proportion of samples who are cases, not found")
+      if(d$s<=0 || d$s>=1)
+          stop("dataset ",suffix,": ","s must be between 0 and 1")
+      if("pvalues" %in% nd && !( "MAF" %in% nd))
+          stop("dataset ",suffix,": ","p values found, but no MAF")
+  }
+  
+  if(d$type=="quant") {
+      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
+          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+  }
+
+   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+   for(v in c("MAF","pvalues","beta","varbeta")) {
+       if(v %in% nd && any(is.na(d[[v]])))
+           stop("dataset ",suffix,": ",v," contains missing values")
+   }
+
+   ## if we reach here, no badness detected
+   NULL
+}
+
