@@ -1,0 +1,130 @@
+---
+title: "Coloc: relaxing the single causal variant assumption"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{coloc - conditioning}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r sim, child="simdata.Rmd" }
+```
+
+# Multiple causal variants
+
+First, we use the above-simulated data (which contains a single colocalising variant) as a template to generate an additional set of SNPs within which one variant is causal for only one of the two traits.
+
+```{r   }
+Y1 <- data@df1$Y
+Y2 <- data@df2$Y
+Y3 <- sample(data@df2$Y) # Y3 is unassociated with anything in X2
+
+X1 <- as.matrix(data@df1[,-1])
+X2 <- as.matrix(data@df2[,-1])
+
+tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
+tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
+tests3 <- lapply(1:ncol(X2), function(i) summary(lm(Y3 ~ X2[,i]))$coefficients[2,])
+
+p1 <- sapply(tests1,"[",4)
+p2 <- sapply(tests2,"[",4)
+p3 <- sapply(tests3,"[",4)
+
+# we are going to double the number of SNPs so that Y1 has a causal
+# variant in each block (tests1, duplicated) and Y2 has a shared
+# causal variant in block 1 only (tests2) and not block 2 (tests3)
+
+snpnames=make.unique(rep(colnames(X2),2))
+maf <- rep(colMeans(X2)/2,2) 
+names(maf) <- snpnames
+LD0 <- LD1 <- cor(X2)
+nsnp=ncol(X2)
+dimnames(LD1)=list(snpnames[-c(1:nsnp)],snpnames[-c(1:nsnp)])
+LD01=matrix(0,nsnp,nsnp,dimnames=list(snpnames[1:nsnp],snpnames[-c(1:nsnp)]))
+LD10=matrix(0,nsnp,nsnp,dimnames=list(snpnames[-c(1:nsnp)],snpnames[1:nsnp]))
+
+LD <- rbind(cbind(LD0,LD01), cbind(LD10, LD1))
+
+get.beta <- function(x,nm) {
+   beta <- sapply(x,"[",1)
+   varbeta <- sapply(x, "[", 2)^2
+   names(beta) <- names(varbeta) <- colnames(LD)
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(c(tests1,tests1),colnames(LD))
+b2 <- get.beta(c(tests2,tests3),colnames(LD))
+
+```
+
+First, let us do a standard coloc (single causal variant) analysis to
+serve as a baseline comparison.  The analysis concludes there is
+colocalisation, because it "sees" the SNPs on the left which are
+strongly associated with both traits.  But it misses the SNPs on the
+right of the top left plot which are associated with only one trait.
+
+```{r sens0, fig.width=8,fig.height=6    }
+library(coloc)
+D1 <- list(beta=b1$beta,
+    varbeta=b1$varbeta,
+    N=nrow(X1),
+    sdY=sd(Y1),
+    type="quant",
+    MAF=maf,
+    LD=LD,
+    snp=names(b1$beta),
+    position=1:length(b1$beta))
+D2 <- list(beta=b2$beta,
+    varbeta=b2$varbeta,
+    N=nrow(X2),
+    sdY=sd(Y2),
+    type="quant",
+    MAF=maf,
+    LD=LD,
+    snp=names(b2$beta),
+    position=1:length(b1$beta))
+my.res <- coloc.abf(dataset1=D1, dataset2=D2)
+my.res
+sensitivity(my.res,"H4 > 0.9")
+```
+
+Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.  
+We can formally check for evidence for secondary signals for each trait.  finemap.signals() identifies SNPs which are independently associated in a dataset, and prints the snp names together with the z score.  It is used within coloc.signals to identify separate signal SNPs, and run colocalisation as many times as needed to try and colocalise each pair of signals, but can also be run individually
+
+```{r}
+finemap.signals(D1,method="cond")
+finemap.signals(D2,method="cond")
+```
+
+Note that every colocalisation conditions out every other signal except one for each trait.  For that reason, trying to colocalise many signals per trait is not recommended. Instead, use pthr to set the significance (p value) required to call a signal.  If you set if too low, you will capture signals that are non-significant, or too high and you will miss true signals.  pthr=5e-8 would correspond to a genome-wide significance level for common variants in a European study, but we typically choose a slightly relaxed pthr=1e-6 on the basis that if there is one GW-significant signal in a region, we expect there is a greater chance for secondary signals to exist.
+
+
+```{r}
+finemap.signals(D1,method="cond",pthr=1e-20) ## too small
+finemap.signals(D2,method="cond",pthr=0.1) ## too big
+```
+
+Now we can ask coloc to consider these as separate signals using the coloc.signals() function.
+
+```{r   }
+res <- coloc.signals(D1,D2,method="cond",p12=1e-6,pthr=1e-6)
+res
+```
+
+Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider:
+```{r sens, fig.width=8,fig.height=6 }
+sensitivity(res,"H4 > 0.9",row=1)
+sensitivity(res,"H4 > 0.9",row=2)
+```
+
+
+Because these signals are truly independent, we could also split them by using masking, which doesn't condition at all, but restricts the search space for colocalisation to SNPs which are not in LD with any-but-one of each signal SNP.  Here you also need to consider r2thr which sets the maximum \(r^2\) between two SNPs for them to be considered independent.
+```{r , fig.width=8,fig.height=6   }
+finemap.signals(D1,method="mask")
+finemap.signals(D2,method="mask")
+resm=coloc.signals(D1,D2,method="mask",p12=1e-6,pthr=1e-6,r2thr=0.01)
+resm
+sensitivity(resm,"H4 > 0.9",row=1)
+sensitivity(resm,"H4 > 0.9",row=2)
+```
+
