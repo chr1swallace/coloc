@@ -1,3 +1,6 @@
+  %\VignetteIndexEntry{coloc - proportionality}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ## Simulate a small dataset
 
 ```{r,  echo=FALSE, results="hide" }

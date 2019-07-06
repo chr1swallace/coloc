@@ -4,8 +4,8 @@
 \alias{sensitivity}
 \title{Prior sensitivity for coloc}
 \usage{
-sensitivity(obj, rule = "H4 > 0.5", npoints = 100, doplot = TRUE,
-  plot.manhattans = TRUE, preserve.par = FALSE)
+sensitivity(obj, rule = "", npoints = 100, doplot = TRUE,
+  plot.manhattans = TRUE, preserve.par = FALSE, row = 1)
 }
 \arguments{
 \item{obj}{output of coloc.detail or coloc.process}
@@ -19,6 +19,8 @@ sensitivity(obj, rule = "H4 > 0.5", npoints = 100, doplot = TRUE,
 \item{plot.manhattans}{if TRUE, show Manhattans of input data}
 
 \item{preserve.par}{if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample}
+
+\item{row}{when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot}
 }
 \value{
 list of prior and posterior matrices returned invisibly

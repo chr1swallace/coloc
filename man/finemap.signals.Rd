@@ -4,9 +4,8 @@
 \alias{finemap.signals}
 \title{Finemap multiple signals in a single dataset}
 \usage{
-finemap.signals(D, LD = D$LD, aligned = FALSE, method = if (aligned) {    
-  "cond" } else {     "mask" }, r2thr = 0.01, sigsnps = NULL,
-  pthr = 1e-06, maxhits = 3)
+finemap.signals(D, LD = D$LD, method = c("mask", "cond"), r2thr = 0.01,
+  sigsnps = NULL, pthr = 1e-06, maxhits = 3)
 }
 \arguments{
 \item{D}{list of summary stats for a single disease, as defined
@@ -14,6 +13,11 @@ for coloc.abf}
 
 \item{LD}{matrix of signed r values (not rsq!) giving correlation
 between SNPs}
+
+\item{method}{if method="cond", then use conditioning to coloc
+multiple signals.  The default is mask - this is less
+powerful, but safer because it does not assume that the LD
+matrix is properly allelically aligned to estimated effect}
 
 \item{r2thr}{if mask==TRUE, all snps will be masked with r2 >
 r2thr with any sigsnps. Otherwise ignored}
@@ -30,8 +34,8 @@ if p > pthr OR abs(z)<zthr OR maxhits hits have been found.}
 to TRUE}
 }
 \value{
-list of successively significant fine mapped SNPs, named by
-    the SNPs
+list of successively significant fine mapped SNPs, named
+    by the SNPs
 }
 \description{
 This is an analogue to finemap.abf, adapted to find multiple

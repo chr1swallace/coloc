@@ -3,28 +3,18 @@
 \docType{methods}
 \name{plot}
 \alias{plot}
-\alias{plot,colocTWAS,missing-method}
-\alias{plot,coloc,missing-method}
-\alias{plot,coloc,missing-method}
-\alias{plot,colocABF,missing-method}
 \alias{plot,coloc,missing-method}
 \alias{plot,colocPCs,missing-method}
-\alias{abf.plot}
+\alias{plot.coloc_abf}
 \title{Plotting functions for the coloc package}
 \usage{
 plot(x, y, ...)
-
-\S4method{plot}{colocTWAS,missing}(x)
-
-\S4method{plot}{coloc,missing}(x, y, ...)
-
-\S4method{plot}{colocABF,missing}(x, y, ...)
 
 \S4method{plot}{coloc,missing}(x, y, ...)
 
 \S4method{plot}{colocPCs,missing}(x)
 
-abf.plot(coloc.obj, Pos = 1:nrow(coloc.obj@results), chr = NULL,
+plot.coloc_abf(obj, Pos = 1:nrow(obj$results), chr = NULL,
   pos.start = min(Pos), pos.end = max(Pos), trait1 = "trait 1",
   trait2 = "trait 2")
 }
@@ -35,7 +25,7 @@ abf.plot(coloc.obj, Pos = 1:nrow(coloc.obj@results), chr = NULL,
 
 \item{...}{other arguments}
 
-\item{coloc.obj}{object of class \code{colocABF} returned by coloc.abf()}
+\item{obj}{object of class \code{colocABF} returned by coloc.abf()}
 
 \item{Pos}{positions of all snps in ds1 or in ds2}
 
@@ -60,7 +50,7 @@ You can plot objects of class \code{coloc}, \code{colocBayes} and \code{colocABF
 Plot results of a coloc.abf run
 }
 \details{
-If coloc.obj is missing, it will be created as coloc.obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
+If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
 }
 \author{
 Hui Guo, Chris Wallace

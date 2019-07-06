@@ -397,8 +397,8 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     output<-list(summary=results,
                  results=merged.df,
                  priors=c(p1=p1,p2=p2,p12=p12))
-    class(output) <- c(class(output),"colocabf")
-  return(output)
+    class(output) <- c("coloc_abf",class(output))
+    return(output)
 }
 
 ##' Bayesian colocalisation analysis using data.frames
@@ -476,10 +476,16 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
 ##' Check dataset inputs for errors
 ##'
 ##' Will call stop() unless a series of expectations on dataset input format are met
+##'
+##' This is a helper function for use by other coloc functions, but
+##' you can use it directly to check the format of a dataset to be
+##' supplied to coloc.abf(), coloc.signals(), finemap.abf(), or
+##' finemap.signals().
 ##' @title check.dataset
-##' @param d
-##' @param suffix
+##' @param d dataset to check
+##' @param suffix string to identify which dataset (1 or 2)
 ##' @return NULL
+##' @export
 ##' @author Chris Wallace
 check.dataset <- function(d,suffix="") {
    if(!is.list(d) )

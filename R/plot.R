@@ -1,4 +1,6 @@
-# ds1: dataset1
+
+
+                                        # ds1: dataset1
 # ds2: dataset2
 # both ds1 and ds2 should contain the same snps in the same order
 
@@ -9,11 +11,49 @@
 # trait1: name of trait 1
 # trait2: name of trait 2   
 
+
+
+##' Print summary of a coloc.abf run
+##'
+##' @title print.coloc_abf
+##' @param obj object of class \code{coloc_abf} returned by coloc.abf()
+##' or coloc.signals()
+##' @param trait1 name of trait 1 (optional)
+##' @param trait2 name of trait 2 (optional)  
+##' @return nothing, called for side effect of printing to screen
+##' @author Chris Wallace
+##' @docType methods
+##' @rdname print-methods
+print.coloc_abf <- function(obj,
+                     trait1="trait 1", trait2="trait 2") {
+    message("Coloc analysis of ",trait1,", ",trait2)
+    message("\nSNP Priors")
+    print(obj$priors)
+    message("\nHypothesis Priors")
+    ns <- if(is.data.table(obj$summary)) { obj$summary$nsnps[1] } else { obj$summary["nsnps"] }
+    hprior <- prior.snp2hyp(nsnp=ns,
+                        p1=obj$priors["p1"],
+                        p2=obj$priors["p2"],
+                        p12=obj$priors["p12"])
+    rownames(hprior) <- ""
+    print(hprior)
+    message("\nPosterior")
+    if(is.data.table(obj$summary)) {
+        summ <- copy(obj$summary)
+        setnames(summ, gsub("PP.|.abf","",names(summ)))
+        print(summ[,list(nsnps,hit1,hit2,H0,H1,H2,H3,H4)])
+    } else {
+        summ <- obj$summary
+        names(summ) <- gsub("PP.|.abf","",names(summ))
+        print(summ)
+    }
+}
+    
 ##' Plot results of a coloc.abf run
 ##'
-##' If coloc.obj is missing, it will be created as coloc.obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
-##' @title abf.plot
-##' @param coloc.obj object of class \code{colocABF} returned by coloc.abf()
+##' If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
+##' @title plot.coloc_abf
+##' @param obj object of class \code{colocABF} returned by coloc.abf()
 ##' @param Pos positions of all snps in ds1 or in ds2
 ##' @param chr Chromosome
 ##' @param pos.start lower bound of positions
@@ -24,24 +64,25 @@
 ##' @author Hui Guo, Chris Wallace
 ##' @docType methods
 ##' @rdname plot-methods
-abf.plot <- function(coloc.obj, Pos=1:nrow(coloc.obj@results),
+plot.coloc_abf <- function(obj, Pos=1:nrow(obj$results),
                      chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
                      trait1="trait 1", trait2="trait 2") {
 
   
-  d.pp1 = signif(coloc.obj@summary[3], 3)
-  d.pp2 = signif(coloc.obj@summary[4], 3)
-  d.pp4 = signif(coloc.obj@summary[6], 3)
-  df = coloc.obj@results
+  d.pp1 = signif(obj$summary["PP.H1.abf"], 3)
+  d.pp2 = signif(obj$summary["PP.H2.abf"], 3)
+  d.pp4 = signif(obj$summary["PP.H4.abf"], 3)
+  df = obj$results
   
-  df$pp1 <- exp(df$lABF.df1 - logsum(df$lABF.df1))
-  df$pp2 <- exp(df$lABF.df2 - logsum(df$lABF.df2))
-  df$pos <- Pos
+    df$pp1 <- exp(df$lABF.df1 - logsum(df$lABF.df1))
+    df$pp2 <- exp(df$lABF.df2 - logsum(df$lABF.df2))
+    if(!("position" %in% colnames(df)))
+       df$position <- Pos
 
-  df <- melt(df[,c("snp","pos","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","pos"))
-  df$variable <- sub("pp1", paste0("pp1 (", trait1, ") = ", d.pp1) ,df$variable)
-  df$variable <- sub("pp2", paste0("pp2 (", trait2, ") = ", d.pp2) ,df$variable)
-  df$variable <- sub("SNP.PP.H4", paste0("pp4 (Both) = ", d.pp4) ,df$variable)
+  df <- melt(df[,c("snp","position","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","position"))
+  df$variable <- sub("pp1", paste0("H1 (", trait1, "), PP = ", d.pp1) ,df$variable)
+  df$variable <- sub("pp2", paste0("H2 (", trait2, ") PP = ", d.pp2) ,df$variable)
+  df$variable <- sub("SNP.PP.H4", paste0("H4 (Both) = PP ", d.pp4) ,df$variable)
 
 
   ## identify and label the top 3 SNPs that have highest pp1, pp2 or pp4
@@ -53,7 +94,7 @@ abf.plot <- function(coloc.obj, Pos=1:nrow(coloc.obj@results),
   df$label <- ifelse(df$snp %in% snps, df$snp,"")
   ttl <- paste0(trait1, ' & ', trait2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
  
-  ggplot(df, aes_string(x="pos",y="value")) +
+  ggplot(df, aes_string(x="position",y="value")) +
     geom_point(data=subset(df,label==""),size=1.5) +
     geom_point(data=subset(df,label!=""),col="red",size=1.5) +
     geom_text(aes_string(label="label"),hjust=-0.1,vjust=0.5,size=2.5,col="red") +

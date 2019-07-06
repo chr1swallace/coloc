@@ -236,19 +236,24 @@ find.best.signal <- function(D) {
 ##'     r2thr with any sigsnps. Otherwise ignored
 ##' @param sigsnps SNPs already deemed significant, to condition on or
 ##'     mask
+##' @param method if method="cond", then use conditioning to coloc
+##'     multiple signals.  The default is mask - this is less
+##'     powerful, but safer because it does not assume that the LD
+##'     matrix is properly allelically aligned to estimated effect
 ##' @param pthr when p > pthr, stop successive searching
 ##' @param maxhits maximum depth of conditioning. procedure will stop
 ##'     if p > pthr OR abs(z)<zthr OR maxhits hits have been found.
 ##' @export
-##' @return list of successively significant fine mapped SNPs, named by
-##'     the SNPs
+##' @return list of successively significant fine mapped SNPs, named
+##'     by the SNPs
 ##' @author Chris Wallace
-finemap.signals <- function(D,LD=D$LD,aligned=FALSE,
-                                  method=if(aligned) { "cond" } else { "mask" },
+finemap.signals <- function(D,LD=D$LD,
+                                  method=c("mask","cond"),
                                   r2thr=0.01,
                                   sigsnps=NULL,
                                   pthr=1e-6,
                                   maxhits=3) {
+    method <- match.arg(method)
     check.dataset(D)
     zthr=qnorm(pthr/2,lower.tail = FALSE)
     ## make nicer data table
@@ -287,7 +292,7 @@ finemap.signals <- function(D,LD=D$LD,aligned=FALSE,
 ##'  Internal helper function
 ##'
 ##' @title Post process a coloc.details result using masking
-##' @param result object returned by coloc.detail()
+##' @param obj object returned by coloc.detail()
 ##' @param hits1 lead snps for trait 1. If length > 1, will use masking
 ##' @param hits2 lead snps for trait 2. If length > 1, will use masking
 ##' @param LD named LD matrix (for masking)
@@ -297,7 +302,7 @@ finemap.signals <- function(D,LD=D$LD,aligned=FALSE,
 ##' @inheritParams coloc.abf
 ##' @return data.table of coloc results
 ##' @author Chris Wallace
-coloc.process <- function(obj,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-6,LD1=LD,LD2=LD,detail=FALSE) {
+coloc.process <- function(obj,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p2=1e-4,p12=1e-6,LD1=LD,LD2=LD) {
     ## which format?
     ## if("results" %in% names(result)) { # for legacy objects
     ##     obj$results <- obj$results
@@ -398,6 +403,39 @@ coloc.process <- function(obj,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p
     return(list(summary=rbindlist(ret),
                 results=newresult,
                 priors=c(p1=p1,p2=p2,p12=p12)))
+}
+
+##' Estimate single snp frequency distibutions
+##'
+##' @title estgeno1
+##' @return relative frequency of genotypes 0, 1, 2
+##' @author Chris Wallace
+##' @param f MAF
+##' @rdname estgeno1
+##' @seealso estgeno2
+estgeno.1.ctl <- function(f) {
+    c((1-f)^2,2*f*(1-f),f^2)
+}
+## vectorized version
+vestgeno.1.ctl <- function(f) {
+    cbind((1-f)^2,2*f*(1-f),f^2)
+}
+
+##' @param G0 single snp frequency in controls (vector of length 3) - obtained from estgeno.1.ctl
+##' @param b log odds ratio
+##' @rdname estgeno1
+estgeno.1.cse <- function(G0,b) {
+    g0 <- 1
+    g1 <- exp( b - log(G0[1]/G0[2]))
+    g2 <- exp( 2*b - log(G0[1]/G0[3]))
+    c(g0,g1,g2)/(g0+g1+g2)
+}
+## vectorized version
+vestgeno.1.cse <- function(G0,b) {
+    g0 <- 1
+    g1 <- exp( b - log(G0[,1]/G0[,2]))
+    g2 <- exp( 2*b - log(G0[,1]/G0[,3]))
+    cbind(g0,g1,g2)/(g0+g1+g2)
 }
 
 ##' Convert binomial to linear regression
@@ -667,9 +705,11 @@ coloc.signals <- function(dataset1, dataset2,
     d2 <- data.table(hit2=names(fm2),hit2.margz=c(fm2))
     res <- merge(res,d2,by="hit2")
     
-    list(summary=res,
+    ret <- list(summary=res,
          results=results,
          priors=c(p1=p2,p2=p2,p12=p12))
+    class(ret) <- c("coloc_abf",class(ret))
+    ret
 }
 
 

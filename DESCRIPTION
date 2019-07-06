@@ -6,12 +6,17 @@ Imports:
     snpStats,
     BMA,
     reshape,
-    methods
+    methods,
+    viridis,
+    stats,
+    grDevices,
+    utils
 Suggests:
     knitr,
     testthat,
     bindata,
     mvtnorm,
+    magrittr,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 4.0-0

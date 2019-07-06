@@ -4,12 +4,11 @@
 \alias{coloc.process}
 \title{Post process a coloc.details result using masking}
 \usage{
-coloc.process(result, hits1 = NULL, hits2 = NULL, LD = NULL,
-  r2thr = 0.01, p1 = 1e-04, p2 = 1e-04, p12 = 1e-06, LD1 = LD,
-  LD2 = LD)
+coloc.process(obj, hits1 = NULL, hits2 = NULL, LD = NULL, r2thr = 0.01,
+  p1 = 1e-04, p2 = 1e-04, p12 = 1e-06, LD1 = LD, LD2 = LD)
 }
 \arguments{
-\item{result}{object returned by coloc.detail()}
+\item{obj}{object returned by coloc.detail()}
 
 \item{hits1}{lead snps for trait 1. If length > 1, will use masking}
 
@@ -24,6 +23,10 @@ coloc.process(result, hits1 = NULL, hits2 = NULL, LD = NULL,
 \item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
 
 \item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+
+\item{LD1}{named LD matrix (for masking) for trait 1 only}
+
+\item{LD2}{named LD matrix (for masking) for trait 2 only}
 }
 \value{
 data.table of coloc results

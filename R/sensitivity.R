@@ -42,7 +42,7 @@ manh.plot <- function(df,wh,
     znm <- if(wh==1) { "z.df1" } else {"z.df2" }
     ## print(znm)
     ## print(head(df))
-    p <- pnorm(abs(df[[znm]]),lower=FALSE)*2
+    p <- pnorm(abs(df[[znm]]),lower.tail=FALSE)*2
     ## mycol <- ifelse(A$snp %in% nCV, "red","black")
     Pal <- colorRampPalette(c('white','blue'))
 
@@ -74,13 +74,15 @@ manh.plot <- function(df,wh,
 ##' @param doplot draw the plot. set to FALSE if you want to just evaluate the prior and posterior matrices and work with them yourself
 ##' @param plot.manhattans if TRUE, show Manhattans of input data
 ##' @param preserve.par if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample
+##' @param row when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot
 ##' @return list of prior and posterior matrices returned invisibly
 ##' @export
 ##' @author Chris Wallace
 sensitivity <- function(obj,rule="",
                         npoints=100,doplot=TRUE,plot.manhattans=TRUE
                        ,preserve.par=FALSE,
-                        row=0) {
+                        row=1) {
+    stopifnot("coloc_abf" %in% class(obj))
     stopifnot("priors" %in% names(obj))
     stopifnot("summary" %in% names(obj))
     if(rule=="")
@@ -90,8 +92,8 @@ sensitivity <- function(obj,rule="",
 
     ## multiple signals?
     if(is.data.table(obj$summary)) {
-        if(row > nrow(obj$summary))
-            stop("row > nrow(summary)")
+        if(!(row %in% 1:nrow(obj$summary)))
+            stop("row must be between 1 and ",nrow(obj$summary))
         pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
         obj$results[["SNP.PP.H4"]]  <- obj$results[[paste0("SNP.PP.H4.row",row)]]
         obj$results[["z.df1"]]  <- obj$results[[paste0("z.df1.row",row)]]
@@ -116,8 +118,7 @@ sensitivity <- function(obj,rule="",
 
     if(doplot) {
         H <- as.character(0:4)
-        ## palette(c("#ffffffff","#000000ff","#666666ff",viridis::viridis(4,alpha=1)[c(2,4)]))
-        palette(c("#ffffffff",viridis::viridis(5,alpha=1)[-1]))
+        palette(c("#ffffffff",viridis(5,alpha=1)[-1]))
         op <- par('mfcol', 'mar', 'mfrow','mar','mgp','las','tck')
         on.exit(par(op))
         if(!preserve.par) {

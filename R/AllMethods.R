@@ -1,43 +1,43 @@
-#' @rdname plot-methods
-#' @aliases plot,coloc,missing-method
-setMethod("plot", signature(x="colocTWAS",y="missing"),
-          function(x) {
-              use <- which(!sapply(x@plot.data,is.null))
-              if(length(use)==0)
-                  return(NULL)
-              if(length(use)>1) 
-                  opar <- par(ask=TRUE)
-              for(i in use) {
-                  last.plot <- coeff.plot(b1=x@plot.data[[i]]$coef1,
-                             b2=x@plot.data[[i]]$coef2,
-                             s1=x@plot.data[[i]]$var1,
-                             s2=x@plot.data[[i]]$var2,
-                             eta=x@result[i,"eta.hat"],
-                             annot=paste("p =",format.pval(pchisq(x@result[i,"chisquare"],x@result[i,"n"]-1,lower.tail=FALSE))),
-                             xlab=expression(b[1]),ylab=expression(b[2]))
-                  print(last.plot)
-              }
-              if(length(use)>1)
-                  par(opar)
-              })
-#' @rdname plot-methods
-#' @aliases plot,coloc,missing-method
-setMethod("plot", signature(x="coloc",y="missing"),
-          function(x) {
-            coeff.plot(b1=x@plot.data$coef1,
-                     b2=x@plot.data$coef2,
-                     s1=x@plot.data$var1,
-                     s2=x@plot.data$var2,
-                     eta=x@result[["eta.hat"]],
-                     annot=paste("p =",format.pval(pchisq(x@result[["chisquare"]],x@result[["n"]]-1,lower.tail=FALSE))),
-                     xlab=expression(b[1]),ylab=expression(b[2]))})
-#' @rdname plot-methods
-#' @rdname plot-methods
-#' @aliases plot,colocABF,missing-method
-setMethod("plot", signature(x="colocABF",y="missing"),
-          function(x,...) {
-            abf.plot(x, ...)
-          })
+## #' @rdname plot-methods
+## #' @aliases plot,coloc,missing-method
+## setMethod("plot", signature(x="colocTWAS",y="missing"),
+##           function(x) {
+##               use <- which(!sapply(x@plot.data,is.null))
+##               if(length(use)==0)
+##                   return(NULL)
+##               if(length(use)>1) 
+##                   opar <- par(ask=TRUE)
+##               for(i in use) {
+##                   last.plot <- coeff.plot(b1=x@plot.data[[i]]$coef1,
+##                              b2=x@plot.data[[i]]$coef2,
+##                              s1=x@plot.data[[i]]$var1,
+##                              s2=x@plot.data[[i]]$var2,
+##                              eta=x@result[i,"eta.hat"],
+##                              annot=paste("p =",format.pval(pchisq(x@result[i,"chisquare"],x@result[i,"n"]-1,lower.tail=FALSE))),
+##                              xlab=expression(b[1]),ylab=expression(b[2]))
+##                   print(last.plot)
+##               }
+##               if(length(use)>1)
+##                   par(opar)
+##               })
+## #' @rdname plot-methods
+## #' @aliases plot,coloc,missing-method
+## setMethod("plot", signature(x="coloc",y="missing"),
+##           function(x) {
+##             coeff.plot(b1=x@plot.data$coef1,
+##                      b2=x@plot.data$coef2,
+##                      s1=x@plot.data$var1,
+##                      s2=x@plot.data$var2,
+##                      eta=x@result[["eta.hat"]],
+##                      annot=paste("p =",format.pval(pchisq(x@result[["chisquare"]],x@result[["n"]]-1,lower.tail=FALSE))),
+##                      xlab=expression(b[1]),ylab=expression(b[2]))})
+## #' @rdname plot-methods
+## #' @rdname plot-methods
+## #' @aliases plot,colocABF,missing-method
+## setMethod("plot", signature(x="colocABF",y="missing"),
+##           function(x,...) {
+##             abf.plot(x, ...)
+##           })
   
 #' @rdname plot-methods
 #' @aliases plot,coloc,missing-method

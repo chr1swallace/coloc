@@ -1,5 +1,7 @@
+_pkgdown.yaml
+docs
+Rjunk
 R/junkyard.R
 vignettes/.*.org
-vignettes/simdata.Rmd
 errors
 ^\.travis\.yml$
