@@ -4,7 +4,7 @@ author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{coloc - proportionality}
+  %\VignetteIndexEntry{Coloc: proportionality testing}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

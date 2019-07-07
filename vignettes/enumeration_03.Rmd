@@ -4,7 +4,7 @@ author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{coloc - enumeration}
+  %\VignetteIndexEntry{Coloc: enumeration of configurations under a single causal variant assumption}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
