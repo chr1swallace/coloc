@@ -1,4 +1,4 @@
-  %\VignetteIndexEntry{coloc - proportionality}
+  %\VignetteIndexEntry{coloc - simdata}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ## Simulate a small dataset
