@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0.0</span>
       </span>
     </div>
 
@@ -53,6 +53,24 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/conditioning_05.html">Coloc: relaxing the single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/enumeration_03.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/intro_01.html">Coloc: a package for colocalisation analyses</a>
+    </li>
+    <li>
+      <a href="../articles/proportionality_02.html">Coloc: proportionality testing</a>
+    </li>
+    <li>
+      <a href="../articles/sensitivity_04.html">Coloc: sensitivity to prior values</a>
+    </li>
+    <li>
+      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+    </li>
+    <li>
       <a href="../articles/vignette.html">Coloc: a package for colocalisation analyses</a>
     </li>
   </ul>
@@ -83,7 +101,7 @@
       <h1>Coloc: a package for colocalisation analyses</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2019-02-08</h4>
+            <h4 class="date">2019-07-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/vignette.Rmd"><code>vignettes/vignette.Rmd</code></a></small>
       <div class="hidden name"><code>vignette.Rmd</code></div>
@@ -345,12 +363,12 @@ PC summary of genotypes
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="dt">dataset=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>))</a>
 <a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(my.res)</a></code></pre></div>
 <pre><code>##            V.          z.        r.      lABF.   snp prior       SNP.PP
-## s1 0.03924328  5.78083831 0.7567274 11.9374068 SNP.1 1e-04 9.979937e-01
-## s2 0.03880072  4.01220890 0.7588092  5.3965036 SNP.2 1e-04 1.440289e-03
-## s3 0.04455547 -0.06333058 0.7326023 -0.6580400 SNP.3 1e-04 3.380608e-06
-## s4 0.04602953  0.83093858 0.7261782 -0.3969407 SNP.4 1e-04 4.389234e-06
-## s5 0.04237982 -1.83425483 0.7422945  0.5707526 SNP.5 1e-04 1.155188e-05
-## s6 0.04495749 -0.22493863 0.7308390 -0.6377335 SNP.6 1e-04 3.449958e-06</code></pre>
+## s1 0.03924328  5.78083831 0.7567274 11.9374068 SNP.1 1e-04 9.372547e-01
+## s2 0.03880072  4.01220890 0.7588092  5.3965036 SNP.2 1e-04 1.352631e-03
+## s3 0.04455547 -0.06333058 0.7326023 -0.6580400 SNP.3 1e-04 3.174860e-06
+## s4 0.04602953  0.83093858 0.7261782 -0.3969407 SNP.4 1e-04 4.122100e-06
+## s5 0.04237982 -1.83425483 0.7422945  0.5707526 SNP.5 1e-04 1.084882e-05
+## s6 0.04495749 -0.22493863 0.7308390 -0.6377335 SNP.6 1e-04 3.239989e-06</code></pre>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">tail</a></span>(my.res) </a></code></pre></div>
 <pre><code>##              V.          z.        r.       lABF.    snp  prior
 ## s46  0.04560292 -0.00230155 0.7280258 -0.65102205 SNP.46 0.0001
@@ -358,14 +376,14 @@ PC summary of genotypes
 ## s48  0.04101521 -0.03458088 0.7485056 -0.68971972 SNP.48 0.0001
 ## s49  0.04530207  0.58219760 0.7293344 -0.52983015 SNP.49 0.0001
 ## s50  0.04467786 -1.08347773 0.7320646 -0.22881057 SNP.50 0.0001
-## s110         NA          NA        NA  1.00000000   null 0.9950
+## s110         NA          NA        NA  0.00000000   null 0.9950
 ##            SNP.PP
-## s46  3.404416e-06
-## s47  5.940719e-06
-## s48  3.275190e-06
-## s49  3.843046e-06
-## s50  5.192862e-06
-## s110 1.774485e-05</code></pre>
+## s46  3.197219e-06
+## s47  5.579160e-06
+## s48  3.075858e-06
+## s49  3.609154e-06
+## s50  4.876818e-06
+## s110 6.100014e-02</code></pre>
 <p>The <code>SNP.PP</code> column shows the posterior probability that exactly that SNP is causal. Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.</p>
 <p>Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too. One package that allows you to do this is <a href="http://github.com/chr1swallace/GUESSFM">GUESSFM</a>, described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup></p>
 <p><a id="org6973f37"></a></p>

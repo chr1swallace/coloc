@@ -60,7 +60,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0.0</span>
       </span>
     </div>
 
@@ -82,6 +82,24 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/conditioning_05.html">Coloc: relaxing the single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/enumeration_03.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/intro_01.html">Coloc: a package for colocalisation analyses</a>
+    </li>
+    <li>
+      <a href="../articles/proportionality_02.html">Coloc: proportionality testing</a>
+    </li>
+    <li>
+      <a href="../articles/sensitivity_04.html">Coloc: sensitivity to prior values</a>
+    </li>
+    <li>
+      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+    </li>
     <li>
       <a href="../articles/vignette.html">Coloc: a package for colocalisation analyses</a>
     </li>
@@ -115,13 +133,32 @@
       <small>Source: <a href='https://github.com/chr1swallace/coloc/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="coloc-4-0-0" class="section level1">
+<h1 class="page-header">
+<a href="#coloc-4-0-0" class="anchor"></a>coloc 4.0-0<small> Unreleased </small>
+</h1>
+<p><em>new functions: coloc.signals, finemap.abf</em></p>
+<ul>
+<li>analogues of coloc.abf and finemap.abf that allow for multiple causal variants. See vignette on conditioning/masking <em>new function: sensitivity</em>
+</li>
+<li>post-hoc, determine the sensitivity of coloc results to changes in the prior. See vignette on sensitivity</li>
+</ul>
+<p>2019-06-25</p>
+</div>
+    <div id="coloc-3-2-1" class="section level1">
+<h1 class="page-header">
+<a href="#coloc-3-2-1" class="anchor"></a>coloc 3.2-1<small> 2019-05-17 </small>
+</h1>
+<ul>
+<li>BUGFIX: finemap.abf()</li>
+<li>in low power situations, the posterior for H0 was previously too low. This will only affect datasets where the minimum p value was &gt; 1e-7 - ie where the posterior for H0 would be expected to be much above 0.</li>
+</ul>
+</div>
     <div id="coloc-3-2" class="section level1">
 <h1 class="page-header">
 <a href="#coloc-3-2" class="anchor"></a>coloc 3.2<small> Unreleased </small>
 </h1>
-<p><em>new function: colocqq</em></p>
 <ul>
-<li>added colocqq for quantitative traits measured on the same individuals</li>
 <li>fix bug in process.datasets which suggested MAF was needed for cc data when beta/varbeta also present</li>
 <li>added pkgdown</li>
 </ul>
@@ -270,6 +307,8 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#coloc-4-0-0">4.0-0</a></li>
+        <li><a href="#coloc-3-2-1">3.2-1</a></li>
         <li><a href="#coloc-3-2">3.2</a></li>
         <li><a href="#coloc-3-1">3.1</a></li>
         <li><a href="#coloc-2-4">2.4</a></li>

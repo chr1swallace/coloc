@@ -11,7 +11,15 @@ reference:
     contents:
       - '`coloc.abf`'
       - '`finemap.abf`'
-      - '`coloc.qq`'
+  - title: Sensitivity analysis
+    desc: Check how robust inference is to changing prior parameter values
+    contents:
+      - '`sensitivity`'
+  - title: Relaxing the single variant assumption
+    desc: use conditioning or masking to account for multiple independent causal variants per trait
+    contents:
+      - '`coloc.signals`'
+      - '`finemap.signals`'
   - title: Proportional colocalisation
     desc: Testing colocalisation through proportionality of coefficients
     contents:

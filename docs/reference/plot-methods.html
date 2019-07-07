@@ -64,7 +64,7 @@ Plot results of a coloc.abf run" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0.0</span>
       </span>
     </div>
 
@@ -86,6 +86,24 @@ Plot results of a coloc.abf run" />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/conditioning_05.html">Coloc: relaxing the single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/enumeration_03.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/intro_01.html">Coloc: a package for colocalisation analyses</a>
+    </li>
+    <li>
+      <a href="../articles/proportionality_02.html">Coloc: proportionality testing</a>
+    </li>
+    <li>
+      <a href="../articles/sensitivity_04.html">Coloc: sensitivity to prior values</a>
+    </li>
+    <li>
+      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+    </li>
     <li>
       <a href="../articles/vignette.html">Coloc: a package for colocalisation analyses</a>
     </li>
@@ -129,22 +147,13 @@ Plot results of a coloc.abf run" />
 
     <pre class="usage"><span class='fu'>plot</span>(<span class='no'>x</span>, <span class='no'>y</span>, <span class='no'>...</span>)
 
-<span class='co'># S4 method for colocTWAS,missing</span>
-<span class='fu'>plot</span>(<span class='no'>x</span>)
-
-<span class='co'># S4 method for coloc,missing</span>
-<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='no'>y</span>, <span class='no'>...</span>)
-
-<span class='co'># S4 method for colocABF,missing</span>
-<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='no'>y</span>, <span class='no'>...</span>)
-
 <span class='co'># S4 method for coloc,missing</span>
 <span class='fu'>plot</span>(<span class='no'>x</span>, <span class='no'>y</span>, <span class='no'>...</span>)
 
 <span class='co'># S4 method for colocPCs,missing</span>
 <span class='fu'>plot</span>(<span class='no'>x</span>)
 
-<span class='fu'>abf.plot</span>(<span class='no'>coloc.obj</span>, <span class='kw'>Pos</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/nrow'>nrow</a></span>(<span class='no'>coloc.obj</span>@<span class='kw'>results</span>), <span class='kw'>chr</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='fu'>plot.coloc_abf</span>(<span class='no'>obj</span>, <span class='kw'>Pos</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/nrow'>nrow</a></span>(<span class='no'>obj</span>$<span class='no'>results</span>), <span class='kw'>chr</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>pos.start</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/Extremes'>min</a></span>(<span class='no'>Pos</span>), <span class='kw'>pos.end</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/Extremes'>max</a></span>(<span class='no'>Pos</span>), <span class='kw'>trait1</span> <span class='kw'>=</span> <span class='st'>"trait 1"</span>,
   <span class='kw'>trait2</span> <span class='kw'>=</span> <span class='st'>"trait 2"</span>)</pre>
     
@@ -164,7 +173,7 @@ Plot results of a coloc.abf run" />
       <td><p>other arguments</p></td>
     </tr>
     <tr>
-      <th>coloc.obj</th>
+      <th>obj</th>
       <td><p>object of class <code>colocABF</code> returned by coloc.abf()</p></td>
     </tr>
     <tr>
@@ -200,7 +209,7 @@ Plot results of a coloc.abf run" />
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>If coloc.obj is missing, it will be created as coloc.obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order</p>
+    <p>If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order</p>
     
 
   </div>

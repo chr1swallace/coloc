@@ -19,6 +19,12 @@
     <loc>http://chr1swallace.github.io/coloc/reference/bf-methods.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/bin2lin.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/check.dataset.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc-class.html</loc>
   </url>
   <url>
@@ -37,6 +43,15 @@
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.bma.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.detail.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.process.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.signals.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.test.html</loc>
   </url>
   <url>
@@ -52,19 +67,37 @@
     <loc>http://chr1swallace.github.io/coloc/reference/combine.abf.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/est_cond.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/estgeno1.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/eta.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/fillin.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/find.best.signal.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/finemap.abf.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/finemap.signals.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/logdiff.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/logsum.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/map_cond.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/map_mask.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/pcs.model.html</loc>
@@ -76,10 +109,34 @@
     <loc>http://chr1swallace.github.io/coloc/reference/plot-methods.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/print-methods.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/process.dataset.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/sdY.est.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/sensitivity.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/conditioning_05.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/enumeration_03.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/intro_01.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/proportionality_02.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/sensitivity_04.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/simdata.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/vignette.html</loc>

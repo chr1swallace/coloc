@@ -5,7 +5,6 @@ Imports:
     ggplot2,
     snpStats,
     BMA,
-    reshape,
     methods,
     viridis,
     stats,

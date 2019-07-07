@@ -60,7 +60,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0.0</span>
       </span>
     </div>
 
@@ -82,6 +82,24 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/conditioning_05.html">Coloc: relaxing the single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/enumeration_03.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+    </li>
+    <li>
+      <a href="../articles/intro_01.html">Coloc: a package for colocalisation analyses</a>
+    </li>
+    <li>
+      <a href="../articles/proportionality_02.html">Coloc: proportionality testing</a>
+    </li>
+    <li>
+      <a href="../articles/sensitivity_04.html">Coloc: sensitivity to prior values</a>
+    </li>
+    <li>
+      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+    </li>
     <li>
       <a href="../articles/vignette.html">Coloc: a package for colocalisation analyses</a>
     </li>
@@ -145,6 +163,40 @@
     </tbody><tbody>
       <tr>
         <th colspan="2">
+          <h2 id="section-sensitivity-analysis" class="hasAnchor"><a href="#section-sensitivity-analysis" class="anchor"></a>Sensitivity analysis</h2>
+          <p class="section-desc"><p>Check how robust inference is to changing prior parameter values</p></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="sensitivity.html">sensitivity()</a></code> </p>
+        </td>
+        <td><p>Prior sensitivity for coloc</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-relaxing-the-single-variant-assumption" class="hasAnchor"><a href="#section-relaxing-the-single-variant-assumption" class="anchor"></a>Relaxing the single variant assumption</h2>
+          <p class="section-desc"><p>use conditioning or masking to account for multiple independent causal variants per trait</p></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="coloc.signals.html">coloc.signals()</a></code> </p>
+        </td>
+        <td><p>Coloc with multiple signals per trait</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="finemap.signals.html">finemap.signals()</a></code> </p>
+        </td>
+        <td><p>Finemap multiple signals in a single dataset</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
           <h2 id="section-proportional-colocalisation" class="hasAnchor"><a href="#section-proportional-colocalisation" class="anchor"></a>Proportional colocalisation</h2>
           <p class="section-desc"><p>Testing colocalisation through proportionality of coefficients</p></p>
         </th>
@@ -182,6 +234,8 @@
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#section-bayesian-enumeration-of-hypotheses">Bayesian enumeration of hypotheses</a></li>
+      <li><a href="#section-sensitivity-analysis">Sensitivity analysis</a></li>
+      <li><a href="#section-relaxing-the-single-variant-assumption">Relaxing the single variant assumption</a></li>
       <li><a href="#section-proportional-colocalisation">Proportional colocalisation</a></li>
     </ul>
   </div>
