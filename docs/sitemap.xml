@@ -121,24 +121,21 @@
     <loc>http://chr1swallace.github.io/coloc/reference/sensitivity.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/conditioning_05.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a01_intro.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/enumeration_03.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a02_proportionality.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/intro_01.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a03_enumeration.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/proportionality_02.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a04_sensitivity.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/sensitivity_04.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a05_conditioning.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/simdata.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/vignette.html</loc>
   </url>
 </urlset>

@@ -53,19 +53,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/conditioning_05.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/enumeration_03.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_proportionality.html">Coloc: proportionality testing</a>
     </li>
     <li>
-      <a href="../articles/intro_01.html">Coloc: a package for colocalisation analyses</a>
+      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/proportionality_02.html">Coloc: proportionality testing</a>
+      <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/sensitivity_04.html">Coloc: sensitivity to prior values</a>
+      <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/simdata.html">UNKNOWN TITLE</a>
@@ -274,51 +274,51 @@ PC summary of genotypes
 <h1 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h1>
 <p>Let’s simulate a small dataset, and compare the three methods.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc)</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">setClass</span>(<span class="st">"simdata"</span>,</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">         <span class="kw">representation</span>(<span class="dt">df1=</span><span class="st">"data.frame"</span>,<span class="dt">df2=</span><span class="st">"data.frame"</span>))</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">setValidity</span>(<span class="st">"simdata"</span>, <span class="cf">function</span>(object) {</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">  n &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df1)</a>
-<a class="sourceLine" id="cb1-6" data-line-number="6">  <span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df2)<span class="op">!=</span>n)</a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="st">"nrow of '@df1' should equal nrow of '@df2'"</span>)</a>
-<a class="sourceLine" id="cb1-8" data-line-number="8">})</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc)
+<span class="kw">setClass</span>(<span class="st">"simdata"</span>,
+         <span class="kw">representation</span>(<span class="dt">df1=</span><span class="st">"data.frame"</span>,<span class="dt">df2=</span><span class="st">"data.frame"</span>))
+<span class="kw">setValidity</span>(<span class="st">"simdata"</span>, <span class="cf">function</span>(object) {
+  n &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df1)
+  <span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df2)<span class="op">!=</span>n)
+    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="st">"nrow of '@df1' should equal nrow of '@df2'"</span>)
+})</code></pre></div>
 <pre><code>## Class "simdata" [in ".GlobalEnv"]
 ## 
 ## Slots:
 ##                             
 ## Name:         df1        df2
 ## Class: data.frame data.frame</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">setMethod</span>(<span class="st">"show"</span>, <span class="dt">signature=</span><span class="st">"simdata"</span>, <span class="cf">function</span>(object) {</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"pair of simulated datasets, with"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(object<span class="op">@</span>df1)<span class="op">-</span><span class="dv">1</span>,<span class="st">"SNPs and"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df1),<span class="st">"samples.</span><span class="ch">\n</span><span class="st">"</span>)</a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">})</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span>,<span class="dt">nsim=</span><span class="dv">1</span>) {</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)</a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">  ntotal &lt;-<span class="st"> </span>nsnps <span class="op">*</span><span class="st"> </span>nsamples <span class="op">*</span><span class="st"> </span>nsim</a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">  X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">matrix</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>)<span class="op">+</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>),<span class="dt">ncol=</span>nsnps)</a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(nsamples,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X1[,causals]),<span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">  X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">matrix</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>)<span class="op">+</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>),<span class="dt">ncol=</span>nsnps)</a>
-<a class="sourceLine" id="cb3-11" data-line-number="11">  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(nsamples,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X2[,causals]),<span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)</a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)</a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)</a>
-<a class="sourceLine" id="cb3-15" data-line-number="15">  <span class="cf">if</span>(nsim<span class="op">==</span><span class="dv">1</span>) {</a>
-<a class="sourceLine" id="cb3-16" data-line-number="16">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,</a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">               <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1),</a>
-<a class="sourceLine" id="cb3-18" data-line-number="18">               <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2)))</a>
-<a class="sourceLine" id="cb3-19" data-line-number="19">  } <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb3-20" data-line-number="20">    index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/split">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))</a>
-<a class="sourceLine" id="cb3-21" data-line-number="21">    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1[i,]),</a>
-<a class="sourceLine" id="cb3-22" data-line-number="22">                                             <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2[i,])))</a>
-<a class="sourceLine" id="cb3-23" data-line-number="23">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(objects)</a>
-<a class="sourceLine" id="cb3-24" data-line-number="24">  }</a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">}</a>
-<a class="sourceLine" id="cb3-26" data-line-number="26"></a>
-<a class="sourceLine" id="cb3-27" data-line-number="27"><span class="co">## simulate some data and load the coloc library</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">46411</span>)</a>
-<a class="sourceLine" id="cb3-29" data-line-number="29">data &lt;-<span class="st"> </span><span class="kw">sim.data</span>(<span class="dt">nsamples=</span><span class="dv">1000</span>,<span class="dt">nsim=</span><span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setMethod</span>(<span class="st">"show"</span>, <span class="dt">signature=</span><span class="st">"simdata"</span>, <span class="cf">function</span>(object) {
+  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"pair of simulated datasets, with"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(object<span class="op">@</span>df1)<span class="op">-</span><span class="dv">1</span>,<span class="st">"SNPs and"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(object<span class="op">@</span>df1),<span class="st">"samples.</span><span class="ch">\n</span><span class="st">"</span>)
+})</code></pre></div>
+<pre><code>## [1] "show"</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span>,<span class="dt">nsim=</span><span class="dv">1</span>) {
+  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)
+  ntotal &lt;-<span class="st"> </span>nsnps <span class="op">*</span><span class="st"> </span>nsamples <span class="op">*</span><span class="st"> </span>nsim
+  X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">matrix</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>)<span class="op">+</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>),<span class="dt">ncol=</span>nsnps)
+  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(nsamples,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X1[,causals]),<span class="dv">2</span>)
+  X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">matrix</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>)<span class="op">+</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">rbinom</a></span>(ntotal,<span class="dv">1</span>,<span class="fl">0.4</span>),<span class="dt">ncol=</span>nsnps)
+  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(nsamples,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X2[,causals]),<span class="dv">2</span>)
+  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)
+  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)
+  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)
+  <span class="cf">if</span>(nsim<span class="op">==</span><span class="dv">1</span>) {
+    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,
+               <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1),
+               <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2)))
+  } <span class="cf">else</span> {
+    index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/split">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))
+    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1[i,]),
+                                             <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2[i,])))
+    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(objects)
+  }
+}
+
+## simulate some data and load the coloc library
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">46411</span>)
+data &lt;-<span class="st"> </span><span class="kw">sim.data</span>(<span class="dt">nsamples=</span><span class="dv">1000</span>,<span class="dt">nsim=</span><span class="dv">1</span>)</code></pre></div>
 <pre><code>## Generate 1 small sets of data</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc) </code></pre></div>
 <p>If you are not familiar with the analysis of genetic data in R, I would suggest beginning with the <a href="http://www.bioconductor.org/packages/release/bioc/html/snpStats.html">snpStats package</a>, which has functions for reading data in a variety of formats and contains a vignette on data input. Once you have your genetic data loaded as a SnpMatrix, <code>X</code>, and phenotype information in a vector <code>Y</code>, then conversion to a <code>data.frame</code> as used above follows</p>
 <pre><code>df &lt;- as.data.frame(cbind(Y=Y, as(X,"numeric")))</code></pre>
 <p><a id="org953546b"></a></p>
@@ -328,40 +328,40 @@ PC summary of genotypes
 <a href="#an-aside-fine-mapping-under-a-single-causal-variant-assumption" class="anchor"></a>An aside: fine mapping under a single causal variant assumption</h1>
 <p>The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared. Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.</p>
 <p>First we analyse a single trait from our simulated data to generate summary statistics:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ns-load">requireNamespace</a></span>(<span class="st">"snpStats"</span>)) {</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(snpStats)</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4">X1 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>]))</a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">p1 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y1, <span class="dt">snp.data=</span>X1),<span class="dt">df=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/row.summary">col.summary</a></span>(X1)[,<span class="st">"MAF"</span>]</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb7-8" data-line-number="8">get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(...) {</a>
-<a class="sourceLine" id="cb7-9" data-line-number="9">   tmp &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/snp.rhs.estimates">snp.rhs.estimates</a></span>(..., <span class="dt">family=</span><span class="st">"gaussian"</span>)</a>
-<a class="sourceLine" id="cb7-10" data-line-number="10">   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp,<span class="st">"[["</span>,<span class="st">"beta"</span>)</a>
-<a class="sourceLine" id="cb7-11" data-line-number="11">   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp, <span class="st">"[["</span>, <span class="st">"Var.beta"</span>)</a>
-<a class="sourceLine" id="cb7-12" data-line-number="12">   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))</a>
-<a class="sourceLine" id="cb7-13" data-line-number="13">}</a>
-<a class="sourceLine" id="cb7-14" data-line-number="14">b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y1 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X1)</a>
-<a class="sourceLine" id="cb7-15" data-line-number="15">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb7-16" data-line-number="16">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb7-17" data-line-number="17">X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])</a>
-<a class="sourceLine" id="cb7-18" data-line-number="18">tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])</a>
-<a class="sourceLine" id="cb7-19" data-line-number="19">p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb7-20" data-line-number="20">maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb7-21" data-line-number="21"></a>
-<a class="sourceLine" id="cb7-22" data-line-number="22">get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb7-23" data-line-number="23">   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb7-24" data-line-number="24">   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb7-25" data-line-number="25">   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))</a>
-<a class="sourceLine" id="cb7-26" data-line-number="26">}</a>
-<a class="sourceLine" id="cb7-27" data-line-number="27">b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)</a>
-<a class="sourceLine" id="cb7-28" data-line-number="28">} </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ns-load">requireNamespace</a></span>(<span class="st">"snpStats"</span>)) {
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(snpStats)
+Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
+X1 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>]))
+p1 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y1, <span class="dt">snp.data=</span>X1),<span class="dt">df=</span><span class="dv">1</span>)
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/row.summary">col.summary</a></span>(X1)[,<span class="st">"MAF"</span>]
+
+get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(...) {
+   tmp &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/snp.rhs.estimates">snp.rhs.estimates</a></span>(..., <span class="dt">family=</span><span class="st">"gaussian"</span>)
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp,<span class="st">"[["</span>,<span class="st">"beta"</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp, <span class="st">"[["</span>, <span class="st">"Var.beta"</span>)
+   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+}
+b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y1 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X1)
+} <span class="cf">else</span> {
+Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
+X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
+tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span>
+
+get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
+   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+}
+b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)
+} </code></pre></div>
 <pre><code>## Loading required package: survival</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
 <pre><code>## coercing object of mode  numeric  to SnpMatrix</code></pre>
 <p>Then we analyse them:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="dt">dataset=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>))</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(my.res)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="dt">dataset=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>))
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(my.res)</code></pre></div>
 <pre><code>##            V.          z.        r.      lABF.   snp prior       SNP.PP
 ## s1 0.03924328  5.78083831 0.7567274 11.9374068 SNP.1 1e-04 9.372547e-01
 ## s2 0.03880072  4.01220890 0.7588092  5.3965036 SNP.2 1e-04 1.352631e-03
@@ -369,7 +369,7 @@ PC summary of genotypes
 ## s4 0.04602953  0.83093858 0.7261782 -0.3969407 SNP.4 1e-04 4.122100e-06
 ## s5 0.04237982 -1.83425483 0.7422945  0.5707526 SNP.5 1e-04 1.084882e-05
 ## s6 0.04495749 -0.22493863 0.7308390 -0.6377335 SNP.6 1e-04 3.239989e-06</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">tail</a></span>(my.res) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">tail</a></span>(my.res) </code></pre></div>
 <pre><code>##              V.          z.        r.       lABF.    snp  prior
 ## s46  0.04560292 -0.00230155 0.7280258 -0.65102205 SNP.46 0.0001
 ## s47  0.05248414 -1.20366960 0.6993259 -0.09426528 SNP.47 0.0001
@@ -427,70 +427,70 @@ PC summary of genotypes
 </ul>
 <p>If regression coefficients and their variance are available, please use these, but we can also approximate Bayes Factors from p values and minor allele frequencies, although, note, such approximation can be less accurate when imputed data are used. NB, you can mix and match, depending on the data available from each study.</p>
 <p>A wrapper function is avalailable to run all these steps but we will first generate the p values manually to give all the details. We use the snpStats library from Bioconductor to calculate the p values quickly. We will also calculate the coefficients and their standard errors to compare the two approaches (but you should use only one - the coefficients if available, otherwise the p values).</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ns-load">requireNamespace</a></span>(<span class="st">"snpStats"</span>)) {</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(snpStats)</a>
-<a class="sourceLine" id="cb15-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb15-4" data-line-number="4">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb15-5" data-line-number="5">Y2 &lt;-<span class="st"> </span>data<span class="op">@</span>df2<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb15-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb15-7" data-line-number="7">X1 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>]))</a>
-<a class="sourceLine" id="cb15-8" data-line-number="8">X2 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>]))</a>
-<a class="sourceLine" id="cb15-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb15-10" data-line-number="10">p1 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y1, <span class="dt">snp.data=</span>X1),<span class="dt">df=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb15-11" data-line-number="11">p2 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y2, <span class="dt">snp.data=</span>X2),<span class="dt">df=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb15-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb15-13" data-line-number="13">maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/row.summary">col.summary</a></span>(X2)[,<span class="st">"MAF"</span>]</a>
-<a class="sourceLine" id="cb15-14" data-line-number="14"></a>
-<a class="sourceLine" id="cb15-15" data-line-number="15">get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(...) {</a>
-<a class="sourceLine" id="cb15-16" data-line-number="16">   tmp &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/snp.rhs.estimates">snp.rhs.estimates</a></span>(..., <span class="dt">family=</span><span class="st">"gaussian"</span>)</a>
-<a class="sourceLine" id="cb15-17" data-line-number="17">   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp,<span class="st">"[["</span>,<span class="st">"beta"</span>)</a>
-<a class="sourceLine" id="cb15-18" data-line-number="18">   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp, <span class="st">"[["</span>, <span class="st">"Var.beta"</span>)</a>
-<a class="sourceLine" id="cb15-19" data-line-number="19">   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))</a>
-<a class="sourceLine" id="cb15-20" data-line-number="20">}</a>
-<a class="sourceLine" id="cb15-21" data-line-number="21">b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y1 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X1)</a>
-<a class="sourceLine" id="cb15-22" data-line-number="22">b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y2 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X2)</a>
-<a class="sourceLine" id="cb15-23" data-line-number="23">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb15-24" data-line-number="24">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb15-25" data-line-number="25">Y2 &lt;-<span class="st"> </span>data<span class="op">@</span>df2<span class="op">$</span>Y</a>
-<a class="sourceLine" id="cb15-26" data-line-number="26"></a>
-<a class="sourceLine" id="cb15-27" data-line-number="27">X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])</a>
-<a class="sourceLine" id="cb15-28" data-line-number="28">X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])</a>
-<a class="sourceLine" id="cb15-29" data-line-number="29"></a>
-<a class="sourceLine" id="cb15-30" data-line-number="30">tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])</a>
-<a class="sourceLine" id="cb15-31" data-line-number="31">tests2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X2), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y2 <span class="op">~</span><span class="st"> </span>X2[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])</a>
-<a class="sourceLine" id="cb15-32" data-line-number="32"></a>
-<a class="sourceLine" id="cb15-33" data-line-number="33">p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb15-34" data-line-number="34">p2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests2,<span class="st">"["</span>,<span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb15-35" data-line-number="35"></a>
-<a class="sourceLine" id="cb15-36" data-line-number="36">maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb15-37" data-line-number="37"></a>
-<a class="sourceLine" id="cb15-38" data-line-number="38">get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb15-39" data-line-number="39">   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb15-40" data-line-number="40">   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb15-41" data-line-number="41">   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))</a>
-<a class="sourceLine" id="cb15-42" data-line-number="42">}</a>
-<a class="sourceLine" id="cb15-43" data-line-number="43">b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)</a>
-<a class="sourceLine" id="cb15-44" data-line-number="44">b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</a>
-<a class="sourceLine" id="cb15-45" data-line-number="45">} </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ns-load">requireNamespace</a></span>(<span class="st">"snpStats"</span>)) {
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(snpStats)
+
+Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
+Y2 &lt;-<span class="st"> </span>data<span class="op">@</span>df2<span class="op">$</span>Y
+
+X1 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>]))
+X2 &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">"SnpMatrix"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>]))
+
+p1 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y1, <span class="dt">snp.data=</span>X1),<span class="dt">df=</span><span class="dv">1</span>)
+p2 &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/chi.squared">p.value</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/single.snp.tests">single.snp.tests</a></span>(<span class="dt">phenotype=</span>Y2, <span class="dt">snp.data=</span>X2),<span class="dt">df=</span><span class="dv">1</span>)
+
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/row.summary">col.summary</a></span>(X2)[,<span class="st">"MAF"</span>]
+
+get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(...) {
+   tmp &lt;-<span class="st"> </span>snpStats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/snpStats/topics/snp.rhs.estimates">snp.rhs.estimates</a></span>(..., <span class="dt">family=</span><span class="st">"gaussian"</span>)
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp,<span class="st">"[["</span>,<span class="st">"beta"</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tmp, <span class="st">"[["</span>, <span class="st">"Var.beta"</span>)
+   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+}
+b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y1 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X1)
+b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(Y2 <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">snp.data=</span>X2)
+} <span class="cf">else</span> {
+Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
+Y2 &lt;-<span class="st"> </span>data<span class="op">@</span>df2<span class="op">$</span>Y
+
+X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
+X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
+
+tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+tests2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X2), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y2 <span class="op">~</span><span class="st"> </span>X2[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+
+p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
+p2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests2,<span class="st">"["</span>,<span class="dv">4</span>)
+
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span>
+
+get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
+   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+}
+b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)
+b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)
+} </code></pre></div>
 <pre><code>## coercing object of mode  numeric  to SnpMatrix
 ## coercing object of mode  numeric  to SnpMatrix</code></pre>
 <p>Note that we are using the second dataset in that case to compute the minor allele frequencies. This is unlikely to make any significant difference but one could have used dataset 1 instead. It is now possible to compute the probabilities of interest.</p>
 <p>With coefficients, and std. deviation of Y known, we have the most accurate inference. Note that if you have a case-control trait, set type=“cc” and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb17-2" data-line-number="2">                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y2),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb17-3" data-line-number="3">                    <span class="dt">MAF=</span>maf)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y2),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">MAF=</span>maf)</code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  2.92e-05  4.47e-04  6.73e-05  3.08e-05  9.99e-01 
 ## [1] "PP abf for shared variant: 99.9%"</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </code></pre></div>
 <pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
 ## 5.000000e+01 2.915837e-05 4.466024e-04 6.726224e-05 3.079177e-05 
 ##    PP.H4.abf 
 ## 9.994262e-01</code></pre>
 <p>When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb21-3" data-line-number="3">                    <span class="dt">MAF=</span>maf)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">MAF=</span>maf)</code></pre></div>
 <pre><code>## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
 ## varbeta, please directly supply sdY if known
 
@@ -499,26 +499,26 @@ PC summary of genotypes
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  2.54e-06  1.48e-04  1.75e-05  2.00e-05  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </code></pre></div>
 <pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
 ## 5.000000e+01 2.535953e-06 1.476540e-04 1.751478e-05 1.997285e-05 
 ##    PP.H4.abf 
 ## 9.998123e-01</code></pre>
 <p>When only p values are available, we can use the form:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p1,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb26-2" data-line-number="2">                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p2,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),</a>
-<a class="sourceLine" id="cb26-3" data-line-number="3">                    <span class="dt">MAF=</span>maf)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p1,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p2,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">MAF=</span>maf)</code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.01e-05  2.61e-04  4.00e-05  2.71e-05  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res[[<span class="dv">1</span>]]) </code></pre></div>
 <pre><code>##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
 ## 5.000000e+01 1.014723e-05 2.605269e-04 3.998959e-05 2.705757e-05 
 ##    PP.H4.abf 
 ## 9.996623e-01</code></pre>
 <p>Here, as we have simulated full genotype data in snpStats format, we can use the wrapper function <code><a href="../reference/coloc.abf.datasets.html">coloc.abf.datasets()</a></code> to combine all the steps shown above.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" data-line-number="1">ct.abf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.datasets.html">coloc.abf.datasets</a></span>(data<span class="op">@</span>df1, data<span class="op">@</span>df2, <span class="dt">response1=</span><span class="st">"Y"</span>, <span class="dt">response2=</span><span class="st">"Y"</span>,</a>
-<a class="sourceLine" id="cb30-2" data-line-number="2">                             <span class="dt">type1=</span><span class="st">"quant"</span>, <span class="dt">type2=</span><span class="st">"quant"</span>) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct.abf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.datasets.html">coloc.abf.datasets</a></span>(data<span class="op">@</span>df1, data<span class="op">@</span>df2, <span class="dt">response1=</span><span class="st">"Y"</span>, <span class="dt">response2=</span><span class="st">"Y"</span>,
+                             <span class="dt">type1=</span><span class="st">"quant"</span>, <span class="dt">type2=</span><span class="st">"quant"</span>) </code></pre></div>
 <pre><code>## coercing object of mode  numeric  to SnpMatrix
 ## coercing object of mode  numeric  to SnpMatrix
 ## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
@@ -531,28 +531,28 @@ PC summary of genotypes
 <h1 class="hasAnchor">
 <a href="#proportional-testing" class="anchor"></a>Proportional testing</h1>
 <p>The code below first prepares a principal component object by combining the genotypes in the two dataset, then models the most informative components (the minimum set required to capture 80% of the genetic variation) in each dataset, before finally testing whether there is colocalisation between these models.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" data-line-number="1"><span class="co">## run a coloc with pcs</span></a>
-<a class="sourceLine" id="cb32-2" data-line-number="2">pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.prepare.html">pcs.prepare</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>], data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])</a>
-<a class="sourceLine" id="cb32-3" data-line-number="3">pcs<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">1</span>, <span class="dt">Y=</span>data<span class="op">@</span>df1[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## run a coloc with pcs
+pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.prepare.html">pcs.prepare</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>], data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
+pcs<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">1</span>, <span class="dt">Y=</span>data<span class="op">@</span>df1[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</code></pre></div>
 <pre><code>## selecting 38 components out of 50 to capture 0.8094953 of total variance.</code></pre>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" data-line-number="1">pcs<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">2</span>, <span class="dt">Y=</span>data<span class="op">@</span>df2[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pcs<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">2</span>, <span class="dt">Y=</span>data<span class="op">@</span>df2[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</code></pre></div>
 <pre><code>## selecting 38 components out of 50 to capture 0.8094953 of total variance.</code></pre>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" data-line-number="1">ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>) </code></pre></div>
 <p>The plot shows the estimated coefficients for each principal component modeled for traits 1 and 2 on the x and y axes, with circles showing the 95% confidence region. The points lie close to the line through the origin, which supports a hypothesis of colocalisation.</p>
 <p>A little more information is stored in the <code>ct.pcs</code> object:</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" data-line-number="1">ct.pcs</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct.pcs</code></pre></div>
 <pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
 ##         1.0346897        35.3484010        38.0000000         0.5465861</code></pre>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(<span class="kw"><a href="../reference/eta.html">summary</a></span>(ct.pcs)) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(<span class="kw"><a href="../reference/eta.html">summary</a></span>(ct.pcs)) </code></pre></div>
 <pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
 ##         1.0346897        35.3484010        38.0000000         0.5465861 
 ##  Named num [1:4] 1.035 35.348 38 0.547
 ##  - attr(*, "names")= chr [1:4] "eta.hat" "chisquare" "n" "p.value.chisquare"</code></pre>
 <p>The best estimate for the coefficient of proportionality, <span class="math inline">\(\hat{\eta}\)</span>, is 1.13, and the null hypothesis of colocalisation is not rejected with a chisquare statistic of 5.27 based on 7 degrees of freedom (<span class="math inline">\(n-1\)</span> where the <span class="math inline">\(n\)</span> is the number of components tested, and one degree of freedom was used in estimating <span class="math inline">\(\eta\)</span>), giving a p value of 0.63. The <code><a href="../reference/eta.html">summary()</a></code> method returns a named vector of length 4 containing this information.</p>
 <p>If more information is needed about <span class="math inline">\(\eta\)</span>, then this is available if the <code>bayes</code> argument is supplied:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" data-line-number="1">ct.pcs.bayes &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct.pcs.bayes &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## ............</code></pre>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" data-line-number="1"><span class="kw"><a href="../reference/eta.html">ci</a></span>(ct.pcs.bayes) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/eta.html">ci</a></span>(ct.pcs.bayes) </code></pre></div>
 <pre><code>## $eta.mode
 ## [1] 1.039993
 ## 
@@ -573,19 +573,19 @@ PC summary of genotypes
 <a href="#using-bayes-factors-to-compare-specific-values-of-eta" class="anchor"></a>Using Bayes Factors to compare specific values of <span class="math inline">\(\eta\)</span>
 </h2>
 <p>It may be that specific values of <span class="math inline">\(\eta\)</span> are of interest. For example, when comparing eQTLs in two tissues, or when comparing risk of two related diseases, the value <span class="math inline">\(\eta=1\)</span> is of particular interest. In proportional testing, we can use Bayes Factors to compare the support for different values of <span class="math inline">\(\eta\)</span>. Eg</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" data-line-number="1"><span class="co">## compare individual values of eta</span></a>
-<a class="sourceLine" id="cb45-2" data-line-number="2">ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes.factor=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## compare individual values of eta
+ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes.factor=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
 <pre><code>## ............</code></pre>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" data-line-number="1"><span class="kw"><a href="../reference/bf-methods.html">bf</a></span>(ct.pcs)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/bf-methods.html">bf</a></span>(ct.pcs)</code></pre></div>
 <pre><code>##           values.against
 ## values.for           -1            0            1
 ##         -1 1.000000e+00 4.495343e-33 9.816601e-73
 ##         0  2.224524e+32 1.000000e+00 2.183727e-40
 ##         1  1.018683e+72 4.579328e+39 1.000000e+00</code></pre>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" data-line-number="1"><span class="co">## compare ranges of eta</span></a>
-<a class="sourceLine" id="cb49-2" data-line-number="2">ct.bma &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.bma.html">coloc.bma</a></span>(data<span class="op">@</span>df1, data<span class="op">@</span>df2, </a>
-<a class="sourceLine" id="cb49-3" data-line-number="3">                    <span class="dt">family1=</span><span class="st">"gaussian"</span>, <span class="dt">family2=</span><span class="st">"gaussian"</span>,</a>
-<a class="sourceLine" id="cb49-4" data-line-number="4">                    <span class="dt">bayes.factor=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="fl">0.1</span>,<span class="dv">1</span>), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="fl">0.9</span>,<span class="fl">1.1</span>)))</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## compare ranges of eta
+ct.bma &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.bma.html">coloc.bma</a></span>(data<span class="op">@</span>df1, data<span class="op">@</span>df2, 
+                    <span class="dt">family1=</span><span class="st">"gaussian"</span>, <span class="dt">family2=</span><span class="st">"gaussian"</span>,
+                    <span class="dt">bayes.factor=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="fl">0.1</span>,<span class="dv">1</span>), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="fl">0.9</span>,<span class="fl">1.1</span>)))</code></pre></div>
 <pre><code>## Dropped 0 of 50 SNPs due to LD: r2 &gt; 0.95.</code></pre>
 <pre><code>## 50 SNPs remain.</code></pre>
 <pre><code>## Warning in E1ot$app1 - E0ot$app1: Recycling array of length 1 in vector-array arithmetic is deprecated.
@@ -1474,7 +1474,7 @@ PC summary of genotypes
 ##   Use c() or as.vector() instead.</code></pre>
 <pre><code>## Averaging coloc testing over 3 models with posterior probabilities &gt;= 1e-229 
 ## ...</code></pre>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb61-1" data-line-number="1"><span class="kw"><a href="../reference/bf-methods.html">bf</a></span>(ct.bma) </a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/bf-methods.html">bf</a></span>(ct.bma) </code></pre></div>
 <pre><code>##              values.against
 ## values.for    c(-0.1, 1) c(0.9, 1.1)
 ##   c(-0.1, 1)     1.00000  0.08537724
