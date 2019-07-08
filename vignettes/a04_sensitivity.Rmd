@@ -1,0 +1,107 @@
+---
+title: "Coloc: sensitivity to prior values"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Coloc: sensitivity to prior values}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r sim, echo=FALSE, child="simdata.Rmd" }
+```
+
+# Sensitivity analysis
+
+Specifying prior values for coloc.abf() is important, as results can be dependent on these values.  Defaults of \(p_1=p_2=10^{-4}\) seem justified in a wide range of scenarios, because these broadly correspond to a 99% belief that there is true association when we see \(p<5\times 10^{-8}\) in a GWAS.  However, choice of \(p_{12}\) is more difficult.  We hope the [coloc explorer app](https://chr1swallace.shinyapps.io/coloc-priors/) will be helpful in exploring what various choices mean, at a per-SNP and per-hypothesis level.  However, having conducted an enumeration-based coloc analysis, it is still helpful to check that any inference about colocalisation is robust to variations in prior values specified.
+
+Continuing on from [03_enumeration](the last vignette), we have
+
+```{r ,echo=FALSE,results="hide"  }
+Y1 <- data@df1$Y
+Y2 <- data@df2$Y
+
+X1 <- as.matrix(data@df1[,-1])
+X2 <- as.matrix(data@df2[,-1])
+
+tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
+tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
+
+p1 <- sapply(tests1,"[",4)
+p2 <- sapply(tests2,"[",4)
+
+maf <- colMeans(X2)/2
+
+get.beta <- function(x) {
+   beta <- sapply(x,"[",1)
+   varbeta <- sapply(x, "[", 2)^2
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(tests1)
+b2 <- get.beta(tests2)
+```
+
+```{r prep}
+library(coloc)
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant"),
+                    MAF=maf,p12=1e-6)
+my.res
+```
+
+A sensitivity analysis can be used, post-hoc, to determine the range of prior probabilities for which a conclusion is still supported.  The sensitivity() function shows this for variable \(p_{12}\) in the bottom right plot, along with the prior probabilities of each hypothesis, which may help decide whether a particular range of \(p_{12}\) is valid.
+The green region shows the region - the set of values of \(p_{12}\) - for which \(H_4 > 0.5\) - the rule that was specified.  In this case, the conclusion of colocalisation looks quite robust.
+On the left (optionally) the input data are also presented, with shading to indicate the posterior probabilities that a SNP is causal if \(H_4\) were true.  This can be useful to indicate serious discrepancies also.
+
+```{r sens, fig.width=8,fig.height=6  }
+sensitivity(my.res,rule="H4 > 0.5") 
+```
+
+
+Let's make a smaller dataset where that won't be the case:
+
+
+```{r ,echo=FALSE,results="hide"  }
+use=sample(1:1000,300)
+Y1 <- data@df1$Y[use]
+Y2 <- data@df2$Y[use]
+
+X1 <- as.matrix(data@df1[use,-1])
+X2 <- as.matrix(data@df2[use,-1])
+
+tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
+tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
+
+p1 <- sapply(tests1,"[",4)
+p2 <- sapply(tests2,"[",4)
+
+maf <- colMeans(X2)/2
+
+get.beta <- function(x) {
+   beta <- sapply(x,"[",1)
+   varbeta <- sapply(x, "[", 2)^2
+   return(list(beta=beta,varbeta=varbeta))
+}
+b1 <- get.beta(tests1)
+b2 <- get.beta(tests2)
+```
+
+Now, colocalisation is very dependent on the value of \(p_{12}\):
+
+```{r sens2, fig.width=8,fig.height=6  }
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant"),
+                    MAF=maf,p12=1e-6)
+my.res
+sensitivity(my.res,rule="H4 > 0.5") 
+```
+
+In this case, we find there is evidence for colocalisation according
+to a rule \(H_4>0.5\) only for \(p_{12}>10^{-6}\), which might be less
+convincing than the situation above.  Note, the syntax can also
+consider more complicated rules:
+
+```{r sens3, fig.width=8,fig.height=6  }
+sensitivity(my.res,rule="H4 > 3*H3 && H0 < 0.1") 
+```
+
