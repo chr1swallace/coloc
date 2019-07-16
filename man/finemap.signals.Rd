@@ -4,8 +4,8 @@
 \alias{finemap.signals}
 \title{Finemap multiple signals in a single dataset}
 \usage{
-finemap.signals(D, LD = D$LD, method = c("mask", "cond"), r2thr = 0.01,
-  sigsnps = NULL, pthr = 1e-06, maxhits = 3)
+finemap.signals(D, LD = D$LD, method = c("single", "mask", "cond"),
+  r2thr = 0.01, sigsnps = NULL, pthr = 1e-06, maxhits = 3)
 }
 \arguments{
 \item{D}{list of summary stats for a single disease, as defined
@@ -23,7 +23,8 @@ matrix is properly allelically aligned to estimated effect}
 r2thr with any sigsnps. Otherwise ignored}
 
 \item{sigsnps}{SNPs already deemed significant, to condition on or
-mask}
+mask, expressed as a numeric vector, whose \emph{names} are the snp
+names}
 
 \item{pthr}{when p > pthr, stop successive searching}
 
@@ -35,7 +36,7 @@ to TRUE}
 }
 \value{
 list of successively significant fine mapped SNPs, named
-    by the SNPs
+by the SNPs
 }
 \description{
 This is an analogue to finemap.abf, adapted to find multiple

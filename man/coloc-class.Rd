@@ -8,7 +8,7 @@
 \alias{colocBMA}
 \title{Classes \code{"coloc"} and \code{"colocBayes"}}
 \description{
-Classes 
+Classes
 designed to hold objects returned by function \code{\link{coloc.test}} which
 performs a test of the null hypothesis that two genetic traits colocalise -
 that they share a common causal variant.

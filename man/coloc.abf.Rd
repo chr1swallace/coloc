@@ -11,11 +11,11 @@ coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04,
 \item{dataset1}{a list with the following elements
 \describe{
 
-  \item{pvalues}{P-values for each SNP in dataset 1}
+\item{pvalues}{P-values for each SNP in dataset 1}
 
-  \item{N}{Number of samples in dataset 1}
+\item{N}{Number of samples in dataset 1}
 
-  \item{MAF}{minor allele frequency of the variants}
+\item{MAF}{minor allele frequency of the variants}
 
 \item{beta}{regression coefficient for each SNP from dataset 1}
 
@@ -25,7 +25,7 @@ coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04,
 
 \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
 
- \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
+\item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
 
 \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
 

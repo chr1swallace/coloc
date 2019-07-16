@@ -281,7 +281,7 @@ finemap.abf <- function(dataset, p1=1e-4) {
   
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
-  dfnull <- df[1,]
+    dfnull <- df[1,]
     for(nm in colnames(df))
         dfnull[,nm] <- NA
     dfnull[,"snp"] <- "null"
@@ -487,12 +487,12 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
 ##' @return NULL
 ##' @export
 ##' @author Chris Wallace
-check.dataset <- function(d,suffix="") {
+check.dataset <- function(d,suffix="",req=NULL) {
    if(!is.list(d) )
        stop("dataset ",suffix,": is not a list")
    nd <- names(d)
 
-  ## sample size
+   ## sample size
    if (!('N' %in% nd) || is.null(d$N) || is.na(d$N))
        stop("dataset ",suffix,": sample size N not set")
 
@@ -501,25 +501,36 @@ check.dataset <- function(d,suffix="") {
        stop("dataset ",suffix,": variable type not set")
    if(!(d$type %in% c("quant","cc")))
        stop("dataset ",suffix,": ","type must be quant or cc")
-  
-  if(d$type=="cc") {
+
+   ## var(Y)
+   if(d$type=="cc") {
       if(! "s" %in% nd)
           stop("dataset ",suffix,": ","s, proportion of samples who are cases, not found")
       if(d$s<=0 || d$s>=1)
           stop("dataset ",suffix,": ","s must be between 0 and 1")
       if("pvalues" %in% nd && !( "MAF" %in% nd))
           stop("dataset ",suffix,": ","p values found, but no MAF")
-  }
-  
-  if(d$type=="quant") {
+  } else {
       if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
 
    ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
-   for(v in c("MAF","pvalues","beta","varbeta")) {
-       if(v %in% nd && any(is.na(d[[v]])))
-           stop("dataset ",suffix,": ",v," contains missing values")
+   ## req <- unique(c("snp",req)) # always need snp to match now
+   n <- 0
+   for(v in c("MAF","pvalues","beta","varbeta","snp","position")) {
+       if(v %in% req && !(v %in% nd))
+           stop("dataset ",suffix,": missing required element ",v)
+       if(v %in% nd) {
+           if(any(is.na(d[[v]])))
+               stop("dataset ",suffix,": ",v," contains missing values")
+           if(n==0) {
+               n <- length(d[[v]])
+               next
+           }
+           if(length(d[[v]])!=n)
+               stop("dataset ",suffix,": ",v," different length")
+       }
    }
 
    ## if we reach here, no badness detected

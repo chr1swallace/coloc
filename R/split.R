@@ -104,20 +104,25 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
 ##' @return data.table giving snp, beta and varbeta on remaining snps
 ##'     after conditioning
 ##' @author Chris Wallace
-est_cond <- function(x,LD,YY,sigsnps) {
+est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
     LD <- LD[x$snp,x$snp]
     nuse <- match(sigsnps,x$snp) # to be conditioned on
-    use <- !(rownames(LD) %in% sigsnps | apply(abs(LD[nuse,,drop=FALSE]),2,max)>0.99) # to find new beta for, conditional on nuse, excluding SNPs in r>0.99 with nuse
+    use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.9) # to find new beta for, conditional on nuse, excluding SNPs in r2>0.9 with nuse because small inaccuracies can blow up, and we generally don't expect a second detectable signal in such high LD with a first signal
 
+    check.dataset(x,req="MAF")
     ## Estimating X'X is the key
-    if(x$type=="quant") {
-        ## if quant, assume MAF is correct estimate for sample
-        VX <- 2 * x$MAF * (1-x$MAF) # expected variance of X, h_buf in GCTA, Dj/N in Yang et al
-        XX <-  x$N * LD * sqrt(matrix(VX,ncol=1) %*% matrix(VX,nrow=1))
-    } else {
-        ## if case control, LD and MAF is from controls, need to adjust
-        VW <- VMAF.cc(x$MAF,x$beta,N0=(1-x$s)*x$N,N1=x$s*x$N)
-        XX <-  x$N * LD * sqrt(matrix(VW,ncol=1) %*% matrix(VW,nrow=1))
+    if(!is.null(xtx))
+        XX <- xtx
+    else {
+        if(x$type=="quant") {
+            ## if quant, assume MAF is correct estimate for sample
+            VX <- 2 * x$MAF * (1-x$MAF) # expected variance of X, h_buf in GCTA, Dj/N in Yang et al
+            XX <-  x$N * LD * sqrt(matrix(VX,ncol=1) %*% matrix(VX,nrow=1)) # ok
+        } else {
+            ## if case control, LD and MAF is from controls, need to adjust
+            VW <- VMAF.cc(x$MAF,x$beta,N0=(1-x$s)*x$N,N1=x$s*x$N)
+            XX <-  x$N * LD * sqrt(matrix(VW,ncol=1) %*% matrix(VW,nrow=1))
+        }
     }
     D <- diag(XX)
     D1 <- D[nuse]
@@ -142,17 +147,16 @@ est_cond <- function(x,LD,YY,sigsnps) {
 
     # joint effects at nuse, if needed
     b1 <- solve(XX1) %*% D1 %*% matrix(x$beta[nuse],ncol=1)
-    
 
     ## conditional effects 2 | 1
     b2 <- x$beta[use] - XX21 %*% solve(XX1) %*% D1 %*% matrix(x$beta[nuse],ncol=1) / diag(D2)
 
     ## residual and conditional b2 variance
     Sc <- c(YY -
-            matrix(b1,nrow=1) %*% D1 %*% matrix(x$beta[nuse],ncol=1))
+            matrix(b1,nrow=1) %*% D1 %*% matrix(x$beta[nuse],ncol=1)) # ok
     Sc <- ( Sc -  b2 * diag(D2) * x$beta[use] ) / (x$N - length(sigsnps) - 1)
-    vb2 <- c(Sc)/diag(D2) -
-      diag(XX21 %*% solve(XX1) %*% XX12) / diag(D2)^2
+    vb2 <- c(Sc)*(diag(D2) -
+      diag(XX21 %*% solve(XX1) %*% XX12)) / diag(D2)^2
     vb2 <- abs(c(vb2)) ## abs here because very occasionally can get a small negative vb2 due to approximation. In this case, replace by a positive vb2 of same small magnitude
     ## na <- apply(abs(LD[sigsnps,use,drop=FALSE])==1,2,any)
     rbind(data.table(snp=x$snp[use],beta=c(b2),varbeta=vb2),
@@ -222,6 +226,14 @@ find.best.signal <- function(D) {
     structure(z[wh],names=D$snp[wh])
 }
 
+check.ld <- function(D,LD) {
+    if(is.null(LD))
+        stop("LD required")
+    if(nrow(LD)!=ncol(LD))
+        stop("LD not square")
+    if(length(setdiff(D$snp,colnames(LD))))
+        stop("colnames in LD do not contain all SNPs")
+}
 
 ##' This is an analogue to finemap.abf, adapted to find multiple
 ##' signals where they exist, via conditioning or masking - ie a
@@ -251,13 +263,18 @@ find.best.signal <- function(D) {
 ##'     by the SNPs
 ##' @author Chris Wallace
 finemap.signals <- function(D,LD=D$LD,
-                                  method=c("mask","cond"),
+                                  method=c("single","mask","cond"),
                                   r2thr=0.01,
                                   sigsnps=NULL,
                                   pthr=1e-6,
                                   maxhits=3) {
     method <- match.arg(method)
-    check.dataset(D)
+    if(method=="cond") {
+        check.dataset(D,req="MAF")
+        check.ld(D,LD)
+    } else {
+        check.dataset(D)
+    }
     if(!is.null(sigsnps) && is.null(names(sigsnps)))
         stop("sigsnps should be a named numeric vector, with snp ids as the names")
     if(!all(names(sigsnps) %in% D$snp))
@@ -277,8 +294,6 @@ finemap.signals <- function(D,LD=D$LD,
        }
     ## check LD in matching order
     LD <- LD[D$snp,D$snp]
-    if(ncol(LD)<2)
-        stop("<2 SNPs in D found in LD matrix - do the SNP names match?")
     hits <- NULL
     while(length(hits)<maxhits) {
         newhit=if(method=="mask") {
@@ -289,6 +304,8 @@ finemap.signals <- function(D,LD=D$LD,
         if(is.null(newhit) || !length(newhit) || abs(newhit) < zthr )
             break
         hits <- c(hits,newhit)
+        if(method=="single") # stop after one
+            break
     }
     hits
 }
@@ -357,6 +374,12 @@ coloc.process <- function(obj,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p
         tmp$hit1=hits1
         tmp$hit2=hits2
         ## setnames(obj$results,"H4","SNP.PP.H4")
+        ## obj$results$SNP.PP.H4  <- with(obj$results, exp(lbf4 - logsum(lbf4)))
+        
+        ## newresult[[ paste0("z.df1.row",r) ]] <- ifelse(df$snp %in% drop1, 0, df$z.df1)
+        ## newresult[[ paste0("z.df2.row",r) ]] <- ifelse(df$snp %in% drop2, 0, df$z.df2)
+
+
         return(list(summary=tmp,
                     results=obj$results,
                     priors=c(p1,p2,p12)))
@@ -451,7 +474,8 @@ vestgeno.1.ctl <- function(f) {
     cbind((1-f)^2,2*f*(1-f),f^2)
 }
     
-##' @param G0 single snp frequency in controls (vector of length 3) - obtained from estgeno.1.ctl
+##' @param G0 single snp frequency in controls (vector of length 3) -
+##'     obtained from estgeno.1.ctl
 ##' @param b log odds ratio
 ##' @rdname estgeno1
 estgeno.1.cse <- function(G0,b) {
@@ -460,11 +484,12 @@ estgeno.1.cse <- function(G0,b) {
     g2 <- exp( 2*b - log(G0[1]/G0[3]))
     c(g0,g1,g2)/(g0+g1+g2)
 }
+
 ## vectorized version
 vestgeno.1.cse <- function(G0,b) {
     g0 <- 1
-    g1 <- exp( b - log(G0[,1]/G0[,2]))
-    g2 <- exp( 2*b - log(G0[,1]/G0[,3]))
+    g1 <- exp( b + log(G0[,2]) - log(G0[,1]))
+    g2 <- exp( 2*b + log(G0[,3]) - log(G0[,1]))
     cbind(g0,g1,g2)/(g0+g1+g2)
 }
 
@@ -493,22 +518,23 @@ bin2lin <- function(D) {
     if(D$type!="cc")
         stop("type != cc")
     ## est maf in cases
-    g0 <- vestgeno.1.ctl(D$MAF)
-    g1 <- vestgeno.1.cse(g0,D$beta)
-    ex0 <- tcrossprod(c(0,1,2),g0)
-    ex1 <- tcrossprod(c(0,1,2),g1)
-    ex <- (1 - D$s) * ex0 + D$s * ex1
-    vx0 <- tcrossprod(c(0,1,4),g0)
-    vx1 <- tcrossprod(c(0,1,4),g1)
-    vx <- (1 - D$s) * vx0 + D$s * vx1 - ex^2
-    vy <- D$s * (1-D$s)
-    vxy <- D$s*ex1 - ex * D$s
+    g0 <- vestgeno.1.ctl(D$MAF)       # genotype freq in controls
+    g1 <- vestgeno.1.cse(g0,D$beta)   # genotype freq in cases
+    ex0 <- tcrossprod(c(0,1,2),g0)    # E(x) | control
+    ex1 <- tcrossprod(c(0,1,2),g1)    # E(x) | case
+    ex <- (1 - D$s) * ex0 + D$s * ex1 # E(x)
+    vx0 <- tcrossprod(c(0,1,4),g0)    # E(x^2) | control
+    vx1 <- tcrossprod(c(0,1,4),g1)    # E(x^2) | case
+    vx <- (1 - D$s) * vx0 + D$s * vx1 - ex^2 # V(x) = E(x^2) | E(x)=0
+    vy <- D$s * (1-D$s)               # V(y) = E(y^2) | E(y)=0 (centered)
+    ## vxy <- D$s*ex1 - ex * D$s         # E(xy)
+    vxy <- D$s * (1-D$s) * (ex1-ex0)     # E(xy) | E(x) = E(y) = 0
 
     D1 <- D
     ## D1$beta.bin <- D1$beta
     ## D1$varbeta.bin <- D1$varbeta
     D1$beta <- c(vxy/vx)
-    D1$varbeta <- c(vy/vx - vxy^2/vx^2)/D$N
+    D1$varbeta <- c(vy/vx - vxy^2/vx^2)/(D$N-1)
     D1
 }
    
@@ -541,7 +567,7 @@ est_all_cond <- function(D,FM,mode) {
         if(is.null(sigsnps))
             as.data.table(D[intersect(c("beta","varbeta","snp","MAF","position","z"),names(D))])
         else
-            est_cond(D,LD,YY=YY, sigsnps=sigsnps)
+            est_cond(D,D$LD,YY=YY, sigsnps=sigsnps)
     })
     names(cond) <- names(FM)
     cond
@@ -602,7 +628,7 @@ est_all_cond <- function(D,FM,mode) {
 ##' @author Chris Wallace
 coloc.signals <- function(dataset1, dataset2,
                           MAF=NULL, LD=NULL,
-                          method=c("","cond","mask"),
+                          method=c("single","cond","mask"),
                           mode=c("iterative","allbutone"),
                           p1=1e-4, p2=1e-4, p12=NULL, maxhits=3, r2thr=0.01,
                           pthr = 1e-06) {
@@ -623,8 +649,18 @@ coloc.signals <- function(dataset1, dataset2,
         dataset1$method <- method
     if(!("method" %in% names(dataset2)) & !is.null(method))
         dataset2$method <- method
-    check.dataset(dataset1,1)
-    check.dataset(dataset2,2)
+    if(dataset1$method=="cond") {
+        check.dataset(dataset1,1,req="MAF")
+        check.ld(dataset1,dataset1$LD)
+    } else {
+        check.dataset(dataset1,1)
+    }
+    if(dataset2$method=="cond") {
+        check.dataset(dataset2,2,req="MAF")
+        check.ld(dataset2,dataset2$LD)
+    } else {
+        check.dataset(dataset2,2)
+    }
     zthr = qnorm(pthr/2,lower.tail=FALSE)    
 
     ## fine map
@@ -640,27 +676,27 @@ coloc.signals <- function(dataset1, dataset2,
     if(is.null(fm2))
         fm2 <- find.best.signal(dataset2)
         ## warning("no signal with p <",pthr," in dataset1")
-    if(dataset1$method=="")
-        fm1 <- fm1[1]
-    if(dataset2$method=="")
-        fm2 <- fm2[1]
+    ## if(dataset1$method=="single")
+    ##     fm1 <- fm1[1]
+    ## if(dataset2$method=="single")
+    ##     fm2 <- fm2[1]
 
     ## conditionals if needed
     if(!is.null(fm1) && dataset1$method=="cond") {
         cond1 <- est_all_cond(dataset1,fm1,mode=mode)
-        X1 <- dataset1[ intersect(names(dataset1), c("N","sdY","type")) ]
+        X1 <- dataset1[ intersect(names(dataset1), c("N","sdY","type","s")) ]
     }
     if(!is.null(fm2) && dataset2$method=="cond")  {
         cond2 <- est_all_cond(dataset2,fm2,mode=mode)
-        X2 <- dataset2[ intersect(names(dataset2), c("N","sdY","type")) ]
+        X2 <- dataset2[ intersect(names(dataset2), c("N","sdY","type","s")) ]
     }
 
-    ## double mask
-    if(dataset1$method=="mask" & dataset2$method=="mask") {
+    ## double mask/-
+    if(dataset1$method %in% c("single","mask") & dataset2$method %in% c("single","mask")) {
         col <- coloc.detail(dataset1,dataset2, p1=p1,p2=p2,p12=p12)
         res <- coloc.process(col, hits1=names(fm1), hits2=names(fm2),
                              LD1=dataset1$LD, LD2=dataset2$LD, r2thr=r2thr,
-                             mode=mode)
+                             mode=mode,p12=p12)
     } 
 
     ## double cond
@@ -674,37 +710,23 @@ coloc.signals <- function(dataset1, dataset2,
             res[[k]] <- coloc.process(col,
                                  hits1=names(fm1)[ todo[k,"i"] ],
                                  hits2=names(fm2)[ todo[k,"j"] ],
-                                 LD1=dataset1$LD, LD2=dataset2$LD) 
+                                 LD1=dataset1$LD, LD2=dataset2$LD,p12=p12)
         }
     }
 
-    ## double -
-    if(dataset1$method=="" && dataset2$method=="") {
-        col <- coloc.detail(dataset1,
-                            dataset2,
-                            p1=p1,p2=p2,p12=p12)
-        res <- coloc.process(col,
-                             hits1=names(fm1)[ 1 ],
-                             hits2=names(fm2)[1],
-                             LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr)
-  }
+  ##   ## double -
+  ##   if(dataset1$method=="single" && dataset2$method=="single") {
+  ##       col <- coloc.detail(dataset1,
+  ##                           dataset2,
+  ##                           p1=p1,p2=p2,p12=p12)
+  ##       res <- coloc.process(col,
+  ##                            hits1=names(fm1)[1],
+  ##                            hits2=names(fm2)[1],
+  ##                            LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr)
+  ## }
         
-    ## cond-
-    if(dataset1$method=="cond" && dataset2$method=="") {
-        res <- vector("list",length(cond1))
-        for(k in 1:length(res)) {
-            col <- coloc.detail(c(cond1[[ k ]],X1),
-                                dataset2,
-                                p1=p1,p2=p2,p12=p12)
-            res[[k]] <- coloc.process(col,
-                                 hits1=names(fm1)[ k ],
-                                 hits2=names(fm2)[1],
-                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
-        }
-    }
-
-    ## cond-mask
-    if(dataset1$method=="cond" && dataset2$method=="mask") {
+    ## cond mask/-
+    if(dataset1$method=="cond" && dataset2$method %in% c("single","mask")) {
         res <- vector("list",length(cond1))
         for(k in 1:length(res)) {
             col <- coloc.detail(c(cond1[[ k ]],X1),
@@ -713,26 +735,12 @@ coloc.signals <- function(dataset1, dataset2,
             res[[k]] <- coloc.process(col,
                                  hits1=names(fm1)[ k ],
                                  hits2=names(fm2),
-                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr,p12=p12) #, ...)
         }
     }
 
-    ## -cond
-    if(dataset1$method=="" && dataset2$method=="cond") {
-        res <- vector("list",length(cond2))
-        for(k in 1:length(res)) {
-            col <- coloc.detail(dataset1,
-                                c(cond2[[ k ]],X2),
-                                p1=p1,p2=p2,p12=p12)
-            res[[k]] <- coloc.process(col,
-                                 hits1=names(fm1)[1],
-                                 hits2=names(fm2)[ k ],
-                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
-        }
-    }
-
-    ## mask-cond
-    if(dataset1$method=="mask" && dataset2$method=="cond") {
+    ## mask/- cond
+    if(dataset1$method %in% c("single","mask") && dataset2$method=="cond") {
         res <- vector("list",length(cond2))
         for(k in 1:length(res)) {
             col <- coloc.detail(dataset1,
@@ -741,9 +749,37 @@ coloc.signals <- function(dataset1, dataset2,
             res[[k]] <- coloc.process(col,
                                  hits1=names(fm1),
                                  hits2=names(fm2)[ k ],
-                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+                                 LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr,p12=p12) #, ...)
         }
     }
+
+    ## ## cond-mask
+    ## if(dataset1$method=="cond" && dataset2$method=="mask") {
+    ##     res <- vector("list",length(cond1))
+    ##     for(k in 1:length(res)) {
+    ##         col <- coloc.detail(c(cond1[[ k ]],X1),
+    ##                             dataset2,
+    ##                             p1=p1,p2=p2,p12=p12)
+    ##         res[[k]] <- coloc.process(col,
+    ##                              hits1=names(fm1)[ k ],
+    ##                              hits2=names(fm2),
+    ##                              LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+    ##     }
+    ## }
+
+    ## ## mask-cond
+    ## if(dataset1$method=="mask" && dataset2$method=="cond") {
+    ##     res <- vector("list",length(cond2))
+    ##     for(k in 1:length(res)) {
+    ##         col <- coloc.detail(dataset1,
+    ##                             c(cond2[[ k ]],X2),
+    ##                             p1=p1,p2=p2,p12=p12)
+    ##         res[[k]] <- coloc.process(col,
+    ##                              hits1=names(fm1),
+    ##                              hits2=names(fm2)[ k ],
+    ##                              LD1=dataset1$LD, LD2=dataset2$LD,r2thr=r2thr) #, ...)
+    ##     }
+    ## }
 
     ## post-process
     if(dataset1$method=="cond" || dataset2$method=="cond") {

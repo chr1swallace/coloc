@@ -3,20 +3,20 @@
 \name{map_cond}
 \alias{map_cond}
 \title{find the next most significant SNP, conditioning on a list
-    of sigsnps}
+of sigsnps}
 \usage{
-map_cond(D, LD, N, YY, sigsnps = NULL)
+map_cond(D, LD, YY, sigsnps = NULL)
 }
 \arguments{
 \item{D}{dataset in standard coloc format}
 
 \item{LD}{named matrix of r}
 
-\item{N}{sample size}
-
 \item{YY}{sum(y^2)}
 
 \item{sigsnps}{names of snps to mask}
+
+\item{N}{sample size}
 }
 \value{
 named numeric - Z score named by snp

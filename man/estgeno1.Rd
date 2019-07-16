@@ -12,7 +12,8 @@ estgeno.1.cse(G0, b)
 \arguments{
 \item{f}{MAF}
 
-\item{G0}{single snp frequency in controls (vector of length 3) - obtained from estgeno.1.ctl}
+\item{G0}{single snp frequency in controls (vector of length 3) -
+obtained from estgeno.1.ctl}
 
 \item{b}{log odds ratio}
 }

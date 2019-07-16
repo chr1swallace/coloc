@@ -123,9 +123,9 @@ plot(result)
 }
 \references{
 Wallace et al (2012).  Statistical colocalisation of
-    monocyte gene expression and genetic risk variants for type 1
-    diabetes.  Hum Mol Genet 21:2815-2824.
-    \url{http://europepmc.org/abstract/MED/22403184}
+monocyte gene expression and genetic risk variants for type 1
+diabetes.  Hum Mol Genet 21:2815-2824.
+\url{http://europepmc.org/abstract/MED/22403184}
 
 Plagnol et al (2009).  Statistical independence of the colocalized
 association signals for type 1 diabetes and RPS26 gene expression on

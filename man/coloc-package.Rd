@@ -29,6 +29,6 @@ Giambartolomei et al (2014).  Bayesian Test for Colocalisation between Pairs of 
 \url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
 }
 \author{
-Chris Wallace <chris.wallace@cimr.cam.ac.uk>
+Chris Wallace \href{mailto:chris.wallace@cimr.cam.ac.uk}{chris.wallace@cimr.cam.ac.uk}
 }
 \keyword{package}

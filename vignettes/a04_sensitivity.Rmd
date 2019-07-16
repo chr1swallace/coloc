@@ -62,7 +62,8 @@ Let's make a smaller dataset where that won't be the case:
 
 
 ```{r ,echo=FALSE,results="hide"  }
-use=sample(1:1000,300)
+set.seed(42)
+use=sample(1:10000,2500)
 Y1 <- data@df1$Y[use]
 Y2 <- data@df2$Y[use]
 
@@ -97,8 +98,9 @@ sensitivity(my.res,rule="H4 > 0.5")
 ```
 
 In this case, we find there is evidence for colocalisation according
-to a rule \(H_4>0.5\) only for \(p_{12}>10^{-6}\), which might be less
-convincing than the situation above.  Note, the syntax can also
+to a rule \(H_4>0.5\) only for \(p_{12} >> 10^{-6}\), which corresponds to an *a priori* belief that \(P(H_4) >> P(H_3)\).  This means but you would need to think it reasonable that \(H_4\) is much more likely than \(H_3\) to begin with to find these data convincing.
+
+Note, the syntax can also
 consider more complicated rules:
 
 ```{r sens3, fig.width=8,fig.height=6  }

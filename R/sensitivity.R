@@ -75,7 +75,7 @@ manh.plot <- function(df,wh,
 ##' @param plot.manhattans if TRUE, show Manhattans of input data
 ##' @param preserve.par if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample
 ##' @param row when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot
-##' @return list of prior and posterior matrices returned invisibly
+##' @return list of 3: prior matrix, posterior matrix, and a pass/fail indicator (returned invisibly)
 ##' @export
 ##' @author Chris Wallace
 sensitivity <- function(obj,rule="",
@@ -95,9 +95,13 @@ sensitivity <- function(obj,rule="",
         if(!(row %in% 1:nrow(obj$summary)))
             stop("row must be between 1 and ",nrow(obj$summary))
         pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
-        obj$results[["SNP.PP.H4"]]  <- obj$results[[paste0("SNP.PP.H4.row",row)]]
-        obj$results[["z.df1"]]  <- obj$results[[paste0("z.df1.row",row)]]
-        obj$results[["z.df2"]]  <- obj$results[[paste0("z.df2.row",row)]]
+        if(paste0("SNP.PP.H4.row",row) %in% names(obj$results)) {
+            obj$results[["SNP.PP.H4"]]  <- obj$results[[paste0("SNP.PP.H4.row",row)]]
+            obj$results[["z.df1"]]  <- obj$results[[paste0("z.df1.row",row)]]
+            obj$results[["z.df2"]]  <- obj$results[[paste0("z.df2.row",row)]]
+        } else {
+            pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
+        }
     } else {
         pp <- obj$summary
     }
@@ -150,7 +154,8 @@ sensitivity <- function(obj,rule="",
                 frame.plot = FALSE, # Remove the frame 
                 panel.first = abline(h = seq(0, 1, 0.2), col = "grey80"),
                 ylim=c(0,ym))
-        title(main=ti[[i]],adj=0)
+            title(main=ti[[i]],adj=0)
+            title(sub=paste("shaded region:",rule.init),adj=0)
         ## title(main=paste("Acceptance rule (shaded region):",rule.init))
         ## legend("topleft",pch=rep(21,5),pt.bg=1:5,legend=paste0("H",0:4))
         if(i==1)
@@ -162,7 +167,7 @@ sensitivity <- function(obj,rule="",
                  xright=testp12[max(w)],ytop=1,
                  col=rgb(0,1,0,alpha=0.1), border="green") 
         ## add text showing rule
-        mtext(paste("shaded region:",rule.init),side=3,adj=1)
+        ## mtext(paste("shaded region:",rule.init),side=3,adj=1)
         }
     }
 

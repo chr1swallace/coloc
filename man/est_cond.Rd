@@ -4,26 +4,25 @@
 \alias{est_cond}
 \title{generate conditional summary stats}
 \usage{
-est_cond(x, LD, N, YY, sigsnps, cc = FALSE)
+est_cond(x, LD, YY, sigsnps, xtx = NULL)
 }
 \arguments{
-\item{x}{data.table created from standard coloc dataset}
+\item{x}{coloc dataset}
 
 \item{LD}{named matrix of r}
 
-\item{N}{sample size}
+\item{YY}{sum((Y-Ybar)^2)}
 
-\item{YY}{sum(y^2)}
-
-\item{sigsnps}{names of snps to mask}
+\item{sigsnps}{names of snps to jointly condition on}
 
 \item{cc}{TRUE if case control}
 }
 \value{
-data.table giving snp, beta and varbeta on remaining snps after conditioning
+data.table giving snp, beta and varbeta on remaining snps
+after conditioning
 }
 \description{
-Internal helper function for map_cond
+Internal helper function for est_all_cond
 }
 \author{
 Chris Wallace

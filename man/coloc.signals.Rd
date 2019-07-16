@@ -4,7 +4,8 @@
 \alias{coloc.signals}
 \title{Coloc with multiple signals per trait}
 \usage{
-coloc.signals(dataset1, dataset2, MAF = NULL, LD = NULL, method = "",
+coloc.signals(dataset1, dataset2, MAF = NULL, LD = NULL,
+  method = c("single", "cond", "mask"), mode = c("iterative", "allbutone"),
   p1 = 1e-04, p2 = 1e-04, p12 = NULL, maxhits = 3, r2thr = 0.01,
   pthr = 1e-06)
 }
@@ -12,11 +13,11 @@ coloc.signals(dataset1, dataset2, MAF = NULL, LD = NULL, method = "",
 \item{dataset1}{a list with the following elements
 \describe{
 
-  \item{pvalues}{P-values for each SNP in dataset 1}
+\item{pvalues}{P-values for each SNP in dataset 1}
 
-  \item{N}{Number of samples in dataset 1}
+\item{N}{Number of samples in dataset 1}
 
-  \item{MAF}{minor allele frequency of the variants}
+\item{MAF}{minor allele frequency of the variants}
 
 \item{beta}{regression coefficient for each SNP from dataset 1}
 
@@ -26,7 +27,7 @@ coloc.signals(dataset1, dataset2, MAF = NULL, LD = NULL, method = "",
 
 \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
 
- \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
+\item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
 
 \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
 
@@ -48,7 +49,7 @@ and then either
 \item{MAF}{Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets}
 
 \item{LD}{required if method="cond". matrix of genotype
-*correlation* (ie r, not r^2) between SNPs. If dataset1 and
+\emph{correlation} (ie r, not r^2) between SNPs. If dataset1 and
 dataset2 may have different LD, you can instead add LD=LD1 to
 the list of dataset1 and a different LD matrix for dataset2}
 
@@ -59,6 +60,26 @@ coloc multiple signals. if different datasets need different
 methods (eg LD is only available for one of them) you can set
 method on a per-dataset basis by adding method="..." to the
 list for that dataset.}
+
+\item{mode}{"iterative" or "allbutone".  Easiest understood with
+an example.  Suppose there are 3 signal SNPs detected for
+trait 1, A, B, C and only one for trait 2, D.\preformatted{Under "iterative" mode, 3 coloc will be performed:
+* trait 1 - trait 2
+* trait 1 conditioned on A - trait 2
+* trait 1 conditioned on A+B - trait 2
+
+Under "allbutone" mode, they would be
+* trait 1 conditioned on B+C - trait 2
+* trait 1 conditioned on A+C - trait 2
+* trait 1 conditioned on A+B - trait 2
+
+The second mode is optimal if the signals are known with
+certainty (which they never are), because it allows each
+signal to be tested without influence of the others.  When
+there is uncertainty, it may make sense to use iterative mode,
+because the strongest signals aren't affected by conditioning
+incorrectly on weaker secondary and less certain signals.
+}}
 
 \item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
 
@@ -78,7 +99,7 @@ call a secondary hit "significant"}
 }
 \value{
 data.table of coloc results, one row per pair of lead snps
-    detected in each dataset
+detected in each dataset
 }
 \description{
 New coloc function, builds on coloc.abf() by allowing for multiple

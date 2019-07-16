@@ -23,7 +23,7 @@ sensitivity(obj, rule = "", npoints = 100, doplot = TRUE,
 \item{row}{when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot}
 }
 \value{
-list of prior and posterior matrices returned invisibly
+list of 3: prior matrix, posterior matrix, and a pass/fail indicator (returned invisibly)
 }
 \description{
 Shows how prior and posterior per-hypothesis probabilities change as a function of p12
