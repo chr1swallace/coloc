@@ -74,9 +74,11 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
   }
   z <- qnorm(0.5 * p, lower.tail = FALSE)
   ## Shrinkage factor: ratio of the prior variance to the total variance
-  r <- sd.prior^2 / (sd.prior^2 + V)
+  r <- sd.prior^2/(sd.prior^2 + V)
+  log1minusr <- log(V) - log(sd.prior^2 + V)
   ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
-  lABF = 0.5 * (log(1-r) + (r * z^2))
+  lABF = 0.5 * (log1minusr + (r * z^2))
+  # lABF = 0.5 * (log(1-r) + (r * z^2))
   ret <- data.frame(V,z,r,lABF)
   if(!is.null(suffix))
     colnames(ret) <- paste(colnames(ret), suffix, sep=".")
@@ -96,7 +98,8 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
   sd.prior <- if (type == "quant") { 0.15*sdY } else { 0.2 }
   r <- sd.prior^2/(sd.prior^2 + V)
-  lABF = 0.5 * (log(1 - r) + (r * z^2))
+  log1minusr <- log(V) - log(sd.prior^2 + V)
+  lABF = 0.5 * (log1minusr + (r * z^2))
   ret <- data.frame(V, z, r, lABF)
   if(!is.null(suffix))
     colnames(ret) <- paste(colnames(ret), suffix, sep = ".")
