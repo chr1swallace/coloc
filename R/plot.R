@@ -106,7 +106,7 @@ plot.coloc_abf <- function(obj, Pos=1:nrow(obj$results),
 
 
 
-coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL, ...) {
+coeff.plot <- function(b1,b2,s1,s2,eta,lower=NULL,upper=NULL,add=NULL,alpha=NULL,slope=NULL,annot=NULL, ...) {
 ##   c1 <- cbind(b1,sqrt(s1),b1+1.96*sqrt(s1),b1-1.96*sqrt(s1))
 ##   c2 <- cbind(b2,sqrt(s2),b2+1.96*sqrt(s2),b2-1.96*sqrt(s2))
 ##   if(!is.null(add)) {
@@ -140,15 +140,31 @@ coeff.plot <- function(b1,b2,s1,s2,eta,add=NULL,alpha=NULL,slope=NULL,annot=NULL
 ##    return(tmp)
 ##   }))
   x <- y <- x.se <- y.se <- NULL
-  p <- ggplot(df,aes(x=x,y=y,xmin=x-1.96*x.se,xmax=x+1.96*x.se,ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha)) +
-    geom_hline(yintercept=0) + geom_vline(xintercept=0) +
-      geom_errorbar(col="steelblue4") + 
-  geom_errorbarh(col="steelblue4") +theme(legend.position="none") +
-   geom_abline(slope=eta,colour="blue",linetype="dashed") +
-  labs(x="beta.1",y="beta.2")
+    p <- ggplot(df) +
+        geom_hline(yintercept=0,linetype="dotted") +
+        geom_vline(xintercept=0,linetype="dotted")
+     if(!is.null(lower) && !is.null(upper)) {
+        rib <- with(df,data.frame(x=seq(1.1*min(x-1.96*x.se),1.1*max(x+1.96*x.se),length.out=100)))
+        rib$ymin <- rib$x * lower
+        rib$ymax <- rib$x * upper
+        rib$xmin <- rib$xmax <- rib$x; rib$alpha <- 1
+        p <- p +
+            geom_ribbon(aes(x=x,ymin=ymin,ymax=ymax),data=rib,fill="steelblue4",alpha=0.1) +
+            scale_x_continuous(limits=c(min(rib$xmin),max(rib$xmax)))
+    }
+    p <- p + geom_point(aes(x=x,y=y,alpha=alpha),
+                   col="steelblue3") +
+        geom_errorbar(aes(x=x,
+                       ymin=y-1.96*y.se,ymax=y+1.96*y.se,alpha=alpha),
+                   col="steelblue4") + 
+        geom_errorbarh(aes(y=y,
+                       xmin=x-1.96*x.se,xmax=x+1.96*x.se, alpha=alpha),
+                   col="steelblue4") +
+        theme(legend.position="none") +
+        geom_abline(slope=eta,colour="steelblue3",size=1) +
+        labs(x="beta.1",y="beta.2")
     if(!is.null(annot))
         p <- p + annotate("text", y= max(df$y+1.96*df$y.se), x =max(df$x+1.96*df$x.se),label=annot,hjust=1)
-  
   return(p)
   
 ##   plot(c1[,1],c2[,1],pch=".",xlim=xr,ylim=yr, ...)

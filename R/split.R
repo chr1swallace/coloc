@@ -117,6 +117,69 @@ est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
         if(x$type=="quant") {
             ## if quant, assume MAF is correct estimate for sample
             VX <- 2 * x$MAF * (1-x$MAF) # expected variance of X, h_buf in GCTA, Dj/N in Yang et al
+            XX <-  sum(x$N) * LD * sqrt(matrix(VX,ncol=1) %*% matrix(VX,nrow=1)) # E(XtX/N)
+        } else {
+            ## if case control, LD and MAF is from controls, need to adjust
+            VW <- VMAF.cc(x$MAF,x$beta,N0=sum((1-x$s)*x$N),N1=sum(x$s*x$N))
+            XX <-  sum(x$N) * LD * sqrt(matrix(VW,ncol=1) %*% matrix(VW,nrow=1))
+        }
+    }
+    D <- diag(XX)
+    D1 <- D[nuse]
+    D2 <- D[use]
+
+    XX1=XX[nuse,nuse,drop=FALSE]
+    XX2=XX[use,use,drop=FALSE]
+    XX12=XX[nuse,use,drop=FALSE]
+    XX21=XX[use,nuse,drop=FALSE]
+
+    ## accomodate nuse/use of length 1 or more
+    D1 <-  if(length(nuse)==1) {
+               matrix(D1,nrow=1,ncol=1)
+           } else {
+               diag(D1)
+           }
+    D2 <-  if(sum(use)==1) {
+               diag(D2,nrow=1,ncol=1)
+           } else {
+               diag(D2)
+           }
+
+    # joint effects at nuse, if needed
+    b1 <- solve(XX1) %*% D1 %*% matrix(x$beta[nuse],ncol=1)
+
+    ## conditional effects 2 | 1
+    b2 <- x$beta[use] - XX21 %*% solve(XX1) %*% D1 %*% matrix(x$beta[nuse],ncol=1) / diag(D2)
+
+    ## residual and conditional b2 variance
+    Sc <- c(YY -
+            matrix(b1,nrow=1) %*% D1 %*% matrix(x$beta[nuse],ncol=1)) # ok
+    Sc <- ( Sc -  b2 * diag(D2) * x$beta[use] ) / (sum(x$N) - length(sigsnps) - 1)
+    vb2 <- c(Sc)*(diag(D2) -
+      diag(XX21 %*% solve(XX1) %*% XX12)) / diag(D2)^2
+    vb2 <- abs(c(vb2)) ## abs here because very occasionally can get a small negative vb2 due to approximation. In this case, replace by a positive vb2 of same small magnitude
+    ## na <- apply(abs(LD[sigsnps,use,drop=FALSE])==1,2,any)
+    rbind(data.table(snp=x$snp[use],beta=c(b2),varbeta=vb2),
+          data.table(snp=x$snp[!use],
+                     beta=rep(0,sum(!use)), # no association
+                     varbeta=x$varbeta[!use]))
+    ## if(any(na))
+    ##     ret[na,c("beta","varbeta"):=list(NA,NA)]
+}
+
+est_cond.nometa <- function(x,LD,YY,sigsnps,xtx=NULL) {
+    LD <- LD[x$snp,x$snp]
+    nuse <- match(sigsnps,x$snp) # to be conditioned on
+    use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.9) # to find new beta for, conditional on nuse, excluding SNPs in r2>0.9 with nuse because small inaccuracies can blow up, and we generally don't expect a second detectable signal in such high LD with a first signal
+
+    check.dataset(x,req="MAF")
+    ## Estimating X'X is the key
+    if(!is.null(xtx))
+        XX <- xtx
+    else {
+        if(x$type=="quant") {
+            ## if quant, assume MAF is correct estimate for sample
+            VX <- 2 * x$MAF * (1-x$MAF) # expected variance of X, h_buf in GCTA, Dj/N in Yang et al
             XX <-  x$N * LD * sqrt(matrix(VX,ncol=1) %*% matrix(VX,nrow=1)) # ok
         } else {
             ## if case control, LD and MAF is from controls, need to adjust
@@ -167,6 +230,7 @@ est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
     ##     ret[na,c("beta","varbeta"):=list(NA,NA)]
 }
 
+
 ##' Internal helper function for finemap.signals
 ##'
 ##' @title find the next most significant SNP, conditioning on a list
@@ -216,9 +280,9 @@ find.best.signal <- function(D) {
         D <- bin2lin(D)
     }
     YY=if(D$type=="quant") {
-           D$N * D$sdY^2
+           sum(D$N * D$sdY^2)
        } else {
-           D$N * D$s * (1 - D$s)
+           sum(D$N * D$s * (1 - D$s))/sum(D$N)
        }
     z <- D$beta/sqrt(D$varbeta)
     zdiff <- abs(z)
@@ -288,9 +352,9 @@ finemap.signals <- function(D,LD=D$LD,
         D <- bin2lin(D)
     }
     YY=if(D$type=="quant") {
-           D$N * D$sdY^2
+           sum(D$N * D$sdY^2)
        } else {
-           D$N * D$s * (1 - D$s)
+           sum(D$N * D$s * (1 - D$s))
        }
     ## check LD in matching order
     LD <- LD[D$snp,D$snp]
@@ -503,18 +567,7 @@ VMAF.cc <- function(f0,b,N0,N1) {
 }
     
     
-##' Convert binomial to linear regression
-##' 
-##' Estimate beta and varbeta if a linear regression had been run on a
-##' binary outcome, given log OR and their variance + MAF in controls
-##'
-##' sets beta = cov(x,y)/var(x)
-##' varbeta = (var(y)/var(x) - cov(x,y)^2/var(x)^2)/N
-##' @title binomial to linear regression conversion
-##' @param D standard format coloc dataset
-##' @return D, with original beta and varbeta in beta.bin, varbeta.bin, and beta and varbeta updated to linear estimates
-##' @author Chris Wallace
-bin2lin <- function(D) {
+bin2lin.nometa <- function(D,doplot=FALSE) {
     if(D$type!="cc")
         stop("type != cc")
     ## est maf in cases
@@ -535,10 +588,78 @@ bin2lin <- function(D) {
     ## D1$varbeta.bin <- D1$varbeta
     D1$beta <- c(vxy/vx)
     D1$varbeta <- c(vy/vx - vxy^2/vx^2)/(D$N-1)
+    ##check
+    z1 <- D1$beta/sqrt(D1$varbeta)
+    z <- D$beta/sqrt(D$varbeta)
+    mod <- lm( z1 ~ z - 1 )
+    message("quality of linear approximation (ideal is 1): ",round(coef(mod),4))
+    if(coef(mod) > 1.1 | coef(mod) < 0.9) {
+        warning("linear approx quality is not good")
+    }
+    if(doplot==TRUE) {
+        plot(D$beta/sqrt(D$varbeta),D1$beta/sqrt(D1$varbeta),xlab="Logistic z",ylab="Approximated linear z"); abline(0,1); abline(0,coef(mod),lty=2,col="red")
+        legend("topleft",lty=2,col="red",legend=round(coef(mod),4))
+    }
+    D1$quality <- coef(mod)
     D1
 }
    
+wmean <- function(x,w) {
+    if(is.matrix(w))
+        colSums(x*w)/colSums(w)
+    else 
+        colSums(x*w)/sum(w)
+}
     
+##' Convert binomial to linear regression
+##' 
+##' Estimate beta and varbeta if a linear regression had been run on a
+##' binary outcome, given log OR and their variance + MAF in controls
+##'
+##' sets beta = cov(x,y)/var(x)
+##' varbeta = (var(y)/var(x) - cov(x,y)^2/var(x)^2)/N
+##' @title binomial to linear regression conversion
+##' @param D standard format coloc dataset
+##' @return D, with original beta and varbeta in beta.bin, varbeta.bin, and beta and varbeta updated to linear estimates
+##' @author Chris Wallace
+bin2lin <- function(D,doplot=FALSE) {
+    if(D$type!="cc")
+        stop("type != cc")
+    ## est maf in cases
+    g0 <- vestgeno.1.ctl(D$MAF)       # genotype freq in controls
+    g1 <- vestgeno.1.cse(g0,D$beta)   # genotype freq in cases
+    ex0 <- tcrossprod(c(0,1,2),g0)    # E(x) | control
+    ex1 <- tcrossprod(c(0,1,2),g1)    # E(x) | case
+    ex <- crossprod(t((1 - D$s)),ex0) + crossprod(t(D$s), ex1) # E(x) | strata
+    vx0 <- tcrossprod(c(0,1,4),g0)    # E(x^2) | control
+    vx1 <- tcrossprod(c(0,1,4),g1)    # E(x^2) | case
+    vx <- crossprod(t(1 - D$s),vx0) + crossprod(t(D$s), vx1) - ex^2
+    vy <- D$s * (1-D$s)   # V(y) = E(y^2) | E(y)=0 (centered) | strata
+    ## vxy <- D$s*ex1 - ex * D$s         # E(xy)
+    vxy <- crossprod(t(vy),(ex1-ex0)) # E(xy) | E(x) = E(y) = 0 | strata
+    D1 <- D
+    ## D1$beta.bin <- D1$beta
+    ## D1$varbeta.bin <- D1$varbeta
+    varbeta <- (vy/vx - vxy^2/vx^2) / (D$N-1)
+    D1$varbeta <- 1/colSums(1/varbeta)
+    D1$beta <- wmean(vxy/vx, 1/varbeta)
+    ##check
+    z1 <- D1$beta/sqrt(D1$varbeta)
+    z <- D$beta/sqrt(D$varbeta)
+    mod <- lm( z1 ~ z - 1 )
+    message("quality of linear approximation (ideal is 1): ",round(coef(mod),4))
+    if(coef(mod) > 1.1 | coef(mod) < 0.9) {
+        warning("linear approx quality is not good")
+    }
+    if(doplot==TRUE) {
+        plot(D$beta/sqrt(D$varbeta),D1$beta/sqrt(D1$varbeta),xlab="Logistic z",ylab="Approximated linear z"); abline(0,1); abline(0,coef(mod),lty=2,col="red")
+        legend("topleft",lty=2,col="red",legend=round(coef(mod),4))
+    }
+    D1$quality <- coef(mod)
+    D1
+}
+   
+
 est_all_cond <- function(D,FM,mode) {
     if(D$type=="cc")
         D <- bin2lin(D)
@@ -549,13 +670,13 @@ est_all_cond <- function(D,FM,mode) {
     }
     
     YY=if(D$type=="quant") {
-                        D$N * D$sdY^2
-                    } else {
-                        D$N * D$s * ( 1 - D$s )
-                    }
+           sum(D$N * D$sdY^2)
+       } else {
+           sum(D$N * D$s * ( 1 - D$s ))
+       }
     sigs <- lapply(seq_along(FM), function(i) {
         if(mode=="allbutone") {
-                    names(FM)[-i]
+            names(FM)[-i]
         } else {
             if(i==1)
                 NULL

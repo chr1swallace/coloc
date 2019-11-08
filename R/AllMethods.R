@@ -50,8 +50,27 @@ setMethod("plot", signature(x="coloc",y="missing"),
                        s1=sqrt(x@plot.data$var1),
                        s2=sqrt(x@plot.data$var2),
                        alpha=x@plot.data$model.prob,
-                       slope=x@result[["eta.hat"]],
-                       annot=paste("p =",format.pval(p.value(x))),
+                       eta=x@result[["eta.hat"]],
+                       annot=paste("slope =",format(x@result[["eta.hat"]],digits=3),
+                                   "\np =",format.pval(p.value(x))),
+                       ...)
+          })
+#' @rdname plot-methods
+#' @aliases plot,coloc,missing-method
+setMethod("plot", signature(x="colocBayes",y="missing"),
+          function(x,...) {
+            if(!("model.prob" %in% names(x@plot.data)))
+              x@plot.data$model.prob <- NULL
+            coeff.plot(b1=x@plot.data$coef1,
+                       b2=x@plot.data$coef2,
+                       s1=sqrt(x@plot.data$var1),
+                       s2=sqrt(x@plot.data$var2),
+                       alpha=x@plot.data$model.prob,
+                       eta=x@credible.interval[["eta.mode"]],
+                       lower=x@credible.interval[["lower"]],
+                       upper=x@credible.interval[["upper"]],
+                       annot=paste("slope =",format(x@credible.interval[["eta.mode"]],digits=3),
+                                   "\np =",format.pval(p.value(x))),
                        ...)
           })
 #' @rdname plot-methods
