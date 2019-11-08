@@ -7,6 +7,23 @@ The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region. 
 
+
+## pre-release version
+
+This condmask branch is a pre-release version.  I have tested it, but there may be bugsr. Please test it if you feel brave, and let me know whether it works or not (both kinds of feedback useful!).  Any results should be compared to the CRAN version to check sanity for now.
+
+To install the condmask branch, do
+
+```
+if(!require("remotes"))
+   install.packages("remotes") # if necessary
+library(remotes)
+install_github("chr1swallace/coloc","condmask")
+```
+
+
+## Background
+
 For usage and background, see the vignette at https://chr1swallace.github.io/coloc
 
 Key references are:
