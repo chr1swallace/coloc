@@ -16,37 +16,39 @@
 ##' Print summary of a coloc.abf run
 ##'
 ##' @title print.coloc_abf
-##' @param obj object of class \code{coloc_abf} returned by coloc.abf()
+##' @param x object of class \code{coloc_abf} returned by coloc.abf()
 ##' or coloc.signals()
 ##' @param trait1 name of trait 1 (optional)
 ##' @param trait2 name of trait 2 (optional)  
-##' @return nothing, called for side effect of printing to screen
+##' @return x, invisibly
 ##' @author Chris Wallace
+##' @export
 ##' @docType methods
 ##' @rdname print-methods
-print.coloc_abf <- function(obj,
+print.coloc_abf <- function(x,
                      trait1="trait 1", trait2="trait 2") {
     message("Coloc analysis of ",trait1,", ",trait2)
     message("\nSNP Priors")
-    print(obj$priors)
+    print(x$priors)
     message("\nHypothesis Priors")
-    ns <- if(is.data.table(obj$summary)) { obj$summary$nsnps[1] } else { obj$summary["nsnps"] }
+    ns <- if(is.data.table(x$summary)) { x$summary$nsnps[1] } else { x$summary["nsnps"] }
     hprior <- prior.snp2hyp(nsnp=ns,
-                        p1=obj$priors["p1"],
-                        p2=obj$priors["p2"],
-                        p12=obj$priors["p12"])
+                        p1=x$priors["p1"],
+                        p2=x$priors["p2"],
+                        p12=x$priors["p12"])
     rownames(hprior) <- ""
     print(hprior)
     message("\nPosterior")
-    if(is.data.table(obj$summary)) {
-        summ <- copy(obj$summary)
+    if(is.data.table(x$summary)) {
+        summ <- copy(x$summary)
         setnames(summ, gsub("PP.|.abf","",names(summ)))
         print(summ[,list(nsnps,hit1,hit2,H0,H1,H2,H3,H4)])
     } else {
-        summ <- obj$summary
+        summ <- x$summary
         names(summ) <- gsub("PP.|.abf","",names(summ))
         print(summ)
     }
+    invisible(x)
 }
     
 ##' Plot results of a coloc.abf run

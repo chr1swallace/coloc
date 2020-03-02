@@ -107,7 +107,7 @@
       <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+      <a href="../articles/simdata.html">Code to simulate a small dataset</a>
     </li>
   </ul>
 </li>
@@ -144,9 +144,20 @@
     <p>Colocalisation testing supplying only regression coefficients and their variance-covariants matrices</p>
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.test.summary</span>(<span class='no'>b1</span>, <span class='no'>b2</span>, <span class='no'>V1</span>, <span class='no'>V2</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>plot.coeff</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>plots.extra</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>bayes</span> <span class='kw'>=</span> !<span class='fu'><a href='https://rdrr.io/r/base/NULL.html'>is.null</a></span>(<span class='no'>bayes.factor</span>), <span class='kw'>n.approx</span> <span class='kw'>=</span> <span class='fl'>1001</span>,
-  <span class='kw'>level.ci</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>bayes.factor</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>bma</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>coloc.test.summary</span>(
+  <span class='no'>b1</span>,
+  <span class='no'>b2</span>,
+  <span class='no'>V1</span>,
+  <span class='no'>V2</span>,
+  <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>plot.coeff</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>plots.extra</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>bayes</span> <span class='kw'>=</span> !<span class='fu'><a href='https://rdrr.io/r/base/NULL.html'>is.null</a></span>(<span class='no'>bayes.factor</span>),
+  <span class='kw'>n.approx</span> <span class='kw'>=</span> <span class='fl'>1001</span>,
+  <span class='kw'>level.ci</span> <span class='kw'>=</span> <span class='fl'>0.95</span>,
+  <span class='kw'>bayes.factor</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>bma</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

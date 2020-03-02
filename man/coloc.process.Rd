@@ -4,9 +4,19 @@
 \alias{coloc.process}
 \title{Post process a coloc.details result using masking}
 \usage{
-coloc.process(obj, hits1 = NULL, hits2 = NULL, LD = NULL, r2thr = 0.01,
-  p1 = 1e-04, p2 = 1e-04, p12 = 1e-06, LD1 = LD, LD2 = LD,
-  mode = c("iterative", "allbutone"))
+coloc.process(
+  obj,
+  hits1 = NULL,
+  hits2 = NULL,
+  LD = NULL,
+  r2thr = 0.01,
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = 1e-06,
+  LD1 = LD,
+  LD2 = LD,
+  mode = c("iterative", "allbutone")
+)
 }
 \arguments{
 \item{obj}{object returned by coloc.detail()}

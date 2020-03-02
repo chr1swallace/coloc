@@ -4,7 +4,7 @@
 \alias{bin2lin}
 \title{binomial to linear regression conversion}
 \usage{
-bin2lin(D)
+bin2lin(D, doplot = FALSE)
 }
 \arguments{
 \item{D}{standard format coloc dataset}

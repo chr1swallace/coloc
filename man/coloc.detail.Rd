@@ -4,8 +4,14 @@
 \alias{coloc.detail}
 \title{Bayesian colocalisation analysis with detailed output}
 \usage{
-coloc.detail(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04,
-  p12 = 1e-05)
+coloc.detail(
+  dataset1,
+  dataset2,
+  MAF = NULL,
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = 1e-05
+)
 }
 \arguments{
 \item{dataset1}{a list with the following elements

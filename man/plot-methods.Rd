@@ -4,6 +4,7 @@
 \name{plot}
 \alias{plot}
 \alias{plot,coloc,missing-method}
+\alias{plot,colocBayes,missing-method}
 \alias{plot,colocPCs,missing-method}
 \alias{plot.coloc_abf}
 \title{Plotting functions for the coloc package}
@@ -12,11 +13,19 @@ plot(x, y, ...)
 
 \S4method{plot}{coloc,missing}(x, y, ...)
 
+\S4method{plot}{colocBayes,missing}(x, y, ...)
+
 \S4method{plot}{colocPCs,missing}(x)
 
-plot.coloc_abf(obj, Pos = 1:nrow(obj$results), chr = NULL,
-  pos.start = min(Pos), pos.end = max(Pos), trait1 = "trait 1",
-  trait2 = "trait 2")
+plot.coloc_abf(
+  obj,
+  Pos = 1:nrow(obj$results),
+  chr = NULL,
+  pos.start = min(Pos),
+  pos.end = max(Pos),
+  trait1 = "trait 1",
+  trait2 = "trait 2"
+)
 }
 \arguments{
 \item{x}{object to be plotted}

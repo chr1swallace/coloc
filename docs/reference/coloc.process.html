@@ -107,7 +107,7 @@
       <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+      <a href="../articles/simdata.html">Code to simulate a small dataset</a>
     </li>
   </ul>
 </li>
@@ -144,9 +144,19 @@
     <p>Internal helper function</p>
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.process</span>(<span class='no'>obj</span>, <span class='kw'>hits1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>hits2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>LD</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
-  <span class='kw'>p1</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>, <span class='kw'>p2</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>, <span class='kw'>p12</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>LD1</span> <span class='kw'>=</span> <span class='no'>LD</span>, <span class='kw'>LD2</span> <span class='kw'>=</span> <span class='no'>LD</span>,
-  <span class='kw'>mode</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"iterative"</span>, <span class='st'>"allbutone"</span>))</pre>
+    <pre class="usage"><span class='fu'>coloc.process</span>(
+  <span class='no'>obj</span>,
+  <span class='kw'>hits1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>hits2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>LD</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
+  <span class='kw'>p1</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>,
+  <span class='kw'>p2</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>,
+  <span class='kw'>p12</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
+  <span class='kw'>LD1</span> <span class='kw'>=</span> <span class='no'>LD</span>,
+  <span class='kw'>LD2</span> <span class='kw'>=</span> <span class='no'>LD</span>,
+  <span class='kw'>mode</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"iterative"</span>, <span class='st'>"allbutone"</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

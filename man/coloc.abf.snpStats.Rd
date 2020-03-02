@@ -4,9 +4,18 @@
 \alias{coloc.abf.snpStats}
 \title{Bayesian colocalisation analysis using snpStats objects}
 \usage{
-coloc.abf.snpStats(X1, X2, Y1, Y2, snps = intersect(colnames(X1),
-  colnames(X2)), type1 = c("quant", "cc"), type2 = c("quant", "cc"),
-  s1 = NA, s2 = NA, ...)
+coloc.abf.snpStats(
+  X1,
+  X2,
+  Y1,
+  Y2,
+  snps = intersect(colnames(X1), colnames(X2)),
+  type1 = c("quant", "cc"),
+  type2 = c("quant", "cc"),
+  s1 = NA,
+  s2 = NA,
+  ...
+)
 }
 \arguments{
 \item{X1}{genetic data for dataset 1}

@@ -4,8 +4,14 @@
 \alias{pcs.model}
 \title{pcs.model}
 \usage{
-pcs.model(object, group, Y, stratum = NULL, threshold = 0.8, family = if
-  (all(Y \%in\% c(0, 1))) {     "binomial" } else {     "gaussian" })
+pcs.model(
+  object,
+  group,
+  Y,
+  stratum = NULL,
+  threshold = 0.8,
+  family = if (all(Y \%in\% c(0, 1))) {     "binomial" } else {     "gaussian" }
+)
 }
 \arguments{
 \item{object}{A colocPCs object, result of \code{pcs.prepare()}.}

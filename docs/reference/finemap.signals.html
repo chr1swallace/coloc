@@ -109,7 +109,7 @@ stepwise procedure" />
       <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+      <a href="../articles/simdata.html">Code to simulate a small dataset</a>
     </li>
   </ul>
 </li>
@@ -148,8 +148,15 @@ signals where they exist, via conditioning or masking - ie a
 stepwise procedure</p>
     </div>
 
-    <pre class="usage"><span class='fu'>finemap.signals</span>(<span class='no'>D</span>, <span class='kw'>LD</span> <span class='kw'>=</span> <span class='no'>D</span>$<span class='no'>LD</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"single"</span>, <span class='st'>"mask"</span>, <span class='st'>"cond"</span>),
-  <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>, <span class='kw'>sigsnps</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pthr</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>maxhits</span> <span class='kw'>=</span> <span class='fl'>3</span>)</pre>
+    <pre class="usage"><span class='fu'>finemap.signals</span>(
+  <span class='no'>D</span>,
+  <span class='kw'>LD</span> <span class='kw'>=</span> <span class='no'>D</span>$<span class='no'>LD</span>,
+  <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"single"</span>, <span class='st'>"mask"</span>, <span class='st'>"cond"</span>),
+  <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
+  <span class='kw'>sigsnps</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>pthr</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
+  <span class='kw'>maxhits</span> <span class='kw'>=</span> <span class='fl'>3</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

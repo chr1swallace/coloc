@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-```{r sim, child="simdata.Rmd" }
+```{r sim, child="simdata.Rmd", echo = FALSE }
 ```
 
 # Multiple causal variants
@@ -84,6 +84,8 @@ D2 <- list(beta=b2$beta,
     snp=names(b2$beta),
     position=1:length(b1$beta))
 my.res <- coloc.abf(dataset1=D1, dataset2=D2)
+class(my.res)
+## print.coloc_abf
 my.res
 sensitivity(my.res,"H4 > 0.9")
 ```

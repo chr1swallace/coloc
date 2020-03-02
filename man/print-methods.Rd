@@ -5,10 +5,10 @@
 \alias{print.coloc_abf}
 \title{print.coloc_abf}
 \usage{
-\method{print}{coloc_abf}(obj, trait1 = "trait 1", trait2 = "trait 2")
+\method{print}{coloc_abf}(x, trait1 = "trait 1", trait2 = "trait 2")
 }
 \arguments{
-\item{obj}{object of class \code{coloc_abf} returned by coloc.abf()
+\item{x}{object of class \code{coloc_abf} returned by coloc.abf()
 or coloc.signals()}
 
 \item{trait1}{name of trait 1 (optional)}
@@ -16,7 +16,7 @@ or coloc.signals()}
 \item{trait2}{name of trait 2 (optional)}
 }
 \value{
-nothing, called for side effect of printing to screen
+x, invisibly
 }
 \description{
 Print summary of a coloc.abf run

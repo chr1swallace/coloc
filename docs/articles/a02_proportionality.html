@@ -69,7 +69,7 @@
       <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+      <a href="../articles/simdata.html">Code to simulate a small dataset</a>
     </li>
   </ul>
 </li>
@@ -112,7 +112,9 @@
 <div id="proportional-testing" class="section level1">
 <h1 class="hasAnchor">
 <a href="#proportional-testing" class="anchor"></a>Proportional testing</h1>
-<p>% % % ## Simulate a small dataset</p>
+<div id="simulate-a-small-dataset" class="section level2">
+<h2 class="hasAnchor">
+<a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(mvtnorm)
 simx &lt;-<span class="st"> </span><span class="cf">function</span>(nsnps,nsamples,S,<span class="dt">maf=</span><span class="fl">0.1</span>) {
     mu &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="dv">0</span>,nsnps)
@@ -148,6 +150,7 @@ sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span cl
 <span class="kw"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="dv">46411</span>)
 data &lt;-<span class="st"> </span><span class="kw">sim.data</span>()</code></pre></div>
 <pre><code>## Generate 1 small sets of data</code></pre>
+</div>
 <div id="analysis" class="section level2">
 <h2 class="hasAnchor">
 <a href="#analysis" class="anchor"></a>Analysis</h2>
@@ -222,7 +225,8 @@ ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/colo
       <ul class="nav nav-pills nav-stacked">
 <li>
 <a href="#proportional-testing">Proportional testing</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#analysis">Analysis</a></li>
+<li><a href="#simulate-a-small-dataset">Simulate a small dataset</a></li>
+      <li><a href="#analysis">Analysis</a></li>
       <li><a href="#using-bayes-factors-to-compare-specific-values-of-eta">Using Bayes Factors to compare specific values of <span class="math inline">\(\eta\)</span></a></li>
       </ul>
 </li>

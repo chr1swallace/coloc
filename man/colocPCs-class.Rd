@@ -3,25 +3,24 @@
 \docType{class}
 \name{colocPCs-class}
 \alias{colocPCs-class}
-\alias{colocPCs-class}
 \title{Class \code{"colocPCs"}}
 \description{
-%% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
+\%\% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
 designed to hold objects returned by function \code{\link{pcs.prepare}} which
 generates a principal component summary of two genotype matrices in a form
 suitable for use in the function \code{\link{pcs.model}}.
 
-%% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
+\%\% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
 designed to hold objects returned by function \code{\link{pcs.prepare}} which
 generates a principal component summary of two genotype matrices in a form
 suitable for use in the function \code{\link{pcs.model}}.
 }
 \section{Objects from the Class}{
  Objects can be created by calls to the
-function \code{\link{pcs.prepare}()}. %% ~~ describe objects here ~~
+function \code{\link{pcs.prepare}()}. \%\% ~~ describe objects here ~~
 
  Objects can be created by calls to the
-function \code{\link{pcs.prepare}()}. %% ~~ describe objects here ~~
+function \code{\link{pcs.prepare}()}. \%\% ~~ describe objects here ~~
 }
 
 \examples{

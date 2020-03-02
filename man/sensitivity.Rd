@@ -4,8 +4,15 @@
 \alias{sensitivity}
 \title{Prior sensitivity for coloc}
 \usage{
-sensitivity(obj, rule = "", npoints = 100, doplot = TRUE,
-  plot.manhattans = TRUE, preserve.par = FALSE, row = 1)
+sensitivity(
+  obj,
+  rule = "",
+  npoints = 100,
+  doplot = TRUE,
+  plot.manhattans = TRUE,
+  preserve.par = FALSE,
+  row = 1
+)
 }
 \arguments{
 \item{obj}{output of coloc.detail or coloc.process}

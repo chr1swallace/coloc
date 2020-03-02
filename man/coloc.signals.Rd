@@ -4,10 +4,20 @@
 \alias{coloc.signals}
 \title{Coloc with multiple signals per trait}
 \usage{
-coloc.signals(dataset1, dataset2, MAF = NULL, LD = NULL,
-  method = c("single", "cond", "mask"), mode = c("iterative", "allbutone"),
-  p1 = 1e-04, p2 = 1e-04, p12 = NULL, maxhits = 3, r2thr = 0.01,
-  pthr = 1e-06)
+coloc.signals(
+  dataset1,
+  dataset2,
+  MAF = NULL,
+  LD = NULL,
+  method = c("single", "cond", "mask"),
+  mode = c("iterative", "allbutone"),
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = NULL,
+  maxhits = 3,
+  r2thr = 0.01,
+  pthr = 1e-06
+)
 }
 \arguments{
 \item{dataset1}{a list with the following elements

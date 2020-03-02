@@ -4,8 +4,15 @@
 \alias{finemap.signals}
 \title{Finemap multiple signals in a single dataset}
 \usage{
-finemap.signals(D, LD = D$LD, method = c("single", "mask", "cond"),
-  r2thr = 0.01, sigsnps = NULL, pthr = 1e-06, maxhits = 3)
+finemap.signals(
+  D,
+  LD = D$LD,
+  method = c("single", "mask", "cond"),
+  r2thr = 0.01,
+  sigsnps = NULL,
+  pthr = 1e-06,
+  maxhits = 3
+)
 }
 \arguments{
 \item{D}{list of summary stats for a single disease, as defined

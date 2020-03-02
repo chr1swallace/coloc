@@ -1,6 +1,13 @@
-  %\VignetteIndexEntry{coloc - simdata}
+---
+title: "Code to simulate a small dataset"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Coloc: Code to simulate a small dataset}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+---
 ## Simulate a small dataset
 
 ```{r,  echo=FALSE, results="hide" }

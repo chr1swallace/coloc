@@ -4,8 +4,7 @@
 \alias{coloc.abf}
 \title{Fully Bayesian colocalisation analysis using Bayes Factors}
 \usage{
-coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04,
-  p12 = 1e-05)
+coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
 }
 \arguments{
 \item{dataset1}{a list with the following elements

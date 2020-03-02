@@ -107,7 +107,7 @@
       <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
     </li>
     <li>
-      <a href="../articles/simdata.html">UNKNOWN TITLE</a>
+      <a href="../articles/simdata.html">Code to simulate a small dataset</a>
     </li>
   </ul>
 </li>
@@ -144,9 +144,18 @@
     <p>Bayesian colocalisation analysis using snpStats objects</p>
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.abf.snpStats</span>(<span class='no'>X1</span>, <span class='no'>X2</span>, <span class='no'>Y1</span>, <span class='no'>Y2</span>, <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>X1</span>),
-  <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>X2</span>)), <span class='kw'>type1</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quant"</span>, <span class='st'>"cc"</span>), <span class='kw'>type2</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quant"</span>, <span class='st'>"cc"</span>),
-  <span class='kw'>s1</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>s2</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>coloc.abf.snpStats</span>(
+  <span class='no'>X1</span>,
+  <span class='no'>X2</span>,
+  <span class='no'>Y1</span>,
+  <span class='no'>Y2</span>,
+  <span class='kw'>snps</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>X1</span>), <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>X2</span>)),
+  <span class='kw'>type1</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quant"</span>, <span class='st'>"cc"</span>),
+  <span class='kw'>type2</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quant"</span>, <span class='st'>"cc"</span>),
+  <span class='kw'>s1</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>s2</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
