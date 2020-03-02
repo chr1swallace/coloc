@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coloc: enumeration of configurations under a single causal variant assumption • coloc</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/simplex/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: enumeration of configurations under a single causal variant assumption">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
@@ -38,7 +39,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -79,7 +80,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -92,13 +93,14 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Coloc: enumeration of configurations under a single causal variant assumption</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2019-07-07</h4>
+            <h4 class="date">2020-03-02</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a03_enumeration.Rmd"><code>vignettes/a03_enumeration.Rmd</code></a></small>
       <div class="hidden name"><code>a03_enumeration.Rmd</code></div>
@@ -108,39 +110,39 @@
     
     
 <p>% % % ## Simulate a small dataset</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(mvtnorm)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(mvtnorm)
 simx &lt;-<span class="st"> </span><span class="cf">function</span>(nsnps,nsamples,S,<span class="dt">maf=</span><span class="fl">0.1</span>) {
-    mu &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">0</span>,nsnps)
-    rawvars &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/mvtnorm/topics/Mvnorm">rmvnorm</a></span>(<span class="dt">n=</span>nsamples, <span class="dt">mean=</span>mu, <span class="dt">sigma=</span>S)
-    pvars &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">pnorm</a></span>(rawvars)
-    x &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">qbinom</a></span>(<span class="dv">1</span><span class="op">-</span>pvars, <span class="dv">2</span>, maf)
+    mu &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="dv">0</span>,nsnps)
+    rawvars &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="dt">n=</span>nsamples, <span class="dt">mean=</span>mu, <span class="dt">sigma=</span>S)
+    pvars &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span>(rawvars)
+    x &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Binomial.html">qbinom</a></span>(<span class="dv">1</span><span class="op">-</span>pvars, <span class="dv">2</span>, maf)
 }
 
 
-sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">floor</a></span>(nsnps<span class="op">/</span><span class="dv">2</span>),<span class="dt">nsim=</span><span class="dv">1</span>) {
-  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)
+sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="kw"><a href="https://rdrr.io/r/base/Round.html">floor</a></span>(nsnps<span class="op">/</span><span class="dv">2</span>),<span class="dt">nsim=</span><span class="dv">1</span>) {
+  <span class="kw"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)
   ntotal &lt;-<span class="st"> </span>nsnps <span class="op">*</span><span class="st"> </span>nsamples <span class="op">*</span><span class="st"> </span>nsim
-  S &lt;-<span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/MathFun">abs</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/outer">outer</a></span>(<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="st">`</span><span class="dt">-</span><span class="st">`</span>))<span class="op">/</span>nsnps))<span class="op">^</span><span class="dv">4</span>
+  S &lt;-<span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(<span class="kw"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/outer.html">outer</a></span>(<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="st">`</span><span class="dt">-</span><span class="st">`</span>))<span class="op">/</span>nsnps))<span class="op">^</span><span class="dv">4</span>
   X1 &lt;-<span class="st"> </span><span class="kw">simx</span>(nsnps,ntotal,S)
   X2 &lt;-<span class="st"> </span><span class="kw">simx</span>(nsnps,ntotal,S)
-  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(ntotal,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X1[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
-  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(ntotal,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X2[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
-  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)
-  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)
-  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)
+  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(ntotal,<span class="kw"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(X1[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
+  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(ntotal,<span class="kw"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(X2[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
+  <span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)
+  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)
+  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)
   <span class="cf">if</span>(nsim<span class="op">==</span><span class="dv">1</span>) {
-    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,
-               <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1),
-               <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2)))
+    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,
+               <span class="dt">df1=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df1),
+               <span class="dt">df2=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df2)))
   } <span class="cf">else</span> {
-    index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/split">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))
-    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1[i,]),
-                                             <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2[i,])))
-    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(objects)
+    index &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/split.html">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))
+    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df1[i,]),
+                                             <span class="dt">df2=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df2[i,])))
+    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(objects)
   }
 }
 
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">46411</span>)
+<span class="kw"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="dv">46411</span>)
 data &lt;-<span class="st"> </span><span class="kw">sim.data</span>()</code></pre></div>
 <pre><code>## Generate 1 small sets of data</code></pre>
 <div id="fine-mapping-under-a-single-causal-variant-assumption" class="section level1">
@@ -148,22 +150,23 @@ data &lt;-<span class="st"> </span><span class="kw">sim.data</span>()</code></pr
 <a href="#fine-mapping-under-a-single-causal-variant-assumption" class="anchor"></a>Fine mapping under a single causal variant assumption</h1>
 <p>The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared. Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.</p>
 <p>First we analyse a single trait from our simulated data to generate summary statistics:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc)
-Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
-X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
-tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
-p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
-maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X1)<span class="op">/</span><span class="dv">2</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(coloc)</code></pre></div>
+<pre><code>## This is the condmask *development* branch of coloc.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
+X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
+tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span>(X1)<span class="op">/</span><span class="dv">2</span>
 
 get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
-   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
-   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
-   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
+   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
 }
 b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)</code></pre></div>
 <p>Then we analyse them:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="dt">dataset=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>))
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(my.res)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="dt">dataset=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>))
+<span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(my.res)</code></pre></div>
 <pre><code>##            V.         z.        r.     lABF.   snp prior       SNP.PP
 ## 1 0.002248351  0.5101674 0.9756883 -1.731428 SNP.1 1e-04 9.675623e-18
 ## 2 0.002218556  0.3250072 0.9760028 -1.813361 SNP.2 1e-04 8.914476e-18
@@ -171,7 +174,7 @@ b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)</code>
 ## 4 0.002225538  0.4669162 0.9759291 -1.756994 SNP.4 1e-04 9.431394e-18
 ## 5 0.002161220 -0.2858021 0.9766084 -1.837804 SNP.5 1e-04 8.699221e-18
 ## 6 0.002167510  0.4312465 0.9765420 -1.785466 SNP.6 1e-04 9.166650e-18</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">tail</a></span>(my.res) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">tail</a></span>(my.res) </code></pre></div>
 <pre><code>##             V.         z.        r.     lABF.    snp  prior       SNP.PP
 ## 46 0.002176805  0.2602080 0.9764437 -1.841125 SNP.46 0.0001 8.670377e-18
 ## 47 0.002122981  0.3517147 0.9770128 -1.825979 SNP.47 0.0001 8.802699e-18
@@ -225,142 +228,140 @@ b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)</code>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Y1 &lt;-<span class="st"> </span>data<span class="op">@</span>df1<span class="op">$</span>Y
 Y2 &lt;-<span class="st"> </span>data<span class="op">@</span>df2<span class="op">$</span>Y
 
-X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
-X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
+X1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>])
+X2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
 
-tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
-tests2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">ncol</a></span>(X2), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/lm">lm</a></span>(Y2 <span class="op">~</span><span class="st"> </span>X2[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+tests1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(X1), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(Y1 <span class="op">~</span><span class="st"> </span>X1[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
+tests2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="dv">1</span><span class="op">:</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(X2), <span class="cf">function</span>(i) <span class="kw"><a href="../reference/eta.html">summary</a></span>(<span class="kw"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(Y2 <span class="op">~</span><span class="st"> </span>X2[,i]))<span class="op">$</span>coefficients[<span class="dv">2</span>,])
 
-p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
-p2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(tests2,<span class="st">"["</span>,<span class="dv">4</span>)
+p1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(tests1,<span class="st">"["</span>,<span class="dv">4</span>)
+p2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(tests2,<span class="st">"["</span>,<span class="dv">4</span>)
 
-maf &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span>
+maf &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span>(X2)<span class="op">/</span><span class="dv">2</span>
 
 get.beta &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
-   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
-   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
-   <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
+   beta &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(x,<span class="st">"["</span>,<span class="dv">1</span>)
+   varbeta &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(x, <span class="st">"["</span>, <span class="dv">2</span>)<span class="op">^</span><span class="dv">2</span>
+   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>beta,<span class="dt">varbeta=</span>varbeta))
 }
 b1 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests1)
 b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</code></pre></div>
 <p>Note that we are using the second dataset in that case to compute the minor allele frequencies. This is unlikely to make any significant difference but one could have used dataset 1 instead. It is now possible to compute the probabilities of interest.</p>
 <p>With coefficients, and std. deviation of Y known, we have the most accurate inference. Note that if you have a case-control trait, set type=“cc” and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>),
-                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">sdY=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/sd">sd</a></span>(Y2),<span class="dt">type=</span><span class="st">"quant"</span>),
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X1),<span class="dt">sdY=</span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(Y1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X2),<span class="dt">sdY=</span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(Y2),<span class="dt">type=</span><span class="st">"quant"</span>),
                     <span class="dt">MAF=</span>maf)</code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-37  2.59e-25  5.47e-16  2.41e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(my.res) </code></pre></div>
 <pre><code>## $summary
-##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 1.413084e-37 2.585470e-25 5.465483e-16 2.410934e-11 
-##    PP.H4.abf 
-## 1.000000e+00 
+##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf    PP.H4.abf 
+## 5.000000e+01 1.413084e-37 2.585470e-25 5.465483e-16 2.410934e-11 1.000000e+00 
 ## 
 ## $results
-##       snp       V.df1      z.df1     r.df1    lABF.df1       V.df2
-## 1   SNP.1 0.002248351  0.5101674 0.9756883 -1.73142783 0.002240831
-## 2  SNP.10 0.002216572 -0.4229438 0.9760237 -1.77804884 0.002290141
-## 3  SNP.11 0.002256274  0.1135572 0.9756047 -1.85039303 0.002267750
-## 4  SNP.12 0.002258409  1.7454514 0.9755822 -0.37011724 0.002254242
-## 5  SNP.13 0.002253584  0.4475297 0.9756331 -1.75956389 0.002241118
-## 6  SNP.14 0.002373830 -0.2061958 0.9743663 -1.81121014 0.002278650
-## 7  SNP.15 0.002277719  2.0235830 0.9753786  0.14496383 0.002244983
-## 8  SNP.16 0.002345311  1.6705133 0.9746664 -0.47785346 0.002318885
-## 9  SNP.17 0.002355946  2.7890767 0.9745545  1.95489680 0.002238614
-## 10 SNP.18 0.002380345  3.8519679 0.9742977  5.39755948 0.002236990
-## 11 SNP.19 0.002313262  4.5294246 0.9750040  8.15691909 0.002280724
-## 12  SNP.2 0.002218556  0.3250072 0.9760028 -1.81336107 0.002296733
-## 13 SNP.20 0.002346499  3.5684070 0.9746539  4.36782586 0.002257958
-## 14 SNP.21 0.002296588  4.3100797 0.9751797  7.20980626 0.002367878
-## 15 SNP.22 0.002290492  5.2138989 0.9752439 11.40653486 0.002326984
-## 16 SNP.23 0.002328530  5.4543279 0.9748432 12.65932958 0.002290340
-## 17 SNP.24 0.002315421  5.7224136 0.9749812 14.11931158 0.002230718
-## 18 SNP.25 0.002320934  8.9776356 0.9749232 37.44549415 0.002193216
-## 19 SNP.26 0.002272269  6.6773851 0.9754361 19.89287629 0.002187693
-## 20 SNP.27 0.002267481  5.8812387 0.9754865 15.01627016 0.002202258
-## 21 SNP.28 0.002216999  5.2241684 0.9760192 11.45347535 0.002197784
-## 22 SNP.29 0.002250296  4.0348304 0.9756678  6.08388819 0.002128018
-## 23  SNP.3 0.002181928 -0.3514567 0.9763896 -1.81273150 0.002290303
-## 24 SNP.30 0.002262298  3.4123437 0.9755412  3.82426189 0.002145053
-## 25 SNP.31 0.002250164  3.4144153 0.9756692  3.82928253 0.002148988
-## 26 SNP.32 0.002218638  3.7517273 0.9760019  5.00394642 0.002139734
-## 27 SNP.33 0.002232329  3.0867450 0.9758574  2.78709373 0.002096668
-## 28 SNP.34 0.002256674  2.7540873 0.9756005  1.84336651 0.002135113
-## 29 SNP.35 0.002236704  2.5264008 0.9758112  1.25322238 0.002120791
-## 30 SNP.36 0.002199390  1.1468268 0.9762052 -1.22718489 0.002153017
-## 31 SNP.37 0.002149793  0.7578883 0.9767292 -1.59976492 0.002161713
-## 32 SNP.38 0.002225981  1.5917590 0.9759244 -0.62692990 0.002170962
-## 33 SNP.39 0.002194572  1.7125057 0.9762560 -0.43869229 0.002165222
-## 34  SNP.4 0.002225538  0.4669162 0.9759291 -1.75699358 0.002256109
-## 35 SNP.40 0.002200820  1.8464972 0.9761901 -0.20464052 0.002196444
-## 36 SNP.41 0.002211155  2.3197382 0.9760809  0.75969681 0.002288362
-## 37 SNP.42 0.002214347  1.6891523 0.9760472 -0.47338886 0.002266495
-## 38 SNP.43 0.002191942  1.9952936 0.9762838  0.07259012 0.002236402
-## 39 SNP.44 0.002199154  1.3828520 0.9762076 -0.93580448 0.002283331
-## 40 SNP.45 0.002191796  1.3981612 0.9762854 -0.91658335 0.002288721
-## 41 SNP.46 0.002176805  0.2602080 0.9764437 -1.84112527 0.002297642
-## 42 SNP.47 0.002122981  0.3517147 0.9770128 -1.82597908 0.002324535
-## 43 SNP.48 0.002172939 -0.1407900 0.9764846 -1.86537179 0.002345562
-## 44 SNP.49 0.002179537 -0.5589458 0.9764149 -1.72104342 0.002321837
-## 45  SNP.5 0.002161220 -0.2858021 0.9766084 -1.83780407 0.002233398
-## 46 SNP.50 0.002195664 -0.6658666 0.9762445 -1.65354792 0.002336758
-## 47  SNP.6 0.002167510  0.4312465 0.9765420 -1.78546561 0.002210686
-## 48  SNP.7 0.002174043  0.7162531 0.9764729 -1.62432730 0.002209486
-## 49  SNP.8 0.002174984  1.2132337 0.9764630 -1.15594496 0.002223095
-## 50  SNP.9 0.002140028  0.9778754 0.9768325 -1.41545912 0.002243580
-##          z.df2     r.df2   lABF.df2 internal.sum.lABF    SNP.PP.H4
-## 1  -1.10376855 0.9758491 -1.2672753       -2.99870311 7.044462e-44
-## 2   0.79620230 0.9753307 -1.5419489       -3.31999775 5.108711e-44
-## 3   1.29211486 0.9755660 -1.0415072       -2.89190019 7.838478e-44
-## 4   2.02125687 0.9757080  0.1343125       -0.23580470 1.116245e-42
-## 5   2.61543074 0.9758460  1.4759731       -0.28359083 1.064158e-42
-## 6   1.52405058 0.9754515 -0.7206965       -2.53190662 1.123505e-43
-## 7   2.02101657 0.9758054  0.1320296        0.27699338 1.864081e-42
-## 8   2.17719432 0.9750288  0.4658869       -0.01196658 1.396275e-42
-## 9   2.78557687 0.9758724  1.9239117        3.87880852 6.834601e-41
-## 10  2.91073206 0.9758895  2.2714907        7.66905023 3.025480e-39
-## 11  3.63499500 0.9754297  4.5911601       12.74807919 4.859465e-37
-## 12 -1.77020814 0.9752615 -0.3216392       -2.13500022 1.670895e-43
-## 13  4.81302492 0.9756690  9.4427864       13.81061223 1.406179e-36
-## 14  6.16777332 0.9745147 16.7011385       23.91094478 3.424202e-32
-## 15  7.36436814 0.9749438 24.5941942       36.00072906 6.096576e-27
-## 16  8.36524654 0.9753286 32.2744006       44.93373020 4.619969e-23
-## 17  8.13779553 0.9759554 30.4517747       44.57108629 3.214733e-23
-## 18 11.15903157 0.9763501 58.9173051       96.36279924 1.000000e+00
-## 19  7.87948196 0.9764083 28.4373275       48.33020376 1.379459e-21
-## 20  7.23236585 0.9762549 23.6623496       38.67861979 8.873178e-26
-## 21  6.57148436 0.9763020 19.2093290       30.66280436 2.929913e-29
-## 22  6.96423899 0.9770370 21.8065169       27.89040512 1.831543e-30
-## 23 -1.19165151 0.9753290 -1.1585642       -2.97129575 7.240202e-44
-## 24  6.09250043 0.9768574 16.2467305       20.07099241 7.360194e-34
-## 25  6.03280953 0.9768160 15.8933606       19.72264314 5.195210e-34
-## 26  5.29710269 0.9769135 11.8214993       16.82544573 2.866595e-35
-## 27  4.92333045 0.9773676  9.9511090       12.73820276 4.811707e-37
-## 28  4.51213603 0.9769622  8.0598586        9.90322512 2.825427e-38
-## 29  3.93346257 0.9771132  5.6704125        6.92363487 1.435702e-39
-## 30  3.25623150 0.9767735  3.2971551        2.06997020 1.119811e-41
-## 31  3.07340575 0.9766819  2.7335195        1.13375456 4.390878e-42
-## 32  1.87473676 0.9765845 -0.1610073       -0.78793725 6.426451e-43
-## 33  1.64383390 0.9766449 -0.5589305       -0.99762275 5.210819e-43
-## 34 -1.02808641 0.9756884 -1.3427685       -3.09976204 6.367346e-44
-## 35  1.74658470 0.9763161 -0.3823260       -0.58696648 7.856909e-43
-## 36  1.37966583 0.9753494 -0.9231995       -0.16350264 1.199941e-42
-## 37  0.67627818 0.9755792 -1.6330690       -2.10645787 1.719274e-43
-## 38  0.97540724 0.9758957 -1.3984387       -1.32584855 3.752834e-43
-## 39  1.33486156 0.9754023 -0.9835380       -1.91934245 2.073042e-43
-## 40  0.96313135 0.9753457 -1.3990250       -2.31560832 1.394801e-43
-## 41  1.06785733 0.9752519 -1.2934547       -3.13457994 6.149464e-44
-## 42  2.10798086 0.9749695  0.3223488       -1.50363028 3.141591e-43
-## 43  0.27434269 0.9747488 -1.8027595       -3.66813125 3.606773e-44
-## 44  0.97025628 0.9749978 -1.3854664       -3.10650983 6.324526e-44
-## 45  0.07076934 0.9759272 -1.8608935       -3.69869752 3.498196e-44
-## 46 -0.21429284 0.9748412 -1.8188910       -3.47243892 4.386387e-44
-## 47  0.04417980 0.9761662 -1.8673729       -3.65283855 3.662355e-44
-## 48 -0.74654551 0.9761789 -1.5965638       -3.22089107 5.640957e-44
-## 49 -0.05128667 0.9760356 -1.8643102       -3.02025518 6.894263e-44
-## 50 -0.27773054 0.9758202 -1.8234833       -3.23894242 5.540044e-44
+##       snp       V.df1      z.df1     r.df1    lABF.df1       V.df2       z.df2
+## 1   SNP.1 0.002248351  0.5101674 0.9756883 -1.73142783 0.002240831 -1.10376855
+## 2  SNP.10 0.002216572 -0.4229438 0.9760237 -1.77804884 0.002290141  0.79620230
+## 3  SNP.11 0.002256274  0.1135572 0.9756047 -1.85039303 0.002267750  1.29211486
+## 4  SNP.12 0.002258409  1.7454514 0.9755822 -0.37011724 0.002254242  2.02125687
+## 5  SNP.13 0.002253584  0.4475297 0.9756331 -1.75956389 0.002241118  2.61543074
+## 6  SNP.14 0.002373830 -0.2061958 0.9743663 -1.81121014 0.002278650  1.52405058
+## 7  SNP.15 0.002277719  2.0235830 0.9753786  0.14496383 0.002244983  2.02101657
+## 8  SNP.16 0.002345311  1.6705133 0.9746664 -0.47785346 0.002318885  2.17719432
+## 9  SNP.17 0.002355946  2.7890767 0.9745545  1.95489680 0.002238614  2.78557687
+## 10 SNP.18 0.002380345  3.8519679 0.9742977  5.39755948 0.002236990  2.91073206
+## 11 SNP.19 0.002313262  4.5294246 0.9750040  8.15691909 0.002280724  3.63499500
+## 12  SNP.2 0.002218556  0.3250072 0.9760028 -1.81336107 0.002296733 -1.77020814
+## 13 SNP.20 0.002346499  3.5684070 0.9746539  4.36782586 0.002257958  4.81302492
+## 14 SNP.21 0.002296588  4.3100797 0.9751797  7.20980626 0.002367878  6.16777332
+## 15 SNP.22 0.002290492  5.2138989 0.9752439 11.40653486 0.002326984  7.36436814
+## 16 SNP.23 0.002328530  5.4543279 0.9748432 12.65932958 0.002290340  8.36524654
+## 17 SNP.24 0.002315421  5.7224136 0.9749812 14.11931158 0.002230718  8.13779553
+## 18 SNP.25 0.002320934  8.9776356 0.9749232 37.44549415 0.002193216 11.15903157
+## 19 SNP.26 0.002272269  6.6773851 0.9754361 19.89287629 0.002187693  7.87948196
+## 20 SNP.27 0.002267481  5.8812387 0.9754865 15.01627016 0.002202258  7.23236585
+## 21 SNP.28 0.002216999  5.2241684 0.9760192 11.45347535 0.002197784  6.57148436
+## 22 SNP.29 0.002250296  4.0348304 0.9756678  6.08388819 0.002128018  6.96423899
+## 23  SNP.3 0.002181928 -0.3514567 0.9763896 -1.81273150 0.002290303 -1.19165151
+## 24 SNP.30 0.002262298  3.4123437 0.9755412  3.82426189 0.002145053  6.09250043
+## 25 SNP.31 0.002250164  3.4144153 0.9756692  3.82928253 0.002148988  6.03280953
+## 26 SNP.32 0.002218638  3.7517273 0.9760019  5.00394642 0.002139734  5.29710269
+## 27 SNP.33 0.002232329  3.0867450 0.9758574  2.78709373 0.002096668  4.92333045
+## 28 SNP.34 0.002256674  2.7540873 0.9756005  1.84336651 0.002135113  4.51213603
+## 29 SNP.35 0.002236704  2.5264008 0.9758112  1.25322238 0.002120791  3.93346257
+## 30 SNP.36 0.002199390  1.1468268 0.9762052 -1.22718489 0.002153017  3.25623150
+## 31 SNP.37 0.002149793  0.7578883 0.9767292 -1.59976492 0.002161713  3.07340575
+## 32 SNP.38 0.002225981  1.5917590 0.9759244 -0.62692990 0.002170962  1.87473676
+## 33 SNP.39 0.002194572  1.7125057 0.9762560 -0.43869229 0.002165222  1.64383390
+## 34  SNP.4 0.002225538  0.4669162 0.9759291 -1.75699358 0.002256109 -1.02808641
+## 35 SNP.40 0.002200820  1.8464972 0.9761901 -0.20464052 0.002196444  1.74658470
+## 36 SNP.41 0.002211155  2.3197382 0.9760809  0.75969681 0.002288362  1.37966583
+## 37 SNP.42 0.002214347  1.6891523 0.9760472 -0.47338886 0.002266495  0.67627818
+## 38 SNP.43 0.002191942  1.9952936 0.9762838  0.07259012 0.002236402  0.97540724
+## 39 SNP.44 0.002199154  1.3828520 0.9762076 -0.93580448 0.002283331  1.33486156
+## 40 SNP.45 0.002191796  1.3981612 0.9762854 -0.91658335 0.002288721  0.96313135
+## 41 SNP.46 0.002176805  0.2602080 0.9764437 -1.84112527 0.002297642  1.06785733
+## 42 SNP.47 0.002122981  0.3517147 0.9770128 -1.82597908 0.002324535  2.10798086
+## 43 SNP.48 0.002172939 -0.1407900 0.9764846 -1.86537179 0.002345562  0.27434269
+## 44 SNP.49 0.002179537 -0.5589458 0.9764149 -1.72104342 0.002321837  0.97025628
+## 45  SNP.5 0.002161220 -0.2858021 0.9766084 -1.83780407 0.002233398  0.07076934
+## 46 SNP.50 0.002195664 -0.6658666 0.9762445 -1.65354792 0.002336758 -0.21429284
+## 47  SNP.6 0.002167510  0.4312465 0.9765420 -1.78546561 0.002210686  0.04417980
+## 48  SNP.7 0.002174043  0.7162531 0.9764729 -1.62432730 0.002209486 -0.74654551
+## 49  SNP.8 0.002174984  1.2132337 0.9764630 -1.15594496 0.002223095 -0.05128667
+## 50  SNP.9 0.002140028  0.9778754 0.9768325 -1.41545912 0.002243580 -0.27773054
+##        r.df2   lABF.df2 internal.sum.lABF    SNP.PP.H4
+## 1  0.9758491 -1.2672753       -2.99870311 7.044462e-44
+## 2  0.9753307 -1.5419489       -3.31999775 5.108711e-44
+## 3  0.9755660 -1.0415072       -2.89190019 7.838478e-44
+## 4  0.9757080  0.1343125       -0.23580470 1.116245e-42
+## 5  0.9758460  1.4759731       -0.28359083 1.064158e-42
+## 6  0.9754515 -0.7206965       -2.53190662 1.123505e-43
+## 7  0.9758054  0.1320296        0.27699338 1.864081e-42
+## 8  0.9750288  0.4658869       -0.01196658 1.396275e-42
+## 9  0.9758724  1.9239117        3.87880852 6.834601e-41
+## 10 0.9758895  2.2714907        7.66905023 3.025480e-39
+## 11 0.9754297  4.5911601       12.74807919 4.859465e-37
+## 12 0.9752615 -0.3216392       -2.13500022 1.670895e-43
+## 13 0.9756690  9.4427864       13.81061223 1.406179e-36
+## 14 0.9745147 16.7011385       23.91094478 3.424202e-32
+## 15 0.9749438 24.5941942       36.00072906 6.096576e-27
+## 16 0.9753286 32.2744006       44.93373020 4.619969e-23
+## 17 0.9759554 30.4517747       44.57108629 3.214733e-23
+## 18 0.9763501 58.9173051       96.36279924 1.000000e+00
+## 19 0.9764083 28.4373275       48.33020376 1.379459e-21
+## 20 0.9762549 23.6623496       38.67861979 8.873178e-26
+## 21 0.9763020 19.2093290       30.66280436 2.929913e-29
+## 22 0.9770370 21.8065169       27.89040512 1.831543e-30
+## 23 0.9753290 -1.1585642       -2.97129575 7.240202e-44
+## 24 0.9768574 16.2467305       20.07099241 7.360194e-34
+## 25 0.9768160 15.8933606       19.72264314 5.195210e-34
+## 26 0.9769135 11.8214993       16.82544573 2.866595e-35
+## 27 0.9773676  9.9511090       12.73820276 4.811707e-37
+## 28 0.9769622  8.0598586        9.90322512 2.825427e-38
+## 29 0.9771132  5.6704125        6.92363487 1.435702e-39
+## 30 0.9767735  3.2971551        2.06997020 1.119811e-41
+## 31 0.9766819  2.7335195        1.13375456 4.390878e-42
+## 32 0.9765845 -0.1610073       -0.78793725 6.426451e-43
+## 33 0.9766449 -0.5589305       -0.99762275 5.210819e-43
+## 34 0.9756884 -1.3427685       -3.09976204 6.367346e-44
+## 35 0.9763161 -0.3823260       -0.58696648 7.856909e-43
+## 36 0.9753494 -0.9231995       -0.16350264 1.199941e-42
+## 37 0.9755792 -1.6330690       -2.10645787 1.719274e-43
+## 38 0.9758957 -1.3984387       -1.32584855 3.752834e-43
+## 39 0.9754023 -0.9835380       -1.91934245 2.073042e-43
+## 40 0.9753457 -1.3990250       -2.31560832 1.394801e-43
+## 41 0.9752519 -1.2934547       -3.13457994 6.149464e-44
+## 42 0.9749695  0.3223488       -1.50363028 3.141591e-43
+## 43 0.9747488 -1.8027595       -3.66813125 3.606773e-44
+## 44 0.9749978 -1.3854664       -3.10650983 6.324526e-44
+## 45 0.9759272 -1.8608935       -3.69869752 3.498196e-44
+## 46 0.9748412 -1.8188910       -3.47243892 4.386387e-44
+## 47 0.9761662 -1.8673729       -3.65283855 3.662355e-44
+## 48 0.9761789 -1.5965638       -3.22089107 5.640957e-44
+## 49 0.9760356 -1.8643102       -3.02025518 6.894263e-44
+## 50 0.9758202 -1.8234833       -3.23894242 5.540044e-44
 ## 
 ## $priors
 ##    p1    p2   p12 
@@ -369,127 +370,125 @@ b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</code>
 ## attr(,"class")
 ## [1] "coloc_abf" "list"</code></pre>
 <p>When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
-                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>b1<span class="op">$</span>beta, <span class="dt">varbeta=</span>b1<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">beta=</span>b2<span class="op">$</span>beta, <span class="dt">varbeta=</span>b2<span class="op">$</span>varbeta, <span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
                     <span class="dt">MAF=</span>maf)</code></pre></div>
-<pre><code>## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
-## varbeta, please directly supply sdY if known
+<pre><code>## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and varbeta,
+## please directly supply sdY if known
 
-## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and
-## varbeta, please directly supply sdY if known</code></pre>
+## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and varbeta,
+## please directly supply sdY if known</code></pre>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-37  2.58e-25  5.45e-16  2.41e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(my.res) </code></pre></div>
 <pre><code>## $summary
-##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 1.408198e-37 2.582454e-25 5.452944e-16 2.405891e-11 
-##    PP.H4.abf 
-## 1.000000e+00 
+##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf    PP.H4.abf 
+## 5.000000e+01 1.408198e-37 2.582454e-25 5.452944e-16 2.405891e-11 1.000000e+00 
 ## 
 ## $results
-##       snp       V.df1      z.df1     r.df1    lABF.df1       V.df2
-## 1   SNP.1 0.002248351  0.5101674 0.9757980 -1.73367468 0.002240831
-## 2  SNP.10 0.002216572 -0.4229438 0.9761319 -1.78030105 0.002290141
-## 3  SNP.11 0.002256274  0.1135572 0.9757148 -1.85265325 0.002267750
-## 4  SNP.12 0.002258409  1.7454514 0.9756924 -0.37221031 0.002254242
-## 5  SNP.13 0.002253584  0.4475297 0.9757431 -1.76181388 0.002241118
-## 6  SNP.14 0.002373830 -0.2061958 0.9744818 -1.81346575 0.002278650
-## 7  SNP.15 0.002277719  2.0235830 0.9754896  0.14293081 0.002244983
-## 8  SNP.16 0.002345311  1.6705133 0.9747806 -0.47995289 0.002318885
-## 9  SNP.17 0.002355946  2.7890767 0.9746692  1.95308434 0.002238614
-## 10 SNP.18 0.002380345  3.8519679 0.9744135  5.39616072 0.002236990
-## 11 SNP.19 0.002313262  4.5294246 0.9751167  8.15581566 0.002280724
-## 12  SNP.2 0.002218556  0.3250072 0.9761111 -1.81561719 0.002296733
-## 13 SNP.20 0.002346499  3.5684070 0.9747682  4.36629448 0.002257958
-## 14 SNP.21 0.002296588  4.3100797 0.9752916  7.20858598 0.002367878
-## 15 SNP.22 0.002290492  5.2138989 0.9753556 11.40579235 0.002326984
-## 16 SNP.23 0.002328530  5.4543279 0.9749566 12.65875737 0.002290340
-## 17 SNP.24 0.002315421  5.7224136 0.9750940 14.11889903 0.002230718
-## 18 SNP.25 0.002320934  8.9776356 0.9750362 37.44779096 0.002193216
-## 19 SNP.26 0.002272269  6.6773851 0.9755469 19.89308601 0.002187693
-## 20 SNP.27 0.002267481  5.8812387 0.9755971 15.01592198 0.002202258
-## 21 SNP.28 0.002216999  5.2241684 0.9761275 11.45269049 0.002197784
-## 22 SNP.29 0.002250296  4.0348304 0.9757776  6.08252076 0.002128018
-## 23  SNP.3 0.002181928 -0.3514567 0.9764962 -1.81498766 0.002290303
-## 24 SNP.30 0.002262298  3.4123437 0.9756515  3.82264353 0.002145053
-## 25 SNP.31 0.002250164  3.4144153 0.9757790  3.82766137 0.002148988
-## 26 SNP.32 0.002218638  3.7517273 0.9761102  5.00244687 0.002139734
-## 27 SNP.33 0.002232329  3.0867450 0.9759663  2.78535126 0.002096668
-## 28 SNP.34 0.002256674  2.7540873 0.9757106  1.84152308 0.002135113
-## 29 SNP.35 0.002236704  2.5264008 0.9759204  1.25130933 0.002120791
-## 30 SNP.36 0.002199390  1.1468268 0.9763126 -1.22937656 0.002153017
-## 31 SNP.37 0.002149793  0.7578883 0.9768344 -1.60199827 0.002161713
-## 32 SNP.38 0.002225981  1.5917590 0.9760331 -0.62905392 0.002170962
-## 33 SNP.39 0.002194572  1.7125057 0.9763632 -0.44079754 0.002165222
-## 34  SNP.4 0.002225538  0.4669162 0.9760377 -1.75924342 0.002256109
-## 35 SNP.40 0.002200820  1.8464972 0.9762975 -0.20671956 0.002196444
-## 36 SNP.41 0.002211155  2.3197382 0.9761889  0.75772528 0.002288362
-## 37 SNP.42 0.002214347  1.6891523 0.9761553 -0.47549657 0.002266495
-## 38 SNP.43 0.002191942  1.9952936 0.9763909  0.07054076 0.002236402
-## 39 SNP.44 0.002199154  1.3828520 0.9763151 -0.93796410 0.002283331
-## 40 SNP.45 0.002191796  1.3981612 0.9763924 -0.91874120 0.002288721
-## 41 SNP.46 0.002176805  0.2602080 0.9765501 -1.84338454 0.002297642
-## 42 SNP.47 0.002122981  0.3517147 0.9771167 -1.82823684 0.002324535
-## 43 SNP.48 0.002172939 -0.1407900 0.9765908 -1.86763370 0.002345562
-## 44 SNP.49 0.002179537 -0.5589458 0.9765214 -1.72328958 0.002321837
-## 45  SNP.5 0.002161220 -0.2858021 0.9767141 -1.84006300 0.002233398
-## 46 SNP.50 0.002195664 -0.6658666 0.9763518 -1.65578655 0.002336758
-## 47  SNP.6 0.002167510  0.4312465 0.9766479 -1.78771885 0.002210686
-## 48  SNP.7 0.002174043  0.7162531 0.9765792 -1.62656299 0.002209486
-## 49  SNP.8 0.002174984  1.2132337 0.9765693 -1.15812965 0.002223095
-## 50  SNP.9 0.002140028  0.9778754 0.9769372 -1.41767285 0.002243580
-##          z.df2     r.df2   lABF.df2 internal.sum.lABF    SNP.PP.H4
-## 1  -1.10376855 0.9758781 -1.2678580       -3.00153270 7.000265e-44
-## 2   0.79620230 0.9753603 -1.5425396       -3.32284066 5.076592e-44
-## 3   1.29211486 0.9755953 -1.0420829       -2.89473616 7.789250e-44
-## 4   2.02125687 0.9757372  0.1337718       -0.23843853 1.109458e-42
-## 5   2.61543074 0.9758750  1.4754718       -0.28634206 1.057564e-42
-## 6   1.52405058 0.9754809 -0.7212624       -2.53472818 1.116465e-43
-## 7   2.02101657 0.9758344  0.1314885        0.27441929 1.852859e-42
-## 8   2.17719432 0.9750588  0.4653580       -0.01459494 1.387794e-42
-## 9   2.78557687 0.9759013  1.9234236        3.87650799 6.795315e-41
-## 10  2.91073206 0.9759184  2.2710129        7.66717362 3.009364e-39
-## 11  3.63499500 0.9754592  4.5907547       12.74657034 4.835359e-37
-## 12 -1.77020814 0.9752911 -0.3221927       -2.13780989 1.660445e-43
-## 13  4.81302492 0.9756982  9.4425242       13.80881871 1.398806e-36
-## 14  6.16777332 0.9745452 16.7011199       23.90970587 3.408136e-32
-## 15  7.36436814 0.9749739 24.5944090       36.00020134 6.072288e-27
-## 16  8.36524654 0.9753582 32.2748359       44.93359329 4.603363e-23
-## 17  8.13779553 0.9759843 30.4521298       44.57102883 3.203432e-23
-## 18 11.15903157 0.9763785 58.9184724       96.36626335 1.000000e+00
-## 19  7.87948196 0.9764366 28.4376061       48.33069213 1.375360e-21
-## 20  7.23236585 0.9762834 23.6624946       38.67841653 8.840696e-26
-## 21  6.57148436 0.9763305 19.2093427       30.66203317 2.917530e-29
-## 22  6.96423899 0.9770646 21.8065849       27.88910565 1.822839e-30
-## 23 -1.19165151 0.9753586 -1.1591433       -2.97413097 7.194737e-44
-## 24  6.09250043 0.9768852 16.2466455       20.06928901 7.322259e-34
-## 25  6.03280953 0.9768438 15.8932664       19.72092779 5.168371e-34
-## 26  5.29710269 0.9769412 11.8212874       16.82373425 2.851797e-35
-## 27  4.92333045 0.9773949  9.9508374       12.73618865 4.785420e-37
-## 28  4.51213603 0.9769899  8.0595393        9.90106236 2.809573e-38
-## 29  3.93346257 0.9771407  5.6700241        6.92133339 1.427449e-39
-## 30  3.25623150 0.9768014  3.2967020        2.06732547 1.112991e-41
-## 31  3.07340575 0.9767099  2.7330509        1.13105259 4.363887e-42
-## 32  1.87473676 0.9766126 -0.1615588       -0.79061269 6.387117e-43
-## 33  1.64383390 0.9766730 -0.5594934       -1.00029098 5.178962e-43
-## 34 -1.02808641 0.9757176 -1.3433533       -3.10259675 6.327366e-44
-## 35  1.74658470 0.9763446 -0.3828833       -0.58960283 7.809124e-43
-## 36  1.37966583 0.9753790 -0.9237714       -0.16604612 1.192753e-42
-## 37  0.67627818 0.9756085 -1.6336625       -2.10915911 1.708706e-43
-## 38  0.97540724 0.9759246 -1.3990253       -1.32848456 3.730011e-43
-## 39  1.33486156 0.9754318 -0.9841118       -1.92207591 2.060234e-43
-## 40  0.96313135 0.9753752 -1.3996113       -2.31835254 1.386168e-43
-## 41  1.06785733 0.9752816 -1.2940378       -3.13742231 6.110804e-44
-## 42  2.10798086 0.9749995  0.3218156       -1.50642121 3.122002e-43
-## 43  0.27434269 0.9747791 -1.8033580       -3.67099174 3.584034e-44
-## 44  0.97025628 0.9750278 -1.3860522       -3.10934175 6.284831e-44
-## 45  0.07076934 0.9759561 -1.8614938       -3.70155682 3.476145e-44
-## 46 -0.21429284 0.9748714 -1.8194901       -3.47527664 4.358832e-44
-## 47  0.04417980 0.9761948 -1.8679735       -3.65569236 3.639289e-44
-## 48 -0.74654551 0.9762074 -1.5971564       -3.22371938 5.605573e-44
-## 49 -0.05128667 0.9760644 -1.8649107       -3.02304034 6.851314e-44
-## 50 -0.27773054 0.9758492 -1.8240826       -3.24175541 5.505377e-44
+##       snp       V.df1      z.df1     r.df1    lABF.df1       V.df2       z.df2
+## 1   SNP.1 0.002248351  0.5101674 0.9757980 -1.73367468 0.002240831 -1.10376855
+## 2  SNP.10 0.002216572 -0.4229438 0.9761319 -1.78030105 0.002290141  0.79620230
+## 3  SNP.11 0.002256274  0.1135572 0.9757148 -1.85265325 0.002267750  1.29211486
+## 4  SNP.12 0.002258409  1.7454514 0.9756924 -0.37221031 0.002254242  2.02125687
+## 5  SNP.13 0.002253584  0.4475297 0.9757431 -1.76181388 0.002241118  2.61543074
+## 6  SNP.14 0.002373830 -0.2061958 0.9744818 -1.81346575 0.002278650  1.52405058
+## 7  SNP.15 0.002277719  2.0235830 0.9754896  0.14293081 0.002244983  2.02101657
+## 8  SNP.16 0.002345311  1.6705133 0.9747806 -0.47995289 0.002318885  2.17719432
+## 9  SNP.17 0.002355946  2.7890767 0.9746692  1.95308434 0.002238614  2.78557687
+## 10 SNP.18 0.002380345  3.8519679 0.9744135  5.39616072 0.002236990  2.91073206
+## 11 SNP.19 0.002313262  4.5294246 0.9751167  8.15581566 0.002280724  3.63499500
+## 12  SNP.2 0.002218556  0.3250072 0.9761111 -1.81561719 0.002296733 -1.77020814
+## 13 SNP.20 0.002346499  3.5684070 0.9747682  4.36629448 0.002257958  4.81302492
+## 14 SNP.21 0.002296588  4.3100797 0.9752916  7.20858598 0.002367878  6.16777332
+## 15 SNP.22 0.002290492  5.2138989 0.9753556 11.40579235 0.002326984  7.36436814
+## 16 SNP.23 0.002328530  5.4543279 0.9749566 12.65875737 0.002290340  8.36524654
+## 17 SNP.24 0.002315421  5.7224136 0.9750940 14.11889903 0.002230718  8.13779553
+## 18 SNP.25 0.002320934  8.9776356 0.9750362 37.44779096 0.002193216 11.15903157
+## 19 SNP.26 0.002272269  6.6773851 0.9755469 19.89308601 0.002187693  7.87948196
+## 20 SNP.27 0.002267481  5.8812387 0.9755971 15.01592198 0.002202258  7.23236585
+## 21 SNP.28 0.002216999  5.2241684 0.9761275 11.45269049 0.002197784  6.57148436
+## 22 SNP.29 0.002250296  4.0348304 0.9757776  6.08252076 0.002128018  6.96423899
+## 23  SNP.3 0.002181928 -0.3514567 0.9764962 -1.81498766 0.002290303 -1.19165151
+## 24 SNP.30 0.002262298  3.4123437 0.9756515  3.82264353 0.002145053  6.09250043
+## 25 SNP.31 0.002250164  3.4144153 0.9757790  3.82766137 0.002148988  6.03280953
+## 26 SNP.32 0.002218638  3.7517273 0.9761102  5.00244687 0.002139734  5.29710269
+## 27 SNP.33 0.002232329  3.0867450 0.9759663  2.78535126 0.002096668  4.92333045
+## 28 SNP.34 0.002256674  2.7540873 0.9757106  1.84152308 0.002135113  4.51213603
+## 29 SNP.35 0.002236704  2.5264008 0.9759204  1.25130933 0.002120791  3.93346257
+## 30 SNP.36 0.002199390  1.1468268 0.9763126 -1.22937656 0.002153017  3.25623150
+## 31 SNP.37 0.002149793  0.7578883 0.9768344 -1.60199827 0.002161713  3.07340575
+## 32 SNP.38 0.002225981  1.5917590 0.9760331 -0.62905392 0.002170962  1.87473676
+## 33 SNP.39 0.002194572  1.7125057 0.9763632 -0.44079754 0.002165222  1.64383390
+## 34  SNP.4 0.002225538  0.4669162 0.9760377 -1.75924342 0.002256109 -1.02808641
+## 35 SNP.40 0.002200820  1.8464972 0.9762975 -0.20671956 0.002196444  1.74658470
+## 36 SNP.41 0.002211155  2.3197382 0.9761889  0.75772528 0.002288362  1.37966583
+## 37 SNP.42 0.002214347  1.6891523 0.9761553 -0.47549657 0.002266495  0.67627818
+## 38 SNP.43 0.002191942  1.9952936 0.9763909  0.07054076 0.002236402  0.97540724
+## 39 SNP.44 0.002199154  1.3828520 0.9763151 -0.93796410 0.002283331  1.33486156
+## 40 SNP.45 0.002191796  1.3981612 0.9763924 -0.91874120 0.002288721  0.96313135
+## 41 SNP.46 0.002176805  0.2602080 0.9765501 -1.84338454 0.002297642  1.06785733
+## 42 SNP.47 0.002122981  0.3517147 0.9771167 -1.82823684 0.002324535  2.10798086
+## 43 SNP.48 0.002172939 -0.1407900 0.9765908 -1.86763370 0.002345562  0.27434269
+## 44 SNP.49 0.002179537 -0.5589458 0.9765214 -1.72328958 0.002321837  0.97025628
+## 45  SNP.5 0.002161220 -0.2858021 0.9767141 -1.84006300 0.002233398  0.07076934
+## 46 SNP.50 0.002195664 -0.6658666 0.9763518 -1.65578655 0.002336758 -0.21429284
+## 47  SNP.6 0.002167510  0.4312465 0.9766479 -1.78771885 0.002210686  0.04417980
+## 48  SNP.7 0.002174043  0.7162531 0.9765792 -1.62656299 0.002209486 -0.74654551
+## 49  SNP.8 0.002174984  1.2132337 0.9765693 -1.15812965 0.002223095 -0.05128667
+## 50  SNP.9 0.002140028  0.9778754 0.9769372 -1.41767285 0.002243580 -0.27773054
+##        r.df2   lABF.df2 internal.sum.lABF    SNP.PP.H4
+## 1  0.9758781 -1.2678580       -3.00153270 7.000265e-44
+## 2  0.9753603 -1.5425396       -3.32284066 5.076592e-44
+## 3  0.9755953 -1.0420829       -2.89473616 7.789250e-44
+## 4  0.9757372  0.1337718       -0.23843853 1.109458e-42
+## 5  0.9758750  1.4754718       -0.28634206 1.057564e-42
+## 6  0.9754809 -0.7212624       -2.53472818 1.116465e-43
+## 7  0.9758344  0.1314885        0.27441929 1.852859e-42
+## 8  0.9750588  0.4653580       -0.01459494 1.387794e-42
+## 9  0.9759013  1.9234236        3.87650799 6.795315e-41
+## 10 0.9759184  2.2710129        7.66717362 3.009364e-39
+## 11 0.9754592  4.5907547       12.74657034 4.835359e-37
+## 12 0.9752911 -0.3221927       -2.13780989 1.660445e-43
+## 13 0.9756982  9.4425242       13.80881871 1.398806e-36
+## 14 0.9745452 16.7011199       23.90970587 3.408136e-32
+## 15 0.9749739 24.5944090       36.00020134 6.072288e-27
+## 16 0.9753582 32.2748359       44.93359329 4.603363e-23
+## 17 0.9759843 30.4521298       44.57102883 3.203432e-23
+## 18 0.9763785 58.9184724       96.36626335 1.000000e+00
+## 19 0.9764366 28.4376061       48.33069213 1.375360e-21
+## 20 0.9762834 23.6624946       38.67841653 8.840696e-26
+## 21 0.9763305 19.2093427       30.66203317 2.917530e-29
+## 22 0.9770646 21.8065849       27.88910565 1.822839e-30
+## 23 0.9753586 -1.1591433       -2.97413097 7.194737e-44
+## 24 0.9768852 16.2466455       20.06928901 7.322259e-34
+## 25 0.9768438 15.8932664       19.72092779 5.168371e-34
+## 26 0.9769412 11.8212874       16.82373425 2.851797e-35
+## 27 0.9773949  9.9508374       12.73618865 4.785420e-37
+## 28 0.9769899  8.0595393        9.90106236 2.809573e-38
+## 29 0.9771407  5.6700241        6.92133339 1.427449e-39
+## 30 0.9768014  3.2967020        2.06732547 1.112991e-41
+## 31 0.9767099  2.7330509        1.13105259 4.363887e-42
+## 32 0.9766126 -0.1615588       -0.79061269 6.387117e-43
+## 33 0.9766730 -0.5594934       -1.00029098 5.178962e-43
+## 34 0.9757176 -1.3433533       -3.10259675 6.327366e-44
+## 35 0.9763446 -0.3828833       -0.58960283 7.809124e-43
+## 36 0.9753790 -0.9237714       -0.16604612 1.192753e-42
+## 37 0.9756085 -1.6336625       -2.10915911 1.708706e-43
+## 38 0.9759246 -1.3990253       -1.32848456 3.730011e-43
+## 39 0.9754318 -0.9841118       -1.92207591 2.060234e-43
+## 40 0.9753752 -1.3996113       -2.31835254 1.386168e-43
+## 41 0.9752816 -1.2940378       -3.13742231 6.110804e-44
+## 42 0.9749995  0.3218156       -1.50642121 3.122002e-43
+## 43 0.9747791 -1.8033580       -3.67099174 3.584034e-44
+## 44 0.9750278 -1.3860522       -3.10934175 6.284831e-44
+## 45 0.9759561 -1.8614938       -3.70155682 3.476145e-44
+## 46 0.9748714 -1.8194901       -3.47527664 4.358832e-44
+## 47 0.9761948 -1.8679735       -3.65569236 3.639289e-44
+## 48 0.9762074 -1.5971564       -3.22371938 5.605573e-44
+## 49 0.9760644 -1.8649107       -3.02304034 6.851314e-44
+## 50 0.9758492 -1.8240826       -3.24175541 5.505377e-44
 ## 
 ## $priors
 ##    p1    p2   p12 
@@ -498,18 +497,16 @@ b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</code>
 ## attr(,"class")
 ## [1] "coloc_abf" "list"</code></pre>
 <p>When only p values are available, we can use the form:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p1,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
-                    <span class="dt">dataset2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">pvalues=</span>p2,<span class="dt">N=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">my.res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="dt">dataset1=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">pvalues=</span>p1,<span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X1),<span class="dt">type=</span><span class="st">"quant"</span>),
+                    <span class="dt">dataset2=</span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">pvalues=</span>p2,<span class="dt">N=</span><span class="kw"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(X2),<span class="dt">type=</span><span class="st">"quant"</span>),
                     <span class="dt">MAF=</span>maf)</code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  2.36e-37  3.78e-25  6.24e-16  2.62e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/print">print</a></span>(my.res) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(my.res) </code></pre></div>
 <pre><code>## $summary
-##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf 
-## 5.000000e+01 2.356833e-37 3.778986e-25 6.236681e-16 2.622332e-11 
-##    PP.H4.abf 
-## 1.000000e+00 
+##        nsnps    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf    PP.H4.abf 
+## 5.000000e+01 2.356833e-37 3.778986e-25 6.236681e-16 2.622332e-11 1.000000e+00 
 ## 
 ## $results
 ##       snp  pvalues.df1 MAF.df1        V.df1     z.df1     r.df1   lABF.df1
@@ -677,6 +674,7 @@ b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</code>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+
         <div id="tocnav">
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
@@ -695,17 +693,20 @@ b2 &lt;-<span class="st"> </span><span class="kw">get.beta</span>(tests2)</code>
 </div>
 
 
+
       <footer><div class="copyright">
   <p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

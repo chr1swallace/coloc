@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coloc: proportionality testing • coloc</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/simplex/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: proportionality testing">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
@@ -38,7 +39,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -79,7 +80,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -92,13 +93,14 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Coloc: proportionality testing</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2019-07-07</h4>
+            <h4 class="date">2020-03-02</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a02_proportionality.Rmd"><code>vignettes/a02_proportionality.Rmd</code></a></small>
       <div class="hidden name"><code>a02_proportionality.Rmd</code></div>
@@ -111,39 +113,39 @@
 <h1 class="hasAnchor">
 <a href="#proportional-testing" class="anchor"></a>Proportional testing</h1>
 <p>% % % ## Simulate a small dataset</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(mvtnorm)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(mvtnorm)
 simx &lt;-<span class="st"> </span><span class="cf">function</span>(nsnps,nsamples,S,<span class="dt">maf=</span><span class="fl">0.1</span>) {
-    mu &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">0</span>,nsnps)
-    rawvars &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/mvtnorm/topics/Mvnorm">rmvnorm</a></span>(<span class="dt">n=</span>nsamples, <span class="dt">mean=</span>mu, <span class="dt">sigma=</span>S)
-    pvars &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">pnorm</a></span>(rawvars)
-    x &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Binomial">qbinom</a></span>(<span class="dv">1</span><span class="op">-</span>pvars, <span class="dv">2</span>, maf)
+    mu &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="dv">0</span>,nsnps)
+    rawvars &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="dt">n=</span>nsamples, <span class="dt">mean=</span>mu, <span class="dt">sigma=</span>S)
+    pvars &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span>(rawvars)
+    x &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Binomial.html">qbinom</a></span>(<span class="dv">1</span><span class="op">-</span>pvars, <span class="dv">2</span>, maf)
 }
 
 
-sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">floor</a></span>(nsnps<span class="op">/</span><span class="dv">2</span>),<span class="dt">nsim=</span><span class="dv">1</span>) {
-  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)
+sim.data &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">nsnps=</span><span class="dv">50</span>,<span class="dt">nsamples=</span><span class="dv">200</span>,<span class="dt">causals=</span><span class="kw"><a href="https://rdrr.io/r/base/Round.html">floor</a></span>(nsnps<span class="op">/</span><span class="dv">2</span>),<span class="dt">nsim=</span><span class="dv">1</span>) {
+  <span class="kw"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="st">"Generate"</span>,nsim,<span class="st">"small sets of data</span><span class="ch">\n</span><span class="st">"</span>)
   ntotal &lt;-<span class="st"> </span>nsnps <span class="op">*</span><span class="st"> </span>nsamples <span class="op">*</span><span class="st"> </span>nsim
-  S &lt;-<span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/MathFun">abs</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/outer">outer</a></span>(<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="st">`</span><span class="dt">-</span><span class="st">`</span>))<span class="op">/</span>nsnps))<span class="op">^</span><span class="dv">4</span>
+  S &lt;-<span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(<span class="kw"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/outer.html">outer</a></span>(<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="st">`</span><span class="dt">-</span><span class="st">`</span>))<span class="op">/</span>nsnps))<span class="op">^</span><span class="dv">4</span>
   X1 &lt;-<span class="st"> </span><span class="kw">simx</span>(nsnps,ntotal,S)
   X2 &lt;-<span class="st"> </span><span class="kw">simx</span>(nsnps,ntotal,S)
-  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(ntotal,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X1[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
-  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/Normal">rnorm</a></span>(ntotal,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colSums">rowSums</a></span>(X2[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
-  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)
-  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)
-  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cbind">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)
+  Y1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(ntotal,<span class="kw"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(X1[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
+  Y2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(ntotal,<span class="kw"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(X2[,causals,<span class="dt">drop=</span><span class="ot">FALSE</span>]<span class="op">/</span><span class="dv">2</span>),<span class="dv">2</span>)
+  <span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(X1) &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(X2) &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"s"</span>,<span class="dv">1</span><span class="op">:</span>nsnps,<span class="dt">sep=</span><span class="st">""</span>)
+  df1 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="dt">Y=</span>Y1,X1)
+  df2 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="dt">Y=</span>Y2,X2)
   <span class="cf">if</span>(nsim<span class="op">==</span><span class="dv">1</span>) {
-    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,
-               <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1),
-               <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2)))
+    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="kw">new</span>(<span class="st">"simdata"</span>,
+               <span class="dt">df1=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df1),
+               <span class="dt">df2=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df2)))
   } <span class="cf">else</span> {
-    index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/split">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rep">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))
-    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df1[i,]),
-                                             <span class="dt">df2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>(df2[i,])))
-    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(objects)
+    index &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/split.html">split</a></span>(<span class="dv">1</span><span class="op">:</span>(nsamples <span class="op">*</span><span class="st"> </span>nsim), <span class="kw"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="dv">1</span><span class="op">:</span>nsim, nsamples))
+    objects &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(index, <span class="cf">function</span>(i) <span class="kw">new</span>(<span class="st">"simdata"</span>, <span class="dt">df1=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df1[i,]),
+                                             <span class="dt">df2=</span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(df2[i,])))
+    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(objects)
   }
 }
 
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">46411</span>)
+<span class="kw"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="dv">46411</span>)
 data &lt;-<span class="st"> </span><span class="kw">sim.data</span>()</code></pre></div>
 <pre><code>## Generate 1 small sets of data</code></pre>
 <div id="analysis" class="section level2">
@@ -151,8 +153,9 @@ data &lt;-<span class="st"> </span><span class="kw">sim.data</span>()</code></pr
 <a href="#analysis" class="anchor"></a>Analysis</h2>
 <p>The code below first prepares a principal component object by combining the genotypes in the two dataset, then models the most informative components (the minimum set required to capture 80% of the genetic variation) in each dataset, before finally testing whether there is colocalisation between these models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## run a coloc with pcs
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(coloc)
-pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.prepare.html">pcs.prepare</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>], data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(coloc)</code></pre></div>
+<pre><code>## This is the condmask *development* branch of coloc.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.prepare.html">pcs.prepare</a></span>(data<span class="op">@</span>df1[,<span class="op">-</span><span class="dv">1</span>], data<span class="op">@</span>df2[,<span class="op">-</span><span class="dv">1</span>])
 pcs<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">1</span>, <span class="dt">Y=</span>data<span class="op">@</span>df1[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</code></pre></div>
 <pre><code>## selecting 14 components out of 50 to capture 0.8065497 of total variance.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pcs<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/pcs.model.html">pcs.model</a></span>(pcs, <span class="dt">group=</span><span class="dv">2</span>, <span class="dt">Y=</span>data<span class="op">@</span>df2[,<span class="dv">1</span>], <span class="dt">threshold=</span><span class="fl">0.8</span>)</code></pre></div>
@@ -165,7 +168,7 @@ pcs<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw"><a 
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ct.pcs</code></pre></div>
 <pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
 ##        1.33605972       20.02337592       14.00000000        0.09462891</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(<span class="kw"><a href="../reference/eta.html">summary</a></span>(ct.pcs)) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw"><a href="../reference/eta.html">summary</a></span>(ct.pcs)) </code></pre></div>
 <pre><code>##           eta.hat         chisquare                 n p.value.chisquare 
 ##        1.33605972       20.02337592       14.00000000        0.09462891 
 ##  Named num [1:4] 1.3361 20.0234 14 0.0946
@@ -199,7 +202,7 @@ pcs<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw"><a 
 </h2>
 <p>It may be that specific values of <span class="math inline">\(\eta\)</span> are of interest. For example, when comparing eQTLs in two tissues, or when comparing risk of two related diseases, the value <span class="math inline">\(\eta=1\)</span> is of particular interest. In proportional testing, we can use Bayes Factors to compare the support for different values of <span class="math inline">\(\eta\)</span>. Eg</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## compare individual values of eta
-ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes.factor=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
+ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/coloc.test.html">coloc.test</a></span>(pcs<span class="fl">.1</span>,pcs<span class="fl">.2</span>, <span class="dt">bayes.factor=</span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
 <pre><code>## ..............</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/bf-methods.html">bf</a></span>(ct.pcs)</code></pre></div>
 <pre><code>##           values.against
@@ -212,6 +215,7 @@ ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/colo
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+
         <div id="tocnav">
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
@@ -229,17 +233,20 @@ ct.pcs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/colo
 </div>
 
 
+
       <footer><div class="copyright">
   <p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>
