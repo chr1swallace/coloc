@@ -163,6 +163,18 @@ process.dataset <- function(d, suffix) {
   #message('Processing dataset')
 
   nd <- names(d)
+
+  ## test case - pass pre-calculated log BF
+  if( 'lbf' %in% nd) {
+    if(!("snp" %in% nd))
+      d$snp <- sprintf("SNP.%s",1:length(d$lbf))
+    df <- data.frame(snp=as.character(d$snp),
+                     lABF=d$lbf)    
+    if("position" %in% nd)
+        df <- cbind(df,position=d$position)
+    return(df)  
+  }
+  
   if (! 'type' %in% nd)
     stop("dataset ",suffix,": ",'The variable type must be set, otherwise the Bayes factors cannot be computed')
 
@@ -186,8 +198,6 @@ process.dataset <- function(d, suffix) {
   if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
     if(length(d$beta) != length(d$varbeta))
       stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
-    if(!("snp" %in% nd))
-      d$snp <- sprintf("SNP.%s",1:length(d$beta))
     if(length(d$snp) != length(d$beta))
       stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
  
@@ -218,7 +228,7 @@ process.dataset <- function(d, suffix) {
     return(df)  
   }
 
-  stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
+  stop("Must give, as a minimum, one of:\n(lbf)\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
 }
 
 ##' Bayesian finemapping analysis
@@ -254,6 +264,8 @@ process.dataset <- function(d, suffix) {
 ##' 
 ##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
 ##'
+##'   \item{lbf}{log (to the base e) Bayes factors for each SNP in dataset 1}
+##'
 ##' }
 ##'
 ##' Some of these items may be missing, but you must give
@@ -266,6 +278,13 @@ process.dataset <- function(d, suffix) {
 ##' \item{}{\code{pvalues}, \code{MAF}}
 ##' \item{}{\code{beta}, \code{varbeta}}
 ##' }
+##'
+##' Alternatively, you can pass pre-calculated Bayes factors from an alternative method by giving
+##' \itemize{
+##' \item{}{lbf}
+##' \item{}{snp}
+##' }
+##' This is experimental - please report any issues!
 ##' 
 ##'
 ##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
@@ -377,7 +396,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
-  merged.df <- merge(df1,df2)
+  merged.df <- merge(df1,df2,by="snp")
 
    if(!nrow(merged.df))
     stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
