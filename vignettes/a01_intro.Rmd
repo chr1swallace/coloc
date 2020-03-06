@@ -42,9 +42,9 @@ a quite substantially increased type 1 error rate <sup><a id="fnr.2" class="foot
 two alternatives to address this problem, either using a principal
 component summary of genetic variation in the region to overcome the
 need to select a small set of test SNPs, implemented in `coloc.pcs()`
-and associated functions, or to use the ideas of Bayesian model
-averaging to average p values over SNP selections, generating
-posterior predictive p values, implemented in `coloc.bma()`.
+and associated functions. <!-- A method which uses the ideas of Bayesian model -->
+<!-- averaging to average p values over SNP selections, generating -->
+<!-- posterior predictive p values, implemented in `coloc.bma()`, has been removed because it depends on a package that produces errors on CRAN. -->
 
 See vignette: [proportionality](a02_proportionality.html)
 

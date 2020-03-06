@@ -484,6 +484,7 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
 ##' @title check.dataset
 ##' @param d dataset to check
 ##' @param suffix string to identify which dataset (1 or 2)
+##' @param req optional, names of elements which must be present in a valid dataset
 ##' @return NULL
 ##' @export
 ##' @author Chris Wallace
@@ -515,8 +516,8 @@ check.dataset <- function(d,suffix="",req=NULL) {
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
 
-   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
-   ## req <- unique(c("snp",req)) # always need snp to match now
+   ## no missing values - make people clean their own data rather than
+   ## make assumptions here for datasets I don't know
    n <- 0
    for(v in c("MAF","pvalues","beta","varbeta","snp","position")) {
        if(v %in% req && !(v %in% nd))

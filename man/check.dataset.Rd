@@ -10,6 +10,8 @@ check.dataset(d, suffix = "", req = NULL)
 \item{d}{dataset to check}
 
 \item{suffix}{string to identify which dataset (1 or 2)}
+
+\item{req}{optional, names of elements which must be present in a valid dataset}
 }
 \description{
 Check dataset inputs for errors

@@ -23,7 +23,7 @@ p.cc <- pchisq(beta.cc^2/vbeta.cc,df=1,lower.tail=FALSE)
 
 ## general things
 test_that("sdY.est", {
-  expect_that(abs(sd.est - sd(Y)) < 0.1, is_true())
+  expect_true(abs(sd.est - sd(Y)) < 0.1)
 })
 DQ <- list(beta=beta.q,
            varbeta=vbeta.q,

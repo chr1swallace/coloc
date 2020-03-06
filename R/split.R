@@ -98,16 +98,22 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
 ##' @title generate conditional summary stats
 ##' @param x coloc dataset
 ##' @param YY sum((Y-Ybar)^2)
-##' @param sigsnps names of snps to jointly condition on 
-##' @param cc TRUE if case control
+##' @param sigsnps names of snps to jointly condition on
+##' @param xtx optional, matrix X'X where X is the genotype matrix. If
+##'   not available, will be estimated from LD, MAF, beta and sample
+##'   size (the last three should be part of the coloc dataset)
 ##' @inheritParams map_cond
 ##' @return data.table giving snp, beta and varbeta on remaining snps
-##'     after conditioning
+##'   after conditioning
 ##' @author Chris Wallace
 est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
     LD <- LD[x$snp,x$snp]
     nuse <- match(sigsnps,x$snp) # to be conditioned on
-    use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.9) # to find new beta for, conditional on nuse, excluding SNPs in r2>0.9 with nuse because small inaccuracies can blow up, and we generally don't expect a second detectable signal in such high LD with a first signal
+    ## to find new beta for, conditional on nuse, excluding SNPs in
+    ## r2>0.8 with nuse because small inaccuracies can blow up, and we
+    ## generally don't expect a second detectable signal in such high
+    ## LD with a first signal
+    use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.8) 
 
     check.dataset(x,req="MAF")
     ## Estimating X'X is the key
@@ -237,7 +243,6 @@ est_cond.nometa <- function(x,LD,YY,sigsnps,xtx=NULL) {
 ##'     of sigsnps
 ##' @param D dataset in standard coloc format
 ##' @param LD named matrix of r
-##' @param N sample size
 ##' @param YY sum(y^2)
 ##' @param sigsnps names of snps to mask
 ##' @return named numeric - Z score named by snp
@@ -390,12 +395,17 @@ gethits <- function(hits,i,mode) {
 ##'
 ##' @title Post process a coloc.details result using masking
 ##' @param obj object returned by coloc.detail()
-##' @param hits1 lead snps for trait 1. If length > 1, will use masking
-##' @param hits2 lead snps for trait 2. If length > 1, will use masking
+##' @param hits1 lead snps for trait 1. If length > 1, will use
+##'   masking
+##' @param hits2 lead snps for trait 2. If length > 1, will use
+##'   masking
 ##' @param LD named LD matrix (for masking)
+##' @param r2thr r2 threshold at which to mask
 ##' @param LD1 named LD matrix (for masking) for trait 1 only
 ##' @param LD2 named LD matrix (for masking) for trait 2 only
-##' @param r2thr r2 threshold at which to mask
+##' @param mode either "iterative" (default) - successively condition
+##'   on signals or "allbutone" - find all putative signals and
+##'   condition on all but one of them in each analysis
 ##' @inheritParams coloc.abf
 ##' @return data.table of coloc results
 ##' @author Chris Wallace
@@ -616,11 +626,13 @@ wmean <- function(x,w) {
 ##' Estimate beta and varbeta if a linear regression had been run on a
 ##' binary outcome, given log OR and their variance + MAF in controls
 ##'
-##' sets beta = cov(x,y)/var(x)
-##' varbeta = (var(y)/var(x) - cov(x,y)^2/var(x)^2)/N
+##' sets beta = cov(x,y)/var(x) varbeta = (var(y)/var(x) -
+##' cov(x,y)^2/var(x)^2)/N
 ##' @title binomial to linear regression conversion
 ##' @param D standard format coloc dataset
-##' @return D, with original beta and varbeta in beta.bin, varbeta.bin, and beta and varbeta updated to linear estimates
+##' @param doplot plot results if TRUE - useful for debugging
+##' @return D, with original beta and varbeta in beta.bin,
+##'   varbeta.bin, and beta and varbeta updated to linear estimates
 ##' @author Chris Wallace
 bin2lin <- function(D,doplot=FALSE) {
     if(D$type!="cc")

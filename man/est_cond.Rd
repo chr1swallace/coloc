@@ -15,7 +15,9 @@ est_cond(x, LD, YY, sigsnps, xtx = NULL)
 
 \item{sigsnps}{names of snps to jointly condition on}
 
-\item{cc}{TRUE if case control}
+\item{xtx}{optional, matrix X'X where X is the genotype matrix. If
+not available, will be estimated from LD, MAF, beta and sample
+size (the last three should be part of the coloc dataset)}
 }
 \value{
 data.table giving snp, beta and varbeta on remaining snps

@@ -7,32 +7,34 @@
 coloc.test(X, Y, vars.drop = NULL, ...)
 }
 \arguments{
-\item{X}{Either an lm or glm object for trait 1.  The intersection of
-\code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
-identify SNPs in common which will be tested for colocalisation.  Any
-Intercept term is dropped, but other covariates should have distinct names or
-be listed in \code{vars.drop} to avoid them being included in the
+\item{X}{Either an lm or glm object for trait 1.  The intersection
+of \code{names(coefficients(X))} and
+\code{names(coefficients(Y))} is used to identify SNPs in common
+which will be tested for colocalisation.  Any Intercept term is
+dropped, but other covariates should have distinct names or be
+listed in \code{vars.drop} to avoid them being included in the
 colocalisation test.}
 
 \item{Y}{Either an lm or glm object for trait 2.}
 
-\item{vars.drop}{Character vector naming additional variables in either
-regression which are not SNPs and should not be used in the colocalisation
-test.  They should appear in
+\item{vars.drop}{Character vector naming additional variables in
+either regression which are not SNPs and should not be used in
+the colocalisation test.  They should appear in
 \code{c(names(coefficients(X)),names(coefficients(Y)))}}
 
-\item{...}{other arguments passed to \code{\link{coloc.test.summary}()}.}
+\item{...}{other arguments passed to
+\code{\link{coloc.test.summary}()}.}
 }
 \value{
-a numeric vector with 3 named elements:
-\item{eta.hat}{The estimated slope.}
-\item{chisquare}{The chisquared test statistic}
-\item{n}{The number of snps used in the test.  If eta were known, this
-would be the degrees of freedom of the test. Because eta has been replaced by
-its ML estimate, Plagnol et al suggest we expect the degrees of freedom to be
-n-1, but this requires the likelihood to be well behaved which is not always
-the case.  We prefer to consider the posterior predictive p value.}
-\item{ppp}{The posterior predictive p value}
+a numeric vector with 3 named elements: \item{eta.hat}{The
+estimated slope.}  \item{chisquare}{The chisquared test
+statistic} \item{n}{The number of snps used in the test.  If eta
+were known, this would be the degrees of freedom of the
+test. Because eta has been replaced by its ML estimate, Plagnol
+et al suggest we expect the degrees of freedom to be n-1, but
+this requires the likelihood to be well behaved which is not
+always the case.  We prefer to consider the posterior predictive
+p value.}  \item{ppp}{The posterior predictive p value}
 }
 \description{
 Performs the colocalisation tests described in Plagnol et al (2009) and
@@ -51,10 +53,11 @@ further details.
 }
 \note{
 Plagnol et al's original test was available in his R package
-\code{QTLMatch v0.8} which now appears unavailable.  The numerically
-identical test, extended to allow for more than two SNPs, can be found in
-this package by looking at the chisquare statistic and the degrees of freedom
-given by \code{chisquare()} and \code{df()} respectively.
+\code{QTLMatch v0.8} which now appears unavailable.  The
+numerically identical test, extended to allow for more than two
+SNPs, can be found in this package by looking at the chisquare
+statistic and the degrees of freedom given by \code{chisquare()}
+and \code{df()} respectively.
 }
 \examples{
 
@@ -86,13 +89,14 @@ set.seed(1)
 
 }
 \references{
-Wallace et al (2012).  Statistical colocalisation of monocyte
-gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
+Wallace et al (2012).  Statistical colocalisation of
+monocyte gene expression and genetic risk variants for type 1
+diabetes.  Hum Mol Genet 21:2815-2824.
+\url{http://europepmc.org/abstract/MED/22403184}
 
-Plagnol et al (2009).  Statistical independence of the colocalized
-association signals for type 1 diabetes and RPS26 gene expression on
-chromosome 12q13. Biostatistics 10:327-34.
+Plagnol et al (2009).  Statistical independence of the
+colocalized association signals for type 1 diabetes and RPS26 gene
+expression on chromosome 12q13. Biostatistics 10:327-34.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 }
 \author{

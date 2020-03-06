@@ -21,9 +21,11 @@ coloc.process(
 \arguments{
 \item{obj}{object returned by coloc.detail()}
 
-\item{hits1}{lead snps for trait 1. If length > 1, will use masking}
+\item{hits1}{lead snps for trait 1. If length > 1, will use
+masking}
 
-\item{hits2}{lead snps for trait 2. If length > 1, will use masking}
+\item{hits2}{lead snps for trait 2. If length > 1, will use
+masking}
 
 \item{LD}{named LD matrix (for masking)}
 
@@ -38,6 +40,10 @@ coloc.process(
 \item{LD1}{named LD matrix (for masking) for trait 1 only}
 
 \item{LD2}{named LD matrix (for masking) for trait 2 only}
+
+\item{mode}{either "iterative" (default) - successively condition
+on signals or "allbutone" - find all putative signals and
+condition on all but one of them in each analysis}
 }
 \value{
 data.table of coloc results

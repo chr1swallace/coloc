@@ -10,23 +10,31 @@
 # pos.end: upper bound of positions
 # trait1: name of trait 1
 # trait2: name of trait 2   
-
+ymin <- NULL
+ymax <- NULL
 
 
 ##' Print summary of a coloc.abf run
 ##'
 ##' @title print.coloc_abf
 ##' @param x object of class \code{coloc_abf} returned by coloc.abf()
-##' or coloc.signals()
-##' @param trait1 name of trait 1 (optional)
-##' @param trait2 name of trait 2 (optional)  
+##'   or coloc.signals()
+##' @param ... optional arguments: "trait1" name of trait 1, "trait2"
+##'   name of trait 2
 ##' @return x, invisibly
 ##' @author Chris Wallace
 ##' @export
 ##' @docType methods
 ##' @rdname print-methods
-print.coloc_abf <- function(x,
-                     trait1="trait 1", trait2="trait 2") {
+print.coloc_abf <- function(x,...) {
+  trait1="trait 1"
+  trait2="trait 2"
+  args <- list(...)
+  if("trait1" %in% names(args))
+    trait1=args$trait1
+  if("trait2" %in% names(args))
+    trait2=args$trait2
+  
     message("Coloc analysis of ",trait1,", ",trait2)
     message("\nSNP Priors")
     print(x$priors)

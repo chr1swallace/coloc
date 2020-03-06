@@ -67,41 +67,45 @@ credible.interval <- function(post, interval, n.approx, level.ci=0.95) {
 ##' to give a credible interval for \code{eta}.  See the references below for
 ##' further details.
 ##'
-##' @param X Either an lm or glm object for trait 1.  The intersection of
-##' \code{names(coefficients(X))} and \code{names(coefficients(Y))} is used to
-##' identify SNPs in common which will be tested for colocalisation.  Any
-##' Intercept term is dropped, but other covariates should have distinct names or
-##' be listed in \code{vars.drop} to avoid them being included in the
-##' colocalisation test.
+##' @param X Either an lm or glm object for trait 1.  The intersection
+##'   of \code{names(coefficients(X))} and
+##'   \code{names(coefficients(Y))} is used to identify SNPs in common
+##'   which will be tested for colocalisation.  Any Intercept term is
+##'   dropped, but other covariates should have distinct names or be
+##'   listed in \code{vars.drop} to avoid them being included in the
+##'   colocalisation test.
 ##' @param Y Either an lm or glm object for trait 2.
-##' @param vars.drop Character vector naming additional variables in either
-##' regression which are not SNPs and should not be used in the colocalisation
-##' test.  They should appear in
-##' \code{c(names(coefficients(X)),names(coefficients(Y)))}
-##' @param ... other arguments passed to \code{\link{coloc.test.summary}()}.
-##' @return a numeric vector with 3 named elements:
-##' \item{eta.hat}{The estimated slope.}
-##' \item{chisquare}{The chisquared test statistic}
-##' \item{n}{The number of snps used in the test.  If eta were known, this
-##' would be the degrees of freedom of the test. Because eta has been replaced by
-##' its ML estimate, Plagnol et al suggest we expect the degrees of freedom to be
-##' n-1, but this requires the likelihood to be well behaved which is not always
-##' the case.  We prefer to consider the posterior predictive p value.}
-##' \item{ppp}{The posterior predictive p value}
+##' @param vars.drop Character vector naming additional variables in
+##'   either regression which are not SNPs and should not be used in
+##'   the colocalisation test.  They should appear in
+##'   \code{c(names(coefficients(X)),names(coefficients(Y)))}
+##' @param ... other arguments passed to
+##'   \code{\link{coloc.test.summary}()}.
+##' @return a numeric vector with 3 named elements: \item{eta.hat}{The
+##'   estimated slope.}  \item{chisquare}{The chisquared test
+##'   statistic} \item{n}{The number of snps used in the test.  If eta
+##'   were known, this would be the degrees of freedom of the
+##'   test. Because eta has been replaced by its ML estimate, Plagnol
+##'   et al suggest we expect the degrees of freedom to be n-1, but
+##'   this requires the likelihood to be well behaved which is not
+##'   always the case.  We prefer to consider the posterior predictive
+##'   p value.}  \item{ppp}{The posterior predictive p value}
 ##' @note Plagnol et al's original test was available in his R package
-##' \code{QTLMatch v0.8} which now appears unavailable.  The numerically
-##' identical test, extended to allow for more than two SNPs, can be found in
-##' this package by looking at the chisquare statistic and the degrees of freedom
-##' given by \code{chisquare()} and \code{df()} respectively.  
+##'   \code{QTLMatch v0.8} which now appears unavailable.  The
+##'   numerically identical test, extended to allow for more than two
+##'   SNPs, can be found in this package by looking at the chisquare
+##'   statistic and the degrees of freedom given by \code{chisquare()}
+##'   and \code{df()} respectively.
 ##' @author Chris Wallace
-##' @references Wallace et al (2012).  Statistical colocalisation of monocyte
-##' gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-##' 21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
+##' @references Wallace et al (2012).  Statistical colocalisation of
+##'   monocyte gene expression and genetic risk variants for type 1
+##'   diabetes.  Hum Mol Genet 21:2815-2824.
+##'   \url{http://europepmc.org/abstract/MED/22403184}
 ##' 
-##' Plagnol et al (2009).  Statistical independence of the colocalized
-##' association signals for type 1 diabetes and RPS26 gene expression on
-##' chromosome 12q13. Biostatistics 10:327-34.
-##' \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
+##'   Plagnol et al (2009).  Statistical independence of the
+##'   colocalized association signals for type 1 diabetes and RPS26 gene
+##'   expression on chromosome 12q13. Biostatistics 10:327-34.
+##'   \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 ##' @examples
 ##' 
 ##'   ## simulate covariate matrix (X) and continuous response vector (Y)
@@ -167,43 +171,53 @@ coloc.test <- function(X,Y,vars.drop=NULL, ...) {
 
 ##' Colocalisation testing supplying only regression coefficients and their variance-covariants matrices
 ##'
-##' Typically this should be called from \code{\link{coloc.test}()} or \code{\link{coloc.bma}()}, but is left as a public function, to use at your own risk, if you have some other way to define the SNPs under test.
+##' Typically this should be called from \code{\link{coloc.test}()},
+##' but is left as a public function, to use at your own risk, if you
+##' have some other way to define the SNPs under test.
 ##' @title Colocalisation testing using regression coefficients
-##' @return an object of class coloc, colocBayes or colocBMA
+##' @return an object of class coloc, or colocBayes 
 ##' @author Chris Wallace
-##' @inheritParams coloc.test
 ##' @export
 ##' @param b1 regression coefficients for trait 1
 ##' @param b2 regression coefficients for trait 2
 ##' @param V1 variance-covariance matrix for trait 1
 ##' @param V2 variance-covariance matrix for trait 2
-##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is equivalent to a
-##' uniform (uninformative) prior.  We have found varying k to have little effect
-##' on the results.
-##' @param plot.coeff DEPRECATED.  Please \code{plot()} returned object instead. \code{TRUE} if you want to generate a plot showing the
-##' coefficients from the two regressions together with confidence regions.
-##' @param bma parameter set to \code{TRUE} when \code{coloc.test} is called by \code{coloc.bma}.  DO NOT SET THIS WHEN CALLING \code{coloc.test} DIRECTLY!
-##' @param plots.extra list with 2 named elements, x and y, equal length
-##' character vectors containing the names of the quantities to be plotted on the
-##' x and y axes.
-##' 
-##' \code{x} is generally a sequence of \code{theta} and \code{eta}, with
-##' \code{y} selected from \code{post.theta}, the posterior density of theta,
-##' \code{chisq}, the chi-square values of the test, and \code{lhood}, the
-##' likelihood function.
+##' @param k Theta has a Cauchy(0,k) prior.  The default, k=1, is
+##'   equivalent to a uniform (uninformative) prior.  We have found
+##'   varying k to have little effect on the results.
+##' @param plot.coeff DEPRECATED.  Please \code{plot()} returned
+##'   object instead. \code{TRUE} if you want to generate a plot
+##'   showing the coefficients from the two regressions together with
+##'   confidence regions.
+##' @param plots.extra list with 2 named elements, x and y, equal
+##'   length character vectors containing the names of the quantities
+##'   to be plotted on the x and y axes.
+##'
+##'   \code{x} is generally a sequence of \code{theta} and \code{eta},
+##'   with \code{y} selected from \code{post.theta}, the posterior
+##'   density of theta, \code{chisq}, the chi-square values of the
+##'   test, and \code{lhood}, the likelihood function.
 ##' @param bayes Logical, indicating whether to perform Bayesian
-##' inference for the coefficient of proportionality, eta.  If
-##' \code{bayes.factor} is supplied, Bayes factors are additionally
-##' computed for the specificed values.  This can add a little time as
-##' it requires numerical integration, so can be set to FALSE to save
-##' time in simulations, for example.
-##' @param bayes.factor Calculate Bayes Factors to compare specific values of eta.  \code{bayes.factor} should either a numeric vector, giving single value(s) of \code{eta} or a list of numeric vectors, each of length two and specifying ranges of eta which should be compared to each other.  Thus, the vector or list needs to have length at least two.
-##' @param level.ci,n.approx \code{level.ci} denotes the required level of the
-##' credible interval for \code{eta}.  This is calculated numerically by
-##' approximating the posterior distribution at \code{n.approx} distinct values.
-coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
+##'   inference for the coefficient of proportionality, eta.  If
+##'   \code{bayes.factor} is supplied, Bayes factors are additionally
+##'   computed for the specificed values.  This can add a little time
+##'   as it requires numerical integration, so can be set to FALSE to
+##'   save time in simulations, for example.
+##' @param bayes.factor Calculate Bayes Factors to compare specific
+##'   values of eta.  \code{bayes.factor} should either a numeric
+##'   vector, giving single value(s) of \code{eta} or a list of
+##'   numeric vectors, each of length two and specifying ranges of eta
+##'   which should be compared to each other.  Thus, the vector or
+##'   list needs to have length at least two.
+##' @param level.ci,n.approx \code{level.ci} denotes the required
+##'   level of the credible interval for \code{eta}.  This is
+##'   calculated numerically by approximating the posterior
+##'   distribution at \code{n.approx} distinct values.
+coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,
+                               plots.extra=NULL,
+                               bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
-                               bayes.factor=NULL, bma=FALSE) {
+                               bayes.factor=NULL) {
   nsnps <- length(b1)
   S1 <- solve(V1)
   S2 <- solve(V2)
@@ -261,12 +275,6 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
     toint <- function(theta) { pval(theta) * post(theta) }
     ppp <- integrate(toint,lower=theta.min,upper=theta.max)
 
-    if(bma) {
-      ## numeric approx of lhood for BMA
-      theta.bma <- seq(0,pi,length=n.approx)
-      post.bma <- post(theta.bma)
-    }
-    
     ## bayes factors
     bf.calc <- function(eta) {
       if(length(eta)==1)
@@ -289,11 +297,9 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
       post.bf <- numeric(0)
     }
 
-    ## credible interval - only if not doing bma
-    if(!bma) {
-      cred.int <- credible.interval(post, interval=c(theta.min, theta.max), n.approx=n.approx,
-                                    level.ci=level.ci)
-    }
+    ## credible interval
+    cred.int <- credible.interval(post, interval=c(theta.min, theta.max), n.approx=n.approx,
+                                  level.ci=level.ci)
   }
 ################################################################################
     
@@ -326,23 +332,13 @@ coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL
                  method="single",
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2))))
     } else {
-      if(!bma) {
-return(new("colocBayes",
+      return(new("colocBayes",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
                    ppp=ppp$value,
                    credible.interval=cred.int,
                    bayes.factor=post.bf))
-      } else {
-        return(new("colocBayesBMA",
-                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
-                   method="single",
-                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
-                   ppp=ppp$value,
-                   bma=post.bma,
-                   bayes.factor=post.bf))
-      }
     }  
 }
 
@@ -352,7 +348,7 @@ return(new("colocBayes",
 
 faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.extra=NULL,bayes=!is.null(bayes.factor),
                                n.approx=1001, level.ci=0.95,
-                               bayes.factor=NULL, bma=FALSE) {
+                               bayes.factor=NULL) {
   nsnps <- length(b1)
   S1 <- solve(V1)
   S2 <- solve(V2)
@@ -415,12 +411,6 @@ faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.ext
       toint <- function(theta) { pval(theta) * post(theta) }
       ppp <- integrate(toint,lower=theta.min,upper=theta.max)
 
-      if(bma) {
-          ## numeric approx of lhood for BMA
-          theta.bma <- seq(0,pi,length=n.approx)
-          post.bma <- post(theta.bma)
-      }
-    
     ## bayes factors
     bf.calc <- function(eta) {
       if(length(eta)==1)
@@ -443,11 +433,9 @@ faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.ext
       post.bf <- numeric(0)
     }
 
-    ## credible interval - only if not doing bma
-    if(!bma) {
+    ## credible interval
       cred.int <- credible.interval(post, interval=c(theta.min, theta.max), n.approx=n.approx,
                                     level.ci=level.ci)
-    }
   }
   
 ################################################################################
@@ -481,7 +469,6 @@ faster.coloc.test.summary <- function(b1,b2,V1,V2,k=1,plot.coeff=FALSE,plots.ext
                  method="single",
                  plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2))))
     } else {
-      if(!bma) {
 return(new("colocBayes",
                    result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
                    method="single",
@@ -489,15 +476,6 @@ return(new("colocBayes",
                    ppp=ppp$value,
                    credible.interval=cred.int,
                    bayes.factor=post.bf))
-      } else {
-        return(new("colocBayesBMA",
-                   result=c(eta.hat=eta.hat,chisquare=X2,n=nsnps),
-                   method="single",
-                 plot.data=list(coef1=b1,coef2=b2,var1=diag(V1),var2=diag(V2)),
-                   ppp=ppp$value,
-                   bma=post.bma,
-                   bayes.factor=post.bf))
-      }
     }  
 }
 

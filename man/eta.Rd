@@ -19,7 +19,7 @@ object}
 eta(object)
 }
 \arguments{
-\item{object}{Object returned by \code{coloc.test()} or \code{coloc.bma()} functions.}
+\item{object}{Object returned by \code{coloc.test()}}
 }
 \description{
 Extract information from a \code{coloc} object.

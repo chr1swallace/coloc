@@ -2,6 +2,7 @@ _pkgdown.yaml
 docs
 Rjunk
 R/junkyard.R
+R/bma.R
 vignettes/.*.org
 errors
 ^\.travis\.yml$

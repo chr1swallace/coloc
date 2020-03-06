@@ -77,7 +77,7 @@ setClass("colocABF",
 #'function \code{\link{coloc.test}()}.  Class \code{colocBayes} extends class
 #'\code{coloc}. 
 #'@author Chris Wallace.
-#'@seealso \code{\link{coloc.test}}, \code{\link{coloc.test.summary}}, \code{\link{coloc.bma}}
+#'@seealso \code{\link{coloc.test}}, \code{\link{coloc.test.summary}}
 #'@references Wallace et al (2012).  Statistical colocalisation of monocyte
 #'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
 #'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}

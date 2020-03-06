@@ -27,7 +27,7 @@ setGeneric("plot")
 #'@aliases eta theta summary ci
 #'eta,coloc-method theta,coloc-method summary,coloc-method ci,coloc-method
 #'eta,colocBayes-method theta,colocBayes-method summary,colocBayes-method ci,colocBayes-method
-#'@param object Object returned by \code{coloc.test()} or \code{coloc.bma()} functions.
+#'@param object Object returned by \code{coloc.test()} 
 #'@author Chris Wallace.
 #'@seealso \code{\link{coloc.test}}, \code{\link{pcs.prepare}}
 #'@exportMethod eta

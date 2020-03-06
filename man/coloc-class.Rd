@@ -36,7 +36,7 @@ chromosome 12q13. Biostatistics 10:327-34.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
 }
 \seealso{
-\code{\link{coloc.test}}, \code{\link{coloc.test.summary}}, \code{\link{coloc.bma}}
+\code{\link{coloc.test}}, \code{\link{coloc.test.summary}}
 }
 \author{
 Chris Wallace.

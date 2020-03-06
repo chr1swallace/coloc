@@ -79,8 +79,8 @@ manh.plot <- function(df,wh,
 ##' @export
 ##' @author Chris Wallace
 sensitivity <- function(obj,rule="",
-                        npoints=100,doplot=TRUE,plot.manhattans=TRUE
-                       ,preserve.par=FALSE,
+                        npoints=100,doplot=TRUE,plot.manhattans=TRUE,
+                        preserve.par=FALSE,
                         row=1) {
     stopifnot("coloc_abf" %in% class(obj))
     stopifnot("priors" %in% names(obj))

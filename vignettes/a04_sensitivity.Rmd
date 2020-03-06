@@ -104,6 +104,6 @@ Note, the syntax can also
 consider more complicated rules:
 
 ```{r sens3, fig.width=8,fig.height=6  }
-sensitivity(my.res,rule="H4 > 3*H3 && H0 < 0.1") 
+sensitivity(my.res,rule="H4 > 3*H3 & H0 < 0.1") 
 ```
 

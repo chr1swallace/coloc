@@ -15,8 +15,6 @@ map_cond(D, LD, YY, sigsnps = NULL)
 \item{YY}{sum(y^2)}
 
 \item{sigsnps}{names of snps to mask}
-
-\item{N}{sample size}
 }
 \value{
 named numeric - Z score named by snp

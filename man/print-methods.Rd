@@ -5,15 +5,14 @@
 \alias{print.coloc_abf}
 \title{print.coloc_abf}
 \usage{
-\method{print}{coloc_abf}(x, trait1 = "trait 1", trait2 = "trait 2")
+\method{print}{coloc_abf}(x, ...)
 }
 \arguments{
 \item{x}{object of class \code{coloc_abf} returned by coloc.abf()
 or coloc.signals()}
 
-\item{trait1}{name of trait 1 (optional)}
-
-\item{trait2}{name of trait 2 (optional)}
+\item{...}{optional arguments: "trait1" name of trait 1, "trait2"
+name of trait 2}
 }
 \value{
 x, invisibly
