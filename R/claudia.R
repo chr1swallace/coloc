@@ -262,6 +262,8 @@ process.dataset <- function(d, suffix) {
     df <- subset(df, df$MAF>0) # all p values and MAF > 0
     abf <- approx.bf.z(zs=df$zs, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
+    if("position" %in% nd)
+        df <- cbind(df,position=d$position)
     return(df)
 }
   stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)\n(zs, MAF, N, type)")
