@@ -375,6 +375,8 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##'
 ##'   \item{MAF}{minor allele frequency of the variants}
 ##'
+##'   \item{zs}{z-score of association for each SNP in dataset 1}
+##'
 ##' \item{beta}{regression coefficient for each SNP from dataset 1}
 ##' 
 ##' \item{varbeta}{variance of beta}
@@ -397,6 +399,7 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##' \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 ##' and then either
 ##' \item{}{\code{pvalues}, \code{MAF}}
+##' \item{}{\code{zs}, \code{MAF}}
 ##' \item{}{\code{beta}, \code{varbeta}}
 ##' }
 ##' 
