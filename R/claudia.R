@@ -251,7 +251,7 @@ process.dataset <- function(d, suffix) {
     return(df)  
   }
    if("zs" %in% nd & "MAF" %in% nd & "N" %in% nd) { ## no beta/varbeta but a z-score available: use z-score / MAF approximation
-    if (length(d$z) != length(d$MAF))
+    if (length(d$zs) != length(d$MAF))
       stop('Length of the z-value vectors and MAF vector must match')
     if(!("snp" %in% nd))
       d$snp <- sprintf("SNP.%s",1:length(d$zs))
@@ -262,6 +262,7 @@ process.dataset <- function(d, suffix) {
     df <- subset(df, df$MAF>0) # all p values and MAF > 0
     abf <- approx.bf.z(zs=df$zs, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
+    return(df)
 }
   stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)\n(zs, MAF, N, type)")
 }
