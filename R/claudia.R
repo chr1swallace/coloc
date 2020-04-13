@@ -208,13 +208,16 @@ process.dataset <- function(d, suffix) {
       d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
     df <- data.frame(pvalues = d$pvalues,
                      MAF = d$MAF,
+                     N=d$N,
                      snp=as.character(d$snp))    
-    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
-    df <- subset(df, df$MAF>0 & df$pvalues>0) # all p values and MAF > 0
-    abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
+    snp.index <- which(colnames(df)=="snp")
+    colnames(df)[-snp.index] <- paste(colnames(df)[-snp.index], suffix, sep=".")
+    keep <- which(df$MAF>0 & df$pvalues > 0) # all p values and MAF > 0
+    df <- df[keep,]
+    abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=df$N, s=d$s, suffix=suffix)
     df <- cbind(df, abf)
     if("position" %in% nd)
-        df <- cbind(df,position=d$position)
+        df <- cbind(df,position=d$position[keep])
     return(df)  
   }
 
@@ -484,7 +487,6 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
 ##' @title check.dataset
 ##' @param d dataset to check
 ##' @param suffix string to identify which dataset (1 or 2)
-##' @param req optional, names of elements which must be present in a valid dataset
 ##' @return NULL
 ##' @export
 ##' @author Chris Wallace
@@ -493,6 +495,24 @@ check.dataset <- function(d,suffix="",req=NULL) {
        stop("dataset ",suffix,": is not a list")
    nd <- names(d)
 
+   ## snps should be unique
+   if("snp" %in% nd && any(duplicated(d$snp)))
+     stop("dataset ",suffix,": duplicated snps found")
+
+   ## lengths of these should match
+   l <- -1 # impossible length
+   shouldmatch <- c("P","MAF","beta","varbeta","snp","position")
+   for(v in shouldmatch) 
+     if(v %in% nd)
+       if(l<0) { ## update
+         l <- length(d[[v]])
+       } else { ## check
+         if(length(d[[v]])!=l) {
+           stop("dataset ",suffix,": lengths of inputs don't match: ")
+           print(intersect(nd, shouldmatch))
+         }
+       }
+   
    ## sample size
    if (!('N' %in% nd) || is.null(d$N) || is.na(d$N))
        stop("dataset ",suffix,": sample size N not set")
@@ -516,8 +536,8 @@ check.dataset <- function(d,suffix="",req=NULL) {
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
 
-   ## no missing values - make people clean their own data rather than
-   ## make assumptions here for datasets I don't know
+   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+   ## req <- unique(c("snp",req)) # always need snp to match now
    n <- 0
    for(v in c("MAF","pvalues","beta","varbeta","snp","position")) {
        if(v %in% req && !(v %in% nd))
@@ -537,4 +557,5 @@ check.dataset <- function(d,suffix="",req=NULL) {
    ## if we reach here, no badness detected
    NULL
 }
+
 
