@@ -487,6 +487,7 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
 ##' @title check.dataset
 ##' @param d dataset to check
 ##' @param suffix string to identify which dataset (1 or 2)
+##' @param req names of elements that must be present
 ##' @return NULL
 ##' @export
 ##' @author Chris Wallace

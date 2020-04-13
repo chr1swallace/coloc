@@ -1,3 +1,3 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("This is the condmask *development* branch of coloc.")
+  packageStartupMessage("This is a new update to coloc.")
 }

@@ -7,7 +7,8 @@
 coloc.abf.datasets(
   df1,
   df2,
-  snps = intersect(setdiff(colnames(df1), response1), setdiff(colnames(df2), response2)),
+  snps = intersect(setdiff(colnames(df1), response1), setdiff(colnames(df2),
+    response2)),
   response1 = "Y",
   response2 = "Y",
   ...
