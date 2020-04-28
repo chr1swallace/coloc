@@ -10,15 +10,14 @@ share common genetic causal variant(s) in a given region.
 
 ## pre-release version
 
-This condmask branch is a pre-release version.  I have tested it, but there may be bugsr. Please test it if you feel brave, and let me know whether it works or not (both kinds of feedback useful!).  Any results should be compared to the CRAN version to check sanity for now.
+This condmask branch is a pre-release version.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).  
 
-To install the condmask branch, do
-
+To install the new version, do
 ```
 if(!require("remotes"))
    install.packages("remotes") # if necessary
 library(remotes)
-install_github("chr1swallace/coloc","condmask")
+install_github("chr1swallace/coloc")
 ```
 
 
