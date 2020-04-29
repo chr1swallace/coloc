@@ -828,7 +828,8 @@ coloc.signals <- function(dataset1, dataset2,
     ## double mask/-
     if(dataset1$method %in% c("single","mask") & dataset2$method %in% c("single","mask")) {
         col <- coloc.detail(dataset1,dataset2, p1=p1,p2=p2,p12=p12)
-        res <- coloc.process(col, hits1=names(fm1), hits2=names(fm2),
+        res <- coloc.process(col,
+                             hits1=names(fm1), hits2=names(fm2),
                              LD1=dataset1$LD, LD2=dataset2$LD, r2thr=r2thr,
                              mode=mode,p12=p12)
     } 
