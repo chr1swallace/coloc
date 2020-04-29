@@ -34,15 +34,14 @@ Key previous references are:
 - colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait [Giambartolomei et al (2013)](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383)
 
 [![Build Status](https://travis-ci.org/chr1swallace/coloc.svg?branch=master)](https://travis-ci.org/chr1swallace/coloc)
-
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
 
-### To generate vignettes:
+### Note to self: to generate vignettes:
 ```
 cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R && Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'
 ```
 
-### To generate website:
+### Note to self: to generate website:
 https://chr1swallace.github.io/coloc/
 ```
 Rscript -e "pkgdown::build_site()"
