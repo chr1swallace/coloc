@@ -200,3 +200,35 @@ coeff.plot <- function(b1,b2,s1,s2,eta,lower=NULL,upper=NULL,add=NULL,alpha=NULL
 ##     segments(c1[,5],c2[,5],c1[,1],c2[,1],col="blue",lty=3)
 ##   }
 }
+##' plot a coloc_abf object
+##'
+##' @title plot a coloc_abf object
+##' @param x coloc_abf object to be plotted
+##' @param ... other arguments
+##' @return ggplot object
+##' @export
+##' @author Chris Wallace
+plot.coloc_abf <- function(x,...) {
+  x=x$results
+  if(!("position" %in% names(x)))
+    x$position <- 1:nrow(x)
+  m=melt(x,id.vars=c("snp","position"), measure.vars=grep("z.df",names(x),value=TRUE))
+  m2=melt(x,id.vars=c("snp","position"), measure.vars=grep("PP",names(x),value=TRUE))
+  setnames(m2,"value","pp")
+  if(length(grep("row",m$variable))) {
+    m[,c("z","df","row"):=tstrsplit(variable,"\\.")]
+    m2[,row:=sub(".*\\.","",variable)]
+    m <- merge(m,m2[,.(snp,row,pp)],by=c("snp","row"))
+    ggplot(m, aes(x=position,y=abs(value),col=pp)) +
+      geom_point() +
+      facet_grid(row ~ df)
+    head(m)
+  } else {
+    m[,c("z","df"):=tstrsplit(variable,"\\.")]
+    m <- merge(m,m2[,.(snp,pp)],by=c("snp"))
+    ggplot(m, aes(x=position,y=abs(value),col=pp)) +
+      geom_point() +
+      facet_grid(. ~ df)
+  }
+}
+

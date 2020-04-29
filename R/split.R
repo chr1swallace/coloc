@@ -81,16 +81,17 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
          if(!any(use))
              return(NULL)
          imask <- match(sigsnps,x$snp)
-         expectedz <- LD[,sigsnps,drop=FALSE] %*% x$z[imask]
+         expectedz <- LD[,sigsnps,drop=FALSE] %*% abs(x$z[imask])
          zdiff <- abs(x$z[use]) - abs(expectedz[use])
      } else {
          zdiff <- abs(x$z)
      }
-     wh <- which.max(zdiff)
-     ## if(zdiff[wh] > zthr)
-         structure(x$z[use][wh],names=x$snp[use][wh])
-     ## else
-     ##     NULL
+  wh <- which.max(zdiff)
+  ## zthr = qnorm(pthr/2,lower.tail=FALSE)    
+  ## if(zdiff[wh] > zthr)
+  structure(x$z[use][wh],names=x$snp[use][wh])
+  ## else
+  ##   NULL
 }
 
 ##' Internal helper function for est_all_cond
@@ -491,7 +492,7 @@ coloc.process <- function(obj,hits1=NULL,hits2=NULL,LD=NULL,r2thr=0.01,p1=1e-4,p
                 drop2 <- character(0)
             else {
                 ldout2 <- apply(ldfriends2[ ihits2, , drop=FALSE ],2,max)
-                drop2 <- colnames(ldfriends1)[ldout2 > r2thr]
+                drop2 <- colnames(ldfriends2)[ldout2 > r2thr]
             }
         }
         ## ld1 <- apply(ldfriends[ setdiff(hits1[-i],""), , drop=FALSE ],2,max)

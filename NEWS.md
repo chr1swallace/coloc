@@ -1,3 +1,7 @@
+# coloc 4.0-1
+* BUGFIX
+- snps in the second dataset might not have been masked as intended. This would result in effect using the "single" option for trait 2 when masking was expected.
+
 # coloc 4.0-0
 *new functions: coloc.signals, finemap.abf*
 - analogues of coloc.abf and finemap.abf that allow for multiple causal variants.  See vignette on conditioning/masking
