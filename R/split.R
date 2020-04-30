@@ -349,6 +349,8 @@ finemap.signals <- function(D,LD=D$LD,
         stop("sigsnps should be a named numeric vector, with snp ids as the names")
     if(!all(names(sigsnps) %in% D$snp))
         stop("not all sigsnps found in D$snp")
+    if(D$type=="quant" & !("sdY" %in% names(D)))
+      D$sdY <- with(D, sdY.est(vbeta=varbeta, maf=MAF, n=N))
     zthr=qnorm(pthr/2,lower.tail = FALSE)
     ## make nicer data table
     ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
@@ -788,12 +790,16 @@ coloc.signals <- function(dataset1, dataset2,
     if(dataset1$method=="cond") {
         check.dataset(dataset1,1,req="MAF")
         check.ld(dataset1,dataset1$LD)
+        if(dataset1$type=="quant" & !("sdY" %in% names(dataset1)))
+          dataset1$sdY <- with(dataset1, sdY.est(vbeta=varbeta, maf=MAF, n=N))
     } else {
         check.dataset(dataset1,1)
     }
     if(dataset2$method=="cond") {
         check.dataset(dataset2,2,req="MAF")
         check.ld(dataset2,dataset2$LD)
+        if(dataset2$type=="quant" & !("sdY" %in% names(dataset2)))
+          dataset2$sdY <- with(dataset2, sdY.est(vbeta=varbeta, maf=MAF, n=N))
     } else {
         check.dataset(dataset2,2)
     }

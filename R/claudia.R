@@ -499,6 +499,8 @@ check.dataset <- function(d,suffix="",req=NULL) {
    ## snps should be unique
    if("snp" %in% nd && any(duplicated(d$snp)))
      stop("dataset ",suffix,": duplicated snps found")
+   if("snp" %in% nd && is.factor(d$snp))
+     stop("dataset ",suffix,": snp should be a character vector but is a factor")
 
    ## lengths of these should match
    l <- -1 # impossible length

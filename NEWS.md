@@ -1,4 +1,9 @@
-# coloc 4.0-1
+# coloc 4.0-3
+* BUGFIX
+- missing sdY for type="quant" would error in finemap.signals or coloc.signals, now it is estimated if missing.
+- warning for factors used as snp names added (issue #29)
+
+# coloc 4.0-2
 * BUGFIX
 - snps in the second dataset might not have been masked as intended. This would result in effect using the "single" option for trait 2 when masking was expected.
 
