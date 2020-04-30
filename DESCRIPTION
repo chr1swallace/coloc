@@ -18,8 +18,8 @@ Suggests:
     magrittr,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 4.0-2
-Date: 2020-04-29
+Version: 4.0-3
+Date: 2020-04-30
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
