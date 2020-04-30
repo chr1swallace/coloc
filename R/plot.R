@@ -219,16 +219,15 @@ plot.coloc_abf <- function(x,...) {
     m[,c("z","df","row"):=tstrsplit(variable,"\\.")]
     m2[,row:=sub(".*\\.","",variable)]
     m <- merge(m,m2[,.(snp,row,pp)],by=c("snp","row"))
-    ggplot(m, aes(x=position,y=abs(value),col=pp)) +
+    ggplot(m, aes(x=position,y=abs(value),col=pp,size=pp)) +
       geom_point() +
-      facet_grid(row ~ df)
-    head(m)
+      facet_grid(df ~ row)
   } else {
     m[,c("z","df"):=tstrsplit(variable,"\\.")]
     m <- merge(m,m2[,.(snp,pp)],by=c("snp"))
-    ggplot(m, aes(x=position,y=abs(value),col=pp)) +
+    ggplot(m, aes(x=position,y=abs(value),col=pp,size=pp)) +
       geom_point() +
-      facet_grid(. ~ df)
+      facet_grid(df ~ .)
   }
 }
 

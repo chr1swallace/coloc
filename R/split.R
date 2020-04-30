@@ -743,7 +743,9 @@ est_all_cond <- function(D,FM,mode) {
 ##'     * trait 1 conditioned on A+C - trait 2
 ##'     * trait 1 conditioned on A+B - trait 2
 ##'
-##'     The second mode is optimal if the signals are known with
+##'     Only iterative mode is supported for method="mask".
+##' 
+##'     The allbutone mode is optimal if the signals are known with
 ##'     certainty (which they never are), because it allows each
 ##'     signal to be tested without influence of the others.  When
 ##'     there is uncertainty, it may make sense to use iterative mode,
