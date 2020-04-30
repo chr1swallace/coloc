@@ -169,10 +169,10 @@ process.dataset <- function(d, suffix) {
   if(!(d$type %in% c("quant","cc")))
       stop("dataset ",suffix,": ","type must be quant or cc")
   
-  if(d$type=="cc") {
-      if(! "s" %in% nd)
-          stop("dataset ",suffix,": ","please give s, proportion of samples who are cases")
-      if("pvalues" %in% nd && !( "MAF" %in% nd))
+  if(d$type=="cc" & "pvalues" %in% nd) {
+      if(!( "s" %in% nd))
+          stop("dataset ",suffix,": ","please give s, proportion of samples who are cases, if using p values")
+      if(!("MAF" %in% nd))
           stop("dataset ",suffix,": ","please give MAF if using p values")
       if(d$s<=0 || d$s>=1)
           stop("dataset ",suffix,": ","s must be between 0 and 1")
