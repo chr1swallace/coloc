@@ -502,6 +502,11 @@ check.dataset <- function(d,suffix="",req=NULL) {
    if("snp" %in% nd && is.factor(d$snp))
      stop("dataset ",suffix,": snp should be a character vector but is a factor")
 
+   ## MAF should be > 0, < 1
+   if("MAF" %in% nd && (!is.numeric(MAF) || any(is.na(MAF)) ||
+                        any(MAF>0) || any(MAF<1)))
+     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
+   
    ## lengths of these should match
    l <- -1 # impossible length
    shouldmatch <- c("P","MAF","beta","varbeta","snp","position")

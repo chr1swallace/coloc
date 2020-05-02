@@ -17,9 +17,10 @@ Suggests:
     mvtnorm,
     magrittr,
     rmarkdown
+biocViews:
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 4.0-3
-Date: 2020-04-30
+Version: 4.0-4
+Date: 2020-05-02
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
