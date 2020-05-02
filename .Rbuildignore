@@ -6,3 +6,5 @@ R/bma.R
 vignettes/.*.org
 errors
 ^\.travis\.yml$
+^doc$
+^Meta$

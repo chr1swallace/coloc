@@ -137,26 +137,37 @@ are cases (from which sdY can be derived), instead of giving sdY
 directly.
 
 ```{r   }
-my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"),
-                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant"),
-                    MAF=maf)
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant",MAF=maf),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant",MAF=maf))
 print(my.res) 
 ```
 
 When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:
 
 ```{r   }
-my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type="quant"),
-                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type="quant"),
-                    MAF=maf)
+my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type="quant",MAF=maf),
+                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type="quant",MAF=maf)) 
 print(my.res) 
 ```
 
 When only p values are available, we can use the form:
 
 ```{r   }
-my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant"),
-                    dataset2=list(pvalues=p2,N=nrow(X2),type="quant"),
-                    MAF=maf)
+my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant",MAF=maf),
+                    dataset2=list(pvalues=p2,N=nrow(X2),type="quant",MAF=maf))
 print(my.res) 
+```
+
+Note that if you do find strong evidence for H4, we can extract the posterior probabilities for each SNP to be causal *conditional on H4 being true*.  This is part of the calculation required by coloc, and contained in the column SNP.PP.H4 in the "results" element of the returned list. So we can extract the more likely causal variants by
+
+```{r}
+subset(my.res$results,SNP.PP.H4>0.01)
+```
+
+or the 95% credible set by
+```{r}
+o <- order(my.res$results$SNP.PP.H4,decreasing=TRUE)
+cs <- cumsum(my.res$results$SNP.PP.H4[o])
+w <- which(cs > 0.95)[1]
+my.res$results[o,][1:w,]$snp
 ```

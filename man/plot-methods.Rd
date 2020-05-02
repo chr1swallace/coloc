@@ -17,15 +17,7 @@ plot(x, y, ...)
 
 \S4method{plot}{colocPCs,missing}(x)
 
-plot.coloc_abf(
-  obj,
-  Pos = 1:nrow(obj$results),
-  chr = NULL,
-  pos.start = min(Pos),
-  pos.end = max(Pos),
-  trait1 = "trait 1",
-  trait2 = "trait 2"
-)
+plot.coloc_abf(x, ...)
 }
 \arguments{
 \item{x}{object to be plotted}

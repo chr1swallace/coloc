@@ -503,8 +503,8 @@ check.dataset <- function(d,suffix="",req=NULL) {
      stop("dataset ",suffix,": snp should be a character vector but is a factor")
 
    ## MAF should be > 0, < 1
-   if("MAF" %in% nd && (!is.numeric(MAF) || any(is.na(MAF)) ||
-                        any(MAF>0) || any(MAF<1)))
+   if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
+                        any(d$MAF<0) || any(d$MAF>1)))
      stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
    
    ## lengths of these should match

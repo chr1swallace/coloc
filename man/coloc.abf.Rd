@@ -33,7 +33,7 @@ coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
 Some of these items may be missing, but you must give
 \itemize{
 \item{always}{\code{type}}
-\item{if \code{type}=="cc"}{\code{s}}
+\item{if \code{type}=="cc"}{\code{s}, \code{N}}
 \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
 \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 and then either

@@ -46,7 +46,7 @@ coloc.signals(
 Some of these items may be missing, but you must give
 \itemize{
 \item{always}{\code{type}}
-\item{if \code{type}=="cc"}{\code{s}}
+\item{if \code{type}=="cc"}{\code{s}, \code{N}}
 \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
 \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 and then either
@@ -83,7 +83,9 @@ Under "allbutone" mode, they would be
 * trait 1 conditioned on A+C - trait 2
 * trait 1 conditioned on A+B - trait 2
 
-The second mode is optimal if the signals are known with
+Only iterative mode is supported for method="mask".
+
+The allbutone mode is optimal if the signals are known with
 certainty (which they never are), because it allows each
 signal to be tested without influence of the others.  When
 there is uncertainty, it may make sense to use iterative mode,
