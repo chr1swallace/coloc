@@ -71,8 +71,13 @@ coloc.detail <- function(dataset1, dataset2, MAF=NULL,
 ##' @author Chris Wallace
 map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
     ## make nicer data table
+  if("beta" %in% names(D) && "varbeta" %in% names(D)) {
     x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     x[,z:=beta/sqrt(varbeta)]
+  } else {
+    x <- as.data.table(D[c("pvalues","snp","MAF")])
+    x[,z:=qnorm(pvalues/2,lower=FALSE)]
+  }
     use <- rep(TRUE,nrow(x))
     if(!is.null(sigsnps)) {
          expectedz <- rep(0,nrow(x))
@@ -86,7 +91,7 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
      } else {
          zdiff <- abs(x$z)
      }
-  wh <- which.max(zdiff)
+  wh <- hich.max(zdiff)
   ## zthr = qnorm(pthr/2,lower.tail=FALSE)    
   ## if(zdiff[wh] > zthr)
   structure(x$z[use][wh],names=x$snp[use][wh])
@@ -116,7 +121,7 @@ est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
     ## LD with a first signal
     use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.8) 
 
-    check.dataset(x,req="MAF")
+    check.dataset(x,req=c("beta","varbeta","MAF"))
     ## Estimating X'X is the key
     if(!is.null(xtx))
         XX <- xtx
@@ -179,7 +184,7 @@ est_cond.nometa <- function(x,LD,YY,sigsnps,xtx=NULL) {
     nuse <- match(sigsnps,x$snp) # to be conditioned on
     use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.9) # to find new beta for, conditional on nuse, excluding SNPs in r2>0.9 with nuse because small inaccuracies can blow up, and we generally don't expect a second detectable signal in such high LD with a first signal
 
-    check.dataset(x,req="MAF")
+    check.dataset(x,req=c("beta","varbeta","MAF"))
     ## Estimating X'X is the key
     if(!is.null(xtx))
         XX <- xtx
@@ -340,7 +345,7 @@ finemap.signals <- function(D,LD=D$LD,
                                   maxhits=3) {
     method <- match.arg(method)
     if(method=="cond") {
-        check.dataset(D,req="MAF")
+        check.dataset(D,req=c("MAF","beta","varbeta"))
         check.ld(D,LD)
     } else {
         check.dataset(D)
@@ -788,7 +793,7 @@ coloc.signals <- function(dataset1, dataset2,
     if(!("method" %in% names(dataset2)) & !is.null(method))
         dataset2$method <- method
     if(dataset1$method=="cond") {
-        check.dataset(dataset1,1,req="MAF")
+        check.dataset(dataset1,1,req=c("beta","varbeta","MAF"))
         check.ld(dataset1,dataset1$LD)
         if(dataset1$type=="quant" & !("sdY" %in% names(dataset1)))
           dataset1$sdY <- with(dataset1, sdY.est(vbeta=varbeta, maf=MAF, n=N))
@@ -796,7 +801,7 @@ coloc.signals <- function(dataset1, dataset2,
         check.dataset(dataset1,1)
     }
     if(dataset2$method=="cond") {
-        check.dataset(dataset2,2,req="MAF")
+        check.dataset(dataset2,2,req=c("beta","varbeta","MAF"))
         check.ld(dataset2,dataset2$LD)
         if(dataset2$type=="quant" & !("sdY" %in% names(dataset2)))
           dataset2$sdY <- with(dataset2, sdY.est(vbeta=varbeta, maf=MAF, n=N))

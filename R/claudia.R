@@ -509,7 +509,7 @@ check.dataset <- function(d,suffix="",req=NULL) {
    
    ## lengths of these should match
    l <- -1 # impossible length
-   shouldmatch <- c("P","MAF","beta","varbeta","snp","position")
+   shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
    for(v in shouldmatch) 
      if(v %in% nd)
        if(l<0) { ## update
