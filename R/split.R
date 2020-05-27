@@ -91,7 +91,7 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
      } else {
          zdiff <- abs(x$z)
      }
-  wh <- hich.max(zdiff)
+  wh <- which.max(zdiff)
   ## zthr = qnorm(pthr/2,lower.tail=FALSE)    
   ## if(zdiff[wh] > zthr)
   structure(x$z[use][wh],names=x$snp[use][wh])
