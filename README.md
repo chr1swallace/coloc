@@ -8,7 +8,7 @@ analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region. 
 
 
-# version 4
+## version 4
 
 This is an updated version of coloc.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).  
 
@@ -40,9 +40,11 @@ Key previous references are:
 # Frequently Asked Questions
 
 - [If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?](#if-i-understand-correctly-colocabf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruningclumping-is-required-am-i-correct-in-my-understanding-)
-
 - [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?](#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-colocabf)
 - [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?](#can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
+- [How is coloc.abf accounting for the correlated variants?](how-is-colocabf-accounting-for-the-correlated-variants)
+- [How to define priors, is it dependent on sample size or any other parameters?](how-to-define-priors-is-it-dependent-on-sample-size-or-any-other-parameters)
+
 
 ## If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?
 
@@ -55,6 +57,14 @@ No, coloc.abf() and coloc.signals() assume they are given a dense map of all SNP
 ## Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?
 
 You need to break the genome into smaller regions, within which it is reasonable to assume there is at most one (coloc.abf) or a small number (coloc.signals) of causal variants per trait.  One way to do this is to use the boundaries defined by recombination hotspots, proxied by [this map](https://bitbucket.org/nygcresearch/ldetect-data/src/master/) created by [lddetect](https://academic.oup.com/bioinformatics/article/32/2/283/1743626).
+
+## How is coloc.abf accounting for the correlated variants?
+
+That's really how coloc works - by exploiting a dense SNP map - please see the [original paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383)
+
+## How to define priors, is it dependent on sample size or any other parameters?
+
+This is described in detail in the [latest paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008720)
 
 # Notes to self
 
