@@ -8,7 +8,7 @@ analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region. 
 
 
-## version 4
+# version 4
 
 This is an updated version of coloc.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).  
 
@@ -21,7 +21,7 @@ install_github("chr1swallace/coloc")
 ```
 
 
-## Background
+# Background
 
 The new ideas are described in 
 > [Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720](https://doi.org/10.1371/journal.pgen.1008720)
@@ -35,6 +35,28 @@ Key previous references are:
 
 [![Build Status](https://travis-ci.org/chr1swallace/coloc.svg?branch=master)](https://travis-ci.org/chr1swallace/coloc)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
+
+
+# Frequently Asked Questions
+
+- [If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?](#if-i-understand-correctly-coloc.abf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruning-clumping-is-required-am-i-correct-in-my-understanding)
+- [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?]
+ (#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc.abf)
+- [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?] (#can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
+
+## If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?
+
+Yes, coloc.abf() and coloc.signals() assume they are given a dense map of all SNPs in a region that could be causal.   Do not prune and clump.
+
+## Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?
+
+No, coloc.abf() and coloc.signals() assume they are given a dense map of all SNPs in a region that could be causal. This means you need to give all SNPs in a region. You can imagine they ask whether the patterns "match" across this region of SNPs, and a single variant does not represent a pattern. 
+
+## Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?
+
+You need to break the genome into smaller regions, within which it is reasonable to assume there is at most one (coloc.abf) or a small number (coloc.signals) of causal variants per trait.  One way to do this is to use the boundaries defined by recombination hotspots, proxied by [this map](https://bitbucket.org/nygcresearch/ldetect-data/src/master/) created by [lddetect](https://academic.oup.com/bioinformatics/article/32/2/283/1743626).
+
+# Notes to self
 
 ### Note to self: to generate vignettes:
 ```
