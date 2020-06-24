@@ -39,9 +39,9 @@ Key previous references are:
 
 # Frequently Asked Questions
 
-- [If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?](#user-content-if-i-understand-correctly-coloc.abf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruning-clumping-is-required-am-i-correct-in-my-understanding)
-- [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?](#user-content-assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc.abf)
-- [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?](#user-content-can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
+- [If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?](#if-i-understand-correctly-coloc.abf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruning-clumping-is-required-am-i-correct-in-my-understanding-)
+- [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?](#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc.abf)
+- [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?](#can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
 
 ## If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?
 
