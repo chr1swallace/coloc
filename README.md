@@ -41,7 +41,7 @@ Key previous references are:
 
 - [If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?](#if-i-understand-correctly-colocabf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruningclumping-is-required-am-i-correct-in-my-understanding-)
 
-- [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?](#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc.abf)
+- [Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?](#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-colocabf)
 - [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?](#can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
 
 ## If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?
