@@ -44,7 +44,7 @@ Key previous references are:
 - [Can the process of identifying colocalized variants be carried out genome wide or is it meant to be done in defined small regions?](#can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide-or-is-it-meant-to-be-done-in-defined-small-regions)
 - [How is coloc.abf accounting for the correlated variants?](how-is-colocabf-accounting-for-the-correlated-variants)
 - [How to define priors, is it dependent on sample size or any other parameters?](how-to-define-priors-is-it-dependent-on-sample-size-or-any-other-parameters)
-
+- [What does high PP4 mean?](what-does-high-pp4-mean)
 
 ## If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?
 
@@ -65,6 +65,10 @@ That's really how coloc works - by exploiting a dense SNP map - please see the [
 ## How to define priors, is it dependent on sample size or any other parameters?
 
 This is described in detail in the [latest paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008720)
+
+## What does high PP4 mean?
+
+The summary printed on the screen by coloc.abf() and coloc.signals() shows the posterior probability of whether a shared causal variant exists in the region. High PP4 does not mean all variants are causal and shared - to check which variants are most likely to be causal look at the SNP.PP column in the returned detailed results data.frame.
 
 # Notes to self
 
