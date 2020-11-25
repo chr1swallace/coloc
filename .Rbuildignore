@@ -8,3 +8,4 @@ errors
 ^\.travis\.yml$
 ^doc$
 ^Meta$
+FAQ.md
