@@ -962,7 +962,7 @@ coloc.signals <- function(dataset1, dataset2,
     
     ret <- list(summary=res,
                 results=results,
-                priors=c(p1=p2,p2=p2,p12=p12))
+                priors=c(p1=p1,p2=p2,p12=p12))
     class(ret) <- c("coloc_abf",class(ret))
     ret
 }
