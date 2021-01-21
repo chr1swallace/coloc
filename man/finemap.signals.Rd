@@ -15,35 +15,32 @@ finemap.signals(
 )
 }
 \arguments{
-\item{D}{list of summary stats for a single disease, as defined
-for coloc.abf}
+\item{D}{list of summary stats for a single disease, see
+\link{\code{check.dataset}}}
 
-\item{LD}{matrix of signed r values (not rsq!) giving correlation
-between SNPs}
+\item{LD}{matrix of signed r values (not rsq!) giving correlation between
+SNPs}
 
-\item{method}{if method="cond", then use conditioning to coloc
-multiple signals.  The default is mask - this is less
-powerful, but safer because it does not assume that the LD
-matrix is properly allelically aligned to estimated effect}
+\item{method}{if method="cond", then use conditioning to coloc multiple
+signals. The default is mask - this is less powerful, but safer because it
+does not assume that the LD matrix is properly allelically aligned to
+estimated effect}
 
-\item{r2thr}{if mask==TRUE, all snps will be masked with r2 >
-r2thr with any sigsnps. Otherwise ignored}
+\item{r2thr}{if mask==TRUE, all snps will be masked with r2 > r2thr with any
+sigsnps. Otherwise ignored}
 
-\item{sigsnps}{SNPs already deemed significant, to condition on or
-mask, expressed as a numeric vector, whose \emph{names} are the snp
-names}
+\item{sigsnps}{SNPs already deemed significant, to condition on or mask,
+expressed as a numeric vector, whose \emph{names} are the snp names}
 
 \item{pthr}{when p > pthr, stop successive searching}
 
-\item{maxhits}{maximum depth of conditioning. procedure will stop
-if p > pthr OR abs(z)<zthr OR maxhits hits have been found.}
+\item{maxhits}{maximum depth of conditioning. procedure will stop if p >
+pthr OR abs(z)<zthr OR maxhits hits have been found.}
 
-\item{mask}{use masking if TRUE, otherwise conditioning. defaults
-to TRUE}
+\item{mask}{use masking if TRUE, otherwise conditioning. defaults to TRUE}
 }
 \value{
-list of successively significant fine mapped SNPs, named
-by the SNPs
+list of successively significant fine mapped SNPs, named by the SNPs
 }
 \description{
 This is an analogue to finemap.abf, adapted to find multiple

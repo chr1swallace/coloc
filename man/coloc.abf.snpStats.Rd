@@ -32,9 +32,11 @@ coloc.abf.snpStats(
 
 \item{type2}{type of data in Y2, "quant" or "cc"}
 
-\item{s1}{the proportion of samples in dataset 1 that are cases (only relevant for case control samples)}
+\item{s1}{the proportion of samples in dataset 1 that are cases (only
+relevant for case control samples)}
 
-\item{s2}{the proportion of samples in dataset 2 that are cases (only relevant for case control samples)}
+\item{s2}{the proportion of samples in dataset 2 that are cases (only
+relevant for case control samples)}
 
 \item{...}{parameters passed to \code{\link{coloc.abf}}}
 }

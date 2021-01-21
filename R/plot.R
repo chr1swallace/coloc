@@ -13,6 +13,12 @@
 ymin <- NULL
 ymax <- NULL
 
+plot.dataset <- function(d) {
+  if(!("bp" %in% names(d)))
+    stop("no bp element given")
+  p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2
+  plot(d$bp,-log10(p),xlab="bp")
+}
 
 ##' Print summary of a coloc.abf run
 ##'

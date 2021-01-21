@@ -16,11 +16,12 @@ Suggests:
     bindata,
     mvtnorm,
     magrittr,
-    rmarkdown
+    rmarkdown,
+    susieR
 biocViews:
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 4.0-4
-Date: 2020-05-02
+Version: 4.0-5
+Date: 2020-08-17
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -41,3 +42,19 @@ RoxygenNote: 7.1.0
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc
 BugReports: https://github.com/chr1swallace/coloc/issues
+Collate: 
+    'AllClasses.R'
+    'AllGenerics.R'
+    'AllMethods.R'
+    'check.R'
+    'claudia.R'
+    'coloc-package.R'
+    'coloc.combine.R'
+    'coloc.test.R'
+    'pcs.R'
+    'plot.R'
+    'private.R'
+    'sensitivity.R'
+    'split.R'
+    'susie.R'
+    'zzz.R'

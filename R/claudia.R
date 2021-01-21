@@ -236,40 +236,8 @@ process.dataset <- function(d, suffix) {
 ##' coefficients should be used if available.
 ##' 
 ##' @title Bayesian finemapping analysis
-##' @param dataset a list with the following elements
-##' \describe{
-##' 
-##'   \item{pvalues}{P-values for each SNP in dataset 1}
-##'
-##'   \item{N}{Number of samples in dataset 1}
-##'
-##'   \item{MAF}{minor allele frequency of the variants}
-##'
-##' \item{beta}{regression coefficient for each SNP from dataset 1}
-##' 
-##' \item{varbeta}{variance of beta}
-##' 
-##' \item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
-##'
-##' \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
-##'
-##'  \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
-##' 
-##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
-##'
-##' }
-##'
-##' Some of these items may be missing, but you must give
-##' \itemize{
-##' \item{always}{\code{type}}
-##' \item{if \code{type}=="cc"}{\code{s}}
-##' \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
-##' \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
-##' and then either
-##' \item{}{\code{pvalues}, \code{MAF}}
-##' \item{}{\code{beta}, \code{varbeta}}
-##' }
-##' 
+##' @param dataset a list with specifically named elements defining the dataset
+##'   to be analysed. See \code{\link{check.dataset}} for details.
 ##'
 ##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
 ##' @return a \code{data.frame}:
@@ -321,41 +289,8 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##' coefficients should be used if available.
 ##' 
 ##' @title Fully Bayesian colocalisation analysis using Bayes Factors
-##' @param dataset1 a list with the following elements
-##' \describe{
-##' 
-##'   \item{pvalues}{P-values for each SNP in dataset 1}
-##'
-##'   \item{N}{Number of samples in dataset 1}
-##'
-##'   \item{MAF}{minor allele frequency of the variants}
-##'
-##' \item{beta}{regression coefficient for each SNP from dataset 1}
-##' 
-##' \item{varbeta}{variance of beta}
-##' 
-##' \item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
-##'
-##' \item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
-##'
-##'  \item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
-##' 
-##' \item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
-##'
-##' }
-##'
-##' Some of these items may be missing, but you must give
-##' \itemize{
-##' \item{always}{\code{type}}
-##' \item{if \code{type}=="cc"}{\code{s}, \code{N}}
-##' \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
-##' \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
-##' and then either
-##' \item{}{\code{pvalues}, \code{MAF}}
-##' \item{}{\code{beta}, \code{varbeta}}
-##' }
-##' 
-##'
+##' @param dataset1 a list with specifically named elements defining the dataset
+##'   to be analysed. See \code{\link{check.dataset}} for details.
 ##' @param dataset2 as above, for dataset 2
 ##' @param MAF Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets
 ##' @param p1 prior probability a SNP is associated with trait 1, default 1e-4
@@ -382,7 +317,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
   df2 <- process.dataset(d=dataset2, suffix="df2")
   merged.df <- merge(df1,df2)
 
-   if(!nrow(merged.df))
+  if(!nrow(merged.df))
     stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
 
   merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
@@ -444,8 +379,10 @@ coloc.abf.datasets <- function(df1,df2,
 ##' @param snps optional subset of snps to use
 ##' @param type1 type of data in Y1, "quant" or "cc"
 ##' @param type2 type of data in Y2, "quant" or "cc"
-##' @param s1 the proportion of samples in dataset 1 that are cases (only relevant for case control samples)
-##' @param s2 the proportion of samples in dataset 2 that are cases (only relevant for case control samples)
+##' @param s1 the proportion of samples in dataset 1 that are cases (only
+##'   relevant for case control samples)
+##' @param s2 the proportion of samples in dataset 2 that are cases (only
+##'   relevant for case control samples)
 ##' @param ... parameters passed to \code{\link{coloc.abf}}
 ##' @return output of \code{\link{coloc.abf}}
 ##' @export
@@ -475,95 +412,3 @@ coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(
   coloc.abf(dataset1=list(pvalues=pval1, N=nrow(X1), MAF=maf1, snp=snps, type=type1, s=s1),
             dataset2=list(pvalues=pval2, N=nrow(X2), MAF=maf2, snp=snps, type=type2, s=s2))
 }
-
-##' Check dataset inputs for errors
-##'
-##' Will call stop() unless a series of expectations on dataset input format are met
-##'
-##' This is a helper function for use by other coloc functions, but
-##' you can use it directly to check the format of a dataset to be
-##' supplied to coloc.abf(), coloc.signals(), finemap.abf(), or
-##' finemap.signals().
-##' @title check.dataset
-##' @param d dataset to check
-##' @param suffix string to identify which dataset (1 or 2)
-##' @param req names of elements that must be present
-##' @return NULL
-##' @export
-##' @author Chris Wallace
-check.dataset <- function(d,suffix="",req=NULL) {
-   if(!is.list(d) )
-       stop("dataset ",suffix,": is not a list")
-   nd <- names(d)
-
-   ## snps should be unique
-   if("snp" %in% nd && any(duplicated(d$snp)))
-     stop("dataset ",suffix,": duplicated snps found")
-   if("snp" %in% nd && is.factor(d$snp))
-     stop("dataset ",suffix,": snp should be a character vector but is a factor")
-
-   ## MAF should be > 0, < 1
-   if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
-                        any(d$MAF<0) || any(d$MAF>1)))
-     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
-   
-   ## lengths of these should match
-   l <- -1 # impossible length
-   shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
-   for(v in shouldmatch) 
-     if(v %in% nd)
-       if(l<0) { ## update
-         l <- length(d[[v]])
-       } else { ## check
-         if(length(d[[v]])!=l) {
-           stop("dataset ",suffix,": lengths of inputs don't match: ")
-           print(intersect(nd, shouldmatch))
-         }
-       }
-   
-   ## sample size
-   if (!('N' %in% nd) || is.null(d$N) || is.na(d$N))
-       stop("dataset ",suffix,": sample size N not set")
-
-   ## type of data
-   if (! ('type' %in% nd))
-       stop("dataset ",suffix,": variable type not set")
-   if(!(d$type %in% c("quant","cc")))
-       stop("dataset ",suffix,": ","type must be quant or cc")
-
-   ## var(Y)
-   if(d$type=="cc") {
-      if(! "s" %in% nd)
-          stop("dataset ",suffix,": ","s, proportion of samples who are cases, not found")
-      if(d$s<=0 || d$s>=1)
-          stop("dataset ",suffix,": ","s must be between 0 and 1")
-      if("pvalues" %in% nd && !( "MAF" %in% nd))
-          stop("dataset ",suffix,": ","p values found, but no MAF")
-  } else {
-      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
-          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
-  }
-
-   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
-   ## req <- unique(c("snp",req)) # always need snp to match now
-   n <- 0
-   for(v in c("MAF","pvalues","beta","varbeta","snp","position")) {
-       if(v %in% req && !(v %in% nd))
-           stop("dataset ",suffix,": missing required element ",v)
-       if(v %in% nd) {
-           if(any(is.na(d[[v]])))
-               stop("dataset ",suffix,": ",v," contains missing values")
-           if(n==0) {
-               n <- length(d[[v]])
-               next
-           }
-           if(length(d[[v]])!=n)
-               stop("dataset ",suffix,": ",v," different length")
-       }
-   }
-
-   ## if we reach here, no badness detected
-   NULL
-}
-
-
