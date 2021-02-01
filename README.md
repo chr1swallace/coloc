@@ -7,6 +7,13 @@ The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region. 
 
+## susie branch
+
+This is a development branch of coloc.  User beware!  If you get strange answers, it could be a bug in my code.  Please let me know, and send me enough information to try and track it down.  A working example with a slimmed down dataset is a great help.
+
+This supercedes previously published version 4 by using the [SuSiE](https://stephenslab.github.io/susieR/index.html) approach to deal with multiple causal variants rather than conditioning or masking.  See 
+> Wang, G., Sarkar, A., Carbonetto, P., & Stephens, M. (2020). A simple new approach to variable selection in regression, with application to genetic fine mapping. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12388
+for the full SuSiE paper.   
 
 ## version 4
 
