@@ -4,25 +4,22 @@
 \alias{coloc.susie}
 \title{run coloc using susie to detect separate signals}
 \usage{
-coloc.susie(dataset1, dataset2, p1 = 1e-04, p2 = 1e-04, p12 = 1e-06)
+coloc.susie(dataset1, dataset2, ...)
 }
 \arguments{
-\item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check.dataset}} for details.}
+\item{dataset1}{\emph{either} a coloc-style input dataset, or the result of
+running runsusie on such a dataset}
 
-\item{dataset2}{as above, for dataset 2}
+\item{dataset2}{\emph{either} a coloc-style input dataset, or the result of
+running runusie on such a dataset}
 
-\item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
-
-\item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
-
-\item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+\item{...}{other arguments passed to \link{coloc.bf_bf}}
 }
 \value{
 coloc.signals style result
 }
 \description{
-.. content for \description{} (no empty lines) ..
+colocalisation with multiple causal variants via SUSIE
 }
 \details{
 .. content for \details{} ..

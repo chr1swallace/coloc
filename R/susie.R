@@ -9,7 +9,6 @@ NULL
 ##' @title
 ##' @param alpha an L by p+1 matrix of posterior inclusion probabilites
 ##' @param pi per snp prior probability of causality
-##' @param last_is_null TRUE if last column corresponds to NULL (normally TRUE)
 ##' @return L by p+1 matrix of log BF
 ##' @author Chris Wallace
 alpha_to_logbf=function(alpha,pi) {
@@ -51,7 +50,10 @@ alpha_to_logbf=function(alpha,pi) {
 ##' @param bf an L by p or p+1 matrix of log Bayes factors
 ##' @param pi *either* a scalar representing the prior probability for any snp
 ##'   to be causal, *or* a full vector of per snp / null prior probabilities
-##' @param last_is_null
+##' @param last_is_null TRUE if last value of the bf vector or last column of a
+##'   bf matrix relates to the null hypothesis of no association. This is
+##'   standard for SuSiE results, but may not be for BF constructed in other
+##'   ways.
 ##' @return matrix of posterior probabilies, same dimensions as bf
 ##' @author Chris Wallace
 logbf_to_pp=function(bf,pi, last_is_null) {
@@ -85,7 +87,6 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'
 ##' .. content for \details{} ..
 ##' @title run coloc using susie to detect separate signals
-##' @inheritParams coloc.signals
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -93,9 +94,7 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   running runsusie on such a dataset
 ##' @param dataset2 *either* a coloc-style input dataset, or the result of
 ##'   running runusie on such a dataset
-##' @param overlap.min when SNPs differ between datasets, only run coloc for
-##'   signals for which at least overlap.min of the posterior support is
-##'   captured by overlapping snps
+##' @param ... other arguments passed to \link{coloc.bf_bf}
 coloc.susie=function(dataset1,dataset2, ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
@@ -138,6 +137,7 @@ coloc.susie=function(dataset1,dataset2, ...) {
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
 ##' @param bf2 named vector of BF, names are snp ids and will be matched to column names of susie object's alpha
+##' @param ... arguments passed to \link{coloc.bf_bf}
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -169,13 +169,17 @@ susie_get_cs_with_names=function(s) {
   sets
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Colocalise two datasets represented by Bayes factors
 ##'
-##' .. content for \details{} ..
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
 ##' @param bf1 named vector of BF, or matrix of BF (cols=snps, rows=signals)
 ##' @param bf2 named vector of BF, or matrix of BF (cols=snps, rows=signals)
+##' @param trim_by_posterior it is important that the signals to be colocalised
+##'   are covered by adequate numbers of snps in both datasets. If TRUE, signals
+##'   for which snps in common do not capture least overlap.min proportion of
+##'   their posteriors support are dropped and colocalisation not attempted.
+##' @param overlap.min see trim_by_posterior
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -261,12 +265,19 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'
 ##' .. content for \details{} ..
 ##' @title Run susie on a single coloc-structured dataset
-##' @param d dataset
+##' @param d coloc dataset, must include LD (signed correlation matrix)
 ##' @param suffix suffix label that will be printed with any error messages
+##' @param nref number of samples in the dataset used to estimate the LD matrix in d
+##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if you set r2.prune to a value between 0 and 1, sets with index SNPs with LD > r2.prune
+##' @param p prior probability a snp is causal (equivalent to p1 or p2 in coloc.abf)
+##' @param trimz used to trim datasets for development purposes
+##' @param L maximum number of signals to consider, passed to susie
+##' @param s_init used internally to extend runs that haven't converged. don't use.
+##' @param estimate_prior_variance
 ##' @return results of a susie_rss run, with some added dimnames
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,nref=503,r2.prune=NULL,r2.merge=NULL,p=1e-4,trimz=NULL,L=10,
-                  s_init=NULL,estimate_prior_variance=FALSE) {
+runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
+                  r2.prune=NULL,s_init=NULL) {
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
   check.dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
