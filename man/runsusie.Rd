@@ -36,10 +36,7 @@ runsusie(
 results of a susie_rss run, with some added dimnames
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+run susie_rss storing some additional information for coloc
 }
 \author{
 Chris Wallace

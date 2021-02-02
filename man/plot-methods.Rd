@@ -20,39 +20,22 @@ plot(x, y, ...)
 plot.coloc_abf(x, ...)
 }
 \arguments{
-\item{x}{object to be plotted}
+\item{x}{coloc_abf object to be plotted}
 
 \item{y}{ignored}
 
 \item{...}{other arguments}
-
-\item{obj}{object of class \code{colocABF} returned by coloc.abf()}
-
-\item{Pos}{positions of all snps in ds1 or in ds2}
-
-\item{chr}{Chromosome}
-
-\item{pos.start}{lower bound of positions}
-
-\item{pos.end}{upper bound of positions}
-
-\item{trait1}{name of trait 1}
-
-\item{trait2}{name of trait 2}
 }
 \value{
 no return value
 
-a ggplot object
+ggplot object
 }
 \description{
 You can plot objects of class \code{coloc}, \code{colocBayes} and \code{colocABF}
 
-Plot results of a coloc.abf run
-}
-\details{
-If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
+plot a coloc_abf object
 }
 \author{
-Hui Guo, Chris Wallace
+Chris Wallace
 }
