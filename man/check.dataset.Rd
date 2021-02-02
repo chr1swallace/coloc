@@ -4,7 +4,7 @@
 \alias{check.dataset}
 \title{check.dataset}
 \usage{
-check.dataset(d, suffix = "", req = NULL)
+check.dataset(d, suffix = "", req = c("snp", "N"))
 }
 \arguments{
 \item{d}{dataset to check}

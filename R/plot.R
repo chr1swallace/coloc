@@ -65,9 +65,9 @@ print.coloc_abf <- function(x,...) {
     invisible(x)
 }
     
+S3method(plot, coloc_abf)
 ##' Plot results of a coloc.abf run
 ##'
-##' If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
 ##' @title plot.coloc_abf
 ##' @param obj object of class \code{colocABF} returned by coloc.abf()
 ##' @param Pos positions of all snps in ds1 or in ds2
@@ -75,7 +75,7 @@ print.coloc_abf <- function(x,...) {
 ##' @param pos.start lower bound of positions
 ##' @param pos.end upper bound of positions
 ##' @param trait1 name of trait 1
-##' @param trait2 name of trait 2   
+##' @param trait2 name of trait 2
 ##' @return a ggplot object
 ##' @author Hui Guo, Chris Wallace
 ##' @docType methods

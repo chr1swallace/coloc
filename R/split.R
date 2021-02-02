@@ -76,7 +76,7 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
     x[,z:=beta/sqrt(varbeta)]
   } else {
     x <- as.data.table(D[c("pvalues","snp","MAF")])
-    x[,z:=qnorm(pvalues/2,lower=FALSE)]
+    x[,z:=qnorm(pvalues/2,lower.tail=FALSE)]
   }
     use <- rep(TRUE,nrow(x))
     if(!is.null(sigsnps)) {
@@ -307,7 +307,7 @@ find.best.signal <- function(D) {
 ##'
 ##' @title Finemap multiple signals in a single dataset
 ##' @param D list of summary stats for a single disease, see
-##'   \link{\code{check.dataset}}
+##'   \link{check.dataset}
 ##' @param LD matrix of signed r values (not rsq!) giving correlation between
 ##'   SNPs
 ##' @param mask use masking if TRUE, otherwise conditioning. defaults to TRUE

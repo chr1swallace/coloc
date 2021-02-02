@@ -7,11 +7,13 @@
 coloc.susie(dataset1, dataset2, ...)
 }
 \arguments{
-\item{dataset1}{\emph{either} a coloc-style input dataset, or the result of
-running runsusie on such a dataset}
+\item{dataset1}{\emph{either} a coloc-style input dataset (see
+\link{check.dataset}), or the result of running \link{runsusie} on such a
+dataset}
 
-\item{dataset2}{\emph{either} a coloc-style input dataset, or the result of
-running runusie on such a dataset}
+\item{dataset2}{\emph{either} a coloc-style input dataset (see
+\link{check.dataset}), or the result of running \link{runsusie} on such a
+dataset}
 
 \item{...}{other arguments passed to \link{coloc.bf_bf}}
 }
@@ -20,9 +22,6 @@ coloc.signals style result
 }
 \description{
 colocalisation with multiple causal variants via SUSIE
-}
-\details{
-.. content for \details{} ..
 }
 \author{
 Chris Wallace

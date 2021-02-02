@@ -9,6 +9,7 @@ Imports:
     viridis,
     stats,
     grDevices,
+    susieR,
     utils
 Suggests:
     knitr,
@@ -16,8 +17,7 @@ Suggests:
     bindata,
     mvtnorm,
     magrittr,
-    rmarkdown,
-    susieR
+    rmarkdown
 biocViews:
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 4.0-5

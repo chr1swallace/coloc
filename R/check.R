@@ -59,10 +59,20 @@
 ##' @return NULL if no errors found
 ##' @export
 ##' @author Chris Wallace
-check.dataset <- function(d,suffix="",req=NULL) {
+check.dataset <- function(d,suffix="",req=c("snp","N")) {
    if(!is.list(d) )
        stop("dataset ",suffix,": is not a list")
    nd <- names(d)
+
+   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+   ## req <- unique(c("snp",req)) # always need snp to match now
+   n <- 0
+   for(v in nd) {
+     if(v %in% req && !(v %in% nd))
+       stop("dataset ",suffix,": missing required element ",v)
+     if(any(is.na(d[[v]])))
+       stop("dataset ",suffix,": ",v," contains missing values")
+   }
 
    ## snps should be unique
    if("snp" %in% nd && any(duplicated(d$snp)))
@@ -112,22 +122,14 @@ check.dataset <- function(d,suffix="",req=NULL) {
           stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
   }
 
-   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
-   ## req <- unique(c("snp",req)) # always need snp to match now
-   n <- 0
-   for(v in c("MAF","pvalues","beta","varbeta","snp","position")) {
-       if(v %in% req && !(v %in% nd))
-           stop("dataset ",suffix,": missing required element ",v)
-       if(v %in% nd) {
-           if(any(is.na(d[[v]])))
-               stop("dataset ",suffix,": ",v," contains missing values")
-           if(n==0) {
-               n <- length(d[[v]])
-               next
-           }
-           if(length(d[[v]])!=n)
-               stop("dataset ",suffix,": ",v," different length")
-       }
+
+   if("LD" %in% nd) {
+     if(nrow(d$LD)!=ncol(d$LD))
+       stop("LD not square")
+     if(!identical(colnames(d$LD),rownames(d$LD)))
+       stop("LD rownames != colnames")
+     if(length(setdiff(d$snp,colnames(d$LD))))
+       stop("colnames in LD do not contain all SNPs")
    }
 
    ## if we reach here, no badness detected

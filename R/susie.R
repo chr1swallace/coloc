@@ -1,12 +1,9 @@
 #'@importFrom susieR susie_rss susie_get_cs
 NULL
-  ## alpha:
-  ## pi:
-  ## bf:
-##' .. content for \description{} (no empty lines) ..
+
+##' convert alpha matrix to log BF matrix
 ##'
-##' .. content for \details{} ..
-##' @title
+##' @title alpha_to_logbf
 ##' @param alpha an L by p+1 matrix of posterior inclusion probabilites
 ##' @param pi per snp prior probability of causality
 ##' @return L by p+1 matrix of log BF
@@ -43,10 +40,9 @@ alpha_to_logbf=function(alpha,pi) {
   bf
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' convert logbf matrix to PP matrix
 ##'
-##' .. content for \details{} ..
-##' @title
+##' @title logbf 2 pp
 ##' @param bf an L by p or p+1 matrix of log Bayes factors
 ##' @param pi *either* a scalar representing the prior probability for any snp
 ##'   to be causal, *or* a full vector of per snp / null prior probabilities
@@ -85,15 +81,16 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 
 ##' colocalisation with multiple causal variants via SUSIE
 ##'
-##' .. content for \details{} ..
 ##' @title run coloc using susie to detect separate signals
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
-##' @param dataset1 *either* a coloc-style input dataset, or the result of
-##'   running runsusie on such a dataset
-##' @param dataset2 *either* a coloc-style input dataset, or the result of
-##'   running runusie on such a dataset
+##' @param dataset1 *either* a coloc-style input dataset (see
+##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
+##'   dataset
+##' @param dataset2 *either* a coloc-style input dataset (see
+##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
+##'   dataset
 ##' @param ... other arguments passed to \link{coloc.bf_bf}
 coloc.susie=function(dataset1,dataset2, ...) {
   if("susie" %in% class(dataset1))
@@ -131,9 +128,8 @@ coloc.susie=function(dataset1,dataset2, ...) {
   ret
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' coloc for susie output + a separate BF matrix
 ##'
-##' .. content for \details{} ..
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
 ##' @param bf2 named vector of BF, names are snp ids and will be matched to column names of susie object's alpha
@@ -171,10 +167,12 @@ susie_get_cs_with_names=function(s) {
 
 ##' Colocalise two datasets represented by Bayes factors
 ##'
-##' @title run coloc using susie to detect separate signals
+##' This is the workhorse behind many coloc functions
+##'
+##' @title Coloc data through Bayes factors
 ##' @inheritParams coloc.signals
-##' @param bf1 named vector of BF, or matrix of BF (cols=snps, rows=signals)
-##' @param bf2 named vector of BF, or matrix of BF (cols=snps, rows=signals)
+##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @param bf2 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
 ##' @param trim_by_posterior it is important that the signals to be colocalised
 ##'   are covered by adequate numbers of snps in both datasets. If TRUE, signals
 ##'   for which snps in common do not capture least overlap.min proportion of
@@ -189,7 +187,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   if(is.vector(bf2))
     bf2=matrix(bf2,nrow=1,dimnames=list(NULL,names(bf2)))
   todo <- expand.grid(i=1:nrow(bf1),j=1:nrow(bf2)) %>%as.data.table()
-  todo[,susie.pp4:=0]
+  todo[,pp4:=0]
   isnps=intersect(colnames(bf1),colnames(bf2)) %>%setdiff(.,"null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
@@ -261,9 +259,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   results
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' run susie_rss storing some additional information for coloc
 ##'
-##' .. content for \details{} ..
 ##' @title Run susie on a single coloc-structured dataset
 ##' @param d coloc dataset, must include LD (signed correlation matrix)
 ##' @param suffix suffix label that will be printed with any error messages
@@ -273,7 +270,6 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @param trimz used to trim datasets for development purposes
 ##' @param L maximum number of signals to consider, passed to susie
 ##' @param s_init used internally to extend runs that haven't converged. don't use.
-##' @param estimate_prior_variance
 ##' @return results of a susie_rss run, with some added dimnames
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
