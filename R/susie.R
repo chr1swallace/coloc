@@ -92,15 +92,15 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
 ##' @param ... other arguments passed to \link{coloc.bf_bf}
-coloc.susie=function(dataset1,dataset2, ...) {
+coloc.susie=function(dataset1,dataset2, susie.args=list(), ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
-    s1=runsusie(dataset1,suffix=1)
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
   if("susie" %in% class(dataset2))
     s2=dataset2
   else
-    s2=runsusie(dataset2,suffix=2)
+    s2=do.call("runsusie", c(list(d=dataset2,suffix=1),susie.args))
   cs1=s1$sets
   cs2=s2$sets
   ## cs1=susie_get_cs(s1)
@@ -284,7 +284,7 @@ runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
   z=d$z
   names(z)=d$snp
   snp=d$snp
-  if(!is.null(trimz)) {
+  if(!is.null(trimz) && trimz!=0) {
     dbak=d
     keep=abs(z) > abs(trimz)
     message("trimming to subset of SNPs with |z| > ",trimz," : ",sum(keep)," / ",length(keep))
@@ -346,7 +346,7 @@ runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
   ##   }
   ## }
 
-  if(!is.null(trimz)) {
+  if(!is.null(trimz) && trimz!=0) {
     res$trimz=trimz
     snps_to_add=setdiff(dbak$snp,snp)
     res$pip=c(structure(rep(0,length(snps_to_add)), names=snps_to_add),
