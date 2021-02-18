@@ -4,7 +4,7 @@
 \alias{coloc.susie}
 \title{run coloc using susie to detect separate signals}
 \usage{
-coloc.susie(dataset1, dataset2, ...)
+coloc.susie(dataset1, dataset2, susie.args = list(), ...)
 }
 \arguments{
 \item{dataset1}{\emph{either} a coloc-style input dataset (see
@@ -15,13 +15,17 @@ dataset}
 \link{check.dataset}), or the result of running \link{runsusie} on such a
 dataset}
 
-\item{...}{other arguments passed to \link{coloc.bf_bf}}
+\item{susie.args}{a named list of additional arguments to be passed to
+\link{runsusie}}
+
+\item{...}{other arguments passed to \link{coloc.bf_bf}, in particular prior
+values for causal association with one trait (p1, p2) or both (p12)}
 }
 \value{
 coloc.signals style result
 }
 \description{
-colocalisation with multiple causal variants via SUSIE
+colocalisation with multiple causal variants via SuSiE
 }
 \author{
 Chris Wallace

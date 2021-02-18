@@ -7,6 +7,8 @@
 sensitivity(
   obj,
   rule = "",
+  dataset1 = NULL,
+  dataset2 = NULL,
   npoints = 100,
   doplot = TRUE,
   plot.manhattans = TRUE,
