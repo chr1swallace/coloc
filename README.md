@@ -20,13 +20,19 @@ To install from R, do
 if(!require("remotes"))
    install.packages("remotes") # if necessary
 library(remotes)
-install_github("chr1swallace/coloc","susie")
+install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)
 ```
 
 The function you want to look at is `coloc.susie`. It can take raw datasets, but the time consuming part is running SuSiE.  coloc runs SuSiE and saves a little extra information using the `runsusie` function before running an adapted colocalisation on the results.  So please look at the docs for `runsusie` too. I found a helpful recipe is
 1. Run `runsusie` on dataset 1, storing the results
 2. Run `runsusie` on dataset 2, storing the results
 3. Run `coloc.susie` on the two outputs from above
+
+More detail is available in the vignette a06_SuSiE.html accessible by
+
+``` R
+vignette("a06_SuSiE",package="coloc")
+```
 
 ## version 4
 
