@@ -21,8 +21,8 @@ Suggests:
 Remotes: github::stephenslab/susieR
 biocViews:
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 4.0-5
-Date: 2020-08-17
+Version: 4.0-6
+Date: 2021-02-18
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
