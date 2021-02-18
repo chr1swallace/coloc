@@ -18,6 +18,7 @@ Suggests:
     mvtnorm,
     magrittr,
     rmarkdown
+Remotes: github::stephenslab/susieR
 biocViews:
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 4.0-5
