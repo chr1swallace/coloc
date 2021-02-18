@@ -11,7 +11,9 @@ vignette: >
 ```{r sim, child="simdata.Rmd", echo = FALSE }
 ```
 
-# Multiple causal variants
+# Multiple causal variants 
+
+*This describes deprecated functions - the [SuSiE approach](a06_SuSiE.html) is more accurate and should be used instead*
 
 First, we use the above-simulated data (which contains a single colocalising variant) as a template to generate an additional set of SNPs within which one variant is causal for only one of the two traits.
 
@@ -91,7 +93,15 @@ sensitivity(my.res,"H4 > 0.9")
 ```
 
 Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.  
-We can formally check for evidence for secondary signals for each trait.  finemap.signals() identifies SNPs which are independently associated in a dataset, and prints the snp names together with the z score.  It is used within coloc.signals to identify separate signal SNPs, and run colocalisation as many times as needed to try and colocalise each pair of signals, but can also be run individually
+We can run SuSiE to see how many signals it finds.
+
+```{r}
+s1=runsusie(D1)
+finemap.susie(s1)
+s2=runsusie(D2)
+finemap.susie(s2)
+```
+SuSiE can be computationally expensive in large regions, so it is good practice to run it once  the susie_rss function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  finemap.susie() just extracts the credible sets SuSiE found and prints at most the top 5 SNPs in each.  Here, it does indeed find two signals for dataset 1 (the 75th SNP named s25.1 and the 25th SNP named s25).
 
 ```{r}
 finemap.signals(D1,method="cond")

@@ -79,100 +79,117 @@ manh.plot <- function(df,wh,
 ##' @export
 ##' @author Chris Wallace
 sensitivity <- function(obj,rule="",
+                        dataset1=NULL,dataset2=NULL,
                         npoints=100,doplot=TRUE,plot.manhattans=TRUE,
                         preserve.par=FALSE,
                         row=1) {
-    stopifnot("coloc_abf" %in% class(obj))
-    stopifnot("priors" %in% names(obj))
-    stopifnot("summary" %in% names(obj))
-    if(rule=="")
-        stop("please supply a rule to define colocalisation, eg 'H4 > thr' where thr is some probability of H4 that you accept as colocalisation")
-    rule.init <- rule
-    rule <- gsub("(H.)","PP.\\1.abf",rule,perl=TRUE)
+  stopifnot("list" %in% class(obj))
+  stopifnot("priors" %in% names(obj))
+  stopifnot("summary" %in% names(obj))
+  if(rule=="")
+    stop("please supply a rule to define colocalisation, eg 'H4 > thr' where thr is some probability of H4 that you accept as colocalisation")
+  rule.init <- rule
+  rule <- gsub("(H.)","PP.\\1.abf",rule,perl=TRUE)
 
-    ## multiple signals?
-    if(is.data.table(obj$summary)) {
-        if(!(row %in% 1:nrow(obj$summary)))
-            stop("row must be between 1 and ",nrow(obj$summary))
-        pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
-        if(paste0("SNP.PP.H4.row",row) %in% names(obj$results)) {
-            obj$results[["SNP.PP.H4"]]  <- obj$results[[paste0("SNP.PP.H4.row",row)]]
-            obj$results[["z.df1"]]  <- obj$results[[paste0("z.df1.row",row)]]
-            obj$results[["z.df2"]]  <- obj$results[[paste0("z.df2.row",row)]]
-        } else {
-            pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
-        }
+  ## massage results object
+  results=obj$results
+  ## multiple signals?
+  multiple=FALSE
+  if(is.data.table(obj$summary)) { # we're not in coloc.abf anymore
+    if(!(row %in% 1:nrow(obj$summary)))
+      stop("row must be between 1 and ",nrow(obj$summary))
+    pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
+    if(paste0("SNP.PP.H4.row",row) %in% names(results)) {
+      multiple=TRUE
+      results[["SNP.PP.H4"]]  <- results[[paste0("SNP.PP.H4.row",row)]]
+    }
+    if(paste0("z.df.row",row) %in% names(results)) { # might be passed here or in separate dataset objects
+      results[["z.df1"]]  <- results[[paste0("z.df1.row",row)]]
+      results[["z.df2"]]  <- results[[paste0("z.df2.row",row)]]
     } else {
-        pp <- obj$summary
+      pp <- unlist(c(obj$summary[row,grep("PP|nsnp",names(obj$summary)),with=FALSE]))
     }
-    
-    p12 <- obj$priors["p12"]
-    p1 <- obj$priors["p1"]
-    p2 <- obj$priors["p2"]
-    check <- function(pp) { with(as.list(pp),eval(parse(text=rule))) }
-    pass.init <- check(pp)
-    message("Results ",if(check(pp)) { "pass" } else { "fail" }, " decision rule ",rule.init)
+  } else {
+    pp <- obj$summary
+  }
+  ## need to add z score from datasets?
+  if(!is.null(dataset1) && !is.null(dataset2)) {
+    df1=with(dataset1,data.table(snp=snp,position=position,z.df1=beta/sqrt(varbeta)))
+    df2=with(dataset2,data.table(snp=snp,position=position,z.df2=beta/sqrt(varbeta)))
+    df=merge(df1,df2,by=c("snp","position"),all=TRUE)
+    results=merge(results,df,by="snp")
+  }
 
-    testp12 <- 10^seq(log10(p1*p2),log10(min(p1,p1)),length.out=npoints)
-    testH <- prior.snp2hyp(pp["nsnps"],p12=testp12,p1=p1,p2=p2)
-    testpp <- as.data.frame(prior.adjust(summ=pp,newp12=testp12,p1=p1,p2=p2,p12=p12))
-    colnames(testpp) <- gsub("(H.)","PP.\\1.abf",colnames(testpp),perl=TRUE)
-    pass <- check(testpp)
-    w <- which(pass)
+  p12 <- obj$priors["p12"]
+  p1 <- obj$priors["p1"]
+  p2 <- obj$priors["p2"]
+  check <- function(pp) { with(as.list(pp),eval(parse(text=rule))) }
+  pass.init <- check(pp)
+  message("Results ",if(check(pp)) { "pass" } else { "fail" }, " decision rule ",rule.init)
 
-    if(doplot) {
-        H <- as.character(0:4)
-        palette(c("#ffffffff",viridis(5,alpha=1)[-1]))
-        op <- par('mfcol', 'mar', 'mfrow','mar','mgp','las','tck')
-        on.exit(par(op))
-        if(!preserve.par) {
-            if(plot.manhattans)
-                layout(mat = matrix(1:4,2,2),
-                       heights = c(1, 1), # Heights of the two rows
-                       widths = c(2, 3)) # Widths of the two columns
-            else
-                par(mfcol=c(1,2))
-        }
-        par(mar = c(3, 3, 2, 1) # Dist' from plot to side of page
-            ,mgp = c(2, 0.4, 0) # Dist' plot to label
-            ,las = 1 # Rotate y-axis text
-            ,tck = -.01 # Reduce tick length
-            )
-        if(plot.manhattans) {
-            manh.plot(obj$results,1)
-            manh.plot(obj$results,2)
-        }
-        m <- list(testH,as.matrix(testpp))
-        ti <-   list("Prior probabilities", "Posterior probabilities")
-        for(i in 1:2) {
-            ym <- if(i==1) { max(m[[i]][,-1]) } else { max(m[[i]]) }
-        matplot(testp12,m[[i]],log="x",xlab="p12",ylab="Prob",
-                type="b",
-                bg = 1:5, # Fill colour
-                pch = 21, # Shape: circles that can filed
-                col="gray20",
-                frame.plot = FALSE, # Remove the frame 
-                panel.first = abline(h = seq(0, 1, 0.2), col = "grey80"),
-                ylim=c(0,ym))
-            title(main=ti[[i]],adj=0)
-            title(sub=paste("shaded region:",rule.init),adj=0)
-        ## title(main=paste("Acceptance rule (shaded region):",rule.init))
-        ## legend("topleft",pch=rep(21,5),pt.bg=1:5,legend=paste0("H",0:4))
-        if(i==1)
-            legend("left",inset=c(0.1,0),bg="white",pch=rep(21,5),pt.bg=1:5,pt.cex=2,legend=paste0("H",0:4))
-        abline(v=p12,lty="dashed",col="gray")
-        text(p12,0.5,"results",srt=90,col="gray40")
-        if(any(pass))
-            rect(xleft=testp12[min(w)],ybottom=0,
-                 xright=testp12[max(w)],ytop=1,
-                 col=rgb(0,1,0,alpha=0.1), border="green") 
-        ## add text showing rule
-        ## mtext(paste("shaded region:",rule.init),side=3,adj=1)
-        }
+  testp12 <- 10^seq(log10(p1*p2),log10(min(p1,p1)),length.out=npoints)
+  testH <- prior.snp2hyp(pp["nsnps"],p12=testp12,p1=p1,p2=p2)
+  testpp <- as.data.frame(prior.adjust(summ=pp,newp12=testp12,p1=p1,p2=p2,p12=p12))
+  colnames(testpp) <- gsub("(H.)","PP.\\1.abf",colnames(testpp),perl=TRUE)
+  pass <- check(testpp)
+  w <- which(pass)
+
+  if(doplot) {
+    H <- as.character(0:4)
+    palette(c("#ffffffff",viridis(5,alpha=1)[-1]))
+    op <- par('mfcol', 'mar', 'mfrow','mar','mgp','las','tck')
+    on.exit(par(op))
+    if(!preserve.par) {
+      if(plot.manhattans)
+        layout(mat = matrix(1:4,2,2),
+               heights = c(1, 1), # Heights of the two rows
+               widths = c(2, 3)) # Widths of the two columns
+      else
+        par(mfcol=c(1,2))
     }
+    par(mar = c(3, 3, 2, 1) # Dist' from plot to side of page
+       ,mgp = c(2, 0.4, 0) # Dist' plot to label
+       ,las = 1 # Rotate y-axis text
+       ,tck = -.01 # Reduce tick length
+        )
+    if(plot.manhattans) {
+      if(!("z.df1" %in% colnames(results)) || !("z.df2" %in% colnames(results)))
+        stop("please supply dataset1, dataset2, if you want to view Manhattan plots. Otherwise set plot.manhattans=FALSE.")
+      manh.plot(results,1)
+      title(main=paste("trait 1", if(multiple) { paste("row",row) } else { "" }))
+      manh.plot(results,2)
+      title(main=paste("trait 2", if(multiple) { paste("row",row) } else { "" }))
+    }
+    m <- list(testH,as.matrix(testpp))
+    ti <-   list("Prior probabilities", "Posterior probabilities")
+    for(i in 1:2) {
+      ym <- if(i==1) { max(m[[i]][,-1]) } else { max(m[[i]]) }
+      matplot(testp12,m[[i]],log="x",xlab="p12",ylab="Prob",
+              type="b",
+              bg = 1:5, # Fill colour
+              pch = 21, # Shape: circles that can filed
+              col="gray20",
+              frame.plot = FALSE, # Remove the frame
+              panel.first = abline(h = seq(0, 1, 0.2), col = "grey80"),
+              ylim=c(0,ym))
+      title(main=ti[[i]],adj=0)
+      title(sub=paste("shaded region:",rule.init),adj=0)
+      ## title(main=paste("Acceptance rule (shaded region):",rule.init))
+      ## legend("topleft",pch=rep(21,5),pt.bg=1:5,legend=paste0("H",0:4))
+      if(i==1)
+        legend("left",inset=c(0.1,0),bg="white",pch=rep(21,5),pt.bg=1:5,pt.cex=2,legend=paste0("H",0:4))
+      abline(v=p12,lty="dashed",col="gray")
+      text(p12,0.5,"results",srt=90,col="gray40")
+      if(any(pass))
+        rect(xleft=testp12[min(w)],ybottom=0,
+             xright=testp12[max(w)],ytop=1,
+             col=rgb(0,1,0,alpha=0.1), border="green")
+      ## add text showing rule
+      ## mtext(paste("shaded region:",rule.init),side=3,adj=1)
+    }
+  }
 
-    invisible(cbind(testpp,p12=testp12,pass=pass))
+  invisible(cbind(testpp,p12=testp12,pass=pass))
 }
-
 
 

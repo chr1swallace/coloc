@@ -79,7 +79,24 @@ logbf_to_pp=function(bf,pi, last_is_null) {
   exp(bf + priors - denom)
 }
 
-##' colocalisation with multiple causal variants via SUSIE
+##' fine map a dataset using SuSiE
+##'
+##' @title finemap.susie
+##' @param dataset the result of running \link{runsusie} on a coloc-style input dataset (see
+##'   \link{check.dataset})
+##' @inheritParams coloc.susie
+##' @return a list showing the (at most top 5) SNPs in the credible sets found by SuSiE
+##' @author Chris Wallace
+finemap.susie=function(dataset,susie.args=list()) {
+  if(!("susie" %in% class(dataset)))
+     stop("please call runsusie first and store the output")
+  cs=dataset$sets
+  if(is.null(cs$cs) || length(cs$cs)==0 )
+    return(NULL)
+   lapply(cs$cs,head,5)
+}
+
+##' colocalisation with multiple causal variants via SuSiE
 ##'
 ##' @title run coloc using susie to detect separate signals
 ##' @return coloc.signals style result
@@ -91,8 +108,11 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @param dataset2 *either* a coloc-style input dataset (see
 ##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
-##' @param ... other arguments passed to \link{coloc.bf_bf}
-coloc.susie=function(dataset1,dataset2, susie.args=list(), ...) {
+##' @param susie.args a named list of additional arguments to be passed to
+##'   \link{runsusie}
+##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
+##'   values for causal association with one trait (p1, p2) or both (p12)
+coloc.susie=function(dataset1,dataset2, susie.args=list(),  ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
@@ -123,8 +143,8 @@ coloc.susie=function(dataset1,dataset2, susie.args=list(), ...) {
 
   ret=coloc.bf_bf(bf1,bf2,...)
   ## renumber index to match
-  ret[,idx1:=cs1$cs_index[idx1]]
-  ret[,idx2:=cs2$cs_index[idx2]]
+  ret$summary[,idx1:=cs1$cs_index[idx1]]
+  ret$summary[,idx2:=cs2$cs_index[idx2]]
   ret
 }
 
@@ -133,11 +153,12 @@ coloc.susie=function(dataset1,dataset2, susie.args=list(), ...) {
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
 ##' @param bf2 named vector of BF, names are snp ids and will be matched to column names of susie object's alpha
-##' @param ... arguments passed to \link{coloc.bf_bf}
+##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
+##'   values for causal association with one trait (p1, p2) or both (p12)
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
-coloc.susie_bf=function(dataset1,bf2, ...) {
+coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
@@ -153,9 +174,9 @@ coloc.susie_bf=function(dataset1,bf2, ...) {
     return(data.table(nsnps=NA))
   bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
 
-  ret=coloc.bf_bf(bf1,bf2,...)
+  ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
-  ret[,idx1:=cs1$cs_index[idx1]]
+  ret$summary[,idx1:=cs1$cs_index[idx1]]
   ret
 }
 
@@ -226,12 +247,15 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 
   bf1=bf1[,isnps,drop=FALSE]
   bf2=bf2[,isnps,drop=FALSE]
-  results=lapply(1:nrow(todo), function(k) {
+  results <- PP <- vector("list",nrow(todo))
+  ## results=lapply(1:nrow(todo), function(k) {
+  for(k in 1:nrow(todo)) {
     df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
     df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)
     pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12)
+    PP[[k]]=df$SNP.PP.H4
     if(all(is.na(df$SNP.PP.H4))) {
       df$SNP.PP.H4=0
       pp.abf[1:5]=c(1,0,0,0,0)
@@ -247,16 +271,27 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
         hit2="-"
         pp.abf[c(1,2)]=c(0,1)
       }
-    do.call("data.frame",c(list(nsnps=common.snps, hit1=hit1, hit2=hit2), as.list(pp.abf)))
-  }) %>% do.call("rbind",.) %>% as.data.table()
+    results[[k]]=do.call("data.frame",c(list(nsnps=common.snps, hit1=hit1, hit2=hit2),
+                                        as.list(pp.abf)))
+  }
+  results %<>% do.call("rbind",.) %>% as.data.table()
+  PP %<>% do.call("cbind",.) %>% as.data.table()
+  if(nrow(todo)>1)
+    colnames(PP)=paste0("SNP.PP.H4.row",1:nrow(todo))
+  else
+    colnames(PP)="SNP.PP.H4.abf"
 
   results=cbind(results,todo[,.(idx1=i,idx2=j)])
   ## rarely, susie puts the same cred set twice. check, and prune if found
   hits=paste(results$hit1,results$hit2,sep=".")
-  if(any(duplicated(hits)))
+  if(any(duplicated(hits))) {
     results=results[!duplicated(hits)]
-
-  results
+    PP=PP[,!duplicated(hits)]
+  }
+  PP=cbind(data.table(snp=isnps),PP)
+  list(summary=results,
+       results=PP,
+       priors=c(p1=p1,p2=p2,p12=p12))
 }
 
 ##' run susie_rss storing some additional information for coloc

@@ -1,0 +1,67 @@
+---
+title: "Coloc: relaxing the single causal variant assumption"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Coloc: relaxing the single causal variant assumption}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Multiple causal variants, using SuSiE to separate the signals
+
+We load some simulated data.
+
+```{r   }
+library(coloc)
+data(coloc_test_data)
+attach(coloc_test_data)
+```
+
+First, let us do a standard coloc (single causal variant) analysis to
+serve as a baseline comparison.  The analysis concludes there is
+colocalisation, because it "sees" the SNPs on the left which are
+strongly associated with both traits.  But it misses the SNPs on the
+right of the top left plot which are associated with only one trait.
+
+```{r sens0, fig.width=8,fig.height=6    }
+my.res <- coloc.abf(dataset1=D3, dataset2=D4)
+class(my.res)
+## print.coloc_abf
+my.res
+sensitivity(my.res,"H4 > 0.9")
+```
+
+Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.
+
+coloc has adopted the [SuSiE](https://stephenslab.github.io/susie-paper/index.html) framework for fine mapping in the presence of multiple causal variants.  This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format.  =check.dataset= should return NULL if there are no problems, or print informative error messages if there are.
+
+```{r}
+check.dataset(D3,req="LD")
+check.dataset(D4,req="LD")
+```
+
+SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  The results do identify two signals for dataset D3 (there are two rows in the credible sets summary) and one for dataset D4.
+
+```{r}
+S3=runsusie(D3)
+summary(S3)
+S4=runsusie(D4)
+summary(S4)
+```
+
+With these objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
+```{r}
+susie.res=coloc.susie(S3,S4)
+print(susie.res$summary)
+```
+
+Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider, and we need to give it the datasets used if we want to see the Manhattan plots.
+```{r sens, fig.width=8,fig.height=6 }
+sensitivity(susie.res,"H4 > 0.9",row=1,dataset1=D3,dataset2=D4)
+sensitivity(susie.res,"H4 > 0.9",row=2,dataset1=D3,dataset2=D4)
+```
+
+
+
