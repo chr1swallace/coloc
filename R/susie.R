@@ -1,5 +1,6 @@
 #'@importFrom susieR susie_rss susie_get_cs
 NULL
+globalVariables(c("pp4", "i", "j"))
 
 ##' convert alpha matrix to log BF matrix
 ##'
@@ -79,27 +80,18 @@ logbf_to_pp=function(bf,pi, last_is_null) {
   exp(bf + priors - denom)
 }
 
-##' fine map a dataset using SuSiE
-##'
-##' @title finemap.susie
-##' @param dataset the result of running \link{runsusie} on a coloc-style input dataset (see
-##'   \link{check.dataset})
-##' @inheritParams coloc.susie
-##' @return a list showing the (at most top 5) SNPs in the credible sets found by SuSiE
-##' @author Chris Wallace
-finemap.susie=function(dataset,susie.args=list()) {
-  if(!("susie" %in% class(dataset)))
-     stop("please call runsusie first and store the output")
-  cs=dataset$sets
-  if(is.null(cs$cs) || length(cs$cs)==0 )
-    return(NULL)
-   lapply(cs$cs,head,5)
-}
-
 ##' colocalisation with multiple causal variants via SuSiE
 ##'
 ##' @title run coloc using susie to detect separate signals
-##' @return coloc.signals style result
+##' @return a list, containing elements
+##' * summary a data.table of posterior
+##'   probabilities of each global hypothesis, one row per pairwise comparison
+##'   of signals from the two traits
+##' * results a data.table of detailed results giving the posterior probability
+##'   for each snp to be jointly causal for both traits *assuming H4 is true*.
+##'   Please ignore this column if the corresponding posterior support for H4
+##'   is not high.
+##' * priors a vector of the priors used for the analysis
 ##' @export
 ##' @author Chris Wallace
 ##' @param dataset1 *either* a coloc-style input dataset (see
@@ -130,7 +122,8 @@ coloc.susie=function(dataset1,dataset2, susie.args=list(),  ...) {
   ## names(cs) = paste0("L", which(include_idx))
   ## get_idx=function(x)
   ##   sub("L","",x) %>% as.numeric()
-  isnps=intersect(colnames(s1$alpha),colnames(s2$alpha)) %>%setdiff(.,"null")
+  isnps=setdiff(intersect(colnames(s1$alpha),colnames(s2$alpha)),
+                "null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
   message("Using ",length(isnps),"/ ",ncol(s1$alpha)-1," and ",ncol(s2$alpha)-1," available")
@@ -169,7 +162,8 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
     return(data.table(nsnps=NA))
   idx1=cs1$cs_index
   ## alpha: an L by p matrix of posterior inclusion probabilites
-  isnps=intersect(colnames(s1$alpha),names(bf2)) %>%setdiff(.,"null")
+  isnps=setdiff(intersect(colnames(s1$alpha),names(bf2)),
+                "null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
   bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
@@ -207,9 +201,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
   if(is.vector(bf2))
     bf2=matrix(bf2,nrow=1,dimnames=list(NULL,names(bf2)))
-  todo <- expand.grid(i=1:nrow(bf1),j=1:nrow(bf2)) %>%as.data.table()
+  todo <- as.data.table(expand.grid(i=1:nrow(bf1),j=1:nrow(bf2)))
   todo[,pp4:=0]
-  isnps=intersect(colnames(bf1),colnames(bf2)) %>%setdiff(.,"null")
+  isnps=setdiff(intersect(colnames(bf1),colnames(bf2)),
+                "null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
   ## scale bf in case needed
@@ -261,12 +256,12 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       pp.abf[1:5]=c(1,0,0,0,0)
     }
     common.snps <- nrow(df)
-      hit1=which.max(bf1[todo$i[k],]) %>% names() #df$snp[ which.max(abs(df$bf1)) ]
+      hit1=names(which.max(bf1[todo$i[k],])) #df$snp[ which.max(abs(df$bf1)) ]
       if(is.null(hit1)) {
         hit1="-"
         pp.abf[c(1,3)]=c(0,1)
       }
-    hit2=which.max(bf2[todo$j[k],]) %>% names() #df$snp[ which.max(abs(df$bf2)) ]
+    hit2=names(which.max(bf2[todo$j[k],])) #df$snp[ which.max(abs(df$bf2)) ]
       if(is.null(hit2)) {
         hit2="-"
         pp.abf[c(1,2)]=c(0,1)
@@ -274,8 +269,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     results[[k]]=do.call("data.frame",c(list(nsnps=common.snps, hit1=hit1, hit2=hit2),
                                         as.list(pp.abf)))
   }
-  results %<>% do.call("rbind",.) %>% as.data.table()
-  PP %<>% do.call("cbind",.) %>% as.data.table()
+  results <- as.data.table(do.call("rbind",results))
+  PP <- as.data.table(do.call("cbind",PP))
   if(nrow(todo)>1)
     colnames(PP)=paste0("SNP.PP.H4.row",1:nrow(todo))
   else
@@ -306,6 +301,11 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @param L maximum number of signals to consider, passed to susie
 ##' @param s_init used internally to extend runs that haven't converged. don't use.
 ##' @return results of a susie_rss run, with some added dimnames
+##' @export
+##' @examples
+##' library(coloc)
+##' data(coloc_test_data)
+##' result=runsusie(coloc_test_data$D1)
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
                   r2.prune=NULL,s_init=NULL) {

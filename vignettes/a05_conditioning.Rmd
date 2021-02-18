@@ -1,62 +1,24 @@
 ---
-title: "Coloc: relaxing the single causal variant assumption"
+title: "DEPRECATED Coloc: relaxing the single causal variant assumption"
 author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Coloc: relaxing the single causal variant assumption}
+  %\VignetteIndexEntry{DEPRECATED Coloc: relaxing the single causal variant assumption}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-```{r sim, child="simdata.Rmd", echo = FALSE }
-```
 
 # Multiple causal variants 
 
 *This describes deprecated functions - the [SuSiE approach](a06_SuSiE.html) is more accurate and should be used instead*
 
-First, we use the above-simulated data (which contains a single colocalising variant) as a template to generate an additional set of SNPs within which one variant is causal for only one of the two traits.
+We load some simulated data.
 
 ```{r   }
-Y1 <- data@df1$Y
-Y2 <- data@df2$Y
-Y3 <- sample(data@df2$Y) # Y3 is unassociated with anything in X2
-
-X1 <- as.matrix(data@df1[,-1])
-X2 <- as.matrix(data@df2[,-1])
-
-tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
-tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
-tests3 <- lapply(1:ncol(X2), function(i) summary(lm(Y3 ~ X2[,i]))$coefficients[2,])
-
-p1 <- sapply(tests1,"[",4)
-p2 <- sapply(tests2,"[",4)
-p3 <- sapply(tests3,"[",4)
-
-# we are going to double the number of SNPs so that Y1 has a causal
-# variant in each block (tests1, duplicated) and Y2 has a shared
-# causal variant in block 1 only (tests2) and not block 2 (tests3)
-
-snpnames=make.unique(rep(colnames(X2),2))
-maf <- rep(colMeans(X2)/2,2) 
-names(maf) <- snpnames
-LD0 <- LD1 <- cor(X2)
-nsnp=ncol(X2)
-dimnames(LD1)=list(snpnames[-c(1:nsnp)],snpnames[-c(1:nsnp)])
-LD01=matrix(0,nsnp,nsnp,dimnames=list(snpnames[1:nsnp],snpnames[-c(1:nsnp)]))
-LD10=matrix(0,nsnp,nsnp,dimnames=list(snpnames[-c(1:nsnp)],snpnames[1:nsnp]))
-
-LD <- rbind(cbind(LD0,LD01), cbind(LD10, LD1))
-
-get.beta <- function(x,nm) {
-   beta <- sapply(x,"[",1)
-   varbeta <- sapply(x, "[", 2)^2
-   names(beta) <- names(varbeta) <- colnames(LD)
-   return(list(beta=beta,varbeta=varbeta))
-}
-b1 <- get.beta(c(tests1,tests1),colnames(LD))
-b2 <- get.beta(c(tests2,tests3),colnames(LD))
-
+library(coloc)
+data(coloc_test_data)
+attach(coloc_test_data) # contains D3, D4 that we will use in this vignette
 ```
 
 First, let us do a standard coloc (single causal variant) analysis to
@@ -67,25 +29,7 @@ right of the top left plot which are associated with only one trait.
 
 ```{r sens0, fig.width=8,fig.height=6    }
 library(coloc)
-D1 <- list(beta=b1$beta,
-    varbeta=b1$varbeta,
-    N=nrow(X1),
-    sdY=sd(Y1),
-    type="quant",
-    MAF=maf,
-    LD=LD,
-    snp=names(b1$beta),
-    position=1:length(b1$beta))
-D2 <- list(beta=b2$beta,
-    varbeta=b2$varbeta,
-    N=nrow(X2),
-    sdY=sd(Y2),
-    type="quant",
-    MAF=maf,
-    LD=LD,
-    snp=names(b2$beta),
-    position=1:length(b1$beta))
-my.res <- coloc.abf(dataset1=D1, dataset2=D2)
+my.res <- coloc.abf(dataset1=D3, dataset2=D4)
 class(my.res)
 ## print.coloc_abf
 my.res
@@ -93,33 +37,25 @@ sensitivity(my.res,"H4 > 0.9")
 ```
 
 Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.  
-We can run SuSiE to see how many signals it finds.
+We can use =finemap.signals= to test whether there are additional signals after conditioning.
 
 ```{r}
-s1=runsusie(D1)
-finemap.susie(s1)
-s2=runsusie(D2)
-finemap.susie(s2)
-```
-SuSiE can be computationally expensive in large regions, so it is good practice to run it once  the susie_rss function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  finemap.susie() just extracts the credible sets SuSiE found and prints at most the top 5 SNPs in each.  Here, it does indeed find two signals for dataset 1 (the 75th SNP named s25.1 and the 25th SNP named s25).
-
-```{r}
-finemap.signals(D1,method="cond")
-finemap.signals(D2,method="cond")
+finemap.signals(D3,method="cond")
+finemap.signals(D4,method="cond")
 ```
 
 Note that every colocalisation conditions out every other signal except one for each trait.  For that reason, trying to colocalise many signals per trait is not recommended. Instead, use pthr to set the significance (p value) required to call a signal.  If you set if too low, you will capture signals that are non-significant, or too high and you will miss true signals.  pthr=5e-8 would correspond to a genome-wide significance level for common variants in a European study, but we typically choose a slightly relaxed pthr=1e-6 on the basis that if there is one GW-significant signal in a region, we expect there is a greater chance for secondary signals to exist.
 
 
 ```{r}
-finemap.signals(D1,method="cond",pthr=1e-20) ## too small
-finemap.signals(D2,method="cond",pthr=0.1) ## too big
+finemap.signals(D3,method="cond",pthr=1e-20) ## too small
+finemap.signals(D4,method="cond",pthr=0.1) ## too big
 ```
 
 Now we can ask coloc to consider these as separate signals using the coloc.signals() function.
 
 ```{r   }
-res <- coloc.signals(D1,D2,method="cond",p12=1e-6,pthr=1e-6)
+res <- coloc.signals(D3,D4,method="cond",p12=1e-6,pthr=1e-6)
 res
 ```
 
@@ -132,9 +68,9 @@ sensitivity(res,"H4 > 0.9",row=2)
 
 Because these signals are truly independent, we could also split them by using masking, which doesn't condition at all, but restricts the search space for colocalisation to SNPs which are not in LD with any-but-one of each signal SNP.  Here you also need to consider r2thr which sets the maximum \(r^2\) between two SNPs for them to be considered independent.
 ```{r , fig.width=8,fig.height=6   }
-finemap.signals(D1,method="mask")
-finemap.signals(D2,method="mask")
-resm=coloc.signals(D1,D2,method="mask",p12=1e-6,pthr=1e-6,r2thr=0.01)
+finemap.signals(D3,method="mask")
+finemap.signals(D4,method="mask")
+resm=coloc.signals(D3,D4,method="mask",p12=1e-6,pthr=1e-6,r2thr=0.01)
 resm
 sensitivity(resm,"H4 > 0.9",row=1)
 sensitivity(resm,"H4 > 0.9",row=2)

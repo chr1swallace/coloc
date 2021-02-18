@@ -22,7 +22,17 @@ dataset}
 values for causal association with one trait (p1, p2) or both (p12)}
 }
 \value{
-coloc.signals style result
+a list, containing elements
+\itemize{
+\item summary a data.table of posterior
+probabilities of each global hypothesis, one row per pairwise comparison
+of signals from the two traits
+\item results a data.table of detailed results giving the posterior probability
+for each snp to be jointly causal for both traits \emph{assuming H4 is true}.
+Please ignore this column if the corresponding posterior support for H4
+is not high.
+\item priors a vector of the priors used for the analysis
+}
 }
 \description{
 colocalisation with multiple causal variants via SuSiE

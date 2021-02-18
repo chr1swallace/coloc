@@ -38,6 +38,11 @@ results of a susie_rss run, with some added dimnames
 \description{
 run susie_rss storing some additional information for coloc
 }
+\examples{
+library(coloc)
+data(coloc_test_data)
+result=runsusie(coloc_test_data$D1)
+}
 \author{
 Chris Wallace
 }

@@ -1,3 +1,4 @@
+
 prior.adjust <- function(summ,newp12,p1=1e-4,p2=1e-4,p12=1e-6) {
     if(is.list(summ) && "summary" %in% names(summ))
         summ <- summ$summary
@@ -70,6 +71,8 @@ manh.plot <- function(df,wh,
 ##' @title Prior sensitivity for coloc
 ##' @param obj output of coloc.detail or coloc.process
 ##' @param rule a decision rule.  This states what values of posterior probabilities "pass" some threshold.  This is a string which will be parsed and evaluated, better explained by examples.  "H4 > 0.5" says post prob of H4 > 0.5 is a pass.  "H4 > 0.9 & H4/H3 > 3" says post prob of H4 must be > 0.9 AND it must be at least 3 times the post prob of H3."
+##' @param dataset1 optional the dataset1 used to run SuSiE. This will be used to make a Manhattan plot if plot.manhattans=TRUE.
+##' @param dataset2 optional the dataset2 used to run SuSiE. This will be used to make a Manhattan plot if plot.manhattans=TRUE.
 ##' @param npoints the number of points over which to evaluate the prior values for p12, equally spaced on a log scale between p1*p2 and min(p1,p2) - these are logical limits on p12, but not scientifically sensible values.
 ##' @param doplot draw the plot. set to FALSE if you want to just evaluate the prior and posterior matrices and work with them yourself
 ##' @param plot.manhattans if TRUE, show Manhattans of input data
@@ -103,7 +106,7 @@ sensitivity <- function(obj,rule="",
       multiple=TRUE
       results[["SNP.PP.H4"]]  <- results[[paste0("SNP.PP.H4.row",row)]]
     }
-    if(paste0("z.df.row",row) %in% names(results)) { # might be passed here or in separate dataset objects
+    if(paste0("z.df1.row",row) %in% names(results)) { # might be passed here or in separate dataset objects
       results[["z.df1"]]  <- results[[paste0("z.df1.row",row)]]
       results[["z.df2"]]  <- results[[paste0("z.df2.row",row)]]
     } else {

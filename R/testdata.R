@@ -10,7 +10,6 @@
 #'   of what a coloc-style dataset for a quantitative trait should look like.
 #'
 #' @keywords datasets
-#'
 #' @examples
 #' data(coloc_test_data)
 #' names(coloc_test_data)

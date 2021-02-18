@@ -1,4 +1,4 @@
-
+globalVariables(c("variable","pp","position","value"))
 
                                         # ds1: dataset1
 # ds2: dataset2
@@ -214,8 +214,8 @@ coeff.plot <- function(b1,b2,s1,s2,eta,lower=NULL,upper=NULL,add=NULL,alpha=NULL
 ##' @param ... other arguments
 ##' @return ggplot object
 ##' @docType methods
+##' @S3method plot coloc_abf
 ##' @rdname plot-methods
-##' @export
 ##' @author Chris Wallace
 plot.coloc_abf <- function(x,...) {
   x=x$results

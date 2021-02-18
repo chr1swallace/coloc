@@ -1,4 +1,4 @@
-
+globalVariables("pvalues")
 
 
 ##' Bayesian colocalisation analysis, detailed output
