@@ -8,6 +8,13 @@
 
 <title>Finemap multiple signals in a single dataset — finemap.signals • coloc</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -43,6 +50,7 @@
 <meta property="og:description" content="This is an analogue to finemap.abf, adapted to find multiple
 signals where they exist, via conditioning or masking - ie a
 stepwise procedure" />
+<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png" />
 
 
 
@@ -74,7 +82,7 @@ stepwise procedure" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
       </span>
     </div>
 
@@ -109,7 +117,7 @@ stepwise procedure" />
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -163,31 +171,30 @@ stepwise procedure</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>D</th>
-      <td><p>list of summary stats for a single disease, as defined
-for coloc.abf</p></td>
+      <td><p>list of summary stats for a single disease, see
+<a href='check.dataset.html'>check.dataset</a></p></td>
     </tr>
     <tr>
       <th>LD</th>
-      <td><p>matrix of signed r values (not rsq!) giving correlation
-between SNPs</p></td>
+      <td><p>matrix of signed r values (not rsq!) giving correlation between
+SNPs</p></td>
     </tr>
     <tr>
       <th>method</th>
-      <td><p>if method="cond", then use conditioning to coloc
-multiple signals.  The default is mask - this is less
-powerful, but safer because it does not assume that the LD
-matrix is properly allelically aligned to estimated effect</p></td>
+      <td><p>if method="cond", then use conditioning to coloc multiple
+signals. The default is mask - this is less powerful, but safer because it
+does not assume that the LD matrix is properly allelically aligned to
+estimated effect</p></td>
     </tr>
     <tr>
       <th>r2thr</th>
-      <td><p>if mask==TRUE, all snps will be masked with r2 &gt;
-r2thr with any sigsnps. Otherwise ignored</p></td>
+      <td><p>if mask==TRUE, all snps will be masked with r2 &gt; r2thr with any
+sigsnps. Otherwise ignored</p></td>
     </tr>
     <tr>
       <th>sigsnps</th>
-      <td><p>SNPs already deemed significant, to condition on or
-mask, expressed as a numeric vector, whose <em>names</em> are the snp
-names</p></td>
+      <td><p>SNPs already deemed significant, to condition on or mask,
+expressed as a numeric vector, whose <em>names</em> are the snp names</p></td>
     </tr>
     <tr>
       <th>pthr</th>
@@ -195,20 +202,18 @@ names</p></td>
     </tr>
     <tr>
       <th>maxhits</th>
-      <td><p>maximum depth of conditioning. procedure will stop
-if p &gt; pthr OR abs(z)&lt;zthr OR maxhits hits have been found.</p></td>
+      <td><p>maximum depth of conditioning. procedure will stop if p &gt;
+pthr OR abs(z)&lt;zthr OR maxhits hits have been found.</p></td>
     </tr>
     <tr>
       <th>mask</th>
-      <td><p>use masking if TRUE, otherwise conditioning. defaults
-to TRUE</p></td>
+      <td><p>use masking if TRUE, otherwise conditioning. defaults to TRUE</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list of successively significant fine mapped SNPs, named
-by the SNPs</p>
+    <p>list of successively significant fine mapped SNPs, named by the SNPs</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
