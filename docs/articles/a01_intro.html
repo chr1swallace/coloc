@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
       <h1 data-toc-skip>Coloc: a package for colocalisation analyses</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2020-04-29</h4>
+            <h4 class="date">2021-02-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a01_intro.Rmd"><code>vignettes/a01_intro.Rmd</code></a></small>
       <div class="hidden name"><code>a01_intro.Rmd</code></div>
@@ -114,7 +114,7 @@
 <div id="proportional-testing" class="section level2">
 <h2 class="hasAnchor">
 <a href="#proportional-testing" class="anchor"></a>Proportional testing</h2>
-<p>First, the proportional approach uses the fact that for two traits sharing causal variants, regression coefficients for either trait against any set of SNPs in the neighbourhood of those variants must be proportional. This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> in the context of evaluating whether expression of the gene <em>RPS26</em> mediated the association of type 1 diabetes to a region on chromosome 12q13 as had recently been proposed. The test addressed a common issue in genetics, and meant researchers could avoid the need to squint at parallel manhattan plots to decide whether two traits share causal variants. The function <code><a href="../reference/coloc.test.html">coloc.test()</a></code> in this package evolved from code released by Vincent, but no longer available.</p>
+<p>First, the proportional approach uses the fact that for two traits sharing causal variants, regression coefficients for either trait against any set of SNPs in the neighbourhood of those variants must be proportional. This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> in the context of evaluating whether expression of the gene <em>RPS26</em> mediated the association of type 1 diabetes to a region on chromosome 12q13 as had recently been proposed. The test addressed a common issue in genetics, and meant researchers could avoid the need to squint at parallel manhattan plots to decide whether two traits share causal variants. The function <code><a href="../reference/coloc.test.html">coloc.test()</a></code> in this package evolved from code released by Vincent, but no longer available.</p>
 <p>However, choosing <strong>which</strong> SNPs to use for the test is a problem. The obvious choice is to use those most strongly associated with one or other trait to maximise information, but doing so induces bias in the regression coefficients, which in turn leads to increased likelihood of spuriously rejecting the null of colocalisation, ie a quite substantially increased type 1 error rate <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>. I proposed two alternatives to address this problem, either using a principal component summary of genetic variation in the region to overcome the need to select a small set of test SNPs, implemented in <code>coloc.pcs()</code> and associated functions. <!-- A method which uses the ideas of Bayesian model --> <!-- averaging to average p values over SNP selections, generating --> <!-- posterior predictive p values, implemented in `coloc.bma()`, has been removed because it depends on a package that produces errors on CRAN. --></p>
 <p>See vignette: <a href="a02_proportionality.html">proportionality</a></p>
 </div>

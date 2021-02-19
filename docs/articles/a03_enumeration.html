@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
       <h1 data-toc-skip>Coloc: enumeration of configurations under a single causal variant assumption</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2020-04-29</h4>
+            <h4 class="date">2021-02-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a03_enumeration.Rmd"><code>vignettes/a03_enumeration.Rmd</code></a></small>
       <div class="hidden name"><code>a03_enumeration.Rmd</code></div>
@@ -106,13 +106,11 @@
 
     
     
-<blockquote>
 <p>vignette: &gt; % % %</p>
-</blockquote>
 <div id="simulate-a-small-dataset" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
 <span class="no">simx</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">nsnps</span>,<span class="no">nsamples</span>,<span class="no">S</span>,<span class="no">maf</span><span class="kw">=</span><span class="fl">0.1</span>) {
     <span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0</span>,<span class="no">nsnps</span>)
     <span class="no">rawvars</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="kw">n</span><span class="kw">=</span><span class="no">nsamples</span>, <span class="kw">mean</span><span class="kw">=</span><span class="no">mu</span>, <span class="kw">sigma</span><span class="kw">=</span><span class="no">S</span>)
@@ -153,9 +151,9 @@
 <a href="#fine-mapping-under-a-single-causal-variant-assumption" class="anchor"></a>Fine mapping under a single causal variant assumption</h1>
 <p>The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared. Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.</p>
 <p>First we analyse a single trait from our simulated data to generate summary statistics:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
 <pre><code>## This is a new update to coloc.</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
 <span class="no">X1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">data</span>@<span class="kw">df1</span>[,-<span class="fl">1</span>])
 <span class="no">tests1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="fl">1</span>:<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">X1</span>), <span class="kw">function</span>(<span class="no">i</span>) <span class="fu"><a href="../reference/eta.html">summary</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">Y1</span> ~ <span class="no">X1</span>[,<span class="no">i</span>]))$<span class="no">coefficients</span>[<span class="fl">2</span>,])
 <span class="no">p1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">tests1</span>,<span class="st">"["</span>,<span class="fl">4</span>)
@@ -168,7 +166,7 @@
 }
 <span class="no">b1</span> <span class="kw">&lt;-</span> <span class="fu">get.beta</span>(<span class="no">tests1</span>)</pre></body></html></div>
 <p>Then we analyse them:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="kw">dataset</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>))
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="kw">dataset</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>))
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>##            V.         z.        r.     lABF.   snp prior       SNP.PP
 ## 1 0.002248351  0.5101674 0.9756883 -1.731428 SNP.1 1e-04 9.675623e-18
@@ -177,7 +175,7 @@
 ## 4 0.002225538  0.4669162 0.9759291 -1.756994 SNP.4 1e-04 9.431394e-18
 ## 5 0.002161220 -0.2858021 0.9766084 -1.837804 SNP.5 1e-04 8.699221e-18
 ## 6 0.002167510  0.4312465 0.9765420 -1.785466 SNP.6 1e-04 9.166650e-18</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>##             V.         z.        r.     lABF.    snp  prior       SNP.PP
 ## 46 0.002176805  0.2602080 0.9764437 -1.841125 SNP.46 0.0001 8.670377e-18
 ## 47 0.002122981  0.3517147 0.9770128 -1.825979 SNP.47 0.0001 8.802699e-18
@@ -228,7 +226,7 @@
 </ul>
 <p>If regression coefficients and their variance are available, please use these, but we can also approximate Bayes Factors from p values and minor allele frequencies, although, note, such approximation can be less accurate when imputed data are used. NB, you can mix and match, depending on the data available from each study.</p>
 <p>A wrapper function is avalailable to run all these steps but we will first generate the p values manually to give all the details. We will calculate the coefficients and their standard errors, and the set of p values, to compare analysis of the two types of input data (but you should use only one - the coefficients if available, otherwise the p values).</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
 <span class="no">Y2</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df2</span>$<span class="no">Y</span>
 
 <span class="no">X1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">data</span>@<span class="kw">df1</span>[,-<span class="fl">1</span>])
@@ -251,13 +249,12 @@
 <span class="no">b2</span> <span class="kw">&lt;-</span> <span class="fu">get.beta</span>(<span class="no">tests2</span>)</pre></body></html></div>
 <p>Note that we are using the second dataset in that case to compute the minor allele frequencies. This is unlikely to make any significant difference but one could have used dataset 1 instead. It is now possible to compute the probabilities of interest.</p>
 <p>With coefficients, and std. deviation of Y known, we have the most accurate inference. Note that if you have a case-control trait, set type=“cc” and supply s, the proportion of samples in the dataset that are cases (from which sdY can be derived), instead of giving sdY directly.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>),
+                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>))</pre></body></html></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-37  2.59e-25  5.47e-16  2.41e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -272,9 +269,8 @@
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 5.000000e+01 1.413084e-37 2.585470e-25 5.465483e-16 2.410934e-11 1.000000e+00</code></pre>
 <p>When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>),
+                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>))</pre></body></html></div>
 <pre><code>## Warning in sdY.est(d$varbeta, d$MAF, d$N): estimating sdY from maf and varbeta,
 ## please directly supply sdY if known
 
@@ -283,7 +279,7 @@
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-37  2.58e-25  5.45e-16  2.41e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -296,15 +292,14 @@
 <pre><code>## 
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
-## 5.000000e+01 1.408198e-37 2.582454e-25 5.452944e-16 2.405891e-11 1.000000e+00</code></pre>
+## 5.000000e+01 1.408198e-37 2.582454e-25 5.452944e-16 2.405889e-11 1.000000e+00</code></pre>
 <p>When only p values are available, we can use the form:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">pvalues</span><span class="kw">=</span><span class="no">p1</span>,<span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">pvalues</span><span class="kw">=</span><span class="no">p2</span>,<span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
-                    <span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb32"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">pvalues</span><span class="kw">=</span><span class="no">p1</span>,<span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>),
+                    <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">pvalues</span><span class="kw">=</span><span class="no">p2</span>,<span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>,<span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>))</pre></body></html></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  2.36e-37  3.78e-25  6.24e-16  2.62e-11  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb34"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -317,7 +312,22 @@
 <pre><code>## 
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
-## 5.000000e+01 2.356833e-37 3.778986e-25 6.236681e-16 2.622332e-11 1.000000e+00</code></pre>
+## 5.000000e+01 2.356833e-37 3.778986e-25 6.236681e-16 2.622333e-11 1.000000e+00</code></pre>
+<p>Note that if you do find strong evidence for H4, we can extract the posterior probabilities for each SNP to be causal <em>conditional on H4 being true</em>. This is part of the calculation required by coloc, and contained in the column SNP.PP.H4 in the “results” element of the returned list. So we can extract the more likely causal variants by</p>
+<div class="sourceCode" id="cb42"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">my.res</span>$<span class="no">results</span>,<span class="no">SNP.PP.H4</span><span class="kw">&gt;</span><span class="fl">0.01</span>)</pre></body></html></div>
+<pre><code>##       snp  pvalues.df1 MAF.df1 N.df1        V.df1    z.df1     r.df1 lABF.df1
+## 18 SNP.25 3.264582e-19 0.10205 10000 0.0005456383 8.959397 0.9763236  37.3135
+##     pvalues.df2 MAF.df2 N.df2        V.df2    z.df2     r.df2 lABF.df2
+## 18 9.561723e-29 0.10205 10000 0.0005456383 11.12424 0.9763236 58.53776
+##    internal.sum.lABF SNP.PP.H4
+## 18          95.85126         1</code></pre>
+<p>or the 95% credible set by</p>
+<div class="sourceCode" id="cb44"><html><body><pre class="r"><span class="no">o</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span>(<span class="no">my.res</span>$<span class="no">results</span>$<span class="no">SNP.PP.H4</span>,<span class="kw">decreasing</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<span class="no">cs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">my.res</span>$<span class="no">results</span>$<span class="no">SNP.PP.H4</span>[<span class="no">o</span>])
+<span class="no">w</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="no">cs</span> <span class="kw">&gt;</span> <span class="fl">0.95</span>)[<span class="fl">1</span>]
+<span class="no">my.res</span>$<span class="no">results</span>[<span class="no">o</span>,][<span class="fl">1</span>:<span class="no">w</span>,]$<span class="no">snp</span></pre></body></html></div>
+<pre><code>## [1] SNP.25
+## 50 Levels: SNP.1 SNP.10 SNP.11 SNP.12 SNP.13 SNP.14 SNP.15 SNP.16 ... SNP.9</code></pre>
 </div>
 </div>
   </div>

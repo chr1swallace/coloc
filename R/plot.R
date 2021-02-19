@@ -1,4 +1,4 @@
-
+globalVariables(c("variable","pp","position","value"))
 
                                         # ds1: dataset1
 # ds2: dataset2
@@ -13,6 +13,12 @@
 ymin <- NULL
 ymax <- NULL
 
+plot.dataset <- function(d) {
+  if(!("bp" %in% names(d)))
+    stop("no bp element given")
+  p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2
+  plot(d$bp,-log10(p),xlab="bp")
+}
 
 ##' Print summary of a coloc.abf run
 ##'
@@ -59,60 +65,60 @@ print.coloc_abf <- function(x,...) {
     invisible(x)
 }
     
-##' Plot results of a coloc.abf run
-##'
-##' If obj is missing, it will be created as obj=coloc.abf(ds1,ds2).  Both ds1 and ds2 should contain the same snps in the same order
-##' @title plot.coloc_abf
-##' @param obj object of class \code{colocABF} returned by coloc.abf()
-##' @param Pos positions of all snps in ds1 or in ds2
-##' @param chr Chromosome
-##' @param pos.start lower bound of positions
-##' @param pos.end upper bound of positions
-##' @param trait1 name of trait 1
-##' @param trait2 name of trait 2   
-##' @return a ggplot object
-##' @author Hui Guo, Chris Wallace
-##' @docType methods
-##' @rdname plot-methods
-plot.coloc_abf <- function(obj, Pos=1:nrow(obj$results),
-                     chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
-                     trait1="trait 1", trait2="trait 2") {
+## ##' Plot results of a coloc.abf run
+## ##'
+## ##' @title plot.coloc_abf
+## ##' @param obj object of class \code{colocABF} returned by coloc.abf()
+## ##' @param Pos positions of all snps in ds1 or in ds2
+## ##' @param chr Chromosome
+## ##' @param pos.start lower bound of positions
+## ##' @param pos.end upper bound of positions
+## ##' @param trait1 name of trait 1
+## ##' @param trait2 name of trait 2
+## ##' @return a ggplot object
+## ##' @export
+## ##' @author Hui Guo, Chris Wallace
+## ##' @docType methods
+## ##' @rdname plot-methods
+## plot.coloc_abf <- function(obj, Pos=1:nrow(obj$results),
+##                      chr=NULL, pos.start=min(Pos), pos.end=max(Pos),
+##                      trait1="trait 1", trait2="trait 2") {
 
   
-  d.pp1 = signif(obj$summary["PP.H1.abf"], 3)
-  d.pp2 = signif(obj$summary["PP.H2.abf"], 3)
-  d.pp4 = signif(obj$summary["PP.H4.abf"], 3)
-  df = obj$results
+##   d.pp1 = signif(obj$summary["PP.H1.abf"], 3)
+##   d.pp2 = signif(obj$summary["PP.H2.abf"], 3)
+##   d.pp4 = signif(obj$summary["PP.H4.abf"], 3)
+##   df = obj$results
   
-    df$pp1 <- exp(df$lABF.df1 - logsum(df$lABF.df1))
-    df$pp2 <- exp(df$lABF.df2 - logsum(df$lABF.df2))
-    if(!("position" %in% colnames(df)))
-       df$position <- Pos
+##     df$pp1 <- exp(df$lABF.df1 - logsum(df$lABF.df1))
+##     df$pp2 <- exp(df$lABF.df2 - logsum(df$lABF.df2))
+##     if(!("position" %in% colnames(df)))
+##        df$position <- Pos
 
-  df <- melt(df[,c("snp","position","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","position"))
-  df$variable <- sub("pp1", paste0("H1 (", trait1, "), PP = ", d.pp1) ,df$variable)
-  df$variable <- sub("pp2", paste0("H2 (", trait2, ") PP = ", d.pp2) ,df$variable)
-  df$variable <- sub("SNP.PP.H4", paste0("H4 (Both) = PP ", d.pp4) ,df$variable)
+##   df <- melt(df[,c("snp","position","pp1","pp2","SNP.PP.H4")], id.vars=c("snp","position"))
+##   df$variable <- sub("pp1", paste0("H1 (", trait1, "), PP = ", d.pp1) ,df$variable)
+##   df$variable <- sub("pp2", paste0("H2 (", trait2, ") PP = ", d.pp2) ,df$variable)
+##   df$variable <- sub("SNP.PP.H4", paste0("H4 (Both) = PP ", d.pp4) ,df$variable)
 
 
-  ## identify and label the top 3 SNPs that have highest pp1, pp2 or pp4
+##   ## identify and label the top 3 SNPs that have highest pp1, pp2 or pp4
   
-  df.ord = df[order(df$value, decreasing=TRUE), ]
-  snps = unique(df.ord$snp)[1:3]
+##   df.ord = df[order(df$value, decreasing=TRUE), ]
+##   snps = unique(df.ord$snp)[1:3]
 
-    label <- NULL # avoid R CMD check NOTE
-  df$label <- ifelse(df$snp %in% snps, df$snp,"")
-  ttl <- paste0(trait1, ' & ', trait2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
+##     label <- NULL # avoid R CMD check NOTE
+##   df$label <- ifelse(df$snp %in% snps, df$snp,"")
+##   ttl <- paste0(trait1, ' & ', trait2, ' (chr', chr, ': ', pos.start, '-', pos.end, ')')
  
-  ggplot(df, aes_string(x="position",y="value")) +
-    geom_point(data=subset(df,label==""),size=1.5) +
-    geom_point(data=subset(df,label!=""),col="red",size=1.5) +
-    geom_text(aes_string(label="label"),hjust=-0.1,vjust=0.5,size=2.5,col="red") +
-    facet_grid(variable ~ .) +
-    theme(legend.position="none") + xlab(paste("Chromosome", chr, sep=' ')) + ylab("Posterior probability") + 
-    ggtitle(ttl)
+##   ggplot(df, aes_string(x="position",y="value")) +
+##     geom_point(data=subset(df,label==""),size=1.5) +
+##     geom_point(data=subset(df,label!=""),col="red",size=1.5) +
+##     geom_text(aes_string(label="label"),hjust=-0.1,vjust=0.5,size=2.5,col="red") +
+##     facet_grid(variable ~ .) +
+##     theme(legend.position="none") + xlab(paste("Chromosome", chr, sep=' ')) + ylab("Posterior probability") +
+##     ggtitle(ttl)
     
-}
+## }
 
 
 
@@ -200,13 +206,16 @@ coeff.plot <- function(b1,b2,s1,s2,eta,lower=NULL,upper=NULL,add=NULL,alpha=NULL
 ##     segments(c1[,5],c2[,5],c1[,1],c2[,1],col="blue",lty=3)
 ##   }
 }
+
 ##' plot a coloc_abf object
 ##'
 ##' @title plot a coloc_abf object
 ##' @param x coloc_abf object to be plotted
 ##' @param ... other arguments
 ##' @return ggplot object
-##' @export
+##' @docType methods
+##' @S3method plot coloc_abf
+##' @rdname plot-methods
 ##' @author Chris Wallace
 plot.coloc_abf <- function(x,...) {
   x=x$results

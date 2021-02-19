@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
       <h1 data-toc-skip>Coloc: relaxing the single causal variant assumption</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2020-04-29</h4>
+            <h4 class="date">2021-02-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a05_conditioning.Rmd"><code>vignettes/a05_conditioning.Rmd</code></a></small>
       <div class="hidden name"><code>a05_conditioning.Rmd</code></div>
@@ -106,13 +106,11 @@
 
     
     
-<blockquote>
 <p>vignette: &gt; % % %</p>
-</blockquote>
 <div id="simulate-a-small-dataset" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
 <span class="no">simx</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">nsnps</span>,<span class="no">nsamples</span>,<span class="no">S</span>,<span class="no">maf</span><span class="kw">=</span><span class="fl">0.1</span>) {
     <span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0</span>,<span class="no">nsnps</span>)
     <span class="no">rawvars</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="kw">n</span><span class="kw">=</span><span class="no">nsamples</span>, <span class="kw">mean</span><span class="kw">=</span><span class="no">mu</span>, <span class="kw">sigma</span><span class="kw">=</span><span class="no">S</span>)
@@ -152,7 +150,7 @@
 <h1 class="hasAnchor">
 <a href="#multiple-causal-variants" class="anchor"></a>Multiple causal variants</h1>
 <p>First, we use the above-simulated data (which contains a single colocalising variant) as a template to generate an additional set of SNPs within which one variant is causal for only one of the two traits.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df1</span>$<span class="no">Y</span>
 <span class="no">Y2</span> <span class="kw">&lt;-</span> <span class="no">data</span>@<span class="kw">df2</span>$<span class="no">Y</span>
 <span class="no">Y3</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span>(<span class="no">data</span>@<span class="kw">df2</span>$<span class="no">Y</span>) <span class="co"># Y3 is unassociated with anything in X2</span>
 
@@ -191,9 +189,9 @@
 <span class="no">b1</span> <span class="kw">&lt;-</span> <span class="fu">get.beta</span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">tests1</span>,<span class="no">tests1</span>),<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">LD</span>))
 <span class="no">b2</span> <span class="kw">&lt;-</span> <span class="fu">get.beta</span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">tests2</span>,<span class="no">tests3</span>),<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">LD</span>))</pre></body></html></div>
 <p>First, let us do a standard coloc (single causal variant) analysis to serve as a baseline comparison. The analysis concludes there is colocalisation, because it “sees” the SNPs on the left which are strongly associated with both traits. But it misses the SNPs on the right of the top left plot which are associated with only one trait.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
 <pre><code>## This is a new update to coloc.</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">D1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>,
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">D1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>,
     <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>,
     <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),
     <span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),
@@ -215,9 +213,9 @@
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-37  5.17e-25  5.46e-16  9.99e-04  9.99e-01 
 ## [1] "PP abf for shared variant: 99.9%"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>## [1] "coloc_abf" "list"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## print.coloc_abf</span>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="co">## print.coloc_abf</span>
 <span class="no">my.res</span></pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
@@ -232,32 +230,32 @@
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 1.000000e+02 1.411672e-37 5.165774e-25 5.460023e-16 9.990010e-04 9.990010e-01</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="st">"H4 &gt; 0.9"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="st">"H4 &gt; 0.9"</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a05_conditioning_files/figure-html/sens0-1.png" width="768"></p>
 <p>Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.<br>
 We can formally check for evidence for secondary signals for each trait. finemap.signals() identifies SNPs which are independently associated in a dataset, and prints the snp names together with the z score. It is used within coloc.signals to identify separate signal SNPs, and run colocalisation as many times as needed to try and colocalise each pair of signals, but can also be run individually</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>)</pre></body></html></div>
 <pre><code>##      s25    s25.1 
 ## 8.977636 9.325097</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>)</pre></body></html></div>
 <pre><code>##      s25 
 ## 11.15903</code></pre>
 <p>Note that every colocalisation conditions out every other signal except one for each trait. For that reason, trying to colocalise many signals per trait is not recommended. Instead, use pthr to set the significance (p value) required to call a signal. If you set if too low, you will capture signals that are non-significant, or too high and you will miss true signals. pthr=5e-8 would correspond to a genome-wide significance level for common variants in a European study, but we typically choose a slightly relaxed pthr=1e-6 on the basis that if there is one GW-significant signal in a region, we expect there is a greater chance for secondary signals to exist.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-20</span>) <span class="co">## too small</span></pre></body></html></div>
+<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-20</span>) <span class="co">## too small</span></pre></body></html></div>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">0.1</span>) <span class="co">## too big</span></pre></body></html></div>
+<div class="sourceCode" id="cb26"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">0.1</span>) <span class="co">## too big</span></pre></body></html></div>
 <pre><code>##       s25     s28.1     s39.1 
 ## 11.159032  2.698084 -3.033356</code></pre>
 <p>Now we can ask coloc to consider these as separate signals using the coloc.signals() function.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.signals.html">coloc.signals</a></span>(<span class="no">D1</span>,<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">p12</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-6</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb28"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.signals.html">coloc.signals</a></span>(<span class="no">D1</span>,<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"cond"</span>,<span class="kw">p12</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-6</span>)</pre></body></html></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.40e-36  5.12e-24  5.41e-15  9.90e-03  9.90e-01 
 ## [1] "PP abf for shared variant: 99%"
 ## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  6.11e-36  2.59e-22  2.36e-14  1.00e+00  3.74e-17 
 ## [1] "PP abf for shared variant: 3.74e-15%"</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
+<div class="sourceCode" id="cb30"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -276,20 +274,20 @@ We can formally check for evidence for secondary signals for each trait. finemap
 ## 1: 9.803922e-01
 ## 2: 3.742970e-17</code></pre>
 <p>Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">1</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb38"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">1</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a05_conditioning_files/figure-html/sens-1.png" width="768"></p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb40"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <pre><code>## Results fail decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a05_conditioning_files/figure-html/sens-2.png" width="768"></p>
 <p>Because these signals are truly independent, we could also split them by using masking, which doesn’t condition at all, but restricts the search space for colocalisation to SNPs which are not in LD with any-but-one of each signal SNP. Here you also need to consider r2thr which sets the maximum <span class="math inline">\(r^2\)</span> between two SNPs for them to be considered independent.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb42"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D1</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>)</pre></body></html></div>
 <pre><code>##      s25    s25.1 
 ## 8.977636 8.977636</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb44"><html><body><pre class="r"><span class="fu"><a href="../reference/finemap.signals.html">finemap.signals</a></span>(<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>)</pre></body></html></div>
 <pre><code>##      s25 
 ## 11.15903</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">resm</span><span class="kw">=</span><span class="fu"><a href="../reference/coloc.signals.html">coloc.signals</a></span>(<span class="no">D1</span>,<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>,<span class="kw">p12</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">r2thr</span><span class="kw">=</span><span class="fl">0.01</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb46"><html><body><pre class="r"><span class="no">resm</span><span class="kw">=</span><span class="fu"><a href="../reference/coloc.signals.html">coloc.signals</a></span>(<span class="no">D1</span>,<span class="no">D2</span>,<span class="kw">method</span><span class="kw">=</span><span class="st">"mask"</span>,<span class="kw">p12</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">pthr</span><span class="kw">=</span><span class="fl">1e-6</span>,<span class="kw">r2thr</span><span class="kw">=</span><span class="fl">0.01</span>)</pre></body></html></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.40e-36  5.12e-24  5.41e-15  9.90e-03  9.90e-01 
 ## [1] "PP abf for shared variant: 99%"</code></pre>
@@ -297,7 +295,7 @@ We can formally check for evidence for secondary signals for each trait. finemap
 <pre><code>## dropping 0/100 : 0 + 0</code></pre>
 <pre><code>## 2</code></pre>
 <pre><code>## dropping 35/100 : 35 + 0</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">resm</span></pre></body></html></div>
+<div class="sourceCode" id="cb52"><html><body><pre class="r"><span class="no">resm</span></pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -315,10 +313,10 @@ We can formally check for evidence for secondary signals for each trait. finemap
 ##              H4
 ## 1: 9.803922e-01
 ## 2: 6.033737e-25</code></pre>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">resm</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">1</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb60"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">resm</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">1</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a05_conditioning_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">resm</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb62"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">resm</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <pre><code>## Results fail decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a05_conditioning_files/figure-html/unnamed-chunk-5-2.png" width="768"></p>
 </div>

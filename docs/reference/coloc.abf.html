@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -176,7 +176,7 @@
 
 <p>Some of these items may be missing, but you must give</p><ul>
 <li><p>always<code>type</code></p></li>
-<li><p>if <code>type</code>=="cc"<code>s</code></p></li>
+<li><p>if <code>type</code>=="cc"<code>s</code>, <code>N</code></p></li>
 <li><p>if <code>type</code>=="quant" and <code>sdY</code> known<code>sdY</code></p></li>
 <li><p>if <code>type</code>=="quant" and <code>sdY</code> unknown<code>beta</code>, <code>varbeta</code>, <code>N</code>, <code>MAF</code>
 and then either</p></li>
@@ -210,7 +210,7 @@ and then either</p></li>
 
     <p>a list of two <code>data.frame</code>s:</p><ul>
 <li><p>summary is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)</p></li>
-<li><p>results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal</p></li>
+<li><p>results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal <em>if</em> H4 is true. This is only relevant if the posterior support for H4 in summary is convincing.</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

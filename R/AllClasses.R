@@ -1,25 +1,93 @@
 ## abf
 
 
-### coloc_in class
 
-## #' Class \code{"coloc_in"} holds the list of items in a dataset used
-## #' by coloc.signals
+
+## validDataset=function(object) {
+##   errors <- character()
+
+##   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+##   req=c("snp","N","type")
+##   for(v in slotNames(object)) {
+##     if(v %in% req && !(length(slot(object,v))))
+##       errors=c(errors,"missing required element ",v)
+##     if(length(slot(object,v)) && any(is.na(object@v)))
+##         errors=c(errors, paste(v,"contains missing values"))
+##   }
+
+##   ## snps should be unique character vectors
+##   if(any(duplicated(object@snp)))
+##     errors <- c(errors,"duplicated snps found")
+##   if(is.factor(object@snp))
+##     errors <- c(errors,"snp should be a character vector but is a factor")
+
+##   ## MAF should be > 0, < 1
+##   if(length(object@MAF))
+##     if(any(is.na(object@MAF)) || any(object@MAF<=0) || any(object@MAF>=1))
+##       errors<- c(errors,"MAF should be a numeric, strictly >0 & <1")
+
+##   ## lengths of these should match
+##   l <- -1 # impossible length
+##   shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
+##   for(v in shouldmatch)
+##     if(length(slot(object,v)))
+##       if(l<0) { ## update
+##         l <- length(slot(object,v))
+##       } else { ## check
+##         if(length(slot(object,v))!=l)
+##           errors=c(errors, paste("lengths of inputs don't match: ",paste(intersect(nd, shouldmatch),collapse=",")))
+##       }
+
+##   ## sample size
+##   if(length(object@N)!=1)
+##     errors=c(errors,"sample size N not set")
+
+##   ## type of data
+##   if (length(object@type)!=1)
+##     errors=c(errors,"variable type not set")
+##   if(!(object@type %in% c("quant","cc")))
+##     errors=c(errors,"type must be quant or cc")
+
+##   ## must be able to estimate var(Y)
+##   if(object@type=="cc") {
+##     if(length(object@s)!=1)
+##       errors=c(errors,"s, proportion of samples who are cases, not found")
+##     if(object@s<=0 || object@s>=1)
+##       errors=c(errors,"s must be between 0 and 1")
+##     if(length(object@pvalues) && !length(object@MAF))
+##       errors=c(errors,"p values found, but no MAF")
+##   }
+##   if(object@type=="quant")
+##     if(!(length(object@sdY)!=1 || !length(object@MAF)))
+##       errors=c(errors,"must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+
+##   ## LD, if it exists
+##   if(nrow(object@LD)) {
+##     if(nrow(object@LD)!=ncol(object@LD))
+##       stop("LD not square")
+##     if(!identical(colnames(object@LD),rownames(object@LD)))
+##       stop("LD rownames != colnames")
+##     if(length(setdiff(object@snp,colnames(object@LD))))
+##       stop("colnames in LD do not contain all SNPs")
+##   }
+
+##   length(errors)==0
+## }
+
+## #' Class \code{"colocDataset"} holds the list of items in a dataset used by coloc.signals, coloc.susie
 ## #'
-## #'@name coloc_in-class
-## #'@aliases coloc_in-class
-## #'@docType class
-## #'@author Chris Wallace
-## #'@seealso \code{\link{coloc.abf}} \code{\link{finemap.abf}} \code{\link{coloc.signals}}
-## #'@keywords classes
-## #'@examples
-## #'showClass("coloc_in")
-## #'@exportClass coloc_in
-## setClass("coloc_in",
+## #' @name colocDataset-class
+## setClass("colocDataset",
+## ##' @title colocDataset class
+## ##' @param object a list, containing all the data needed to describe one dataset
+## ##' @return object of class colocDataset
+## ##' @author Chris Wallace
 ##          representation(beta="numeric",
 ##                         varbeta="numeric",
 ##                         MAF="numeric",
-##                         position="numeric", # optional
+##                         position="numeric",# optional
+##                         snp="character",#optional
+##                         pvalues="numeric",
 ##                         ## length 1
 ##                         N="numeric",
 ##                         type="character",
@@ -28,8 +96,11 @@
 ##                         method="character", # optional
 ##                         ## matrix nxn
 ##                         LD="matrix" # optional
-##                         ))
+##                         ),
+##          validity=validDataset)
 
+## ## x=new("colocDataset")
+## ## validDataset(x)
 
 ################################################################################
 

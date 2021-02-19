@@ -7,6 +7,8 @@
 sensitivity(
   obj,
   rule = "",
+  dataset1 = NULL,
+  dataset2 = NULL,
   npoints = 100,
   doplot = TRUE,
   plot.manhattans = TRUE,
@@ -18,6 +20,10 @@ sensitivity(
 \item{obj}{output of coloc.detail or coloc.process}
 
 \item{rule}{a decision rule.  This states what values of posterior probabilities "pass" some threshold.  This is a string which will be parsed and evaluated, better explained by examples.  "H4 > 0.5" says post prob of H4 > 0.5 is a pass.  "H4 > 0.9 & H4/H3 > 3" says post prob of H4 must be > 0.9 AND it must be at least 3 times the post prob of H3."}
+
+\item{dataset1}{optional the dataset1 used to run SuSiE. This will be used to make a Manhattan plot if plot.manhattans=TRUE.}
+
+\item{dataset2}{optional the dataset2 used to run SuSiE. This will be used to make a Manhattan plot if plot.manhattans=TRUE.}
 
 \item{npoints}{the number of points over which to evaluate the prior values for p12, equally spaced on a log scale between p1*p2 and min(p1,p2) - these are logical limits on p12, but not scientifically sensible values.}
 

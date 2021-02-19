@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
       <h1 data-toc-skip>Code to simulate a small dataset</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2020-04-29</h4>
+            <h4 class="date">2021-02-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/simdata.Rmd"><code>vignettes/simdata.Rmd</code></a></small>
       <div class="hidden name"><code>simdata.Rmd</code></div>
@@ -106,13 +106,11 @@
 
     
     
-<blockquote>
 <p>vignette: &gt; % % %</p>
-</blockquote>
 <div id="simulate-a-small-dataset" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
 <span class="no">simx</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">nsnps</span>,<span class="no">nsamples</span>,<span class="no">S</span>,<span class="no">maf</span><span class="kw">=</span><span class="fl">0.1</span>) {
     <span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0</span>,<span class="no">nsnps</span>)
     <span class="no">rawvars</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="kw">n</span><span class="kw">=</span><span class="no">nsamples</span>, <span class="kw">mean</span><span class="kw">=</span><span class="no">mu</span>, <span class="kw">sigma</span><span class="kw">=</span><span class="no">S</span>)

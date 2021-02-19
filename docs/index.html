@@ -35,7 +35,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -97,9 +97,11 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="coloc" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#coloc" class="anchor"></a>coloc</h1></div>
+
 <p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
 <div id="version-4" class="section level2">
 <h2 class="hasAnchor">
@@ -111,9 +113,10 @@
 library(remotes)
 install_github("chr1swallace/coloc")</code></pre>
 </div>
-<div id="background" class="section level2">
-<h2 class="hasAnchor">
-<a href="#background" class="anchor"></a>Background</h2>
+</div>
+<div id="background" class="section level1">
+<h1 class="hasAnchor">
+<a href="#background" class="anchor"></a>Background</h1>
 <p>The new ideas are described in</p>
 <blockquote>
 <p><a href="https://doi.org/10.1371/journal.pgen.1008720">Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720</a></p>
@@ -128,21 +131,21 @@ install_github("chr1swallace/coloc")</code></pre>
 <li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
 </li>
 </ul>
-<p><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></p>
-<p><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></p>
-<div id="to-generate-vignettes" class="section level3">
-<h3 class="hasAnchor">
-<a href="#to-generate-vignettes" class="anchor"></a>To generate vignettes:</h3>
-<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
 </div>
-<div id="to-generate-website" class="section level3">
-<h3 class="hasAnchor">
-<a href="#to-generate-website" class="anchor"></a>To generate website:</h3>
-<p><a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
+<div id="frequently-asked-questions" class="section level1">
+<h1 class="hasAnchor">
+<a href="#frequently-asked-questions" class="anchor"></a>Frequently Asked Questions</h1>
+<p>see <a href="FAQ.html">FAQ</a></p>
+</div>
+<div id="notes-to-self" class="section level1">
+<h1 class="hasAnchor">
+<a href="#notes-to-self" class="anchor"></a>Notes to self</h1>
+<p><em>to generate vignettes:</em></p>
+<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
+<p><em>to generate website:</em> <a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
 <pre><code>Rscript -e "pkgdown::build_site()"</code></pre>
 </div>
-</div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -178,7 +181,14 @@ install_github("chr1swallace/coloc")</code></pre>
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></li>
+<li><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 

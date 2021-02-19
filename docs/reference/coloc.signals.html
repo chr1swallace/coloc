@@ -74,7 +74,7 @@ masking." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-4</span>
       </span>
     </div>
 
@@ -193,7 +193,7 @@ masking.</p>
 
 <p>Some of these items may be missing, but you must give</p><ul>
 <li><p>always<code>type</code></p></li>
-<li><p>if <code>type</code>=="cc"<code>s</code></p></li>
+<li><p>if <code>type</code>=="cc"<code>s</code>, <code>N</code></p></li>
 <li><p>if <code>type</code>=="quant" and <code>sdY</code> known<code>sdY</code></p></li>
 <li><p>if <code>type</code>=="quant" and <code>sdY</code> unknown<code>beta</code>, <code>varbeta</code>, <code>N</code>, <code>MAF</code>
 and then either</p></li>
@@ -240,7 +240,9 @@ Under "allbutone" mode, they would be
 * trait 1 conditioned on A+C - trait 2
 * trait 1 conditioned on A+B - trait 2
 
-The second mode is optimal if the signals are known with
+Only iterative mode is supported for method="mask".
+
+The allbutone mode is optimal if the signals are known with
 certainty (which they never are), because it allows each
 signal to be tested without influence of the others.  When
 there is uncertainty, it may make sense to use iterative mode,
