@@ -11,7 +11,7 @@ vignette: >
 
 # Data structures
 
-  The enumeration approaches to coloc [=coloc.abf=](a03_enumeration.Rmd) and [=coloc.susie=](./a06_susie.html) require the same data format.  To be flexible, =coloc.abf= allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are.
+  The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.Rmd) and [`coloc.susie`](./a06_susie.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are.
   
 ## First: select the SNPs to study.
 
@@ -30,7 +30,7 @@ Colocalisation and fine-mapping work through evaluating approximate Bayes factor
 
 We also need a prior on the true effect sizes at causal variants, which is different depending on whether you have a quantitative or case-control (binary) trait.  To estimate a prior, we need to know the trait standard deviation (which allows us to interpret the scale of the estimated beta).
 
-Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait. =check.dataset()= returns NULL if it finds no errors.
+Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait. `check.dataset()` returns NULL if it finds no errors.
 ```{r   }
 library(coloc)
 data(coloc_test_data)
@@ -40,7 +40,7 @@ str(minimum_data)
 check.dataset(minimum_data)
 ```
 
-For a case control trait, you would need to give the =type= as "cc":
+For a case control trait, you would need to give the `type` as "cc":
 ```{r   }
 minimum_ccdata=D1[c("beta","varbeta","snp","position")]
 minimum_ccdata$type="cc"
@@ -48,7 +48,7 @@ str(minimum_ccdata)
 check.dataset(minimum_ccdata)
 ```
 
-In either case, you can see that the lengths of beta, varbeta, snp and position are the same.  They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use =as.list()= to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like =type= need to be of length 1.
+In either case, you can see that the lengths of beta, varbeta, snp and position are the same.  They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use `as.list()` to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like `type` need to be of length 1.
 
 ## What if I don't have sdY?
 
@@ -79,9 +79,9 @@ check.dataset(nobeta_ccdata)
 
 Note that coloc doesn't mind if your dataset has more entries than it minimally needs, it will use what it needs, preferring supplied beta/varbeta and sdY over estimation, and leave the rest.
 
-## Additional LD information for =coloc.susie=
+## Additional LD information for `coloc.susie`
 
-=coloc.abf= makes the simplifying assumption that each trait has at most one causal variant in the region under consideration.  This means it does not need to know about correlation (LD) between SNPs, because no model under consideration has two or more SNPs in it.  =coloc.susie= extends the functionality by allowing more than one causal variant, but this means it needs to know the LD between the SNPs.  You may be able to get this from the study data, but if not, reference data such as 1000 Genomes can be used.
+`coloc.abf` makes the simplifying assumption that each trait has at most one causal variant in the region under consideration.  This means it does not need to know about correlation (LD) between SNPs, because no model under consideration has two or more SNPs in it.  `coloc.susie` extends the functionality by allowing more than one causal variant, but this means it needs to know the LD between the SNPs.  You may be able to get this from the study data, but if not, reference data such as 1000 Genomes can be used.
 
 Our test data has an LD matrix already.  This will be a square numeric matrix of dimension equal to the number of SNPs, with dimnames corresponding to the SNP ids. 
 
@@ -90,7 +90,7 @@ str(D1$LD)
 ```
 
 ### NB studies from different populations
-One of the nice things about coloc is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region.  The same thing still applies to =coloc.susie=, just add an appropriate LD matrix to each study.
+One of the nice things about coloc is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region.  The same thing still applies to `coloc.susie`, just add an appropriate LD matrix to each study.
 
 ### NB allele order matters!
 
@@ -110,9 +110,9 @@ To avoid hassles, I recommend:
 * if using GWAS catalog data, download the [*harmonised* version](https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics) which will do this for you.
 * if using eQTL summary data that has been processed by the [eQTL catalogue](https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics), use that version because it will also be harmonised
 * Otherwise, check the alleles in your summary table match those in the information files from the LD source
-* Finally, always plot the coloc result with the [=sensitivity= function](a04_sensitivity.html) because weird effects are much easier to understand visually
+* Finally, always plot the coloc result with the [`sensitivity` function](a04_sensitivity.html) because weird effects are much easier to understand visually
 
-You can also use the coloc function =check.alignment= as a visual guide.  It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
+You can also use the coloc function `check.alignment` as a visual guide.  It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
 
 ```{r,echo=FALSE}
 goodD=D1
@@ -124,7 +124,7 @@ rsign=sample(c(1,-1),length(goodD$beta),replace=TRUE)
 badD$beta=rsign * goodD$beta
 ```
 
-```{r,echo=FALSE}
+```{r}
 par(mfrow=c(1,2))
 check.alignment(goodD)
 text(40,200,"good",col="red",cex=4)

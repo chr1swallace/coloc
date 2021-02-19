@@ -163,6 +163,6 @@ check.alignment <- function(D,thr=0.2) {
   ## plot(bprod,D$LD[D$snp,D$snp],xlab="product of z scores",ylab="LD")
   hist((bprod/D$LD)[abs(D$LD) > 0.2],
        xlab="ratio of product of Z scores to LD",
-       main="alignment check plot\nexpect most values to be positive\nsymmetry is a warning sign of potentially poor alignment")
+       main="alignment check plot\nexpect most values to be positive\nsymmetry is a warning sign\nof potentially poor alignment")
   abline(v=0,col="red")
 }
