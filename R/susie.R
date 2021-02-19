@@ -307,8 +307,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' data(coloc_test_data)
 ##' result=runsusie(coloc_test_data$D1)
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,nref=503,p=1e-4,trimz=NULL,L=10,
+runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,L=10,
                   r2.prune=NULL,s_init=NULL) {
+  if(is.null(nref))
+    stop("Please give nref, the number of samples used to estimate the LD matrix")
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
   check.dataset(d,suffix,req=c("beta","varbeta","LD","snp"))

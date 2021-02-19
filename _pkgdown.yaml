@@ -8,11 +8,13 @@ articles:
   - title: Vignettes
     navbar: ~
     contents:
+    - a00_data
     - a01_intro
     - a02_proportionality
     - a03_enumeration
     - a04_sensitivity
     - a05_conditioning
+    - a06_susie
   # menu:
   #     - text: Introduction
   #       href: articles/a01_intro

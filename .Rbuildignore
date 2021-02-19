@@ -3,7 +3,7 @@ docs
 Rjunk
 R/junkyard.R
 R/bma.R
-R/sticker.R
+inst/sticker.R
 vignettes/.*.org
 errors
 ^\.travis\.yml$

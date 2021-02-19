@@ -59,81 +59,82 @@
 ##' @return NULL if no errors found
 ##' @export
 ##' @author Chris Wallace
-check.dataset <- function(d,suffix="",req=c("snp","N")) {
-   if(!is.list(d) )
-       stop("dataset ",suffix,": is not a list")
-   nd <- names(d)
+check.dataset <- function(d,suffix="",req=c("snp")) {
+  if(!is.list(d) )
+    stop("dataset ",suffix,": is not a list")
+  nd <- names(d)
 
-   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
-   ## req <- unique(c("snp",req)) # always need snp to match now
-   n <- 0
-   for(v in nd) {
-     if(v %in% req && !(v %in% nd))
-       stop("dataset ",suffix,": missing required element ",v)
-     if(any(is.na(d[[v]])))
-       stop("dataset ",suffix,": ",v," contains missing values")
-   }
-
-   ## snps should be unique
-   if("snp" %in% nd && any(duplicated(d$snp)))
-     stop("dataset ",suffix,": duplicated snps found")
-   if("snp" %in% nd && is.factor(d$snp))
-     stop("dataset ",suffix,": snp should be a character vector but is a factor")
-
-   ## MAF should be > 0, < 1
-   if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
-                        any(d$MAF<=0) || any(d$MAF>=1)))
-     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
-
-   ## lengths of these should match
-   l <- -1 # impossible length
-   shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
-   for(v in shouldmatch)
-     if(v %in% nd)
-       if(l<0) { ## update
-         l <- length(d[[v]])
-       } else { ## check
-         if(length(d[[v]])!=l) {
-           stop("dataset ",suffix,": lengths of inputs don't match: ")
-           print(intersect(nd, shouldmatch))
-         }
-       }
-
-   ## sample size
-   if (!('N' %in% nd) || is.null(d$N) || is.na(d$N))
-       stop("dataset ",suffix,": sample size N not set")
-
-   ## type of data
-   if (! ('type' %in% nd))
-       stop("dataset ",suffix,": variable type not set")
-   if(!(d$type %in% c("quant","cc")))
-       stop("dataset ",suffix,": ","type must be quant or cc")
-
-   ## var(Y)
-   if(d$type=="cc") {
-      if(! "s" %in% nd)
-          stop("dataset ",suffix,": ","s, proportion of samples who are cases, not found")
-      if(d$s<=0 || d$s>=1)
-          stop("dataset ",suffix,": ","s must be between 0 and 1")
-      if("pvalues" %in% nd && !( "MAF" %in% nd))
-          stop("dataset ",suffix,": ","p values found, but no MAF")
-  } else {
-      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
-          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+  ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
+  ## req <- unique(c("snp",req)) # always need snp to match now
+  n <- 0
+  for(v in nd) {
+    if(v %in% req && !(v %in% nd))
+      stop("dataset ",suffix,": missing required element ",v)
+    if(any(is.na(d[[v]])))
+      stop("dataset ",suffix,": ",v," contains missing values")
   }
 
+  ## snps should be unique
+  if("snp" %in% nd && any(duplicated(d$snp)))
+    stop("dataset ",suffix,": duplicated snps found")
+  if("snp" %in% nd && is.factor(d$snp))
+    stop("dataset ",suffix,": snp should be a character vector but is a factor")
 
-   if("LD" %in% nd) {
-     if(nrow(d$LD)!=ncol(d$LD))
-       stop("LD not square")
-     if(!identical(colnames(d$LD),rownames(d$LD)))
-       stop("LD rownames != colnames")
-     if(length(setdiff(d$snp,colnames(d$LD))))
-       stop("colnames in LD do not contain all SNPs")
-   }
+  ## MAF should be > 0, < 1
+  if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
+                       any(d$MAF<=0) || any(d$MAF>=1)))
+    stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
 
-   ## if we reach here, no badness detected
-   NULL
+  ## lengths of these should match
+  l <- -1 # impossible length
+  shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
+  for(v in shouldmatch)
+    if(v %in% nd)
+      if(l<0) { ## update
+        l <- length(d[[v]])
+      } else { ## check
+        if(length(d[[v]])!=l) {
+          stop("dataset ",suffix,": lengths of inputs don't match: ")
+          print(intersect(nd, shouldmatch))
+        }
+      }
+
+  ## sample size
+  if (("N" %in% req) && (!('N' %in% nd) || is.null(d$N) || is.na(d$N)))
+    stop("dataset ",suffix,": sample size N not set")
+
+  ## type of data
+  if (! ('type' %in% nd))
+    stop("dataset ",suffix,": variable type not set")
+  if(!(d$type %in% c("quant","cc")))
+    stop("dataset ",suffix,": ","type must be quant or cc")
+
+  ## no beta/varbeta
+  if(("s" %in% nd) && (!is.numeric(d$s) || d$s<=0 || d$s>=1))
+    stop("dataset ",suffix,": ","s must be between 0 and 1")
+  if(!("beta" %in% nd) || !("varbeta" %in% nd)) { # need to estimate var (Y)
+    if(!("pvalues" %in% nd) || !( "MAF" %in% nd))
+      stop("dataset ",suffix,": ","require p values and MAF if beta, varbeta are unavailable")
+    if(d$type=="cc" && !("s" %in% nd))
+      stop("dataset ",suffix,": ","require, s, proportion of samples who are cases, if beta, varbeta are unavailable")
+  }
+
+  ## sdY
+  if(d$type=="quant" && !("sdY" %in% nd))
+    if(!("MAF" %in% nd && "N" %in% nd ))
+      stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+
+  if("LD" %in% nd) {
+    if(nrow(d$LD)!=ncol(d$LD))
+      stop("LD not square")
+    if(!identical(colnames(d$LD),rownames(d$LD)))
+      stop("LD rownames != colnames")
+    if(length(setdiff(d$snp,colnames(d$LD))))
+      stop("colnames in LD do not contain all SNPs")
+  }
+
+  ## if we reach here, no badness detected
+  NULL
 }
 
 
@@ -146,4 +147,22 @@ check.ld <- function(D,LD) {
       stop("LD rownames != colnames")
     if(length(setdiff(D$snp,colnames(LD))))
         stop("colnames in LD do not contain all SNPs")
+}
+
+##' check alignment between beta and LD
+##'
+##' @title check alignment
+##' @param D a coloc dataset
+##' @param thr plot SNP pairs in absolute LD > thr
+##' @export
+##' @return a plot for a visual check that alleles in your data are aligned the same way for the beta vector and the LD matrix
+##' @author Chris Wallace
+check.alignment <- function(D,thr=0.2) {
+  check.dataset(D)
+  bprod=outer(D$beta/sqrt(D$varbeta),D$beta/sqrt(D$varbeta),"*")
+  ## plot(bprod,D$LD[D$snp,D$snp],xlab="product of z scores",ylab="LD")
+  hist((bprod/D$LD)[abs(D$LD) > 0.2],
+       xlab="ratio of product of Z scores to LD",
+       main="alignment check plot\nexpect most values to be positive\nsymmetry is a warning sign of potentially poor alignment")
+  abline(v=0,col="red")
 }
