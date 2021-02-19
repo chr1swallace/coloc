@@ -1,7 +1,8 @@
 coloc
 =====
+# pkgdown <img src="man/figures/logo.png" align="right" />
 
-
+<img src="man/figures/logo.png" align="right" />
 
 The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
