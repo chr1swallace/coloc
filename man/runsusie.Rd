@@ -7,7 +7,7 @@
 runsusie(
   d,
   suffix = 1,
-  nref = 503,
+  nref = NULL,
   p = 1e-04,
   trimz = NULL,
   L = 10,
@@ -41,7 +41,7 @@ run susie_rss storing some additional information for coloc
 \examples{
 library(coloc)
 data(coloc_test_data)
-result=runsusie(coloc_test_data$D1)
+result=runsusie(coloc_test_data$D1,nref=500)
 }
 \author{
 Chris Wallace

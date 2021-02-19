@@ -305,7 +305,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @examples
 ##' library(coloc)
 ##' data(coloc_test_data)
-##' result=runsusie(coloc_test_data$D1)
+##' result=runsusie(coloc_test_data$D1,nref=500)
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,L=10,
                   r2.prune=NULL,s_init=NULL) {

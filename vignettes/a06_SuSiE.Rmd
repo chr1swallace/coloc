@@ -43,12 +43,12 @@ check.dataset(D3,req="LD")
 check.dataset(D4,req="LD")
 ```
 
-SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.
+SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.  We need also to supply the number of individuals used to estimate the LD matrix, =nref=.
 
 ```{r}
-S3=runsusie(D3)
+S3=runsusie(D3,nref=503)
 summary(S3)
-S4=runsusie(D4)
+S4=runsusie(D4,nref=503)
 summary(S4)
 ```
 

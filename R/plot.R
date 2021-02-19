@@ -214,7 +214,7 @@ coeff.plot <- function(b1,b2,s1,s2,eta,lower=NULL,upper=NULL,add=NULL,alpha=NULL
 ##' @param ... other arguments
 ##' @return ggplot object
 ##' @docType methods
-##' @S3method plot coloc_abf
+##' @export
 ##' @rdname plot-methods
 ##' @author Chris Wallace
 plot.coloc_abf <- function(x,...) {

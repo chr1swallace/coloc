@@ -35,7 +35,7 @@
 #' @importFrom utils combn
 #' @import data.table
 #' @importFrom viridis viridis
-#' @importFrom graphics layout legend matplot mtext rect text title
+#' @importFrom graphics layout legend matplot mtext rect text title hist
 #' @importFrom grDevices colorRampPalette palette rgb
 #' @importFrom stats pnorm uniroot
 utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1","hit2","lABF.df1","lABF.df2","lABF.h3","lbf1","lbf2","lbf3","lbf4","nsnps","snp","snp1","snp2","varbeta","z"))
