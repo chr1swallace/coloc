@@ -104,6 +104,39 @@ approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
 }
 
 
+
+##' Internal function, approx.bf.z
+##'
+##' Calculate approximate Bayes Factors using z-scores only, estimating variance as in approx.bf.p
+##' @title Internal function, approx.bf.z
+##' @param z normal deviate associated with regression coefficient and its variance
+##' @param f MAF
+##' @param type "quant" or "cc"
+##' @param N sample size
+##' @param s proportion of samples that are cases, ignored if type=="quant"
+##' @param suffix suffix to append to column names of returned data.frame
+##' @return data.frame containing lABF and intermediate calculations
+##' @author Vincent Plagnol, Chris Wallace, Jamie Inshaw
+approx.bf.z <- function(zs,f,type, N, s, suffix=NULL) {
+  if(type=="quant") {
+    sd.prior <- 0.15
+    V <- Var.data(f, N)
+  } else {
+    sd.prior <- 0.2
+    V <- Var.data.cc(f, N, s)
+  }
+  ## Shrinkage factor: ratio of the prior variance to the total variance
+  r <- sd.prior^2 / (sd.prior^2 + V)
+  ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
+  lABF = 0.5 * (log(1-r) + (r * zs^2))
+  ret <- data.frame(V,zs,r,lABF)
+  if(!is.null(suffix))
+    colnames(ret) <- paste(colnames(ret), suffix, sep=".")
+  return(ret)
+}
+
+
+
 ##' Internal function, calculate posterior probabilities for configurations, given logABFs for each SNP and prior probs
 ##'
 ##' @title combine.abf
@@ -220,8 +253,23 @@ process.dataset <- function(d, suffix) {
         df <- cbind(df,position=d$position[keep])
     return(df)  
   }
-
-  stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
+   if("zs" %in% nd & "MAF" %in% nd & "N" %in% nd) { ## no beta/varbeta but a z-score available: use z-score / MAF approximation
+    if (length(d$zs) != length(d$MAF))
+      stop('Length of the z-value vectors and MAF vector must match')
+    if(!("snp" %in% nd))
+      d$snp <- sprintf("SNP.%s",1:length(d$zs))
+    df <- data.frame(zs = d$zs,
+                     MAF = d$MAF,
+                     snp=as.character(d$snp))
+    colnames(df)[-3] <- paste(colnames(df)[-3], suffix, sep=".")
+    df <- subset(df, df$MAF>0) # all p values and MAF > 0
+    abf <- approx.bf.z(zs=df$zs, f=df$MAF, type=d$type, N=d$N, s=d$s, suffix=suffix)
+    df <- cbind(df, abf)
+    if("position" %in% nd)
+        df <- cbind(df,position=d$position)
+    return(df)
+}
+  stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)\n(zs, MAF, N, type)")
 }
 
 ##' Bayesian finemapping analysis
@@ -330,6 +378,8 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##'
 ##'   \item{MAF}{minor allele frequency of the variants}
 ##'
+##'   \item{zs}{z-score of association for each SNP in dataset 1}
+##'
 ##' \item{beta}{regression coefficient for each SNP from dataset 1}
 ##' 
 ##' \item{varbeta}{variance of beta}
@@ -352,6 +402,7 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##' \item{if \code{type}=="quant" and \code{sdY} unknown}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 ##' and then either
 ##' \item{}{\code{pvalues}, \code{MAF}}
+##' \item{}{\code{zs}, \code{MAF}}
 ##' \item{}{\code{beta}, \code{varbeta}}
 ##' }
 ##' 
