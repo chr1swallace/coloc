@@ -227,13 +227,13 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     if(all(drop)) {
       warning("snp overlap too small between datasets: too few snps with high posterior in one trait represented in other")
       return(
-        cbind(
+        list(summary=cbind(
           data.table(nsnps=length(isnps),
                      hit1=colnames(pp1)[apply(pp1,1,which.max)][todo$i],
                      hit2=colnames(pp2)[apply(pp2,1,which.max)][todo$j],
                      PP.H0.abf=pmin(ph0.1[todo$i],ph0.2[todo$j]),
                      PP.H1.abf=NA, PP.H2.abf=NA, PP.H3.abf=NA, PP.H4.abf=NA),
-          todo[,.(idx1=i,idx2=j)])
+          todo[,.(idx1=i,idx2=j)]))
       )
     }
     if(any(drop))
@@ -294,12 +294,25 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @title Run susie on a single coloc-structured dataset
 ##' @param d coloc dataset, must include LD (signed correlation matrix)
 ##' @param suffix suffix label that will be printed with any error messages
-##' @param nref number of samples in the dataset used to estimate the LD matrix in d
-##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if you set r2.prune to a value between 0 and 1, sets with index SNPs with LD > r2.prune
-##' @param p prior probability a snp is causal (equivalent to p1 or p2 in coloc.abf)
+##' @param nref number of samples in the dataset used to estimate the LD matrix
+##'   in d
+##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
+##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
+##'   > r2.prune
+##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
+##'   coloc.abf). To match coloc defaults, this is set to 1e-4. If you wish
+##'   susie to estimate this internally, set p=NULL.
 ##' @param trimz used to trim datasets for development purposes
-##' @param L maximum number of signals to consider, passed to susie
-##' @param s_init used internally to extend runs that haven't converged. don't use.
+##' @param s_init used internally to extend runs that haven't converged. don't
+##'   use.
+##' @param ... arguments passed to susie_rss. In particular, if you want to
+##'   match some coloc defaults, set
+##'
+##'   * prior_variance=0.2^2 (if a case-control trait) or (0.15/sd(Y))^2 if a
+##'   quantitative trait
+##'   * estimate_prior_variance=FALSE
+##'
+##'   otherwise susie_rss will estimate the prior variance itself
 ##' @return results of a susie_rss run, with some added dimnames
 ##' @export
 ##' @examples
@@ -307,8 +320,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' data(coloc_test_data)
 ##' result=runsusie(coloc_test_data$D1,nref=500)
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,L=10,
-                  r2.prune=NULL,s_init=NULL) {
+runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
+                  r2.prune=NULL,s_init=NULL, ...) {
   if(is.null(nref))
     stop("Please give nref, the number of samples used to estimate the LD matrix")
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
@@ -330,28 +343,20 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,L=10,
     snp=snp[keep]
   }
   converged=FALSE; maxit=100;
+  ## set some defaults for susie arguments
+  susie_args=list(...)
+  if(!is.null(p) & !("null_weight" %in% names(susie_args)))
+    susie_args$null_weight=max(1 - length(d$snp)*p, p)
   while(!converged) {
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
-      res=susie_rss(z, LD, z_ld_weight = 1/nref,
-                 ,null_weight=max(1 - length(d$snp)*p, p),
-                  ,estimate_prior_method="EM"
-                  ## ,estimate_prior_variance=estimate_prior_variance
-                  ##  ,prior_variance=0.2^2
-                    ## ,estimate_residual_variance=FALSE
-                  ## ,verbose=TRUE
-                  ,max_iter=maxit
-                  ,s_init=s_init )
+      res=do.call("susie_rss",
+                  c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit,s_init=s_init),
+                    susie_args))
     } else {
-      res=susie_rss(z, LD, z_ld_weight = 1/nref,
-                   ,null_weight=max(1 - length(d$snp)*p, p),
-                                        ,estimate_prior_method="EM",
-                    L=L
-                  ## ,estimate_prior_variance=estimate_prior_variance
-                  ##  ,prior_variance=0.2^2
-                    ## ,estimate_residual_variance=FALSE
-                    ## ,verbose=TRUE
-                   ,max_iter=maxit)
+      res=do.call("susie_rss",
+                  c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit),
+                    susie_args))
     }
     converged=res$converged; s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
