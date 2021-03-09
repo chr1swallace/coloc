@@ -416,16 +416,22 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
 }
 
 .susie_setld=function(s,ld) {
-  stmp=lapply(s, setdiff, ncol(ld)+1)
-  if(!length(stmp))
-    return(0)
-  if(length(stmp)==1)
-    return(matrix(0,1,1))
-  sld=matrix(0,length(stmp),length(stmp))
-  for(i in 2:length(stmp))
-    for(j in 1:(i-1))
-      sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2,na.rm=TRUE)
-  sld
+	stmp=lapply(s, setdiff, ncol(ld)+1)
+	if(!length(stmp))
+		return(0)
+	if(length(stmp)==1)
+		return(matrix(0,1,1))
+	sld=matrix(0,length(stmp),length(stmp))
+	for(i in 2:length(stmp)) {
+		for(j in 1:(i-1)) {
+			if(length(stmp[[i]])==0 || length(stmp[[j]]==0)) {
+				sld[i,j]=0
+			} else {
+				sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2,na.rm=TRUE)
+			}
+		}
+	}
+	sld
 }
 
 .susie_dropsets=function(res, wh) {
