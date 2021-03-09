@@ -1,4 +1,4 @@
-library(snpStats)
+if(require(snpStats)) {
 data(testdata)
 X <- Autosomes[,101:201]
 cs <- col.summary(X)
@@ -89,20 +89,4 @@ test_that("coloc.abf", {
     expect_true(result$summary[1] == ncol(X))
 })
 
-
-## alternative test data
-## colocdata<- read.table("inst/tests/test.txt", sep="\t", header=T)
-## N <- 18124
-## result <- coloc.abf(dataset1=list(beta=colocdata$beta.dataset1,
-##             varbeta=colocdata$varbeta.dataset1,
-##             type="quant",
-##             snp=colocdata$SNP,
-##             N=N),
-##           dataset2=list(beta=colocdata$beta.dataset1,
-##             varbeta=colocdata$varbeta.dataset1,
-##             type="quant",
-##             snp=colocdata$SNP,
-##             N=N),
-##           MAF=colocdata$MAF)
-
-
+}

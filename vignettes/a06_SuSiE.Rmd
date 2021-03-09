@@ -1,10 +1,10 @@
 ---
-title: "Coloc: using SuSiE to relax the single causal variant assumption"
+title: "Using SuSiE to relax the single causal variant assumption"
 author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Coloc: using SuSiE to relax the single causal variant assumption}
+  %\VignetteIndexEntry{Using SuSiE to relax the single causal variant assumption}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -46,22 +46,28 @@ check.dataset(D4,req="LD")
 SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.  We need also to supply the number of individuals used to estimate the LD matrix, =nref=.
 
 ```{r}
+if(require(susieR)) {
 S3=runsusie(D3,nref=503)
 summary(S3)
 S4=runsusie(D4,nref=503)
 summary(S4)
+}
 ```
 
 With these objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
 ```{r}
+if(require(susieR)) {
 susie.res=coloc.susie(S3,S4)
 print(susie.res$summary)
+}
 ```
 
 Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider, and we need to give it the datasets used if we want to see the Manhattan plots.
 ```{r sens, fig.width=8,fig.height=6 }
+if(require(susieR)) {
 sensitivity(susie.res,"H4 > 0.9",row=1,dataset1=D3,dataset2=D4)
 sensitivity(susie.res,"H4 > 0.9",row=2,dataset1=D3,dataset2=D4)
+}
 ```
 
 

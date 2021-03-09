@@ -1,33 +1,32 @@
 #'Colocalisation tests of two genetic traits
 #'
-#'Performs the colocalisation tests described in Plagnol et al (2009) and
-#'Wallace et al (in preparation) and draws some plots.
+#'Performs the colocalisation tests described in Giambartolomei (2012) and
+#'follow-up papers
 #'
-#'\code{coloc.test()} tests for colocalisation and returns an object of class
-#'\code{coloc}.
+#' Previously contained also tests for proportional colocalisation, but these
+#' have now been moved to the separate package coloc.prop
+#' \url{https://github.com/chr1swallace/coloc.prop}
 #'
 #'@name coloc-package
 #'@docType package
-#'@author Chris Wallace <chris.wallace@@cimr.cam.ac.uk>
-#'@references Plagnol et al (2009).  Statistical independence of the
-#'colocalized association signals for type 1 diabetes and RPS26 gene expression
-#'on chromosome 12q13. Biostatistics 10:327-34.
-#'
-#'\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
-#'
-#'Wallace et al (2013).  Statistical Testing of Shared Genetic Control
-#' for Potentially Related Traits. Genetic Epidemiology 37:802-813.
-#' 
-#'\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4158901/}
-#'
-#' Giambartolomei et al (2014).  Bayesian Test for Colocalisation between Pairs of Genetic Association Studies Using Summary Statistics.  PLOS Genet e1004383.
+#'@author Chris Wallace <cew54@cam.ac.uk>
+#'@references Giambartolomei et al (2014). Bayesian Test for Colocalisation
+#'   between Pairs of Genetic Association Studies Using Summary Statistics. PLOS
+#'   Genet e1004383.
 #'
 #'\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
-#' 
+#'
+#'Wallace C (2020) Eliciting priors and relaxing the single causal variant
+#' assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720.
+#'
+#'\url{https://doi.org/10.1371/journal.pgen.1008720}
+#'
+#'Wallace C(2021) A more accurate method for colocalisation analysis allowing
+#' for multiple causal variants bioRxiv 2021.02.23.432421;
+#'
+#'\url{https://doi.org/10.1101/2021.02.23.432421}
+#'
 #'@keywords package
-#' @importFrom BMA glib glib.data.frame
-#' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
-#' @importFrom methods setMethod setClass
 #' @import ggplot2
 #' @importFrom graphics abline axis box par
 #' @importFrom methods as is new slot
@@ -40,35 +39,3 @@
 #' @importFrom stats pnorm uniroot
 utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1","hit2","lABF.df1","lABF.df2","lABF.h3","lbf1","lbf2","lbf3","lbf4","nsnps","snp","snp1","snp2","varbeta","z"))
 NULL
-
-#'Class \code{"colocPCs"}
-#'
-#'%% ~~ A concise (1-5 lines) description of what the class is. ~~ Class
-#'designed to hold objects returned by function \code{\link{pcs.prepare}} which
-#'generates a principal component summary of two genotype matrices in a form
-#'suitable for use in the function \code{\link{pcs.model}}.
-#'
-#'
-#'@name colocPCs-class
-#'@docType class
-#'@section Objects from the Class: Objects can be created by calls to the
-#'function \code{\link{pcs.prepare}()}. %% ~~ describe objects here ~~
-#'@author Chris Wallace.
-#'@seealso \code{\link{pcs.prepare}}, \code{\link{pcs.model}}
-#'@references Wallace et al (2012).  Statistical colocalisation of monocyte
-#'gene expression and genetic risk variants for type 1 diabetes.  Hum Mol Genet
-#'21:2815-2824.  \url{http://europepmc.org/abstract/MED/22403184}
-#'
-#'Plagnol et al (2009).  Statistical independence of the colocalized
-#'association signals for type 1 diabetes and RPS26 gene expression on
-#'chromosome 12q13. Biostatistics 10:327-34.
-#'\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
-#'@keywords classes
-#'@examples
-#'
-#'showClass("colocPCs")
-#'
-NULL
-
-
-

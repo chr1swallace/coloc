@@ -8,43 +8,28 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-```{r sim, child="simdata.Rmd" }
-```
 
 # Fine mapping under a single causal variant assumption
 
 The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared.  Of course, this means we can look at each trait on its own quite simply, and we can do that with the function `finemap.abf`.
 
-First we analyse a single trait from our simulated data to generate summary statistics:
+We load some simulated data.
 
 ```{r   }
 library(coloc)
-Y1 <- data@df1$Y
-X1 <- as.matrix(data@df1[,-1])
-tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
-p1 <- sapply(tests1,"[",4)
-maf <- colMeans(X1)/2
-
-get.beta <- function(x) {
-   beta <- sapply(x,"[",1)
-   varbeta <- sapply(x, "[", 2)^2
-   return(list(beta=beta,varbeta=varbeta))
-}
-b1 <- get.beta(tests1)
+data(coloc_test_data)
+attach(coloc_test_data) # contains D1, D2 that we will use in this vignette
 ```
 
-Then we analyse them:
+First we analyse a single trait from our simulated data 
 
 ```{r   }
-my.res <- finemap.abf(dataset=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant"))
+my.res <- finemap.abf(dataset=D1)
 head(my.res)
 tail(my.res) 
 ```
 
 The `SNP.PP` column shows the posterior probability that exactly that SNP is causal.  Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.
-
-Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too.  One package that allows you to do this is [GUESSFM](http://github.com/chr1swallace/GUESSFM), described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup> 
-
 
 <a id="org6973f37"></a>
 
@@ -94,36 +79,6 @@ minor allele frequencies, although, note, such approximation can be
 less accurate when imputed data are used.  NB, you can mix and match,
 depending on the data available from each study.
 
-A wrapper function is avalailable to run all these steps but we will
-first generate the p values manually to give all the details.  We will
-calculate the coefficients and their standard errors, and the set of p
-values, to compare analysis of the two types of input data (but you
-should use only one - the coefficients if available, otherwise the p
-values).
-
-```{r   }
-Y1 <- data@df1$Y
-Y2 <- data@df2$Y
-
-X1 <- as.matrix(data@df1[,-1])
-X2 <- as.matrix(data@df2[,-1])
-
-tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
-tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
-
-p1 <- sapply(tests1,"[",4)
-p2 <- sapply(tests2,"[",4)
-
-maf <- colMeans(X2)/2
-
-get.beta <- function(x) {
-   beta <- sapply(x,"[",1)
-   varbeta <- sapply(x, "[", 2)^2
-   return(list(beta=beta,varbeta=varbeta))
-}
-b1 <- get.beta(tests1)
-b2 <- get.beta(tests2)
-```
 
 Note that we are using the second dataset in that case to compute the
 minor allele frequencies.  This is unlikely to make any significant
@@ -137,26 +92,25 @@ are cases (from which sdY can be derived), instead of giving sdY
 directly.
 
 ```{r   }
-my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),sdY=sd(Y1),type="quant",MAF=maf),
-                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),sdY=sd(Y2),type="quant",MAF=maf))
+my.res <- coloc.abf(dataset1=D1,dataset2=D2)
 print(my.res) 
 ```
 
-When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning:
+<!-- When std. deviation of Y is unknown, coloc will try and estimate sdY from variance of beta and MAF, but this can be noisy, particularly for small datasets, and will produce a warning: -->
 
-```{r   }
-my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type="quant",MAF=maf),
-                    dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type="quant",MAF=maf)) 
-print(my.res) 
-```
+<!-- ```{r   } -->
+<!-- my.res <- coloc.abf(dataset1=list(beta=b1$beta, varbeta=b1$varbeta, N=nrow(X1),type="quant",MAF=maf), -->
+<!--                     dataset2=list(beta=b2$beta, varbeta=b2$varbeta, N=nrow(X2),type="quant",MAF=maf))  -->
+<!-- print(my.res)  -->
+<!-- ``` -->
 
-When only p values are available, we can use the form:
+<!-- When only p values are available, we can use the form: -->
 
-```{r   }
-my.res <- coloc.abf(dataset1=list(pvalues=p1,N=nrow(X1),type="quant",MAF=maf),
-                    dataset2=list(pvalues=p2,N=nrow(X2),type="quant",MAF=maf))
-print(my.res) 
-```
+<!-- ```{r   } -->
+<!-- my.res <- coloc.abf(dataset1=c(D1[c("N","sdY", -->
+<!--                     dataset2=list(pvalues=p2,N=nrow(X2),type="quant",MAF=maf)) -->
+<!-- print(my.res)  -->
+<!-- ``` -->
 
 Note that if you do find strong evidence for H4, we can extract the posterior probabilities for each SNP to be causal *conditional on H4 being true*.  This is part of the calculation required by coloc, and contained in the column SNP.PP.H4 in the "results" element of the returned list. So we can extract the more likely causal variants by
 

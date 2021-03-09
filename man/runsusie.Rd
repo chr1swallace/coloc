@@ -10,9 +10,9 @@ runsusie(
   nref = NULL,
   p = 1e-04,
   trimz = NULL,
-  L = 10,
   r2.prune = NULL,
-  s_init = NULL
+  s_init = NULL,
+  ...
 )
 }
 \arguments{
@@ -20,17 +20,31 @@ runsusie(
 
 \item{suffix}{suffix label that will be printed with any error messages}
 
-\item{nref}{number of samples in the dataset used to estimate the LD matrix in d}
+\item{nref}{number of samples in the dataset used to estimate the LD matrix
+in d}
 
-\item{p}{prior probability a snp is causal (equivalent to p1 or p2 in coloc.abf)}
+\item{p}{prior probability a snp is causal (equivalent to p1 or p2 in
+coloc.abf). To match coloc defaults, this is set to 1e-4. If you wish
+susie to estimate this internally, set p=NULL.}
 
 \item{trimz}{used to trim datasets for development purposes}
 
-\item{L}{maximum number of signals to consider, passed to susie}
+\item{r2.prune}{sometimes SuSiE can return multiple signals in high LD. if
+you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
+greater than r2.prune}
 
-\item{r2.prune}{sometimes SuSiE can return multiple signals in high LD. if you set r2.prune to a value between 0 and 1, sets with index SNPs with LD > r2.prune}
+\item{s_init}{used internally to extend runs that haven't converged. don't
+use.}
 
-\item{s_init}{used internally to extend runs that haven't converged. don't use.}
+\item{...}{arguments passed to susie_rss. In particular, if you want to
+match some coloc defaults, set
+\itemize{
+\item prior_variance=0.2^2 (if a case-control trait) or (0.15/sd(Y))^2 if a
+quantitative trait
+\item estimate_prior_variance=FALSE
+}
+
+otherwise susie_rss will estimate the prior variance itself}
 }
 \value{
 results of a susie_rss run, with some added dimnames
@@ -41,7 +55,8 @@ run susie_rss storing some additional information for coloc
 \examples{
 library(coloc)
 data(coloc_test_data)
-result=runsusie(coloc_test_data$D1,nref=500)
+if(require(susieR))
+   result=runsusie(coloc_test_data$D1,nref=500)
 }
 \author{
 Chris Wallace

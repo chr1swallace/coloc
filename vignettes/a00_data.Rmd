@@ -1,5 +1,5 @@
 ---
-title: "Coloc: data structures for the enumeration approach"
+title: "Coloc: data structures"
 author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

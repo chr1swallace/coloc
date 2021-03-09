@@ -10,7 +10,6 @@ articles:
   contents:
   - a00_data
   - a01_intro
-  - a02_proportionality
   - a03_enumeration
   - a04_sensitivity
   - a05_conditioning
@@ -18,16 +17,18 @@ articles:
         # articles:
   # - title: Vignettes
     # menu:
+      # - text: Data structures
+        # href: articles/a00_data
       # - text: Introduction
         # href: articles/a01_intro
-      # - text: Proportionality testing
-        # href: articles/a02_proportionality
-      # - text: Enumeration of hypotheses (Bayesian method) under a single causal variant assumption
-        # href: articles/ a03_enumeration
+      # - text: Enumeration of hypotheses under a single causal variant assumption
+        # href: articles/a03_enumeration
       # - text: Sensitivity analysis
-        # href: articles/ a04_sensitivity
+        # href: articles/a04_sensitivity
       # - text: Conditioning to relax the single causal variant assumption
-        # href: articles/ a05_conditioning
+        # href: articles/a05_conditioning
+      # - text: Using SuSiE to relax the single causal variant assumption
+        # href: articles/a06_SuSiE
 reference:
   - title: Bayesian enumeration of hypotheses
     desc: Two trait colocalisation and single trait fine mapping under

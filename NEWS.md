@@ -1,3 +1,8 @@
+# coloc 4.1
+* backend functions for running multiple causal variants updated to use the new susieR framework rather than conditioning.  This means:
+- deprecated functions: coloc.signals()
+- new functions: runsusie(), coloc.susie()
+- new vignette 
 # coloc 4.0-5
 * update error checking
 
@@ -33,7 +38,8 @@
 - improved clarity of error messages in coloc.abf() sub functions
 - added finemap.abf to fine map a single trait
 - fixed warnings caused by CRAN disliking the BioConductor devel branch
-	
+
+
 2018-02-22
 	
 # coloc 2.4 

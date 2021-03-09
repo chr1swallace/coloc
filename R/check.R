@@ -157,12 +157,16 @@ check.ld <- function(D,LD) {
 ##' @export
 ##' @return a plot for a visual check that alleles in your data are aligned the same way for the beta vector and the LD matrix
 ##' @author Chris Wallace
-check.alignment <- function(D,thr=0.2) {
+check.alignment <- function(D,thr=0.2,do.plot=TRUE) {
   check.dataset(D)
   bprod=outer(D$beta/sqrt(D$varbeta),D$beta/sqrt(D$varbeta),"*")
   ## plot(bprod,D$LD[D$snp,D$snp],xlab="product of z scores",ylab="LD")
+  if(do.plot) {
   hist((bprod/D$LD)[abs(D$LD) > 0.2],
        xlab="ratio of product of Z scores to LD",
-       main="alignment check plot\nexpect most values to be positive\nsymmetry is a warning sign\nof potentially poor alignment")
+       main="alignment check plot",
+       sub="expect most values to be positive\nsymmetry is a warning sign of poor alignment")
   abline(v=0,col="red")
+  }
+  return(c(n=sum(abs(D$LD)>0.2), prop.pos=mean((bprod/D$LD)[abs(D$LD) > 0.2] > 0)))
 }

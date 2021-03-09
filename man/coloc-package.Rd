@@ -5,30 +5,32 @@
 \alias{coloc-package}
 \title{Colocalisation tests of two genetic traits}
 \description{
-Performs the colocalisation tests described in Plagnol et al (2009) and
-Wallace et al (in preparation) and draws some plots.
+Performs the colocalisation tests described in Giambartolomei (2012) and
+follow-up papers
 }
 \details{
-\code{coloc.test()} tests for colocalisation and returns an object of class
-\code{coloc}.
+Previously contained also tests for proportional colocalisation, but these
+have now been moved to the separate package coloc.prop
+\url{https://github.com/chr1swallace/coloc.prop}
 }
 \references{
-Plagnol et al (2009).  Statistical independence of the
-colocalized association signals for type 1 diabetes and RPS26 gene expression
-on chromosome 12q13. Biostatistics 10:327-34.
-
-\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
-
-Wallace et al (2013).  Statistical Testing of Shared Genetic Control
-for Potentially Related Traits. Genetic Epidemiology 37:802-813.
-
-\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4158901/}
-
-Giambartolomei et al (2014).  Bayesian Test for Colocalisation between Pairs of Genetic Association Studies Using Summary Statistics.  PLOS Genet e1004383.
+Giambartolomei et al (2014). Bayesian Test for Colocalisation
+between Pairs of Genetic Association Studies Using Summary Statistics. PLOS
+Genet e1004383.
 
 \url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
+
+Wallace C (2020) Eliciting priors and relaxing the single causal variant
+assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720.
+
+\url{https://doi.org/10.1371/journal.pgen.1008720}
+
+Wallace C(2021) A more accurate method for colocalisation analysis allowing
+for multiple causal variants bioRxiv 2021.02.23.432421;
+
+\url{https://doi.org/10.1101/2021.02.23.432421}
 }
 \author{
-Chris Wallace \href{mailto:chris.wallace@cimr.cam.ac.uk}{chris.wallace@cimr.cam.ac.uk}
+Chris Wallace \href{mailto:cew54@cam.ac.uk}{cew54@cam.ac.uk}
 }
 \keyword{package}

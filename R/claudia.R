@@ -339,6 +339,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     return(output)
 }
 
+dep.message=function()
+  message("function deprecated to provide a leaner installation, because I don't think anyone is using if.  If you are, please send a message via https://github.com/chr1swallace/coloc and I will reinstate!")
+
+
 ##' Bayesian colocalisation analysis using data.frames
 ##'
 ##' Converts genetic data to snpStats objects, generates p values via score tests, then runs \code{\link{coloc.abf}}
@@ -358,15 +362,16 @@ coloc.abf.datasets <- function(df1,df2,
                                snps=intersect(setdiff(colnames(df1),response1),
                                  setdiff(colnames(df2),response2)),
                                response1="Y", response2="Y", ...) {
-  if(length(snps)<2)
-    stop("require at least two SNPs in common between df1 and df2 to do anything sensible")
-  if(!(response1 %in% colnames(df1)))
-    stop(paste("response1",response1,"not found in df1"))
-  if(!(response2 %in% colnames(df2)))
-    stop(paste("response2",response2,"not found in df2"))
-  X1 <- new("SnpMatrix",as.matrix(df1[,snps]))
-  X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
-  coloc.abf.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
+  dep.message()
+  ## if(length(snps)<2)
+  ##   stop("require at least two SNPs in common between df1 and df2 to do anything sensible")
+  ## if(!(response1 %in% colnames(df1)))
+  ##   stop(paste("response1",response1,"not found in df1"))
+  ## if(!(response2 %in% colnames(df2)))
+  ##   stop(paste("response2",response2,"not found in df2"))
+  ## X1 <- new("SnpMatrix",as.matrix(df1[,snps]))
+  ## X2 <- new("SnpMatrix",as.matrix(df2[,snps]))
+  ## coloc.abf.snpStats(X1,X2,df1[,response1], df2[,response2], ...)
 }
 ##' Bayesian colocalisation analysis using snpStats objects
 ##'
@@ -389,26 +394,27 @@ coloc.abf.datasets <- function(df1,df2,
 ##' @author Chris Wallace
 coloc.abf.snpStats <- function(X1,X2,Y1,Y2,snps=intersect(colnames(X1),colnames(X2)),
                                type1=c("quant","cc"),type2=c("quant","cc"),s1=NA,s2=NA,...) {
-  type1 <- match.arg(type1)
-  type2 <- match.arg(type2)
-  if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
-    stop("X1 and X2 must be SnpMatrices")
-  if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))
-    stop("length(Y1) != nrow(X1) || length(Y2) != nrow(X2)")
-  if(length(snps)<2)
-    stop("require at least two SNPs in common between X1 and X2 to do anything sensible")
-  X1 <- X1[,snps]
-  X2 <- X2[,snps]
-  if(is.null(rownames(X1)))
-    rownames(X1) <- paste("X1",1:nrow(X1),sep=".")
-  if(is.null(rownames(X2)))
-    rownames(X2) <- paste("X2",1:nrow(X2),sep=".")
+  dep.message()
+  ## type1 <- match.arg(type1)
+  ## type2 <- match.arg(type2)
+  ## if(!is(X1,"SnpMatrix") || !is(X2,"SnpMatrix"))
+  ##   stop("X1 and X2 must be SnpMatrices")
+  ## if(length(Y1) != nrow(X1) || length(Y2) != nrow(X2))
+  ##   stop("length(Y1) != nrow(X1) || length(Y2) != nrow(X2)")
+  ## if(length(snps)<2)
+  ##   stop("require at least two SNPs in common between X1 and X2 to do anything sensible")
+  ## X1 <- X1[,snps]
+  ## X2 <- X2[,snps]
+  ## if(is.null(rownames(X1)))
+  ##   rownames(X1) <- paste("X1",1:nrow(X1),sep=".")
+  ## if(is.null(rownames(X2)))
+  ##   rownames(X2) <- paste("X2",1:nrow(X2),sep=".")
   
-  pval1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
-  pval2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
-  maf1 <- col.summary(X1)[,"MAF"]
-  maf2 <- col.summary(X2)[,"MAF"]
+  ## pval1 <- snpStats::p.value(single.snp.tests(phenotype=Y1, snp.data=X1),df=1)
+  ## pval2 <- snpStats::p.value(single.snp.tests(phenotype=Y2, snp.data=X2),df=1)
+  ## maf1 <- col.summary(X1)[,"MAF"]
+  ## maf2 <- col.summary(X2)[,"MAF"]
   
-  coloc.abf(dataset1=list(pvalues=pval1, N=nrow(X1), MAF=maf1, snp=snps, type=type1, s=s1),
-            dataset2=list(pvalues=pval2, N=nrow(X2), MAF=maf2, snp=snps, type=type2, s=s2))
+  ## coloc.abf(dataset1=list(pvalues=pval1, N=nrow(X1), MAF=maf1, snp=snps, type=type1, s=s1),
+  ##           dataset2=list(pvalues=pval2, N=nrow(X2), MAF=maf2, snp=snps, type=type2, s=s2))
 }

@@ -1,5 +1,3 @@
-#'@importFrom susieR susie_rss susie_get_cs
-NULL
 globalVariables(c("pp4", "i", "j"))
 
 ##' convert alpha matrix to log BF matrix
@@ -115,8 +113,6 @@ coloc.susie=function(dataset1,dataset2, susie.args=list(),  ...) {
     s2=do.call("runsusie", c(list(d=dataset2,suffix=1),susie.args))
   cs1=s1$sets
   cs2=s2$sets
-  ## cs1=susie_get_cs(s1)
-  ## cs2=susie_get_cs(s2)
   if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 )
     return(data.table(nsnps=NA))
   ## names(cs) = paste0("L", which(include_idx))
@@ -175,7 +171,7 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
 }
 
 susie_get_cs_with_names=function(s) {
-  sets=susie_get_cs(s)
+  sets=susieR::susie_get_cs(s)
   sets$cs=lapply(sets$cs, function(x) structure(x, names=colnames(s$alpha)[x]))
   sets
 }
@@ -298,7 +294,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   in d
 ##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
 ##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
-##'   > r2.prune
+##'   greater than r2.prune
 ##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
 ##'   coloc.abf). To match coloc defaults, this is set to 1e-4. If you wish
 ##'   susie to estimate this internally, set p=NULL.
@@ -318,7 +314,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @examples
 ##' library(coloc)
 ##' data(coloc_test_data)
-##' result=runsusie(coloc_test_data$D1,nref=500)
+##' if(require(susieR))
+##'    result=runsusie(coloc_test_data$D1,nref=500)
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
                   r2.prune=NULL,s_init=NULL, ...) {
@@ -350,11 +347,11 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
   while(!converged) {
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
-      res=do.call("susie_rss",
+      res=do.call(susieR::"susie_rss",
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit,s_init=s_init),
                     susie_args))
     } else {
-      res=do.call("susie_rss",
+      res=do.call(susieR::"susie_rss",
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit),
                     susie_args))
     }
@@ -417,6 +414,8 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
 
 .susie_setld=function(s,ld) {
   stmp=lapply(s, setdiff, ncol(ld)+1)
+  message("QC check: calculating max LD between credsets")
+  print(str(stmp))
   if(!length(stmp))
     return(0)
   if(length(stmp)==1)
