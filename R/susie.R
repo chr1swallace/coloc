@@ -365,11 +365,7 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
     converged=res$converged; s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
   }
-  if("null_weight" %in% names(susie_args)) {
-    colnames(res$alpha)=c(snp,"null")
-  } else {
-    colnames(res$alpha)=c(snp)
-  }
+  colnames(res$alpha)=c(snp,"null")[1:ncol(res$alpha)]
   names(res$pip)=snp
   if(length(res$sets$cs))
     res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
