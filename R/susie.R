@@ -353,6 +353,10 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
       res=do.call("susie_rss",
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit,s_init=s_init),
                     susie_args))
+      ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
+      ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
+      ##                null_weight=susie_args$null_weight)
+      ## res1$sets
     } else {
       res=do.call("susie_rss",
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit),
@@ -361,7 +365,11 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
     converged=res$converged; s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
   }
-  colnames(res$alpha)=c(snp,"null")
+  if("null_weight" %in% names(susie_args)) {
+    colnames(res$alpha)=c(snp,"null")
+  } else {
+    colnames(res$alpha)=c(snp)
+  }
   names(res$pip)=snp
   if(length(res$sets$cs))
     res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })

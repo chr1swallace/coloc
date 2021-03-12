@@ -33,8 +33,8 @@
 ##   S <- (1 - (abs(outer(1:nsnps,1:nsnps,`-`))/nsnps))^4
 ##   X1 <- simx(nsnps,ntotal,S)
 ##   X2 <- simx(nsnps,ntotal,S)
-##   Y1 <- rnorm(ntotal,rowSums(X1[,causals,drop=FALSE]/2),2)
-##   Y2 <- rnorm(ntotal,rowSums(X2[,causals,drop=FALSE]/2),2)
+##   Y1 <- rnorm(ntotal,rowSums(X1[,causals,drop=FALSE]/2),1.5)
+##   Y2 <- rnorm(ntotal,rowSums(X2[,causals,drop=FALSE]/2),1.5)
 ##   colnames(X1) <- colnames(X2) <- paste("s",1:nsnps,sep="")
 ##   df1 <- cbind(Y=Y1,X1)
 ##   df2 <- cbind(Y=Y2,X2)
@@ -130,4 +130,4 @@
 ##     position=1:length(b1$beta))
 
 ## coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4)
-## ## coloc_raw_data=list(df1=data$df1,df2=data$df2)
+## save(coloc_test_data, file="data/coloc_test_data.rda")
