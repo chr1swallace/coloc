@@ -4,7 +4,7 @@
 \alias{coloc.susie}
 \title{run coloc using susie to detect separate signals}
 \usage{
-coloc.susie(dataset1, dataset2, susie.args = list(), ...)
+coloc.susie(dataset1, dataset2, nref, susie.args = list(), ...)
 }
 \arguments{
 \item{dataset1}{\emph{either} a coloc-style input dataset (see

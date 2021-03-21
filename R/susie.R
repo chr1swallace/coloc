@@ -298,7 +298,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   in d
 ##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
 ##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
-##'   > r2.prune
+##'   greater than r2.prune
 ##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
 ##'   coloc.abf). By default, this is set to NULL, upon which we will set a
 ##'   small null_weight to pass to susie_rss() (see vignette a06 for details
