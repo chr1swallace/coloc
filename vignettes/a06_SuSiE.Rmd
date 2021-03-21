@@ -46,13 +46,19 @@ check.dataset(D4,req="LD")
 SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.  We need also to supply the number of individuals used to estimate the LD matrix, =nref=.
 
 ```{r}
+devtools::load_all("~/RP/coloc")
 S3=runsusie(D3,nref=503)
 summary(S3)
 S4=runsusie(D4,nref=503)
 summary(S4)
 ```
 
-With these objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
+**Important note**
+`runsusie()` calls `susie_rss()` in the `susieR` package, but sets some specific parameters to get sensible output for coloc.  In particular, the `null_weight` is by default set to an (implausibly) small value of \(\frac{1}{1+nsnps}\).  This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if `null_weight` is large.  For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated).  At this stage, weak signals will get weeded out.
+
+You can also pass that per-SNP prior to `runsusie()` by setting the parameter `p` (equivalent to `p1` or `p2` in coloc functions).  But **be aware** either option differs from the default behaviour of `susie_rss()` which is not to specify a prior for the null hypothesis at all.
+
+With these susie output objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
 ```{r}
 susie.res=coloc.susie(S3,S4)
 print(susie.res$summary)

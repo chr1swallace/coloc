@@ -104,15 +104,15 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
-coloc.susie=function(dataset1,dataset2, susie.args=list(),  ...) {
+coloc.susie=function(dataset1,dataset2, nref, susie.args=list(),  ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1,nref=nref),susie.args))
   if("susie" %in% class(dataset2))
     s2=dataset2
   else
-    s2=do.call("runsusie", c(list(d=dataset2,suffix=1),susie.args))
+    s2=do.call("runsusie", c(list(d=dataset2,suffix=1,nref=nref),susie.args))
   cs1=s1$sets
   cs2=s2$sets
   ## cs1=susie_get_cs(s1)
@@ -300,8 +300,12 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
 ##'   > r2.prune
 ##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
-##'   coloc.abf). To match coloc defaults, this is set to 1e-4. If you wish
-##'   susie to estimate this internally, set p=NULL.
+##'   coloc.abf). By default, this is set to NULL, upon which we will set a
+##'   small null_weight to pass to susie_rss() (see vignette a06 for details
+##'   why). You can override this by setting p as you would p1 or p2 in a coloc
+##'   function, but note that you may miss some true signals that way. Also note
+##'   that neither of these options correspond to the susie_rss() defaults,
+##'   because our goal here is not fine mapping alone.
 ##' @param trimz used to trim datasets for development purposes
 ##' @param s_init used internally to extend runs that haven't converged. don't
 ##'   use.
@@ -319,8 +323,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' library(coloc)
 ##' data(coloc_test_data)
 ##' result=runsusie(coloc_test_data$D1,nref=500)
+##' summary(result)
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
+runsusie=function(d,suffix=1,nref=NULL,p=NULL,
+                  trimz=NULL,
                   r2.prune=NULL,s_init=NULL, ...) {
   if(is.null(nref))
     stop("Please give nref, the number of samples used to estimate the LD matrix")
@@ -328,10 +334,12 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
   ##   stop("please specicify at most one of ld.prune and ld.merge")
   check.dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
   check.ld(d,d$LD)
+  ##make copies of z and LD so we can subset if needed
   if(!"z" %in% names(d))
-    d$z=d$beta/sqrt(d$varbeta)
+    z=d$beta/sqrt(d$varbeta)
+  else
+    z=d$z
   LD=d$LD[d$snp,d$snp] # just in case
-  z=d$z
   names(z)=d$snp
   snp=d$snp
   if(!is.null(trimz) && trimz!=0) {
@@ -345,8 +353,13 @@ runsusie=function(d,suffix=1,nref=NULL,p=1e-4,trimz=NULL,
   converged=FALSE; maxit=100;
   ## set some defaults for susie arguments
   susie_args=list(...)
-  if(!is.null(p) & !("null_weight" %in% names(susie_args)))
-    susie_args$null_weight=max(1 - length(d$snp)*p, p)
+  if(!("null_weight" %in% names(susie_args))) { # set it ourselves
+    susie_args$null_weight=if(!is.null(p)) {
+                              max(1 - length(d$snp)*p, p)
+                            } else {
+                              susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
+                            }
+  }
   while(!converged) {
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
