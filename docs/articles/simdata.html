@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Code to simulate a small dataset • coloc</title>
+<title>Coloc: code to simulate a small dataset • coloc</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Code to simulate a small dataset">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: code to simulate a small dataset">
 <meta property="og:description" content="coloc">
 <meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
       </span>
     </div>
 
@@ -61,7 +61,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
+      <a href="../articles/a00_data.html">Coloc: data structures</a>
     </li>
     <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
@@ -101,7 +101,7 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Code to simulate a small dataset</h1>
+      <h1 data-toc-skip>Coloc: code to simulate a small dataset</h1>
                         <h4 class="author">Chris Wallace</h4>
             
             <h4 class="date">2021-03-22</h4>
@@ -118,6 +118,24 @@
 <h2 class="hasAnchor">
 <a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">setClass</span><span class="op">(</span><span class="st">"simdata"</span>,
+         <span class="fu">representation</span><span class="op">(</span>df1<span class="op">=</span><span class="st">"data.frame"</span>,df2<span class="op">=</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">setValidity</span><span class="op">(</span><span class="st">"simdata"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">df1</span><span class="op">)</span>
+  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">df2</span><span class="op">)</span><span class="op">!=</span><span class="va">n</span><span class="op">)</span>
+    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="st">"nrow of '@df1' should equal nrow of '@df2'"</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span></code></pre></div>
+<pre><code>## Class "simdata" [in ".GlobalEnv"]
+## 
+## Slots:
+##                             
+## Name:         df1        df2
+## Class: data.frame data.frame</code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">setMethod</span><span class="op">(</span><span class="st">"show"</span>, signature<span class="op">=</span><span class="st">"simdata"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"pair of simulated datasets, with"</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">df1</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span>,<span class="st">"SNPs and"</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">df1</span><span class="op">)</span>,<span class="st">"samples.\n"</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://mvtnorm.R-forge.R-project.org">mvtnorm</a></span><span class="op">)</span>
 <span class="va">simx</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nsnps</span>,<span class="va">nsamples</span>,<span class="va">S</span>,<span class="va">maf</span><span class="op">=</span><span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">nsnps</span><span class="op">)</span>

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
       </span>
     </div>
 
@@ -64,7 +64,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
+      <a href="articles/a00_data.html">Coloc: data structures</a>
     </li>
     <li>
       <a href="articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
@@ -109,20 +109,26 @@
 <a href="#coloc" class="anchor"></a>coloc</h1></div>
 
 <p><img src="reference/figures/logo30.png" align="right"> The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
-<div id="susie-branch" class="section level2">
+<!-- ## susie branch -->
+<!-- This is a development branch of coloc.  User beware!  If you get strange answers, it could be a bug in my code.  Please let me know, and send me enough information to try and track it down.  A working example with a slimmed down dataset is a great help. -->
+<div id="version-5" class="section level2">
 <h2 class="hasAnchor">
-<a href="#susie-branch" class="anchor"></a>susie branch</h2>
-<p>This is a development branch of coloc. User beware! If you get strange answers, it could be a bug in my code. Please let me know, and send me enough information to try and track it down. A working example with a slimmed down dataset is a great help.</p>
-<p>This supercedes previously published version 4 by using the <a href="https://stephenslab.github.io/susieR/index.html">SuSiE</a> approach to deal with multiple causal variants rather than conditioning or masking. See</p>
+<a href="#version-5" class="anchor"></a>version 5</h2>
+<p>This update (version 5) supercedes previously published version 4 by introducing use of the <a href="https://stephenslab.github.io/susieR/index.html">SuSiE</a> approach to deal with multiple causal variants rather than conditioning or masking. See</p>
 <blockquote>
-<p>Wang, G., Sarkar, A., Carbonetto, P., &amp; Stephens, M. (2020). A simple new approach to variable selection in regression, with application to genetic fine mapping. Journal of the Royal Statistical Society: Series B (Statistical Methodology). <a href="https://doi.org/10.1111/rssb.12388" class="uri">https://doi.org/10.1111/rssb.12388</a> for the full SuSiE paper.</p>
+<p>Wang, G., Sarkar, A., Carbonetto, P., &amp; Stephens, M. (2020). A simple new approach to variable selection in regression, with application to genetic fine mapping. Journal of the Royal Statistical Society: Series B (Statistical Methodology). <a href="https://doi.org/10.1111/rssb.12388" class="uri">https://doi.org/10.1111/rssb.12388</a></p>
 </blockquote>
+<p>for the full SuSiE paper and</p>
+<blockquote>
+<p>Wallace (2021). A more accurate method for colocalisation analysis allowing for multiple causal variants. bioRxiv <a href="https://www.biorxiv.org/content/10.1101/2021.02.23.432421v1" class="uri">https://www.biorxiv.org/content/10.1101/2021.02.23.432421v1</a></p>
+</blockquote>
+<p>for a description of its use in coloc.</p>
 <p>To install from R, do</p>
 <pre><code>if(!require("remotes"))
    install.packages("remotes") # if necessary
 library(remotes)
-install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)</code></pre>
-<p>The function you want to look at is <code>coloc.susie</code>. It can take raw datasets, but the time consuming part is running SuSiE. coloc runs SuSiE and saves a little extra information using the <code>runsusie</code> function before running an adapted colocalisation on the results. So please look at the docs for <code>runsusie</code> too. I found a helpful recipe is</p>
+install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
+<p>Note that in all simulations, susie outperforms the earlier conditioning approach, so is recommended. However, it is also new code, so please consider the code “beta” and let me know of any issues that arise - they may be a bug on my part. If you want to use it, the function you want to look at is <code>coloc.susie</code>. It can take raw datasets, but the time consuming part is running SuSiE. coloc runs SuSiE and saves a little extra information using the <code>runsusie</code> function before running an adapted colocalisation on the results. So please look at the docs for <code>runsusie</code> too. I found a helpful recipe is</p>
 <ol>
 <li>Run <code>runsusie</code> on dataset 1, storing the results</li>
 <li>Run <code>runsusie</code> on dataset 2, storing the results</li>
@@ -131,25 +137,20 @@ install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)</code></pre>
 <p>More detail is available in the vignette a06_SuSiE.html accessible by</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span><span class="op">(</span><span class="st">"a06_SuSiE"</span>,package<span class="op">=</span><span class="st">"coloc"</span><span class="op">)</span></code></pre></div>
+<!-- ## version 4 -->
+<!-- This is an updated version of coloc.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).   -->
+<!-- It is not yet on CRAN. To install the new version, do -->
+<!-- ``` -->
+<!-- if(!require("remotes")) -->
+<!--    install.packages("remotes") # if necessary -->
+<!-- library(remotes) -->
+<!-- install_github("chr1swallace/coloc") -->
+<!-- ``` -->
 </div>
-<div id="version-4" class="section level2">
-<h2 class="hasAnchor">
-<a href="#version-4" class="anchor"></a>version 4</h2>
-<p>This is an updated version of coloc. I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).</p>
-<p>It is not yet on CRAN. To install the new version, do</p>
-<pre><code>if(!require("remotes"))
-   install.packages("remotes") # if necessary
-library(remotes)
-install_github("chr1swallace/coloc")</code></pre>
 </div>
-</div>
-<div id="background" class="section level1">
+<div id="background-reading" class="section level1">
 <h1 class="hasAnchor">
-<a href="#background" class="anchor"></a>Background</h1>
-<p>The new ideas are described in</p>
-<blockquote>
-<p><a href="https://doi.org/10.1371/journal.pgen.1008720">Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720</a></p>
-</blockquote>
+<a href="#background-reading" class="anchor"></a>Background reading</h1>
 <p>For usage, please see the vignette at <a href="https://chr1swallace.github.io/coloc" class="uri">https://chr1swallace.github.io/coloc</a></p>
 <p>Key previous references are:</p>
 <ul>
@@ -158,6 +159,8 @@ install_github("chr1swallace/coloc")</code></pre>
 <li>proportional colocalisation with type 1 error rate control <a href="http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract">Wallace et al (2013)</a>
 </li>
 <li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
+</li>
+<li>Thoughts about priors in coloc are described in <a href="https://doi.org/10.1371/journal.pgen.1008720">Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720</a>
 </li>
 </ul>
 </div>
@@ -169,8 +172,10 @@ install_github("chr1swallace/coloc")</code></pre>
 <div id="notes-to-self" class="section level1">
 <h1 class="hasAnchor">
 <a href="#notes-to-self" class="anchor"></a>Notes to self</h1>
-<p><em>to generate vignettes:</em></p>
-<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
+<!-- *to generate vignettes:* -->
+<!-- ``` -->
+<!-- cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R && Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()' -->
+<!-- ``` -->
 <p><em>to generate website:</em> <a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
 <pre><code>Rscript -e "pkgdown::build_site()"</code></pre>
 </div>

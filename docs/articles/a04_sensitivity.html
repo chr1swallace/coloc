@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
       </span>
     </div>
 
@@ -61,7 +61,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
+      <a href="../articles/a00_data.html">Coloc: data structures</a>
     </li>
     <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
@@ -117,7 +117,13 @@
 <div id="simulate-a-small-dataset" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<pre><code>## Class "simdata" [in ".GlobalEnv"]
+## 
+## Slots:
+##                             
+## Name:         df1        df2
+## Class: data.frame data.frame</code></pre>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://mvtnorm.R-forge.R-project.org">mvtnorm</a></span><span class="op">)</span>
 <span class="va">simx</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nsnps</span>,<span class="va">nsamples</span>,<span class="va">S</span>,<span class="va">maf</span><span class="op">=</span><span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">nsnps</span><span class="op">)</span>
@@ -159,17 +165,17 @@
 <a href="#sensitivity-analysis" class="anchor"></a>Sensitivity analysis</h1>
 <p>Specifying prior values for coloc.abf() is important, as results can be dependent on these values. Defaults of <span class="math inline">\(p_1=p_2=10^{-4}\)</span> seem justified in a wide range of scenarios, because these broadly correspond to a 99% belief that there is true association when we see <span class="math inline">\(p&lt;5\times 10^{-8}\)</span> in a GWAS. However, choice of <span class="math inline">\(p_{12}\)</span> is more difficult. We hope the <a href="https://chr1swallace.shinyapps.io/coloc-priors/">coloc explorer app</a> will be helpful in exploring what various choices mean, at a per-SNP and per-hypothesis level. However, having conducted an enumeration-based coloc analysis, it is still helpful to check that any inference about colocalisation is robust to variations in prior values specified.</p>
 <p>Continuing on from <a href="the%20last%20vignette">03_enumeration</a>, we have</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc">coloc</a></span><span class="op">)</span></code></pre></div>
 <pre><code>## This is a new update to coloc.</code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>beta<span class="op">=</span><span class="va">b1</span><span class="op">$</span><span class="va">beta</span>, varbeta<span class="op">=</span><span class="va">b1</span><span class="op">$</span><span class="va">varbeta</span>, N<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X1</span><span class="op">)</span>,sdY<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">Y1</span><span class="op">)</span>,type<span class="op">=</span><span class="st">"quant"</span><span class="op">)</span>,
                     dataset2<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>beta<span class="op">=</span><span class="va">b2</span><span class="op">$</span><span class="va">beta</span>, varbeta<span class="op">=</span><span class="va">b2</span><span class="op">$</span><span class="va">varbeta</span>, N<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X2</span><span class="op">)</span>,sdY<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">Y2</span><span class="op">)</span>,type<span class="op">=</span><span class="st">"quant"</span><span class="op">)</span>,
                     MAF<span class="op">=</span><span class="va">maf</span>,p12<span class="op">=</span><span class="fl">1e-6</span><span class="op">)</span></code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  1.41e-36  2.59e-24  5.47e-15  2.41e-10  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">my.res</span></code></pre></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
@@ -185,20 +191,20 @@
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 5.000000e+01 1.413084e-36 2.585470e-24 5.465483e-15 2.410934e-10 1.000000e+00</code></pre>
 <p>A sensitivity analysis can be used, post-hoc, to determine the range of prior probabilities for which a conclusion is still supported. The sensitivity() function shows this for variable <span class="math inline">\(p_{12}\)</span> in the bottom right plot, along with the prior probabilities of each hypothesis, which may help decide whether a particular range of <span class="math inline">\(p_{12}\)</span> is valid. The green region shows the region - the set of values of <span class="math inline">\(p_{12}\)</span> - for which <span class="math inline">\(H_4 &gt; 0.5\)</span> - the rule that was specified. In this case, the conclusion of colocalisation looks quite robust. On the left (optionally) the input data are also presented, with shading to indicate the posterior probabilities that a SNP is causal if <span class="math inline">\(H_4\)</span> were true. This can be useful to indicate serious discrepancies also.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 0.5"</span><span class="op">)</span> </code></pre></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.5</code></pre>
 <p><img src="a04_sensitivity_files/figure-html/sens-1.png" width="768"></p>
 <p>Let’s make a smaller dataset where that won’t be the case:</p>
 <p>Now, colocalisation is very dependent on the value of <span class="math inline">\(p_{12}\)</span>:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>beta<span class="op">=</span><span class="va">b1</span><span class="op">$</span><span class="va">beta</span>, varbeta<span class="op">=</span><span class="va">b1</span><span class="op">$</span><span class="va">varbeta</span>, N<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X1</span><span class="op">)</span>,sdY<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">Y1</span><span class="op">)</span>,type<span class="op">=</span><span class="st">"quant"</span><span class="op">)</span>,
                     dataset2<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>beta<span class="op">=</span><span class="va">b2</span><span class="op">$</span><span class="va">beta</span>, varbeta<span class="op">=</span><span class="va">b2</span><span class="op">$</span><span class="va">varbeta</span>, N<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X2</span><span class="op">)</span>,sdY<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">Y2</span><span class="op">)</span>,type<span class="op">=</span><span class="st">"quant"</span><span class="op">)</span>,
                     MAF<span class="op">=</span><span class="va">maf</span>,p12<span class="op">=</span><span class="fl">1e-6</span><span class="op">)</span></code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  0.005010  0.000444  0.122000  0.002100  0.871000 
 ## [1] "PP abf for shared variant: 87.1%"</code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">my.res</span></code></pre></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
@@ -213,13 +219,13 @@
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 5.000000e+01 5.010313e-03 4.440917e-04 1.219223e-01 2.101426e-03 8.705219e-01</code></pre>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 0.5"</span><span class="op">)</span> </code></pre></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.5</code></pre>
 <p><img src="a04_sensitivity_files/figure-html/sens2-1.png" width="768"></p>
 <p>In this case, we find there is evidence for colocalisation according to a rule <span class="math inline">\(H_4&gt;0.5\)</span> only for <span class="math inline">\(p_{12} &gt;&gt; 10^{-6}\)</span>, which corresponds to an <em>a priori</em> belief that <span class="math inline">\(P(H_4) &gt;&gt; P(H_3)\)</span>. This means but you would need to think it reasonable that <span class="math inline">\(H_4\)</span> is much more likely than <span class="math inline">\(H_3\)</span> to begin with to find these data convincing.</p>
 <p>Note, the syntax can also consider more complicated rules:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 3*H3 &amp; H0 &lt; 0.1"</span><span class="op">)</span> </code></pre></div>
 <pre><code>## Results pass decision rule H4 &gt; 3*H3 &amp; H0 &lt; 0.1</code></pre>
 <p><img src="a04_sensitivity_files/figure-html/sens3-1.png" width="768"></p>

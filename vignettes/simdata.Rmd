@@ -1,5 +1,5 @@
 ---
-title: "Code to simulate a small dataset"
+title: "Coloc: code to simulate a small dataset"
 author: "Chris Wallace"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
