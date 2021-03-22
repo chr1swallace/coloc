@@ -1,0 +1,81 @@
+---
+title: "Coloc: using SuSiE to relax the single causal variant assumption"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Coloc: using SuSiE to relax the single causal variant assumption}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Multiple causal variants, using SuSiE to separate the signals
+
+Note that this vignette depends on the [susieR](https://github.com/stephenslab/susieR) package.  Please install it, following the directions on that site, before running the code here.  Because that package is not (yet?) on CRAN, this vignette built on CRAN will not include the code that depends on susieR.  Please build the vignette locally, after installing the susieR package.
+
+We load some simulated data.
+
+```{r   }
+library(coloc)
+data(coloc_test_data)
+attach(coloc_test_data)
+```
+
+First, let us do a standard coloc (single causal variant) analysis to
+serve as a baseline comparison.  The analysis concludes there is
+colocalisation, because it "sees" the SNPs on the left which are
+strongly associated with both traits.  But it misses the SNPs on the
+right of the top left plot which are associated with only one trait.
+
+```{r sens0, fig.width=8,fig.height=6    }
+my.res <- coloc.abf(dataset1=D3, dataset2=D4)
+class(my.res)
+## print.coloc_abf
+my.res
+sensitivity(my.res,"H4 > 0.9")
+```
+
+Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.
+
+coloc has adopted the [SuSiE](https://stephenslab.github.io/susie-paper/index.html) framework for fine mapping in the presence of multiple causal variants.  This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format.  =check.dataset= should return NULL if there are no problems, or print informative error messages if there are.
+
+
+```{r}
+check.dataset(D3,req="LD")
+check.dataset(D4,req="LD")
+```
+
+SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.  We need also to supply the number of individuals used to estimate the LD matrix, =nref=.
+
+```{r}
+if(requireNamespace("susieR",quietly=TRUE)) {
+  S3=runsusie(D3,nref=503)
+  summary(S3)
+  S4=runsusie(D4,nref=503)
+  summary(S4)
+}
+```
+
+**Important note**
+`runsusie()` calls `susie_rss()` in the `susieR` package, but sets some specific parameters to get sensible output for coloc.  In particular, the `null_weight` is by default set to an (implausibly) small value of \(\frac{1}{1+nsnps}\).  This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if `null_weight` is large.  For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated).  At this stage, weak signals will get weeded out.
+
+You can also pass that per-SNP prior to `runsusie()` by setting the parameter `p` (equivalent to `p1` or `p2` in coloc functions).  But **be aware** either option differs from the default behaviour of `susie_rss()` which is not to specify a prior for the null hypothesis at all.
+
+With these susie output objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
+```{r}
+if(requireNamespace("susieR",quietly=TRUE)) {
+  susie.res=coloc.susie(S3,S4)
+  print(susie.res$summary)
+}
+```
+
+Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider, and we need to give it the datasets used if we want to see the Manhattan plots.
+```{r sens, fig.width=8,fig.height=6 }
+if(requireNamespace("susieR",quietly=TRUE)) {
+  sensitivity(susie.res,"H4 > 0.9",row=1,dataset1=D3,dataset2=D4)
+  sensitivity(susie.res,"H4 > 0.9",row=2,dataset1=D3,dataset2=D4)
+}
+```
+
+
+

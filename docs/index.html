@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Colocalisation Tests of Two Genetic Traits • coloc</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/simplex/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -17,6 +23,7 @@
     Wallace et al (2013) &lt;doi:10.1002/gepi.21765&gt;,
     Giambartolomei et al (2013) &lt;doi:10.1371/journal.pgen.1004383&gt;,
     Wallace (2020) &lt;doi:doi.org/10.1371/journal.pgen.1008720&gt;.">
+<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -35,7 +42,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
       </span>
     </div>
 
@@ -70,7 +77,7 @@
       <a href="articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -97,10 +104,39 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="coloc" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#coloc" class="anchor"></a>coloc</h1></div>
+</div>
+<div id="pkgdown-" class="section level1">
+<h1 class="hasAnchor">
+<a href="#pkgdown-" class="anchor"></a>pkgdown <img src="reference/figures/logo.png" align="right">
+</h1>
+
 <p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
+<div id="susie-branch" class="section level2">
+<h2 class="hasAnchor">
+<a href="#susie-branch" class="anchor"></a>susie branch</h2>
+<p>This is a development branch of coloc. User beware! If you get strange answers, it could be a bug in my code. Please let me know, and send me enough information to try and track it down. A working example with a slimmed down dataset is a great help.</p>
+<p>This supercedes previously published version 4 by using the <a href="https://stephenslab.github.io/susieR/index.html">SuSiE</a> approach to deal with multiple causal variants rather than conditioning or masking. See</p>
+<blockquote>
+<p>Wang, G., Sarkar, A., Carbonetto, P., &amp; Stephens, M. (2020). A simple new approach to variable selection in regression, with application to genetic fine mapping. Journal of the Royal Statistical Society: Series B (Statistical Methodology). <a href="https://doi.org/10.1111/rssb.12388" class="uri">https://doi.org/10.1111/rssb.12388</a> for the full SuSiE paper.</p>
+</blockquote>
+<p>To install from R, do</p>
+<pre><code>if(!require("remotes"))
+   install.packages("remotes") # if necessary
+library(remotes)
+install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)</code></pre>
+<p>The function you want to look at is <code>coloc.susie</code>. It can take raw datasets, but the time consuming part is running SuSiE. coloc runs SuSiE and saves a little extra information using the <code>runsusie</code> function before running an adapted colocalisation on the results. So please look at the docs for <code>runsusie</code> too. I found a helpful recipe is</p>
+<ol>
+<li>Run <code>runsusie</code> on dataset 1, storing the results</li>
+<li>Run <code>runsusie</code> on dataset 2, storing the results</li>
+<li>Run <code>coloc.susie</code> on the two outputs from above</li>
+</ol>
+<p>More detail is available in the vignette a06_SuSiE.html accessible by</p>
+<div class="sourceCode" id="cb2"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span>(<span class="st">"a06_SuSiE"</span>,<span class="kw">package</span><span class="kw">=</span><span class="st">"coloc"</span>)</pre></div>
+</div>
 <div id="version-4" class="section level2">
 <h2 class="hasAnchor">
 <a href="#version-4" class="anchor"></a>version 4</h2>
@@ -111,9 +147,10 @@
 library(remotes)
 install_github("chr1swallace/coloc")</code></pre>
 </div>
-<div id="background" class="section level2">
-<h2 class="hasAnchor">
-<a href="#background" class="anchor"></a>Background</h2>
+</div>
+<div id="background" class="section level1">
+<h1 class="hasAnchor">
+<a href="#background" class="anchor"></a>Background</h1>
 <p>The new ideas are described in</p>
 <blockquote>
 <p><a href="https://doi.org/10.1371/journal.pgen.1008720">Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720</a></p>
@@ -128,21 +165,21 @@ install_github("chr1swallace/coloc")</code></pre>
 <li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
 </li>
 </ul>
-<p><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></p>
-<p><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></p>
-<div id="to-generate-vignettes" class="section level3">
-<h3 class="hasAnchor">
-<a href="#to-generate-vignettes" class="anchor"></a>To generate vignettes:</h3>
-<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
 </div>
-<div id="to-generate-website" class="section level3">
-<h3 class="hasAnchor">
-<a href="#to-generate-website" class="anchor"></a>To generate website:</h3>
-<p><a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
+<div id="frequently-asked-questions" class="section level1">
+<h1 class="hasAnchor">
+<a href="#frequently-asked-questions" class="anchor"></a>Frequently Asked Questions</h1>
+<p>see <a href="FAQ.html">FAQ</a></p>
+</div>
+<div id="notes-to-self" class="section level1">
+<h1 class="hasAnchor">
+<a href="#notes-to-self" class="anchor"></a>Notes to self</h1>
+<p><em>to generate vignettes:</em></p>
+<pre><code>cp vignettes/colocqq-tests.R.tospin vignettes/colocqq-tests.R &amp;&amp; Rscript -e 'knitr::spin("vignettes/colocqq-tests.R",knit=FALSE); devtools::build_vignettes()'</code></pre>
+<p><em>to generate website:</em> <a href="https://chr1swallace.github.io/coloc/" class="uri">https://chr1swallace.github.io/coloc/</a></p>
 <pre><code>Rscript -e "pkgdown::build_site()"</code></pre>
 </div>
-</div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -178,7 +215,14 @@ install_github("chr1swallace/coloc")</code></pre>
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></li>
+<li><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 

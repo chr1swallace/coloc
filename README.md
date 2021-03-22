@@ -1,16 +1,40 @@
 coloc
 =====
 
-
 [![Build Status](https://travis-ci.org/chr1swallace/coloc.svg?branch=master)](https://travis-ci.org/chr1swallace/coloc)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
 
-
-
+<img src="man/figures/logo30.png" align="right" />
 The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
 share common genetic causal variant(s) in a given region. 
 
+## susie branch
+
+This is a development branch of coloc.  User beware!  If you get strange answers, it could be a bug in my code.  Please let me know, and send me enough information to try and track it down.  A working example with a slimmed down dataset is a great help.
+
+This supercedes previously published version 4 by using the [SuSiE](https://stephenslab.github.io/susieR/index.html) approach to deal with multiple causal variants rather than conditioning or masking.  See 
+> Wang, G., Sarkar, A., Carbonetto, P., & Stephens, M. (2020). A simple new approach to variable selection in regression, with application to genetic fine mapping. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12388
+for the full SuSiE paper.  
+
+To install from R, do
+```
+if(!require("remotes"))
+   install.packages("remotes") # if necessary
+library(remotes)
+install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)
+```
+
+The function you want to look at is `coloc.susie`. It can take raw datasets, but the time consuming part is running SuSiE.  coloc runs SuSiE and saves a little extra information using the `runsusie` function before running an adapted colocalisation on the results.  So please look at the docs for `runsusie` too. I found a helpful recipe is
+1. Run `runsusie` on dataset 1, storing the results
+2. Run `runsusie` on dataset 2, storing the results
+3. Run `coloc.susie` on the two outputs from above
+
+More detail is available in the vignette a06_SuSiE.html accessible by
+
+``` R
+vignette("a06_SuSiE",package="coloc")
+```
 
 ## version 4
 

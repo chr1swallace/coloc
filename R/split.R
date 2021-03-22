@@ -1,4 +1,4 @@
-
+globalVariables("pvalues")
 
 
 ##' Bayesian colocalisation analysis, detailed output
@@ -76,7 +76,7 @@ map_mask <- function(D,LD,r2thr=0.01,sigsnps=NULL) {
     x[,z:=beta/sqrt(varbeta)]
   } else {
     x <- as.data.table(D[c("pvalues","snp","MAF")])
-    x[,z:=qnorm(pvalues/2,lower=FALSE)]
+    x[,z:=qnorm(pvalues/2,lower.tail=FALSE)]
   }
     use <- rep(TRUE,nrow(x))
     if(!is.null(sigsnps)) {
@@ -301,41 +301,29 @@ find.best.signal <- function(D) {
     structure(z[wh],names=D$snp[wh])
 }
 
-check.ld <- function(D,LD) {
-    if(is.null(LD))
-        stop("LD required")
-    if(nrow(LD)!=ncol(LD))
-        stop("LD not square")
-    if(length(setdiff(D$snp,colnames(LD))))
-        stop("colnames in LD do not contain all SNPs")
-}
-
 ##' This is an analogue to finemap.abf, adapted to find multiple
 ##' signals where they exist, via conditioning or masking - ie a
 ##' stepwise procedure
 ##'
 ##' @title Finemap multiple signals in a single dataset
-##' @param D list of summary stats for a single disease, as defined
-##'     for coloc.abf
-##' @param LD matrix of signed r values (not rsq!) giving correlation
-##'     between SNPs
-##' @param mask use masking if TRUE, otherwise conditioning. defaults
-##'     to TRUE
-##' @param r2thr if mask==TRUE, all snps will be masked with r2 >
-##'     r2thr with any sigsnps. Otherwise ignored
-##' @param sigsnps SNPs already deemed significant, to condition on or
-##'     mask, expressed as a numeric vector, whose *names* are the snp
-##'     names
-##' @param method if method="cond", then use conditioning to coloc
-##'     multiple signals.  The default is mask - this is less
-##'     powerful, but safer because it does not assume that the LD
-##'     matrix is properly allelically aligned to estimated effect
+##' @param D list of summary stats for a single disease, see
+##'   \link{check.dataset}
+##' @param LD matrix of signed r values (not rsq!) giving correlation between
+##'   SNPs
+##' @param mask use masking if TRUE, otherwise conditioning. defaults to TRUE
+##' @param r2thr if mask==TRUE, all snps will be masked with r2 > r2thr with any
+##'   sigsnps. Otherwise ignored
+##' @param sigsnps SNPs already deemed significant, to condition on or mask,
+##'   expressed as a numeric vector, whose *names* are the snp names
+##' @param method if method="cond", then use conditioning to coloc multiple
+##'   signals. The default is mask - this is less powerful, but safer because it
+##'   does not assume that the LD matrix is properly allelically aligned to
+##'   estimated effect
 ##' @param pthr when p > pthr, stop successive searching
-##' @param maxhits maximum depth of conditioning. procedure will stop
-##'     if p > pthr OR abs(z)<zthr OR maxhits hits have been found.
+##' @param maxhits maximum depth of conditioning. procedure will stop if p >
+##'   pthr OR abs(z)<zthr OR maxhits hits have been found.
 ##' @export
-##' @return list of successively significant fine mapped SNPs, named
-##'     by the SNPs
+##' @return list of successively significant fine mapped SNPs, named by the SNPs
 ##' @author Chris Wallace
 finemap.signals <- function(D,LD=D$LD,
                                   method=c("single","mask","cond"),

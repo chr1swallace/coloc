@@ -3,8 +3,6 @@ Type: Package
 Imports:
     data.table,
     ggplot2,
-    snpStats,
-    BMA,
     methods,
     viridis,
     stats,
@@ -13,14 +11,16 @@ Imports:
 Suggests:
     knitr,
     testthat,
-    bindata,
+    snpStats,
     mvtnorm,
     magrittr,
     rmarkdown
-biocViews:
+Enhances:
+    susieR
+Remotes: github::stephenslab/susieR
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 4.0-4
-Date: 2020-05-02
+Version: 4.1.0
+Date: 2021-03-21
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -29,15 +29,27 @@ Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email="v.plagnol@ucl.ac.uk"))
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Description: Performs the colocalisation tests described in
-    Plagnol et al (2009) <doi:10.1093/biostatistics/kxn039>,
-    Wallace et al (2013) <doi:10.1002/gepi.21765>,
     Giambartolomei et al (2013) <doi:10.1371/journal.pgen.1004383>,
-    Wallace (2020) <doi:doi.org/10.1371/journal.pgen.1008720>.
+    Wallace (2020) <doi:doi.org/10.1371/journal.pgen.1008720>,
+    Wallace (2021) <https://doi.org/10.1101/2021.02.23.432421>.
 License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc
 BugReports: https://github.com/chr1swallace/coloc/issues
+Collate: 
+    'check.R'
+    'claudia.R'
+    'coloc-package.R'
+    'plot.R'
+    'private.R'
+    'sensitivity.R'
+    'split.R'
+    'susie.R'
+    'testdata.R'
+    'zzz.R'
+Depends: 
+    R (>= 2.10)

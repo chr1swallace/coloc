@@ -10,6 +10,9 @@
     <loc>http://chr1swallace.github.io/coloc/reference/Var.data.cc.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/alpha_to_logbf.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/approx.bf.estimates.html</loc>
   </url>
   <url>
@@ -40,6 +43,9 @@
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.abf.snpStats.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.bf_bf.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.detail.html</loc>
   </url>
   <url>
@@ -47,6 +53,12 @@
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.signals.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.susie.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc.susie_bf.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.test.html</loc>
@@ -59,6 +71,9 @@
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/colocPCs-class.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/coloc_test_data.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/combine.abf.html</loc>
@@ -85,6 +100,9 @@
     <loc>http://chr1swallace.github.io/coloc/reference/finemap.signals.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/logbf_to_pp.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/logdiff.html</loc>
   </url>
   <url>
@@ -106,10 +124,16 @@
     <loc>http://chr1swallace.github.io/coloc/reference/plot-methods.html</loc>
   </url>
   <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/plot.coloc_abf.html</loc>
+  </url>
+  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/print-methods.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/process.dataset.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/reference/runsusie.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/sdY.est.html</loc>
@@ -131,6 +155,9 @@
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/a05_conditioning.html</loc>
+  </url>
+  <url>
+    <loc>http://chr1swallace.github.io/coloc/articles/a06_SuSiE.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/simdata.html</loc>
