@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
       </span>
     </div>
 
@@ -46,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -61,10 +61,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
+      <a href="../articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
     </li>
     <li>
-      <a href="../articles/a02_proportionality.html">Coloc: proportionality testing</a>
+      <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
       <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
@@ -84,7 +84,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -104,7 +104,7 @@
       <h1 data-toc-skip>Coloc: a package for colocalisation analyses</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2021-02-19</h4>
+            <h4 class="date">2021-03-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a01_intro.Rmd"><code>vignettes/a01_intro.Rmd</code></a></small>
       <div class="hidden name"><code>a01_intro.Rmd</code></div>
@@ -117,18 +117,13 @@
 <div id="a-brief-outline-of-colocalisation-analysis" class="section level1">
 <h1 class="hasAnchor">
 <a href="#a-brief-outline-of-colocalisation-analysis" class="anchor"></a>A brief outline of colocalisation analysis</h1>
-<p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region. There are a few key references which this vignette will not duplicate (see below), but, in brief, two approaches are implemented.</p>
-<div id="proportional-testing" class="section level2">
+<p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region. There are a few key references which this vignette will not duplicate (see below).</p>
+<p>In brief, two approaches can be implemented. The proportional testing approach <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup><sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup> has now been moved to its own package, coloc.prop.</p>
+<p>This package implements the more population enumeration approach.</p>
+<div id="a-single-causal-variant-assumption" class="section level2">
 <h2 class="hasAnchor">
-<a href="#proportional-testing" class="anchor"></a>Proportional testing</h2>
-<p>First, the proportional approach uses the fact that for two traits sharing causal variants, regression coefficients for either trait against any set of SNPs in the neighbourhood of those variants must be proportional. This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> in the context of evaluating whether expression of the gene <em>RPS26</em> mediated the association of type 1 diabetes to a region on chromosome 12q13 as had recently been proposed. The test addressed a common issue in genetics, and meant researchers could avoid the need to squint at parallel manhattan plots to decide whether two traits share causal variants. The function <code><a href="../reference/coloc.test.html">coloc.test()</a></code> in this package evolved from code released by Vincent, but no longer available.</p>
-<p>However, choosing <strong>which</strong> SNPs to use for the test is a problem. The obvious choice is to use those most strongly associated with one or other trait to maximise information, but doing so induces bias in the regression coefficients, which in turn leads to increased likelihood of spuriously rejecting the null of colocalisation, ie a quite substantially increased type 1 error rate <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>. I proposed two alternatives to address this problem, either using a principal component summary of genetic variation in the region to overcome the need to select a small set of test SNPs, implemented in <code>coloc.pcs()</code> and associated functions. <!-- A method which uses the ideas of Bayesian model --> <!-- averaging to average p values over SNP selections, generating --> <!-- posterior predictive p values, implemented in `coloc.bma()`, has been removed because it depends on a package that produces errors on CRAN. --></p>
-<p>See vignette: <a href="a02_proportionality.html">proportionality</a></p>
-</div>
-<div id="enumeration-under-a-single-causal-variant-assumption" class="section level2">
-<h2 class="hasAnchor">
-<a href="#enumeration-under-a-single-causal-variant-assumption" class="anchor"></a>Enumeration, under a single causal variant assumption</h2>
-<p>Proportional testing, however, requires individual level genotype data, which are not always available. Claudia Giambartolomei and Vincent Plagnol proposed an alternative method, which makes use of Jon Wakefield’s work on determining approximate Bayes Factors from p values <sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a enrumeration colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>, implemented in the function <code>coloc.summaries()</code>. By assuming there is at most one causal variant per trait, every possible configuration can be individually enumerated and evaluated, and aggregating over these allows us to gauge the relative support for models which support colocalisation to those that don’t.</p>
+<a href="#a-single-causal-variant-assumption" class="anchor"></a>A single causal variant assumption</h2>
+<p>Claudia Giambartolomei and Vincent Plagnol proposed the enumeration method, which makes use of Jon Wakefield’s work on determining approximate Bayes Factors from p values <sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>, implemented in the function <code><a href="../reference/coloc.abf.html">coloc.abf()</a></code>. By assuming there is at most one causal variant per trait, every possible configuration can be individually enumerated and evaluated, and aggregating over these allows us to gauge the relative support for models which support colocalisation to those that don’t.</p>
 <p>You can see more about the enumeration approach on <a href="http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/">this blogpost</a>.</p>
 <p>See vignette: <a href="a03_enumeration.html">enumeration</a></p>
 </div>
@@ -138,19 +133,18 @@
 <p>As a Bayesian method, coloc.abf() requires the user to specify prior probabilities of SSNP causality and colocalisation. Post-hoc sensitivity analysis can be used to assess whether results are robust across a range of plausible priors.</p>
 <p>See vignette: <a href="a04_sensitivity.html">sensitivity</a></p>
 </div>
-<div id="enumeration-relaxing-the-single-causal-variant-assumption" class="section level2">
+<div id="deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning" class="section level2">
 <h2 class="hasAnchor">
-<a href="#enumeration-relaxing-the-single-causal-variant-assumption" class="anchor"></a>Enumeration, relaxing the single causal variant assumption</h2>
-<p>The single variant assumption can be relaxed through conditioning. We have now implemented a conditioning step within coloc, which we hope will increase use of conditioning, and proposed an alternative, masking.</p>
+<a href="#deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning" class="anchor"></a>Deprecated: relaxing the single causal variant assumption through conditioning</h2>
+<p>The single variant assumption can be relaxed through conditioning. We have implemented a conditioning step within coloc, which we hope will increase use of conditioning, and proposed an alternative, masking.</p>
 <p>See vignette: <a href="a05_conditioning.html">conditioning/masking</a></p>
 </div>
+<div id="an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie" class="section level2">
+<h2 class="hasAnchor">
+<a href="#an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie" class="anchor"></a>An improved approach to relaxing the single causal variant assumption: SuSiE</h2>
+<p>The sum of single effects regression method proposed by Wang et al <sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup> can instead simultaneously decompose multiple signals from the marginal summary stats, and appears to work better than conditioning.</p>
+<p>See vignette: <a href="a06_SuSiE.html">SuSiE</a></p>
 </div>
-<div id="the-difference-between-proportional-and-enumeration-approaches" class="section level1">
-<h1 class="hasAnchor">
-<a href="#the-difference-between-proportional-and-enumeration-approaches" class="anchor"></a>The difference between proportional and enumeration approaches</h1>
-<p>So what are the differences between proportional and enumeration approaches? Which should you choose?</p>
-<p>Well, if you only have p values, then you must use enumeration. But be aware that a single causal variant is assumed, and that for accurate inference, the causal variant needs to be included, so either very dense or imputed genotyping data is needed. The enumeration approach has another big advantage over proportional testing: being Bayesian, it allows you to evaluate support for each hypothesis, whereas with proportional testing, when the null of colocalisation is not rejected, you cannot be sure whether this reflects true colocalisation or a lack of power. The proportional approach is much less affected by spareness of genotyping data, with power only slightly decreased, but type 1 error rates unaffected.</p>
-<p>The behaviour of the two approaches only really differs when there are two or more causal variants. When both are shared, proportional testing has the same type 1 error rate, and whilst enumeration tends to still favour <span class="math inline">\(H_4\)</span> (shared variant), it tends to put some more weight on <span class="math inline">\(H_3\)</span> (distinct variants). But when at least one is specific to one trait and at least one is shared, their behaviour differs more substantially. Of course, neither approach was designed with this case in mind, and so there is no “right” answer, but it is instructive to understand their expected behaviour. Proportional testing tends to reject colocalisation, whilst enumeration tends to favour sharing. Until the methods are extended to incorporate this specific case, it can be useful to compare the two approaches when complete and dense genotyping data are available. When the results differ, we have tended to identify a combination of shared and distinct causal variants. The enumeration approach can still be applied in this case, if p values are available conditioning on the strongest signal, as demonstrated in our paper <sup><a id="fnr.4.100" class="footref" href="#fn.4">4</a></sup>.</p>
 </div>
 <div id="footnotes" class="section level1">
 <h1 class="hasAnchor">
@@ -160,6 +154,7 @@
 <p><sup><a id="fn.3" href="#fnr.3">3</a></sup><a href="http://www.ncbi.nlm.nih.gov/pubmed/18642345" class="uri">http://www.ncbi.nlm.nih.gov/pubmed/18642345</a></p>
 <p><sup><a id="fn.4" href="#fnr.4">4</a></sup><a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383" class="uri">http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383</a></p>
 <p><sup><a id="fn.5" href="#fnr.5">5</a></sup><a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272" class="uri">http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272</a></p>
+<p><sup><a id="fn.5" href="#fnr.6">6</a></sup><a href="https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388" class="uri">https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388</a></p>
 </div>
   </div>
 
@@ -178,7 +173,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -19,28 +19,19 @@
     <loc>http://chr1swallace.github.io/coloc/reference/approx.bf.p.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/bf-methods.html</loc>
-  </url>
-  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/bin2lin.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/check.dataset.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/reference/check.alignment.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/coloc-class.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/reference/check.dataset.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc-package.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.abf.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/coloc.abf.datasets.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/coloc.abf.snpStats.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.bf_bf.html</loc>
@@ -61,18 +52,6 @@
     <loc>http://chr1swallace.github.io/coloc/reference/coloc.susie_bf.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/coloc.test.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/coloc.test.summary.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/colocABF-class.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/colocPCs-class.html</loc>
-  </url>
-  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/coloc_test_data.html</loc>
   </url>
   <url>
@@ -83,12 +62,6 @@
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/estgeno1.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/eta.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/fillin.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/find.best.signal.html</loc>
@@ -115,16 +88,7 @@
     <loc>http://chr1swallace.github.io/coloc/reference/map_mask.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/pcs.model.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/pcs.prepare.html</loc>
-  </url>
-  <url>
     <loc>http://chr1swallace.github.io/coloc/reference/plot-methods.html</loc>
-  </url>
-  <url>
-    <loc>http://chr1swallace.github.io/coloc/reference/plot.coloc_abf.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/reference/print-methods.html</loc>
@@ -142,10 +106,10 @@
     <loc>http://chr1swallace.github.io/coloc/reference/sensitivity.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/a01_intro.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a00_data.html</loc>
   </url>
   <url>
-    <loc>http://chr1swallace.github.io/coloc/articles/a02_proportionality.html</loc>
+    <loc>http://chr1swallace.github.io/coloc/articles/a01_intro.html</loc>
   </url>
   <url>
     <loc>http://chr1swallace.github.io/coloc/articles/a03_enumeration.html</loc>

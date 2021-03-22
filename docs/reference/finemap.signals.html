@@ -82,7 +82,7 @@ stepwise procedure" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@ stepwise procedure" />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -105,10 +105,10 @@ stepwise procedure" />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
+      <a href="../articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
     </li>
     <li>
-      <a href="../articles/a02_proportionality.html">Coloc: proportionality testing</a>
+      <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
       <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
@@ -128,7 +128,7 @@ stepwise procedure" />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -156,15 +156,15 @@ signals where they exist, via conditioning or masking - ie a
 stepwise procedure</p>
     </div>
 
-    <pre class="usage"><span class='fu'>finemap.signals</span>(
-  <span class='no'>D</span>,
-  <span class='kw'>LD</span> <span class='kw'>=</span> <span class='no'>D</span>$<span class='no'>LD</span>,
-  <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"single"</span>, <span class='st'>"mask"</span>, <span class='st'>"cond"</span>),
-  <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
-  <span class='kw'>sigsnps</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>pthr</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
-  <span class='kw'>maxhits</span> <span class='kw'>=</span> <span class='fl'>3</span>
-)</pre>
+    <pre class="usage"><span class='fu'>finemap.signals</span><span class='op'>(</span>
+  <span class='va'>D</span>,
+  LD <span class='op'>=</span> <span class='va'>D</span><span class='op'>$</span><span class='va'>LD</span>,
+  method <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"single"</span>, <span class='st'>"mask"</span>, <span class='st'>"cond"</span><span class='op'>)</span>,
+  r2thr <span class='op'>=</span> <span class='fl'>0.01</span>,
+  sigsnps <span class='op'>=</span> <span class='cn'>NULL</span>,
+  pthr <span class='op'>=</span> <span class='fl'>1e-06</span>,
+  maxhits <span class='op'>=</span> <span class='fl'>3</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -214,6 +214,9 @@ pthr OR abs(z)&lt;zthr OR maxhits hits have been found.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of successively significant fine mapped SNPs, named by the SNPs</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Chris Wallace</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -230,7 +233,7 @@ pthr OR abs(z)&lt;zthr OR maxhits hits have been found.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

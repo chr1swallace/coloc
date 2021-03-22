@@ -19,10 +19,9 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Colocalisation Tests of Two Genetic Traits">
 <meta property="og:description" content="Performs the colocalisation tests described in
-    Plagnol et al (2009) &lt;doi:10.1093/biostatistics/kxn039&gt;,
-    Wallace et al (2013) &lt;doi:10.1002/gepi.21765&gt;,
     Giambartolomei et al (2013) &lt;doi:10.1371/journal.pgen.1004383&gt;,
-    Wallace (2020) &lt;doi:doi.org/10.1371/journal.pgen.1008720&gt;.">
+    Wallace (2020) &lt;doi:doi.org/10.1371/journal.pgen.1008720&gt;,
+    Wallace (2021) &lt;https://doi.org/10.1101/2021.02.23.432421&gt;.">
 <meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -42,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.1.0</span>
       </span>
     </div>
 
@@ -50,7 +49,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -65,10 +64,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
+      <a href="articles/a00_data.html">Coloc: data structures for the enumeration approach</a>
     </li>
     <li>
-      <a href="articles/a02_proportionality.html">Coloc: proportionality testing</a>
+      <a href="articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
       <a href="articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
@@ -88,7 +87,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -108,13 +107,8 @@
 <div id="coloc" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#coloc" class="anchor"></a>coloc</h1></div>
-</div>
-<div id="pkgdown-" class="section level1">
-<h1 class="hasAnchor">
-<a href="#pkgdown-" class="anchor"></a>pkgdown <img src="reference/figures/logo.png" align="right">
-</h1>
 
-<p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
+<p><img src="reference/figures/logo30.png" align="right"> The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
 <div id="susie-branch" class="section level2">
 <h2 class="hasAnchor">
 <a href="#susie-branch" class="anchor"></a>susie branch</h2>
@@ -135,7 +129,8 @@ install_github("chr1swallace/coloc","susie",build_vignettes=TRUE)</code></pre>
 <li>Run <code>coloc.susie</code> on the two outputs from above</li>
 </ol>
 <p>More detail is available in the vignette a06_SuSiE.html accessible by</p>
-<div class="sourceCode" id="cb2"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span>(<span class="st">"a06_SuSiE"</span>,<span class="kw">package</span><span class="kw">=</span><span class="st">"coloc"</span>)</pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span><span class="op">(</span><span class="st">"a06_SuSiE"</span>,package<span class="op">=</span><span class="st">"coloc"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="version-4" class="section level2">
 <h2 class="hasAnchor">
@@ -231,7 +226,7 @@ install_github("chr1swallace/coloc")</code></pre>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

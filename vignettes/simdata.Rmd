@@ -11,7 +11,7 @@ vignette: >
 
 ## Simulate a small dataset
 
-```{r,  echo=FALSE, results="hide" }
+```{r}
 setClass("simdata",
          representation(df1="data.frame",df2="data.frame"))
 setValidity("simdata", function(object) {
