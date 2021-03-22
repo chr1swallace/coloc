@@ -5,25 +5,29 @@ template:
     bootswatch: simplex
 news:
 articles:
-  - title: Vignettes
-    navbar: ~
-    contents:
-    - a01_intro
-    - a02_proportionality
-    - a03_enumeration
-    - a04_sensitivity
-    - a05_conditioning
-  # menu:
-  #     - text: Introduction
-  #       href: articles/a01_intro
-  #     - text: Proportionality testing
-  #       href: articles/a02_proportionality
-  #     - text: Enumeration of hypotheses (Bayesian method) under a single causal variant assumption
-  #       href: articles/ a03_enumeration
-  #     - text: Sensitivity analysis
-  #       href: articles/ a04_sensitivity
-  #     - text: Conditioning to relax the single causal variant assumption
-  #       href: articles/ a05_conditioning
+- title: Vignettes
+  navbar: ~
+  contents:
+  - a00_data
+  - a01_intro
+  - a02_proportionality
+  - a03_enumeration
+  - a04_sensitivity
+  - a05_conditioning
+  - a06_susie
+        # articles:
+  # - title: Vignettes
+    # menu:
+      # - text: Introduction
+        # href: articles/a01_intro
+      # - text: Proportionality testing
+        # href: articles/a02_proportionality
+      # - text: Enumeration of hypotheses (Bayesian method) under a single causal variant assumption
+        # href: articles/ a03_enumeration
+      # - text: Sensitivity analysis
+        # href: articles/ a04_sensitivity
+      # - text: Conditioning to relax the single causal variant assumption
+        # href: articles/ a05_conditioning
 reference:
   - title: Bayesian enumeration of hypotheses
     desc: Two trait colocalisation and single trait fine mapping under

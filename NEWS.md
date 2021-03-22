@@ -1,3 +1,6 @@
+# coloc 4.0-5
+* update error checking
+
 # coloc 4.0-3
 * BUGFIX
 - missing sdY for type="quant" would error in finemap.signals or coloc.signals, now it is estimated if missing.

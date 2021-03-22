@@ -8,6 +8,13 @@
 
 <title>Fully Bayesian colocalisation analysis using Bayes Factors — coloc.abf • coloc</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -41,6 +48,7 @@
 
 <meta property="og:title" content="Fully Bayesian colocalisation analysis using Bayes Factors — coloc.abf" />
 <meta property="og:description" content="Bayesian colocalisation analysis" />
+<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png" />
 
 
 
@@ -72,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
       </span>
     </div>
 
@@ -107,7 +115,7 @@
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -151,38 +159,8 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>dataset1</th>
-      <td><p>a list with the following elements</p><dl'>
-
-<dt>pvalues</dt><dd><p>P-values for each SNP in dataset 1</p></dd>
-
-<dt>N</dt><dd><p>Number of samples in dataset 1</p></dd>
-
-<dt>MAF</dt><dd><p>minor allele frequency of the variants</p></dd>
-
-<dt>beta</dt><dd><p>regression coefficient for each SNP from dataset 1</p></dd>
-
-<dt>varbeta</dt><dd><p>variance of beta</p></dd>
-
-<dt>type</dt><dd><p>the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control</p></dd>
-
-<dt>s</dt><dd><p>for a case control dataset, the proportion of samples in dataset 1 that are cases</p></dd>
-
-<dt>sdY</dt><dd><p>for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF</p></dd>
-
-<dt>snp</dt><dd><p>a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.</p></dd>
-
-
-</dl>
-
-<p>Some of these items may be missing, but you must give</p><ul>
-<li><p>always<code>type</code></p></li>
-<li><p>if <code>type</code>=="cc"<code>s</code></p></li>
-<li><p>if <code>type</code>=="quant" and <code>sdY</code> known<code>sdY</code></p></li>
-<li><p>if <code>type</code>=="quant" and <code>sdY</code> unknown<code>beta</code>, <code>varbeta</code>, <code>N</code>, <code>MAF</code>
-and then either</p></li>
-<li><p><code>pvalues</code>, <code>MAF</code></p></li>
-<li><p><code>beta</code>, <code>varbeta</code></p></li>
-</ul></td>
+      <td><p>a list with specifically named elements defining the dataset
+to be analysed. See <code><a href='check.dataset.html'>check.dataset</a></code> for details.</p></td>
     </tr>
     <tr>
       <th>dataset2</th>
@@ -210,7 +188,7 @@ and then either</p></li>
 
     <p>a list of two <code>data.frame</code>s:</p><ul>
 <li><p>summary is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)</p></li>
-<li><p>results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal</p></li>
+<li><p>results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal <em>if</em> H4 is true. This is only relevant if the posterior support for H4 in summary is convincing.</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>

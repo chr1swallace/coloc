@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coloc: a package for colocalisation analyses • coloc</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/simplex/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -13,6 +19,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: a package for colocalisation analyses">
 <meta property="og:description" content="coloc">
+<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -31,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
       </span>
     </div>
 
@@ -66,7 +73,7 @@
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -97,7 +104,7 @@
       <h1 data-toc-skip>Coloc: a package for colocalisation analyses</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2020-04-29</h4>
+            <h4 class="date">2021-02-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a01_intro.Rmd"><code>vignettes/a01_intro.Rmd</code></a></small>
       <div class="hidden name"><code>a01_intro.Rmd</code></div>
@@ -114,7 +121,7 @@
 <div id="proportional-testing" class="section level2">
 <h2 class="hasAnchor">
 <a href="#proportional-testing" class="anchor"></a>Proportional testing</h2>
-<p>First, the proportional approach uses the fact that for two traits sharing causal variants, regression coefficients for either trait against any set of SNPs in the neighbourhood of those variants must be proportional. This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> in the context of evaluating whether expression of the gene <em>RPS26</em> mediated the association of type 1 diabetes to a region on chromosome 12q13 as had recently been proposed. The test addressed a common issue in genetics, and meant researchers could avoid the need to squint at parallel manhattan plots to decide whether two traits share causal variants. The function <code><a href="../reference/coloc.test.html">coloc.test()</a></code> in this package evolved from code released by Vincent, but no longer available.</p>
+<p>First, the proportional approach uses the fact that for two traits sharing causal variants, regression coefficients for either trait against any set of SNPs in the neighbourhood of those variants must be proportional. This test was first proposed by Plagnol et al. <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> in the context of evaluating whether expression of the gene <em>RPS26</em> mediated the association of type 1 diabetes to a region on chromosome 12q13 as had recently been proposed. The test addressed a common issue in genetics, and meant researchers could avoid the need to squint at parallel manhattan plots to decide whether two traits share causal variants. The function <code><a href="../reference/coloc.test.html">coloc.test()</a></code> in this package evolved from code released by Vincent, but no longer available.</p>
 <p>However, choosing <strong>which</strong> SNPs to use for the test is a problem. The obvious choice is to use those most strongly associated with one or other trait to maximise information, but doing so induces bias in the regression coefficients, which in turn leads to increased likelihood of spuriously rejecting the null of colocalisation, ie a quite substantially increased type 1 error rate <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>. I proposed two alternatives to address this problem, either using a principal component summary of genetic variation in the region to overcome the need to select a small set of test SNPs, implemented in <code>coloc.pcs()</code> and associated functions. <!-- A method which uses the ideas of Bayesian model --> <!-- averaging to average p values over SNP selections, generating --> <!-- posterior predictive p values, implemented in `coloc.bma()`, has been removed because it depends on a package that produces errors on CRAN. --></p>
 <p>See vignette: <a href="a02_proportionality.html">proportionality</a></p>
 </div>

@@ -12,7 +12,7 @@ eff<-snp.rhs.estimates(Y ~ 1, snp.data=X, family="gaussian")
 beta.q <- sapply(eff@.Data, "[[", "beta")
 vbeta.q <- sapply(eff@.Data, "[[", "Var.beta")
 p.q <- pchisq(beta.q^2/vbeta.q,df=1,lower.tail=FALSE)
-sd.est <- coloc:::sdY.est(vbeta=vbeta.q, maf=maf, n=nrow(X))
+sd.est <- suppressWarnings(coloc:::sdY.est(vbeta=vbeta.q, maf=maf, n=nrow(X)))
 
 ## case-control trait
 cc <- rbinom(nrow(X),1, p=(1+as(X[,8],"numeric"))/4)

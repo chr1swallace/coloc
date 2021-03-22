@@ -8,6 +8,13 @@
 
 <title>check.dataset — check.dataset • coloc</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -40,7 +47,8 @@
 
 
 <meta property="og:title" content="check.dataset — check.dataset" />
-<meta property="og:description" content="Check dataset inputs for errors" />
+<meta property="og:description" content="Check coloc dataset inputs for errors" />
+<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png" />
 
 
 
@@ -72,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">4.0-6</span>
       </span>
     </div>
 
@@ -107,7 +115,7 @@
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -136,15 +144,15 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>check.dataset</h1>
-    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/claudia.R'><code>R/claudia.R</code></a></small>
+    <small class="dont-index">Source: <a href='https://github.com/chr1swallace/coloc/blob/master/R/check.R'><code>R/check.R</code></a></small>
     <div class="hidden name"><code>check.dataset.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Check dataset inputs for errors</p>
+    <p>Check coloc dataset inputs for errors</p>
     </div>
 
-    <pre class="usage"><span class='fu'>check.dataset</span>(<span class='no'>d</span>, <span class='kw'>suffix</span> <span class='kw'>=</span> <span class='st'>""</span>, <span class='kw'>req</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>check.dataset</span>(<span class='no'>d</span>, <span class='kw'>suffix</span> <span class='kw'>=</span> <span class='st'>""</span>, <span class='kw'>req</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"snp"</span>, <span class='st'>"N"</span>))</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -163,9 +171,55 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>NULL if no errors found</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Will call stop() unless a series of expectations on dataset input format are met</p>
+    <p>Coloc is flexible, requiring perhaps only p values, or z scores, or effect
+estimates and standard errors, but with this flexibility, also comes
+difficulties describing exactly the combinations of items required.</p><dl'>
+
+<dt>pvalues</dt><dd><p>P-values for each SNP in dataset 1</p></dd>
+
+<dt>N</dt><dd><p>Number of samples in dataset 1</p></dd>
+
+<dt>MAF</dt><dd><p>minor allele frequency of the variants</p></dd>
+
+<dt>beta</dt><dd><p>regression coefficient for each SNP from dataset 1</p></dd>
+
+<dt>varbeta</dt><dd><p>variance of beta</p></dd>
+
+<dt>type</dt><dd><p>the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control</p></dd>
+
+<dt>s</dt><dd><p>for a case control dataset, the proportion of samples in dataset 1 that are cases</p></dd>
+
+<dt>sdY</dt><dd><p>for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF</p></dd>
+
+<dt>snp</dt><dd><p>a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.</p></dd>
+
+
+</dl>
+
+<p>Some of these items may be missing, but you must always give <code>type</code>.</p>
+<p>Then scalars describing the samples used:</p><dl'>
+<dt></dt><dd><p><code>N</code></p></dd>
+<dt>if <code>type</code>=="cc"</dt><dd><p><code>s</code></p></dd>
+<dt>if <code>type</code>=="quant" and <code>sdY</code> known</dt><dd><p><code>sdY</code></p></dd>
+
+</dl><p>If <code>sdY</code> is unknown, it will be approximated, and this will require</p><dl'>
+<dt></dt><dd><p><code>beta</code>, <code>varbeta</code>, <code>N</code>, <code>MAF</code></p></dd>
+
+</dl>
+
+<p>Then, if not already covered above, the summary statistics describing the results</p><dl'>
+<dt>preferably</dt><dd><p><code>beta</code>, <code>varbeta</code></p></dd>
+<dt>alternatively</dt><dd><p><code>pvalues</code>, <code>MAF</code></p></dd>
+
+</dl>
+
+<p><code>check.dataset</code> call stop() unless a series of expectations on dataset
+input format are met</p>
 <p>This is a helper function for use by other coloc functions, but
 you can use it directly to check the format of a dataset to be
 supplied to coloc.abf(), coloc.signals(), finemap.abf(), or
