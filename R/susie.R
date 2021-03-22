@@ -1,6 +1,11 @@
-#'@importFrom susieR susie_rss susie_get_cs
-NULL
+## NB - susieR is not (yet?) on cran. Until then it must live in the Enhances
+## catergory, and we need workarounds in these functions and their docs.
+
+## '@importFrom susieR susie_rss susie_get_cs
+## NULL
 globalVariables(c("pp4", "i", "j"))
+
+
 
 ##' convert alpha matrix to log BF matrix
 ##'
@@ -100,11 +105,16 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @param dataset2 *either* a coloc-style input dataset (see
 ##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
+##' @param nref number of individuals from whom the LD matrix was estimated
 ##' @param susie.args a named list of additional arguments to be passed to
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
 coloc.susie=function(dataset1,dataset2, nref, susie.args=list(),  ...) {
+  if(!requireNamespace("susieR", quietly = TRUE)) {
+    message("please install susieR https://github.com/stephenslab/susieR")
+    return(NULL)
+  }
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
@@ -152,6 +162,10 @@ coloc.susie=function(dataset1,dataset2, nref, susie.args=list(),  ...) {
 ##' @export
 ##' @author Chris Wallace
 coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
+  if(!requireNamespace("susieR", quietly = TRUE)) {
+    message("please install susieR https://github.com/stephenslab/susieR")
+    return(NULL)
+  }
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
@@ -175,7 +189,11 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
 }
 
 susie_get_cs_with_names=function(s) {
-  sets=susie_get_cs(s)
+  if(!requireNamespace("susieR", quietly = TRUE)) {
+    message("please install susieR https://github.com/stephenslab/susieR")
+    return(NULL)
+  }
+  sets=susieR::susie_get_cs(s)
   sets$cs=lapply(sets$cs, function(x) structure(x, names=colnames(s$alpha)[x]))
   sets
 }
@@ -322,12 +340,18 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @examples
 ##' library(coloc)
 ##' data(coloc_test_data)
-##' result=runsusie(coloc_test_data$D1,nref=500)
-##' summary(result)
+##' if(requireNamespace("susieR", quietly = TRUE)) {
+##'   result=runsusie(coloc_test_data$D1,nref=500)
+##'   summary(result)
+##' }
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,nref=NULL,p=NULL,
                   trimz=NULL,
                   r2.prune=NULL,s_init=NULL, ...) {
+  if(!requireNamespace("susieR", quietly = TRUE)) {
+    message("please install susieR https://github.com/stephenslab/susieR")
+    return(NULL)
+  }
   if(is.null(nref))
     stop("Please give nref, the number of samples used to estimate the LD matrix")
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
@@ -363,7 +387,7 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
   while(!converged) {
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
-      res=do.call("susie_rss",
+      res=do.call(susieR::susie_rss,
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit,s_init=s_init),
                     susie_args))
       ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
@@ -371,7 +395,7 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
       ##                null_weight=susie_args$null_weight)
       ## res1$sets
     } else {
-      res=do.call("susie_rss",
+      res=do.call(susieR::susie_rss,
                   c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit),
                     susie_args))
     }

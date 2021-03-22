@@ -115,7 +115,7 @@
 ##     N=nrow(X1),
 ##     sdY=sd(Y1),
 ##     type="quant",
-##     MAF=maf,
+##     MAF=maf
 ##     LD=LD,
 ##     snp=names(b1$beta),
 ##     position=1:length(b1$beta))
@@ -130,4 +130,4 @@
 ##     position=1:length(b1$beta))
 
 ## coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4)
-## save(coloc_test_data, file="data/coloc_test_data.rda")
+## save(coloc_test_data, file="data/coloc_test_data.rda", version=2)

@@ -15,6 +15,8 @@ dataset}
 \link{check.dataset}), or the result of running \link{runsusie} on such a
 dataset}
 
+\item{nref}{number of individuals from whom the LD matrix was estimated}
+
 \item{susie.args}{a named list of additional arguments to be passed to
 \link{runsusie}}
 

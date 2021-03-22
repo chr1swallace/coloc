@@ -25,9 +25,6 @@
 #'\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
 #' 
 #'@keywords package
-#' @importFrom BMA glib glib.data.frame
-#' @importFrom snpStats single.snp.tests col.summary snp.imputation impute.snps
-#' @importFrom methods setMethod setClass
 #' @import ggplot2
 #' @importFrom graphics abline axis box par
 #' @importFrom methods as is new slot
