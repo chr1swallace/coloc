@@ -46,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -61,19 +61,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/a00_data.html">Coloc: data structures</a>
-    </li>
-    <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_data.html">Coloc: data structures</a>
+    </li>
+    <li>
+      <a href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -84,7 +84,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -118,24 +118,19 @@
 <a href="#multiple-causal-variants-using-susie-to-separate-the-signals" class="anchor"></a>Multiple causal variants, using SuSiE to separate the signals</h1>
 <p>Note that this vignette depends on the <a href="https://github.com/stephenslab/susieR">susieR</a> package. Please install it, following the directions on that site, before running the code here. Because that package is not (yet?) on CRAN, this vignette built on CRAN will not include the code that depends on susieR. Please build the vignette locally, after installing the susieR package.</p>
 <p>We load some simulated data.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc">coloc</a></span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
 <pre><code>## This is a new update to coloc.</code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/attach.html">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">coloc_test_data</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/attach.html">attach</a></span>(<span class="no">coloc_test_data</span>)</pre></body></html></div>
 <p>First, let us do a standard coloc (single causal variant) analysis to serve as a baseline comparison. The analysis concludes there is colocalisation, because it “sees” the SNPs on the left which are strongly associated with both traits. But it misses the SNPs on the right of the top left plot which are associated with only one trait.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="va">D3</span>, dataset2<span class="op">=</span><span class="va">D4</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="no">D3</span>, <span class="kw">dataset2</span><span class="kw">=</span><span class="no">D4</span>)</pre></body></html></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  8.49e-73  1.52e-44  1.12e-31  9.99e-04  9.99e-01 
 ## [1] "PP abf for shared variant: 99.9%"</code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
 <pre><code>## [1] "coloc_abf" "list"</code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">## print.coloc_abf</span>
-<span class="va">my.res</span></code></pre></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="co">## print.coloc_abf</span>
+<span class="no">my.res</span></pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -149,26 +144,22 @@
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 1.000000e+02 8.490447e-73 1.516177e-44 1.118862e-31 9.990010e-04 9.990010e-01</code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,<span class="st">"H4 &gt; 0.9"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="st">"H4 &gt; 0.9"</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a06_SuSiE_files/figure-html/sens0-1.png" width="768"></p>
 <p>Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.</p>
 <p>coloc has adopted the <a href="https://stephenslab.github.io/susie-paper/index.html">SuSiE</a> framework for fine mapping in the presence of multiple causal variants. This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format. =check.dataset= should return NULL if there are no problems, or print informative error messages if there are.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span><span class="op">(</span><span class="va">D3</span>,req<span class="op">=</span><span class="st">"LD"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">D3</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span><span class="op">(</span><span class="va">D4</span>,req<span class="op">=</span><span class="st">"LD"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">D4</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
 <p>SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses. =runsusie= is just a wrapper around the =susie_rss= function in the <a href="https://stephenslab.github.io/susieR/">susieR package</a> that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler. Here, it does indeed find two signals for dataset D3 (there are two rows in the credible sets summary) and one for dataset D4. We need also to supply the number of individuals used to estimate the LD matrix, =nref=.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span><span class="op">(</span><span class="st">"susieR"</span>,quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">S3</span><span class="op">=</span><span class="fu"><a href="../reference/runsusie.html">runsusie</a></span><span class="op">(</span><span class="va">D3</span>,nref<span class="op">=</span><span class="fl">503</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">S3</span><span class="op">)</span>
-  <span class="va">S4</span><span class="op">=</span><span class="fu"><a href="../reference/runsusie.html">runsusie</a></span><span class="op">(</span><span class="va">D4</span>,nref<span class="op">=</span><span class="fl">503</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">S4</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="kw">if</span>(<span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span>(<span class="st">"susieR"</span>,<span class="kw">quietly</span><span class="kw">=</span><span class="fl">TRUE</span>)) {
+  <span class="no">S3</span><span class="kw">=</span><span class="fu"><a href="../reference/runsusie.html">runsusie</a></span>(<span class="no">D3</span>,<span class="kw">nref</span><span class="kw">=</span><span class="fl">503</span>)
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">S3</span>)
+  <span class="no">S4</span><span class="kw">=</span><span class="fu"><a href="../reference/runsusie.html">runsusie</a></span>(<span class="no">D4</span>,<span class="kw">nref</span><span class="kw">=</span><span class="fl">503</span>)
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">S4</span>)
+}</pre></body></html></div>
 <pre><code>## running iterations: 100</code></pre>
 <pre><code>##  converged: TRUE</code></pre>
 <pre><code>## running iterations: 100</code></pre>
@@ -186,11 +177,10 @@
 <p><strong>Important note</strong> <code><a href="../reference/runsusie.html">runsusie()</a></code> calls <code>susie_rss()</code> in the <code>susieR</code> package, but sets some specific parameters to get sensible output for coloc. In particular, the <code>null_weight</code> is by default set to an (implausibly) small value of <span class="math inline">\(\frac{1}{1+nsnps}\)</span>. This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if <code>null_weight</code> is large. For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated). At this stage, weak signals will get weeded out.</p>
 <p>You can also pass that per-SNP prior to <code><a href="../reference/runsusie.html">runsusie()</a></code> by setting the parameter <code>p</code> (equivalent to <code>p1</code> or <code>p2</code> in coloc functions). But <strong>be aware</strong> either option differs from the default behaviour of <code>susie_rss()</code> which is not to specify a prior for the null hypothesis at all.</p>
 <p>With these susie output objects stored, we can colocalise every pair of signals. This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span><span class="op">(</span><span class="st">"susieR"</span>,quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">susie.res</span><span class="op">=</span><span class="fu"><a href="../reference/coloc.susie.html">coloc.susie</a></span><span class="op">(</span><span class="va">S3</span>,<span class="va">S4</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">susie.res</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb28"><html><body><pre class="r"><span class="kw">if</span>(<span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span>(<span class="st">"susieR"</span>,<span class="kw">quietly</span><span class="kw">=</span><span class="fl">TRUE</span>)) {
+  <span class="no">susie.res</span><span class="kw">=</span><span class="fu"><a href="../reference/coloc.susie.html">coloc.susie</a></span>(<span class="no">S3</span>,<span class="no">S4</span>)
+  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">susie.res</span>$<span class="no">summary</span>)
+}</pre></body></html></div>
 <pre><code>## Using 100/ 100 and 100 available</code></pre>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ## 1.06e-167 3.96e-116  5.37e-55  0.00e+00  1.00e+00 
@@ -199,17 +189,16 @@
 ## 5.29e-165 1.98e-113  2.67e-52  1.00e+00  1.40e-51 
 ## [1] "PP abf for shared variant: 1.4e-49%"
 ##    nsnps  hit1 hit2     PP.H0.abf     PP.H1.abf    PP.H2.abf PP.H3.abf
-## 1:   100   s25  s25 1.064365e-167 3.964719e-116 5.369180e-55         0
-## 2:   100 s25.1  s25 5.286547e-165 1.982360e-113 2.666795e-52         1
+## 1:   100   s25  s25 1.064545e-167 3.964718e-116 5.370094e-55         0
+## 2:   100 s25.1  s25 5.287085e-165 1.982359e-113 2.667067e-52         1
 ##       PP.H4.abf idx1 idx2
 ## 1: 1.000000e+00    1    1
-## 2: 1.396168e-51    2    1</code></pre>
+## 2: 1.396321e-51    2    1</code></pre>
 <p>Note that because we are doing multiple colocalisations, sensitivity() needs to know which to consider, and we need to give it the datasets used if we want to see the Manhattan plots.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span><span class="op">(</span><span class="st">"susieR"</span>,quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-  <span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">susie.res</span>,<span class="st">"H4 &gt; 0.9"</span>,row<span class="op">=</span><span class="fl">1</span>,dataset1<span class="op">=</span><span class="va">D3</span>,dataset2<span class="op">=</span><span class="va">D4</span><span class="op">)</span>
-  <span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">susie.res</span>,<span class="st">"H4 &gt; 0.9"</span>,row<span class="op">=</span><span class="fl">2</span>,dataset1<span class="op">=</span><span class="va">D3</span>,dataset2<span class="op">=</span><span class="va">D4</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb31"><html><body><pre class="r"><span class="kw">if</span>(<span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span>(<span class="st">"susieR"</span>,<span class="kw">quietly</span><span class="kw">=</span><span class="fl">TRUE</span>)) {
+  <span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">susie.res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">1</span>,<span class="kw">dataset1</span><span class="kw">=</span><span class="no">D3</span>,<span class="kw">dataset2</span><span class="kw">=</span><span class="no">D4</span>)
+  <span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">susie.res</span>,<span class="st">"H4 &gt; 0.9"</span>,<span class="kw">row</span><span class="kw">=</span><span class="fl">2</span>,<span class="kw">dataset1</span><span class="kw">=</span><span class="no">D3</span>,<span class="kw">dataset2</span><span class="kw">=</span><span class="no">D4</span>)
+}</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <pre><code>## Results fail decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a06_SuSiE_files/figure-html/sens-1.png" width="768"><img src="a06_SuSiE_files/figure-html/sens-2.png" width="768"></p>
@@ -231,7 +220,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

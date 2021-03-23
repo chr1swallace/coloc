@@ -17,7 +17,6 @@
 #' check.dataset(coloc_test_data$D1) # should return NULL if data structure is ok
 "coloc_test_data"
 
-
 ## library(mvtnorm)
 ## simx <- function(nsnps,nsamples,S,maf=0.1) {
 ##     mu <- rep(0,nsnps)
@@ -33,8 +32,8 @@
 ##   S <- (1 - (abs(outer(1:nsnps,1:nsnps,`-`))/nsnps))^4
 ##   X1 <- simx(nsnps,ntotal,S)
 ##   X2 <- simx(nsnps,ntotal,S)
-##   Y1 <- rnorm(ntotal,rowSums(X1[,causals,drop=FALSE]/2),1.5)
-##   Y2 <- rnorm(ntotal,rowSums(X2[,causals,drop=FALSE]/2),1.5)
+##   Y1 <- rnorm(ntotal,rowSums(X1[,causals,drop=FALSE]/2),1)
+##   Y2 <- rnorm(ntotal,rowSums(X2[,causals,drop=FALSE]/2),1)
 ##   colnames(X1) <- colnames(X2) <- paste("s",1:nsnps,sep="")
 ##   df1 <- cbind(Y=Y1,X1)
 ##   df2 <- cbind(Y=Y2,X2)
@@ -115,7 +114,7 @@
 ##     N=nrow(X1),
 ##     sdY=sd(Y1),
 ##     type="quant",
-##     MAF=maf
+##     MAF=maf,
 ##     LD=LD,
 ##     snp=names(b1$beta),
 ##     position=1:length(b1$beta))

@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -103,19 +103,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/a00_data.html">Coloc: data structures</a>
-    </li>
-    <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_data.html">Coloc: data structures</a>
+    </li>
+    <li>
+      <a href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -126,7 +126,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -152,7 +152,7 @@
     <p>Convert binomial to linear regression</p>
     </div>
 
-    <pre class="usage"><span class='fu'>bin2lin</span><span class='op'>(</span><span class='va'>D</span>, doplot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>bin2lin</span>(<span class='no'>D</span>, <span class='kw'>doplot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -177,9 +177,6 @@ varbeta.bin, and beta and varbeta updated to linear estimates</p>
 binary outcome, given log OR and their variance + MAF in controls</p>
 <p>sets beta = cov(x,y)/var(x) varbeta = (var(y)/var(x) -
 cov(x,y)^2/var(x)^2)/N</p>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p>Chris Wallace</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -196,7 +193,7 @@ cov(x,y)^2/var(x)^2)/N</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
