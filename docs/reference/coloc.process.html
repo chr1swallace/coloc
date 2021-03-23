@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -103,19 +103,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/a00_data.html">Coloc: data structures</a>
-    </li>
-    <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_data.html">Coloc: data structures</a>
+    </li>
+    <li>
+      <a href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -126,7 +126,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -152,19 +152,19 @@
     <p>Internal helper function</p>
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.process</span><span class='op'>(</span>
-  <span class='va'>obj</span>,
-  hits1 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  hits2 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  LD <span class='op'>=</span> <span class='cn'>NULL</span>,
-  r2thr <span class='op'>=</span> <span class='fl'>0.01</span>,
-  p1 <span class='op'>=</span> <span class='fl'>1e-04</span>,
-  p2 <span class='op'>=</span> <span class='fl'>1e-04</span>,
-  p12 <span class='op'>=</span> <span class='fl'>1e-06</span>,
-  LD1 <span class='op'>=</span> <span class='va'>LD</span>,
-  LD2 <span class='op'>=</span> <span class='va'>LD</span>,
-  mode <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"iterative"</span>, <span class='st'>"allbutone"</span><span class='op'>)</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>coloc.process</span>(
+  <span class='no'>obj</span>,
+  <span class='kw'>hits1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>hits2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>LD</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>r2thr</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
+  <span class='kw'>p1</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>,
+  <span class='kw'>p2</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>,
+  <span class='kw'>p12</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
+  <span class='kw'>LD1</span> <span class='kw'>=</span> <span class='no'>LD</span>,
+  <span class='kw'>LD2</span> <span class='kw'>=</span> <span class='no'>LD</span>,
+  <span class='kw'>mode</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"iterative"</span>, <span class='st'>"allbutone"</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -222,9 +222,6 @@ condition on all but one of them in each analysis</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>data.table of coloc results</p>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p>Chris Wallace</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -241,7 +238,7 @@ condition on all but one of them in each analysis</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

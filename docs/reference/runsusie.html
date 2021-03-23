@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -103,19 +103,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/a00_data.html">Coloc: data structures</a>
-    </li>
-    <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_data.html">Coloc: data structures</a>
+    </li>
+    <li>
+      <a href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -126,7 +126,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -152,16 +152,16 @@
     <p>run susie_rss storing some additional information for coloc</p>
     </div>
 
-    <pre class="usage"><span class='fu'>runsusie</span><span class='op'>(</span>
-  <span class='va'>d</span>,
-  suffix <span class='op'>=</span> <span class='fl'>1</span>,
-  nref <span class='op'>=</span> <span class='cn'>NULL</span>,
-  p <span class='op'>=</span> <span class='cn'>NULL</span>,
-  trimz <span class='op'>=</span> <span class='cn'>NULL</span>,
-  r2.prune <span class='op'>=</span> <span class='cn'>NULL</span>,
-  s_init <span class='op'>=</span> <span class='cn'>NULL</span>,
-  <span class='va'>...</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>runsusie</span>(
+  <span class='no'>d</span>,
+  <span class='kw'>suffix</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>nref</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>p</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>trimz</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>r2.prune</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>s_init</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -220,18 +220,14 @@ quantitative trait</p></li>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>results of a susie_rss run, with some added dimnames</p>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p>Chris Wallace</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/chr1swallace/coloc'>coloc</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>coloc_test_data</span><span class='op'>)</span>
-<span class='kw'>if</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"susieR"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span>
-  <span class='va'>result</span><span class='op'>=</span><span class='fu'>runsusie</span><span class='op'>(</span><span class='va'>coloc_test_data</span><span class='op'>$</span><span class='va'>D1</span>,nref<span class='op'>=</span><span class='fl'>500</span><span class='op'>)</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>result</span><span class='op'>)</span>
-<span class='op'>}</span>
-</div><div class='output co'>#&gt; <span class='message'>running iterations: 100</span></div><div class='output co'>#&gt; <span class='message'>	converged: TRUE</span></div><div class='output co'>#&gt; 
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>coloc</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>coloc_test_data</span>)
+<span class='kw'>if</span>(<span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span>(<span class='st'>"susieR"</span>, <span class='kw'>quietly</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)) {
+  <span class='no'>result</span><span class='kw'>=</span><span class='fu'>runsusie</span>(<span class='no'>coloc_test_data</span>$<span class='no'>D1</span>,<span class='kw'>nref</span><span class='kw'>=</span><span class='fl'>500</span>)
+  <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>result</span>)
+}</div><div class='output co'>#&gt; <span class='message'>running iterations: 100</span></div><div class='output co'>#&gt; <span class='message'>	converged: TRUE</span></div><div class='output co'>#&gt; 
 #&gt; Variables in credible sets:
 #&gt; 
 #&gt;  variable variable_prob cs
@@ -256,7 +252,7 @@ quantitative trait</p></li>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

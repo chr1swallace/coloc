@@ -29,7 +29,7 @@ if(FALSE) {
     ## x <- qbinom(1-pvars, 2, maf)
   }
 
-  sim.data <- function(nsnps=50,nsamples=200,ncausals=1) {
+  sim.data <- function(nsnps=50,nsamples=200,ncausals=1,sd.y=c(1,1.2)) {
     cat("Generate a small set of data\n")
     ntotal <- nsnps * nsamples
     ## S <- toeplitz(sample(1:10,nsnps,replace=TRUE)/10)
@@ -41,8 +41,8 @@ if(FALSE) {
     X1 <- simx(nsamples,S,maf)
     X2 <- simx(nsamples,S,maf)
     X3 <- simx(nsamples,S,maf)
-    Y1 <- rnorm(nsamples,rowSums(X1[,causals,drop=FALSE]/2),1)
-    Y2 <- rnorm(nsamples,rowSums(X2[,causals,drop=FALSE]/2),1.2)
+    Y1 <- rnorm(nsamples,rowSums(X1[,causals,drop=FALSE]/2),sd.y[1])
+    Y2 <- rnorm(nsamples,rowSums(X2[,causals,drop=FALSE]/2),sd.y[2])
     colnames(X1) <- colnames(X2) <- paste("s",1:nsnps,sep="")
     df1 <- cbind(Y=Y1,X1)
     df2 <- cbind(Y=Y2,X2)
@@ -61,7 +61,7 @@ if(FALSE) {
   }
 
   set.seed(46411)
-  data=sim.data(nsamples=1000)
+  data=sim.data(nsamples=1000,sd.y=c(2,1.5))
   Y1 <- data$df1$Y
   Y2 <- data$df2$Y
   Y3 <- sample(data$df2$Y) # Y3 is unassociated with anything in X2
@@ -84,13 +84,12 @@ if(FALSE) {
   snpnames=make.unique(rep(colnames(X2),2))
   maf <- rep(colMeans(data$X3)/2,2)
   names(maf) <- snpnames
-  LD0 <- LD1 <- cor(rbind(X1,X2))
+  LD0 <- LD1 <- cor(rbind(data$X3))
   nsnp=ncol(X2)
-  dimnames(LD1)=list(snpnames[-c(1:nsnp)],snpnames[-c(1:nsnp)])
-  LD01=matrix(0,nsnp,nsnp,dimnames=list(snpnames[1:nsnp],snpnames[-c(1:nsnp)]))
-  LD10=matrix(0,nsnp,nsnp,dimnames=list(snpnames[-c(1:nsnp)],snpnames[1:nsnp]))
-
+  LD01=matrix(0,nsnp,nsnp)
+  LD10=matrix(0,nsnp,nsnp)
   LD <- rbind(cbind(LD0,LD01), cbind(LD10, LD1))
+  dimnames(LD)=list(snpnames,snpnames)
 
   get.beta <- function(x,nm) {
     beta <- sapply(x,"[",1)
@@ -126,7 +125,7 @@ if(FALSE) {
              type="quant",
              MAF=maf,
              LD=LD,
-             snp=names(b1$beta),
+             snp=snpnames,
              position=1:length(b1$beta))
   D4 <- list(beta=b2$beta,
              varbeta=b2$varbeta,
@@ -135,14 +134,14 @@ if(FALSE) {
              type="quant",
              MAF=maf,
              LD=LD,
-             snp=names(b2$beta),
+             snp=snpnames,
              position=1:length(b1$beta))
 
   par(mfrow=c(2,2))
-  plot.dataset(D1)
-  plot.dataset(D2)
-  plot.dataset(D3)
-  plot.dataset(D4)
+  plot.dataset(D1,main="D1")
+  plot.dataset(D2,main="D1")
+  plot.dataset(D3,main="D1")
+  plot.dataset(D4,main="D1")
 
   S3=runsusie(D3,nref=1000)
   summary(S3)

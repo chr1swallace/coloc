@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -103,19 +103,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/a00_data.html">Coloc: data structures</a>
-    </li>
-    <li>
       <a href="../articles/a01_intro.html">Coloc: a package for colocalisation analyses</a>
     </li>
     <li>
-      <a href="../articles/a03_enumeration.html">Coloc: enumeration of configurations under a single causal variant assumption</a>
+      <a href="../articles/a02_data.html">Coloc: data structures</a>
+    </li>
+    <li>
+      <a href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a>
     </li>
     <li>
       <a href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a>
     </li>
     <li>
-      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+      <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
   </ul>
 </li>
@@ -126,7 +126,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -152,17 +152,17 @@
     <p>Shows how prior and posterior per-hypothesis probabilities change as a function of p12</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sensitivity</span><span class='op'>(</span>
-  <span class='va'>obj</span>,
-  rule <span class='op'>=</span> <span class='st'>""</span>,
-  dataset1 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  dataset2 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  npoints <span class='op'>=</span> <span class='fl'>100</span>,
-  doplot <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  plot.manhattans <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  preserve.par <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  row <span class='op'>=</span> <span class='fl'>1</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>sensitivity</span>(
+  <span class='no'>obj</span>,
+  <span class='kw'>rule</span> <span class='kw'>=</span> <span class='st'>""</span>,
+  <span class='kw'>dataset1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>dataset2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>npoints</span> <span class='kw'>=</span> <span class='fl'>100</span>,
+  <span class='kw'>doplot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>plot.manhattans</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>preserve.par</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>row</span> <span class='kw'>=</span> <span class='fl'>1</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -211,9 +211,6 @@
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Function is called mainly for plotting side effect.  It draws two plots, showing how prior and posterior probabilities of each coloc hypothesis change with changing p12.  A decision rule sets the values of the posterior probabilities considered acceptable, and is used to shade in green the region of the plot for which the p12 prior would give and acceptable result.  The user is encouraged to consider carefully whether some prior values shown within the green shaded region are sensible before accepting the hypothesis.  If no shading is shown, then no priors give rise to an accepted result.</p>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p>Chris Wallace</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -230,7 +227,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

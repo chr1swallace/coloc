@@ -21,6 +21,14 @@ data(coloc_test_data)
 attach(coloc_test_data)
 ```
 
+Datasets 3 and 4 are constructed to deliberately break the single causal variant assumption in `coloc.abf()`. 
+
+```{r sens0, fig.width=8,fig.height=6    }
+par(mfrow=c(2,1))
+plot.dataset(D3, main="Dataset D3")
+plot.dataset(D4, main="Dataset D4")
+```
+
 First, let us do a standard coloc (single causal variant) analysis to
 serve as a baseline comparison.  The analysis concludes there is
 colocalisation, because it "sees" the SNPs on the left which are

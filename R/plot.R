@@ -13,11 +13,17 @@ globalVariables(c("variable","pp","position","value"))
 ymin <- NULL
 ymax <- NULL
 
-plot.dataset <- function(d) {
-  if(!("bp" %in% names(d)))
-    stop("no bp element given")
+##' Plot a coloc structured dataset
+##'
+##' @title plot a coloc dataset
+##' @param d a coloc dataset
+##' @param ... other arguments passed to the base graphics plot() function
+##' @author Chris Wallace
+plot.dataset <- function(d,...) {
+  if(!("position" %in% names(d)))
+    stop("no position element given")
   p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2
-  plot(d$bp,-log10(p),xlab="bp")
+  plot(d$position,-log10(p),xlab="Position",...)
 }
 
 ##' Print summary of a coloc.abf run
