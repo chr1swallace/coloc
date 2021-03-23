@@ -11,22 +11,28 @@ vignette: >
 
 # Multiple causal variants, using SuSiE to separate the signals
 
-Note that this vignette depends on the [susieR](https://github.com/stephenslab/susieR) package.  Please install it, following the directions on that site, before running the code here.  Because that package is not (yet?) on CRAN, this vignette built on CRAN will not include the code that depends on susieR.  Please build the vignette locally, after installing the susieR package.
+Note that this vignette depends on the [susieR](https://github.com/stephenslab/susieR) package.  Please install it, following the directions on that site, before running the code here.  Because that package is not (yet?) on CRAN, this vignette built on CRAN will not include the code that depends on susieR.  Please build the vignette locally, after installing the susieR package.  Once you have installed susieR, you can skip `if()` conditions around the code here, they exist to allow this package on CRAN.
+
+```{r}
+if(requireNamespace("susieR",quietly=TRUE)) {
+  message("susieR found")
+}
+```
 
 We load some simulated data.
 
 ```{r   }
 library(coloc)
 data(coloc_test_data)
-attach(coloc_test_data)
+attach(coloc_test_data) ## datasets D1, D2, D3 and D4
 ```
 
 Datasets 3 and 4 are constructed to deliberately break the single causal variant assumption in `coloc.abf()`. 
 
 ```{r sens0, fig.width=8,fig.height=6    }
 par(mfrow=c(2,1))
-plot.dataset(D3, main="Dataset D3")
-plot.dataset(D4, main="Dataset D4")
+plot_dataset(D3, main="Dataset D3")
+plot_dataset(D4, main="Dataset D4")
 ```
 
 First, let us do a standard coloc (single causal variant) analysis to
@@ -35,7 +41,7 @@ colocalisation, because it "sees" the SNPs on the left which are
 strongly associated with both traits.  But it misses the SNPs on the
 right of the top left plot which are associated with only one trait.
 
-```{r sens0, fig.width=8,fig.height=6    }
+```{r sens1, fig.width=8,fig.height=6    }
 my.res <- coloc.abf(dataset1=D3, dataset2=D4)
 class(my.res)
 ## print.coloc_abf
@@ -57,17 +63,12 @@ SuSiE can take a while to run on larger datasets, so it is best to run once per 
 
 ```{r}
 if(requireNamespace("susieR",quietly=TRUE)) {
-  S3=runsusie(D3,nref=503)
+  S3=runsusie(D3,nref=200)
   summary(S3)
-  S4=runsusie(D4,nref=503)
+  S4=runsusie(D4,nref=200)
   summary(S4)
 }
 ```
-
-**Important note**
-`runsusie()` calls `susie_rss()` in the `susieR` package, but sets some specific parameters to get sensible output for coloc.  In particular, the `null_weight` is by default set to an (implausibly) small value of \(\frac{1}{1+nsnps}\).  This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if `null_weight` is large.  For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated).  At this stage, weak signals will get weeded out.
-
-You can also pass that per-SNP prior to `runsusie()` by setting the parameter `p` (equivalent to `p1` or `p2` in coloc functions).  But **be aware** either option differs from the default behaviour of `susie_rss()` which is not to specify a prior for the null hypothesis at all.
 
 With these susie output objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
 ```{r}
@@ -85,5 +86,55 @@ if(requireNamespace("susieR",quietly=TRUE)) {
 }
 ```
 
+# Important notes on running SuSiE
+`runsusie()` is a wrapper around `susieR::susie_rss()`.  It sets the null_weight parameter - this must be non-zero or we cannot back calculate Bayes factors needed for coloc - adds some colnames to the returned objects (so that snps can be identified easily) and repeats the calls to `susie_rss()` until convergence is achieved. In particular, the `null_weight` is by default set to an (implausibly) small value of \(\frac{1}{1+nsnps}\).  This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if `null_weight` is large.  For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated).  At this stage, weak signals will get weeded out.
 
+You can also pass that per-SNP prior to `runsusie()` by setting the parameter `p` (equivalent to `p1` or `p2` in coloc functions).  But **be aware** either option differs from the default behaviour of `susie_rss()` which is not to specify a prior for the null hypothesis at all.
 
+`susie_rss()` has many other options and you should look at them if `runsusie()` is not giving the output you expect.  They can be passed directly through `runsusie()`.
+
+``` r
+if(requireNamespace("susieR",quietly=TRUE)) {
+  ?susieR::susie_rss
+}
+```
+
+One option I have varied to help SuSiE detect weaker signals, is the coverage parameter.  By default `susie_rss` looks for signals for which it can form a 95% credible set.  By reducing the coverage, we can find weaker signals.  For example we find nothing in this weaker signal dataset
+
+``` r
+if(requireNamespace("susieR",quietly=TRUE)) {
+  ## make a dataset with a weaker signal
+  D5=D3
+  D5$varbeta=D5$varbeta * 2
+  D5$N=D5$N / 2
+  par(mfrow=c(1,2))
+  plot_dataset(D3, main="original D3")
+  plot_dataset(D5, main="weaker signal D5")
+  summary(runsusie(D5,nref=1000)) # default coverage 0.95
+}
+```
+
+But by reducing the coverage we can find one signal
+``` r
+if(requireNamespace("susieR",quietly=TRUE)) {
+  summary(runsusie(D5,nref=1000,coverage=0.1))  # lower coverage
+}
+```
+
+And reducing it further finds the other as well
+``` r
+if(requireNamespace("susieR",quietly=TRUE)) {
+  summary(runsusie(D5,nref=1000,coverage=0.01)) # even lower
+}
+```
+
+These values are just for illustration, I probably wouldn't believe a signal in a real dataset with a \( p > 10^{-5} \).  They let you find weaker signals, but the coloc results should be treated with caution.
+
+``` r
+if(requireNamespace("susieR",quietly=TRUE)) {
+  S5=runsusie(D5,nref=1000,coverage=0.1)  # lower coverage
+  summary(S5)
+  res=coloc.susie(S5,S4)
+  print(res$summary)
+}
+```

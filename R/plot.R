@@ -19,7 +19,8 @@ ymax <- NULL
 ##' @param d a coloc dataset
 ##' @param ... other arguments passed to the base graphics plot() function
 ##' @author Chris Wallace
-plot.dataset <- function(d,...) {
+##' @export
+plot_dataset <- function(d,...) {
   if(!("position" %in% names(d)))
     stop("no position element given")
   p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2

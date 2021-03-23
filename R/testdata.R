@@ -37,7 +37,7 @@ if(FALSE) {
     R=rWishart(1,2*nsnps,S)[,,1]
     ## (1 - (abs(outer(1:nsnps,1:nsnps,`-`))/nsnps))
     maf=runif(nsnps,0.2,0.8)^2
-    causals=c(1:nsnps)[order(abs(maf-0.5) * abs(((1:nsnps) - 9.5)/nsnps))][1:ncausals]
+    causals=c(1:nsnps)[order(abs(maf-0.5) * abs(((1:nsnps) - 12.5)/nsnps))][1:ncausals]
     X1 <- simx(nsamples,S,maf)
     X2 <- simx(nsamples,S,maf)
     X3 <- simx(nsamples,S,maf)
@@ -61,18 +61,15 @@ if(FALSE) {
   }
 
   set.seed(46411)
-  data=sim.data(nsamples=1000,sd.y=c(2,1.5))
+  data=sim.data(nsamples=1000,sd.y=c(1.3,1.3))
   Y1 <- data$df1$Y
   Y2 <- data$df2$Y
   Y3 <- sample(data$df2$Y) # Y3 is unassociated with anything in X2
-
   X1 <- as.matrix(data$df1[,-1])
   X2 <- as.matrix(data$df2[,-1])
-
   tests1 <- lapply(1:ncol(X1), function(i) summary(lm(Y1 ~ X1[,i]))$coefficients[2,])
   tests2 <- lapply(1:ncol(X2), function(i) summary(lm(Y2 ~ X2[,i]))$coefficients[2,])
   tests3 <- lapply(1:ncol(X2), function(i) summary(lm(Y3 ~ X2[,i]))$coefficients[2,])
-
   p1 <- sapply(tests1,"[",4)
   p2 <- sapply(tests2,"[",4)
   p3 <- sapply(tests3,"[",4)
@@ -90,7 +87,6 @@ if(FALSE) {
   LD10=matrix(0,nsnp,nsnp)
   LD <- rbind(cbind(LD0,LD01), cbind(LD10, LD1))
   dimnames(LD)=list(snpnames,snpnames)
-
   get.beta <- function(x,nm) {
     beta <- sapply(x,"[",1)
     varbeta <- sapply(x, "[", 2)^2
@@ -139,14 +135,25 @@ if(FALSE) {
 
   par(mfrow=c(2,2))
   plot.dataset(D1,main="D1")
-  plot.dataset(D2,main="D1")
-  plot.dataset(D3,main="D1")
-  plot.dataset(D4,main="D1")
+  plot.dataset(D2,main="D2")
+  plot.dataset(D3,main="D3")
+  plot.dataset(D4,main="D4")
 
-  S3=runsusie(D3,nref=1000)
+  S1=runsusie(D1,nref=1000)
+  summary(S1)
+  S2=runsusie(D2,nref=1000)
+  summary(S2)
+  S3=runsusie(D3,nref=1000,coverage=0.1)
   summary(S3)
-  S4=runsusie(D4,nref=2000)
+  S4=runsusie(D4,nref=1000)
   summary(S4)
+
+  D5=D3
+  D5$varbeta=D5$varbeta * 2
+  D5$N=D5$N / 2
+  summary(runsusie(D5,nref=1000)) # default coverage 0.95
+  summary(runsusie(D5,nref=1000,coverage=0.1))  # lower coverage
+  summary(runsusie(D5,nref=1000,coverage=0.01)) # even lower
 
   coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4)
   save(coloc_test_data, file="data/coloc_test_data.rda", version=2)

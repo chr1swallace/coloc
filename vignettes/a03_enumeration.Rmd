@@ -26,7 +26,7 @@ attach(coloc_test_data)
 Then we analyse the statistics from a single study, asking about the evidence that each SNP in turn is solely causal for any association signal we see.  As we might expect, that evidence is maximised at the SNP with the smallest p value
 
 ```{r   }
-plot.dataset(D1)
+plot_dataset(D1)
 my.res <- finemap.abf(dataset=D1)
 my.res[21:30,]
 ```
