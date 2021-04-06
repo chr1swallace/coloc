@@ -169,6 +169,11 @@
 <pre><code>## NULL</code></pre>
 <p>In either case, you can see that the lengths of beta, varbeta, snp and position are the same. They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use <code><a href="https://rdrr.io/r/base/list.html">as.list()</a></code> to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like <code>type</code> need to be of length 1.</p>
 </div>
+<div id="analysing-two-datasets" class="section level2">
+<h2 class="hasAnchor">
+<a href="#analysing-two-datasets" class="anchor"></a>Analysing two datasets</h2>
+<p>coloc is used to analyse exactly two datasets. The snp identifiers are used to match snps between datasets, and only the snps that appear in both datasets will contribute to the analysis.</p>
+</div>
 <div id="what-if-i-dont-have-sdy" class="section level2">
 <h2 class="hasAnchor">
 <a href="#what-if-i-dont-have-sdy" class="anchor"></a>What if I don’t have sdY?</h2>
