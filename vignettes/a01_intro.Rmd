@@ -23,6 +23,8 @@ In brief, two approaches can be implemented.  The proportional testing approach
 
 This package implements the more population enumeration approach.
 
+You can read about how to prepare your data in [this vignette](a02_data.html) or read the vignettes listed in one of the sections below to understand how coloc works.
+
 ## A single causal variant assumption
 
  Claudia Giambartolomei and
