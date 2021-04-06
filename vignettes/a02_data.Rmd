@@ -60,6 +60,10 @@ check_dataset(minimum_ccdata)
 
 In either case, you can see that the lengths of beta, varbeta, snp and position are the same.  They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use `as.list()` to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like `type` need to be of length 1.
 
+## Analysing two datasets
+
+coloc is used to analyse exactly two datasets.  The snp identifiers are used to match snps between datasets, and only the snps that appear in both datasets will contribute to the analysis.
+
 ## What if I don't have sdY?
 
 Often, sdY is not available for quantitative datasets.  If the study say they standardised their trait to have variance 1, then you can set =sdY= to 1.  Otherwise coloc can estimate it, but not needs MAF and sample size information too.  So the dataset would look like:
