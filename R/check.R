@@ -45,21 +45,22 @@
 ##' \item{alternatively}{\code{pvalues}, \code{MAF}}
 ##' }
 ##'
-##' \code{check.dataset} call stop() unless a series of expectations on dataset
+##' \code{check_dataset} call stop() unless a series of expectations on dataset
 ##' input format are met
 ##'
 ##' This is a helper function for use by other coloc functions, but
 ##' you can use it directly to check the format of a dataset to be
 ##' supplied to coloc.abf(), coloc.signals(), finemap.abf(), or
 ##' finemap.signals().
-##' @title check.dataset
+##' @title check_dataset
 ##' @param d dataset to check
 ##' @param suffix string to identify which dataset (1 or 2)
 ##' @param req names of elements that must be present
+##' @param warn.minp print warning if no p value < warn.minp
 ##' @return NULL if no errors found
 ##' @export
 ##' @author Chris Wallace
-check.dataset <- function(d,suffix="",req=c("snp")) {
+check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
   if(!is.list(d) )
     stop("dataset ",suffix,": is not a list")
   nd <- names(d)
@@ -117,7 +118,14 @@ check.dataset <- function(d,suffix="",req=c("snp")) {
       stop("dataset ",suffix,": ","require p values and MAF if beta, varbeta are unavailable")
     if(d$type=="cc" && !("s" %in% nd))
       stop("dataset ",suffix,": ","require, s, proportion of samples who are cases, if beta, varbeta are unavailable")
+    p=d$pvalues
+  } else {
+    p=pnorm( -abs( d$beta/sqrt(d$varbeta) ) ) * 2
   }
+
+  ## minp
+  if(min(p) > warn.minp)
+    warning("minimum p value is: ",format.pval(min(p)),"\nIf this is what you expected, this is not a problem.\nIf this is not as small as you expected, please check the 02_data vignette.")
 
   ## sdY
   if(d$type=="quant" && !("sdY" %in% nd))
@@ -137,8 +145,16 @@ check.dataset <- function(d,suffix="",req=c("snp")) {
   NULL
 }
 
+#'@rdname check_dataset
+#' @param ... arguments passed to check_dataset()
+#'@export
+check.dataset=function(...) {
+  warning("Deprecated, use check_dataset() in future")
+  check_dataset(...)
+}
 
-check.ld <- function(D,LD) {
+
+check_ld <- function(D,LD) {
     if(is.null(LD))
         stop("LD required")
     if(nrow(LD)!=ncol(LD))
@@ -157,12 +173,19 @@ check.ld <- function(D,LD) {
 ##' @export
 ##' @return a plot for a visual check that alleles in your data are aligned the same way for the beta vector and the LD matrix
 ##' @author Chris Wallace
-check.alignment <- function(D,thr=0.2) {
-  check.dataset(D)
+check_alignment <- function(D,thr=0.2) {
+  check_dataset(D)
   bprod=outer(D$beta/sqrt(D$varbeta),D$beta/sqrt(D$varbeta),"*")
   ## plot(bprod,D$LD[D$snp,D$snp],xlab="product of z scores",ylab="LD")
   hist((bprod/D$LD)[abs(D$LD) > 0.2],
        xlab="ratio of product of Z scores to LD",
        main="alignment check plot\nexpect most values to be positive\nsymmetry is a warning sign\nof potentially poor alignment")
   abline(v=0,col="red")
+}
+#'@rdname check_alignment
+#'@export
+#' @param ... arguments passed to check_alignment()
+check.alignment=function(...) {
+  warning("Deprecated, use check_alignment() in future")
+  check_alignment(...)
 }

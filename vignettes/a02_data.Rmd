@@ -11,7 +11,7 @@ vignette: >
 
 # Data structures
 
-  The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.Rmd) and [`coloc.susie`](./a06_susie.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are.
+  The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.Rmd) and [`coloc.susie`](./a06_susie.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.
   
 ## First: select the SNPs to study.
 
@@ -20,7 +20,11 @@ SNPs must
 * cover a single genomic region (perhaps defined by distance about some GWAS peak or delimited by recombination hotspots), and 
 * represent a dense coverage of the region
 
-This can result in up to 10,000 SNPs on larger regions.  A single genomic region *does not* correspond to the whole genome, nor to a whole chromosome.  Coloc also does not split chromosomes or a genome into regions.  It is assumed the user can look at their data, identify a region with overlapping GWAS signals between two studies, and decide on the set of SNPs to include.
+This can result in up to 10,000 SNPs on larger regions. A single genomic region
+*does not* correspond to the whole genome, nor to a whole chromosome. Coloc also
+does not automatically split chromosomes or a genome into regions. It is assumed
+the user can look at their data, identify a region with overlapping GWAS signals
+between two studies, and decide on the set of SNPs to include.  Some utilities are provided which can help check regions are sensible.
 
 Please do include all SNPs you have in the region: do not trim by significance or MAF or other means.  Coloc enumerates all possible configureations of shared and non-shared causal variants and evaluates their relative support; it cannot do this if it does not have all the SNPs available.
   
@@ -30,14 +34,20 @@ Colocalisation and fine-mapping work through evaluating approximate Bayes factor
 
 We also need a prior on the true effect sizes at causal variants, which is different depending on whether you have a quantitative or case-control (binary) trait.  To estimate a prior, we need to know the trait standard deviation (which allows us to interpret the scale of the estimated beta).
 
-Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait. `check.dataset()` returns NULL if it finds no errors.
+Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait. `check_dataset()` returns NULL if it finds no errors.  It will stop with error if there are issues that absolutely must be fixed to run coloc, but may print warnings if it sees something merely suspicious - eg if there is no strong signal of association.  The warning doesn't mean you can't run coloc - it is perfectly valid to assess that there is only evidence for association in one of your datasets, but it may alert you to check something if you *thought* there was strong association there.  One common mistake is to use the standard error of beta in place of the variance of beta.  If your dataset provides the standard error, simply square it to get the variance.
 ```{r   }
 library(coloc)
 data(coloc_test_data)
 attach(coloc_test_data)
 minimum_data=D1[c("beta","varbeta","snp","position","type","sdY")]
 str(minimum_data)
-check.dataset(minimum_data)
+check_dataset(minimum_data,warn.minp=1e-10)
+```
+It's also useful to plot your datasets, and check 
+* coverage is dense
+* the level of association matches your expectation
+```{r   }
+plot_dataset(minimum_data)
 ```
 
 For a case control trait, you would need to give the `type` as "cc":
@@ -45,7 +55,7 @@ For a case control trait, you would need to give the `type` as "cc":
 minimum_ccdata=D1[c("beta","varbeta","snp","position")]
 minimum_ccdata$type="cc"
 str(minimum_ccdata)
-check.dataset(minimum_ccdata)
+check_dataset(minimum_ccdata)
 ```
 
 In either case, you can see that the lengths of beta, varbeta, snp and position are the same.  They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use `as.list()` to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like `type` need to be of length 1.
@@ -56,7 +66,7 @@ Often, sdY is not available for quantitative datasets.  If the study say they st
 ```{r   }
 nosdY_data=D1[c("beta","varbeta","snp","position","type","N","MAF")]
 str(nosdY_data)
-check.dataset(nosdY_data)
+check_dataset(nosdY_data)
 ```
 
 ## What if I don't have beta and/or varbeta?
@@ -67,14 +77,14 @@ beta and varbeta are preferred.  Please supply them if you have them, especially
 nobeta_data=D1[c("MAF","snp","position","type","sdY","N")]
 nobeta_data$pvalues=pnorm(-abs(D1$beta/sqrt(D1$varbeta)))*2
 str(nobeta_data)
-check.dataset(nobeta_data)
+check_dataset(nobeta_data)
 
 nobeta_ccdata=D1[c("MAF","snp","position","N")]
 nobeta_ccdata$pvalues=pnorm(-abs(D1$beta/sqrt(D1$varbeta)))*2
 nobeta_ccdata$type="cc"
 nobeta_ccdata$s=0.5
 str(nobeta_ccdata)
-check.dataset(nobeta_ccdata)
+check_dataset(nobeta_ccdata)
 ```
 
 Note that coloc doesn't mind if your dataset has more entries than it minimally needs, it will use what it needs, preferring supplied beta/varbeta and sdY over estimation, and leave the rest.
@@ -90,7 +100,7 @@ str(D1$LD)
 ```
 
 ### NB studies from different populations
-One of the nice things about coloc is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region.  The same thing still applies to `coloc.susie`, just add an appropriate LD matrix to each study.
+One of the nice things about `coloc.abf` is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region.  The same thing still applies to `coloc.susie`, just add an appropriate LD matrix to each study.
 
 ### NB allele order matters!
 
@@ -112,7 +122,7 @@ To avoid hassles, I recommend:
 * Otherwise, check the alleles in your summary table match those in the information files from the LD source
 * Finally, always plot the coloc result with the [`sensitivity` function](a04_sensitivity.html) because weird effects are much easier to understand visually
 
-You can also use the coloc function `check.alignment` as a visual guide.  It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
+You can also use the coloc function `check_alignment` as a visual guide.  It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
 
 ```{r,echo=FALSE}
 goodD=D1
@@ -126,8 +136,8 @@ badD$beta=rsign * goodD$beta
 
 ```{r}
 par(mfrow=c(1,2))
-check.alignment(goodD)
+check_alignment(goodD)
 text(40,200,"good",col="red",cex=4)
-check.alignment(badD)
+check_alignment(badD)
 text(0,200,"bad",col="red",cex=4)
 ```

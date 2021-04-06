@@ -8,11 +8,11 @@ coloc.susie(dataset1, dataset2, nref, susie.args = list(), ...)
 }
 \arguments{
 \item{dataset1}{\emph{either} a coloc-style input dataset (see
-\link{check.dataset}), or the result of running \link{runsusie} on such a
+\link{check_dataset}), or the result of running \link{runsusie} on such a
 dataset}
 
 \item{dataset2}{\emph{either} a coloc-style input dataset (see
-\link{check.dataset}), or the result of running \link{runsusie} on such a
+\link{check_dataset}), or the result of running \link{runsusie} on such a
 dataset}
 
 \item{nref}{number of individuals from whom the LD matrix was estimated}

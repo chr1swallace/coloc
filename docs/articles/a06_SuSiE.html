@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
       </span>
     </div>
 
@@ -104,7 +104,7 @@
       <h1 data-toc-skip>Coloc: using SuSiE to relax the single causal variant assumption</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2021-03-23</h4>
+            <h4 class="date">2021-04-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a06_SuSiE.Rmd"><code>vignettes/a06_SuSiE.Rmd</code></a></small>
       <div class="hidden name"><code>a06_SuSiE.Rmd</code></div>
@@ -157,10 +157,10 @@
 <pre><code>## Results pass decision rule H4 &gt; 0.9</code></pre>
 <p><img src="a06_SuSiE_files/figure-html/sens1-1.png" width="768"></p>
 <p>Even though the sensitivity analysis itself looks good, the Manhattan plots suggest we are violating the assumption of a single causal variant per trait.</p>
-<p>coloc has adopted the <a href="https://stephenslab.github.io/susie-paper/index.html">SuSiE</a> framework for fine mapping in the presence of multiple causal variants. This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format. =check.dataset= should return NULL if there are no problems, or print informative error messages if there are.</p>
-<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">D3</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
+<p>coloc has adopted the <a href="https://stephenslab.github.io/susie-paper/index.html">SuSiE</a> framework for fine mapping in the presence of multiple causal variants. This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format. =check_dataset= should return NULL if there are no problems, or print informative error messages if there are.</p>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">D3</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">D4</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">D4</span>,<span class="kw">req</span><span class="kw">=</span><span class="st">"LD"</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
 <p>SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses. =runsusie= is just a wrapper around the =susie_rss= function in the <a href="https://stephenslab.github.io/susieR/">susieR package</a> that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler. Here, it does indeed find two signals for dataset D3 (there are two rows in the credible sets summary) and one for dataset D4. We need also to supply the number of individuals used to estimate the LD matrix, =nref=.</p>
 <div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="kw">if</span>(<span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span>(<span class="st">"susieR"</span>,<span class="kw">quietly</span><span class="kw">=</span><span class="fl">TRUE</span>)) {

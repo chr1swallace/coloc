@@ -237,7 +237,7 @@ process.dataset <- function(d, suffix) {
 ##' 
 ##' @title Bayesian finemapping analysis
 ##' @param dataset a list with specifically named elements defining the dataset
-##'   to be analysed. See \code{\link{check.dataset}} for details.
+##'   to be analysed. See \code{\link{check_dataset}} for details.
 ##'
 ##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
 ##' @return a \code{data.frame}:
@@ -248,7 +248,7 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-    check.dataset(dataset,"")
+    check_dataset(dataset,"")
   
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
@@ -290,7 +290,7 @@ finemap.abf <- function(dataset, p1=1e-4) {
 ##' 
 ##' @title Fully Bayesian colocalisation analysis using Bayes Factors
 ##' @param dataset1 a list with specifically named elements defining the dataset
-##'   to be analysed. See \code{\link{check.dataset}} for details.
+##'   to be analysed. See \code{\link{check_dataset}} for details.
 ##' @param dataset2 as above, for dataset 2
 ##' @param MAF Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets
 ##' @param p1 prior probability a SNP is associated with trait 1, default 1e-4
@@ -310,8 +310,8 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
         dataset1$MAF <- MAF
     if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
         dataset2$MAF <- MAF
-    check.dataset(d=dataset1,1)
-    check.dataset(d=dataset2,2)
+    check_dataset(d=dataset1,1)
+    check_dataset(d=dataset2,2)
     
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")

@@ -8,7 +8,7 @@ coloc.susie_bf(dataset1, bf2, p1 = 1e-04, p2 = 1e-04, p12 = 5e-06, ...)
 }
 \arguments{
 \item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check.dataset}} for details.}
+to be analysed. See \code{\link{check_dataset}} for details.}
 
 \item{bf2}{named vector of BF, names are snp ids and will be matched to column names of susie object's alpha}
 

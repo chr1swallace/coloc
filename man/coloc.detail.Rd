@@ -15,7 +15,7 @@ coloc.detail(
 }
 \arguments{
 \item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check.dataset}} for details.}
+to be analysed. See \code{\link{check_dataset}} for details.}
 
 \item{dataset2}{as above, for dataset 2}
 

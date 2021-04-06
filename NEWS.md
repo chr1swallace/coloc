@@ -1,3 +1,8 @@
+# coloc 5.0.0.9001
+* deprecate coloc.signals for multiple causal variants
+* introduce coloc.susie for multiple causal variants
+* new vignette 02_data giving more details on structuring your data properly
+
 # coloc 4.0-5
 * update error checking
 

@@ -121,7 +121,7 @@ est_cond <- function(x,LD,YY,sigsnps,xtx=NULL) {
     ## LD with a first signal
     use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.8) 
 
-    check.dataset(x,req=c("beta","varbeta","MAF"))
+    check_dataset(x,req=c("beta","varbeta","MAF"))
     ## Estimating X'X is the key
     if(!is.null(xtx))
         XX <- xtx
@@ -184,7 +184,7 @@ est_cond.nometa <- function(x,LD,YY,sigsnps,xtx=NULL) {
     nuse <- match(sigsnps,x$snp) # to be conditioned on
     use <- !(rownames(LD) %in% sigsnps | apply(LD[nuse,,drop=FALSE]^2,2,max)>0.9) # to find new beta for, conditional on nuse, excluding SNPs in r2>0.9 with nuse because small inaccuracies can blow up, and we generally don't expect a second detectable signal in such high LD with a first signal
 
-    check.dataset(x,req=c("beta","varbeta","MAF"))
+    check_dataset(x,req=c("beta","varbeta","MAF"))
     ## Estimating X'X is the key
     if(!is.null(xtx))
         XX <- xtx
@@ -307,7 +307,7 @@ find.best.signal <- function(D) {
 ##'
 ##' @title Finemap multiple signals in a single dataset
 ##' @param D list of summary stats for a single disease, see
-##'   \link{check.dataset}
+##'   \link{check_dataset}
 ##' @param LD matrix of signed r values (not rsq!) giving correlation between
 ##'   SNPs
 ##' @param mask use masking if TRUE, otherwise conditioning. defaults to TRUE
@@ -333,10 +333,10 @@ finemap.signals <- function(D,LD=D$LD,
                                   maxhits=3) {
     method <- match.arg(method)
     if(method=="cond") {
-        check.dataset(D,req=c("MAF","beta","varbeta"))
-        check.ld(D,LD)
+        check_dataset(D,req=c("MAF","beta","varbeta"))
+        check_ld(D,LD)
     } else {
-        check.dataset(D)
+        check_dataset(D)
     }
     if(!is.null(sigsnps) && is.null(names(sigsnps)))
         stop("sigsnps should be a named numeric vector, with snp ids as the names")
@@ -357,7 +357,7 @@ finemap.signals <- function(D,LD=D$LD,
        } else {
            sum(D$N * D$s * (1 - D$s))
        }
-    ## check LD in matching order
+    ## check_ld in matching order
     LD <- LD[D$snp,D$snp]
     hits <- NULL
     while(length(hits)<maxhits) {
@@ -781,20 +781,20 @@ coloc.signals <- function(dataset1, dataset2,
     if(!("method" %in% names(dataset2)) & !is.null(method))
         dataset2$method <- method
     if(dataset1$method=="cond") {
-        check.dataset(dataset1,1,req=c("beta","varbeta","MAF"))
-        check.ld(dataset1,dataset1$LD)
+        check_dataset(dataset1,1,req=c("beta","varbeta","MAF"))
+        check_ld(dataset1,dataset1$LD)
         if(dataset1$type=="quant" & !("sdY" %in% names(dataset1)))
           dataset1$sdY <- with(dataset1, sdY.est(vbeta=varbeta, maf=MAF, n=N))
     } else {
-        check.dataset(dataset1,1)
+        check_dataset(dataset1,1)
     }
     if(dataset2$method=="cond") {
-        check.dataset(dataset2,2,req=c("beta","varbeta","MAF"))
-        check.ld(dataset2,dataset2$LD)
+        check_dataset(dataset2,2,req=c("beta","varbeta","MAF"))
+        check_ld(dataset2,dataset2$LD)
         if(dataset2$type=="quant" & !("sdY" %in% names(dataset2)))
           dataset2$sdY <- with(dataset2, sdY.est(vbeta=varbeta, maf=MAF, n=N))
     } else {
-        check.dataset(dataset2,2)
+        check_dataset(dataset2,2)
     }
     zthr = qnorm(pthr/2,lower.tail=FALSE)    
 

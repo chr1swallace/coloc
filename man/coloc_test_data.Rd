@@ -20,6 +20,6 @@ Simulated data to use in testing and vignettes in the coloc package
 data(coloc_test_data)
 names(coloc_test_data)
 str(coloc_test_data$D1)
-check.dataset(coloc_test_data$D1) # should return NULL if data structure is ok
+check_dataset(coloc_test_data$D1) # should return NULL if data structure is ok
 }
 \keyword{datasets}

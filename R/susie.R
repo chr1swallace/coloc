@@ -100,10 +100,10 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @export
 ##' @author Chris Wallace
 ##' @param dataset1 *either* a coloc-style input dataset (see
-##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
+##'   \link{check_dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
 ##' @param dataset2 *either* a coloc-style input dataset (see
-##'   \link{check.dataset}), or the result of running \link{runsusie} on such a
+##'   \link{check_dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
 ##' @param nref number of individuals from whom the LD matrix was estimated
 ##' @param susie.args a named list of additional arguments to be passed to
@@ -356,8 +356,8 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
     stop("Please give nref, the number of samples used to estimate the LD matrix")
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
-  check.dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
-  check.ld(d,d$LD)
+  check_dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
+  check_ld(d,d$LD)
   ##make copies of z and LD so we can subset if needed
   if(!"z" %in% names(d))
     z=d$beta/sqrt(d$varbeta)

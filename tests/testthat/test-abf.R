@@ -59,10 +59,10 @@ PCC.bad <- list(pvalues=p.cc,
             N=nrow(X))
 
 
-RESULTS <- list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
-                dp = coloc.abf(dataset1=DQ,dataset2=PCC),
-                pd = coloc.abf(dataset1=PQ,dataset2=DCC),
-                pp = coloc.abf(dataset1=PQ,dataset2=PCC))
+RESULTS <- suppressWarnings(list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
+                                 dp = coloc.abf(dataset1=DQ,dataset2=PCC),
+                                 pd = coloc.abf(dataset1=PQ,dataset2=DCC),
+                                 pp = coloc.abf(dataset1=PQ,dataset2=PCC)))
 lapply(RESULTS,"[[","summary")
 
 test_that("process.dataset", {
@@ -83,8 +83,8 @@ test_that("process.dataset", {
 
 ## coloc.abf with coefficients
 test_that("coloc.abf", {
-    expect_error(coloc.abf(dataset1=DQ,dataset2=DCC), NA)
-    result <- coloc.abf(dataset1=DQ,dataset2=DCC)
+    expect_error(suppressWarnings(coloc.abf(dataset1=DQ,dataset2=DCC), NA))
+    expect_warning(result <- coloc.abf(dataset1=DQ,dataset2=DCC), "minimum p value")
     expect_true(which.max(result$summary[-1]) == 5)
     expect_true(result$summary[1] == ncol(X))
 })

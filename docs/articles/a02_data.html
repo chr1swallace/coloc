@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
       </span>
     </div>
 
@@ -104,7 +104,7 @@
       <h1 data-toc-skip>Coloc: data structures</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2021-03-23</h4>
+            <h4 class="date">2021-04-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a02_data.Rmd"><code>vignettes/a02_data.Rmd</code></a></small>
       <div class="hidden name"><code>a02_data.Rmd</code></div>
@@ -116,12 +116,12 @@
 <div id="data-structures" class="section level1">
 <h1 class="hasAnchor">
 <a href="#data-structures" class="anchor"></a>Data structures</h1>
-<p>The enumeration approaches to coloc <a href="a03_enumeration.Rmd"><code>coloc.abf</code></a> and <a href="./a06_susie.html"><code>coloc.susie</code></a> require the same data format. To be flexible, <code>coloc.abf</code> allows a wider variety of inputs, which can sometimes be confusing. This document aims to set out what ideal and acceptable data structures are.</p>
+<p>The enumeration approaches to coloc <a href="a03_enumeration.Rmd"><code>coloc.abf</code></a> and <a href="./a06_susie.html"><code>coloc.susie</code></a> require the same data format. To be flexible, <code>coloc.abf</code> allows a wider variety of inputs, which can sometimes be confusing. This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.</p>
 <div id="first-select-the-snps-to-study-" class="section level2">
 <h2 class="hasAnchor">
 <a href="#first-select-the-snps-to-study-" class="anchor"></a>First: select the SNPs to study.</h2>
 <p>SNPs must * have summary data available in both studies * cover a single genomic region (perhaps defined by distance about some GWAS peak or delimited by recombination hotspots), and * represent a dense coverage of the region</p>
-<p>This can result in up to 10,000 SNPs on larger regions. A single genomic region <em>does not</em> correspond to the whole genome, nor to a whole chromosome. Coloc also does not split chromosomes or a genome into regions. It is assumed the user can look at their data, identify a region with overlapping GWAS signals between two studies, and decide on the set of SNPs to include.</p>
+<p>This can result in up to 10,000 SNPs on larger regions. A single genomic region <em>does not</em> correspond to the whole genome, nor to a whole chromosome. Coloc also does not automatically split chromosomes or a genome into regions. It is assumed the user can look at their data, identify a region with overlapping GWAS signals between two studies, and decide on the set of SNPs to include. Some utilities are provided which can help check regions are sensible.</p>
 <p>Please do include all SNPs you have in the region: do not trim by significance or MAF or other means. Coloc enumerates all possible configureations of shared and non-shared causal variants and evaluates their relative support; it cannot do this if it does not have all the SNPs available.</p>
 </div>
 <div id="a-minimum-coloc-dataset" class="section level2">
@@ -129,7 +129,7 @@
 <a href="#a-minimum-coloc-dataset" class="anchor"></a>A minimum coloc dataset</h2>
 <p>Colocalisation and fine-mapping work through evaluating approximate Bayes factors summarising evidence for association at each SNP. This requires knowing the estimated effect size <span class="math inline">\(\beta\)</span> and its uncertainty <span class="math inline">\(var(\beta)\)</span>. <span class="math inline">\(var(\beta)\)</span> is the standard error of <span class="math inline">\(\beta\)</span>, squared. It is also good practice to supply SNP names, and SNP positions.</p>
 <p>We also need a prior on the true effect sizes at causal variants, which is different depending on whether you have a quantitative or case-control (binary) trait. To estimate a prior, we need to know the trait standard deviation (which allows us to interpret the scale of the estimated beta).</p>
-<p>Coloc comes with test data, so you can explore the structure for a quantitative trait. Here we show the minimum dataset needed for a quantitative trait. <code><a href="../reference/check.dataset.html">check.dataset()</a></code> returns NULL if it finds no errors.</p>
+<p>Coloc comes with test data, so you can explore the structure for a quantitative trait. Here we show the minimum dataset needed for a quantitative trait. <code><a href="../reference/check_dataset.html">check_dataset()</a></code> returns NULL if it finds no errors. It will stop with error if there are issues that absolutely must be fixed to run coloc, but may print warnings if it sees something merely suspicious - eg if there is no strong signal of association. The warning doesn’t mean you can’t run coloc - it is perfectly valid to assess that there is only evidence for association in one of your datasets, but it may alert you to check something if you <em>thought</em> there was strong association there. One common mistake is to use the standard error of beta in place of the variance of beta. If your dataset provides the standard error, simply square it to get the variance.</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
 <pre><code>## This is a new update to coloc.</code></pre>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">coloc_test_data</span>)
@@ -145,10 +145,16 @@
 ##  $ position: int [1:50] 1 2 3 4 5 6 7 8 9 10 ...
 ##  $ type    : chr "quant"
 ##  $ sdY     : num 1.38</code></pre>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">minimum_data</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">minimum_data</span>,<span class="kw">warn.minp</span><span class="kw">=</span><span class="fl">1e-10</span>)</pre></body></html></div>
+<pre><code>## Warning in check_dataset(minimum_data, warn.minp = 1e-10): minimum p value is: 8.6003e-09
+## If this is what you expected, this is not a problem.
+## If this is not as small as you expected, please check the 02_data vignette.</code></pre>
 <pre><code>## NULL</code></pre>
+<p>It’s also useful to plot your datasets, and check * coverage is dense * the level of association matches your expectation</p>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span>(<span class="no">minimum_data</span>)</pre></body></html></div>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 <p>For a case control trait, you would need to give the <code>type</code> as “cc”:</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">minimum_ccdata</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"beta"</span>,<span class="st">"varbeta"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>)]
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">minimum_ccdata</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"beta"</span>,<span class="st">"varbeta"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>)]
 <span class="no">minimum_ccdata</span>$<span class="no">type</span><span class="kw">=</span><span class="st">"cc"</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">minimum_ccdata</span>)</pre></body></html></div>
 <pre><code>## List of 5
@@ -159,7 +165,7 @@
 ##  $ snp     : chr [1:50] "s1" "s2" "s3" "s4" ...
 ##  $ position: int [1:50] 1 2 3 4 5 6 7 8 9 10 ...
 ##  $ type    : chr "cc"</code></pre>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">minimum_ccdata</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">minimum_ccdata</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
 <p>In either case, you can see that the lengths of beta, varbeta, snp and position are the same. They are assumed to represent the same snps in the same order. If you have your data in a data.frame, you could use <code><a href="https://rdrr.io/r/base/list.html">as.list()</a></code> to convert to a list, and then add the other elements, but you cannot pass a data.frame to coloc, because elements like <code>type</code> need to be of length 1.</p>
 </div>
@@ -167,7 +173,7 @@
 <h2 class="hasAnchor">
 <a href="#what-if-i-dont-have-sdy" class="anchor"></a>What if I don’t have sdY?</h2>
 <p>Often, sdY is not available for quantitative datasets. If the study say they standardised their trait to have variance 1, then you can set =sdY= to 1. Otherwise coloc can estimate it, but not needs MAF and sample size information too. So the dataset would look like:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">nosdY_data</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"beta"</span>,<span class="st">"varbeta"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"type"</span>,<span class="st">"N"</span>,<span class="st">"MAF"</span>)]
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">nosdY_data</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"beta"</span>,<span class="st">"varbeta"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"type"</span>,<span class="st">"N"</span>,<span class="st">"MAF"</span>)]
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">nosdY_data</span>)</pre></body></html></div>
 <pre><code>## List of 7
 ##  $ beta    : Named num [1:50] 0.2901 0.2093 0.3003 0.2846 0.0342 ...
@@ -180,14 +186,14 @@
 ##  $ N       : int 1000
 ##  $ MAF     : Named num [1:50] 0.1235 0.076 0.1155 0.1555 0.0465 ...
 ##   ..- attr(*, "names")= chr [1:50] "s1" "s2" "s3" "s4" ...</code></pre>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">nosdY_data</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">nosdY_data</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
 </div>
 <div id="what-if-i-dont-have-beta-andor-varbeta" class="section level2">
 <h2 class="hasAnchor">
 <a href="#what-if-i-dont-have-beta-andor-varbeta" class="anchor"></a>What if I don’t have beta and/or varbeta?</h2>
 <p>beta and varbeta are preferred. Please supply them if you have them, especially in the case of imputed data where they capture the effects of imperfect imputation. But if you don’t have them, coloc can estimate them, given p values, MAF, sample size and, if case-control data, the fraction of samples that are cases:</p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">nobeta_data</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"MAF"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"type"</span>,<span class="st">"sdY"</span>,<span class="st">"N"</span>)]
+<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="no">nobeta_data</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"MAF"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"type"</span>,<span class="st">"sdY"</span>,<span class="st">"N"</span>)]
 <span class="no">nobeta_data</span>$<span class="no">pvalues</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span>(-<span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="no">D1</span>$<span class="no">beta</span>/<span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span>(<span class="no">D1</span>$<span class="no">varbeta</span>)))*<span class="fl">2</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">nobeta_data</span>)</pre></body></html></div>
 <pre><code>## List of 7
@@ -200,9 +206,9 @@
 ##  $ N       : int 1000
 ##  $ pvalues : Named num [1:50] 0.00348 0.08538 0.00325 0.00236 0.81939 ...
 ##   ..- attr(*, "names")= chr [1:50] "s1" "s2" "s3" "s4" ...</code></pre>
-<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">nobeta_data</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">nobeta_data</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">nobeta_ccdata</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"MAF"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"N"</span>)]
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">nobeta_ccdata</span><span class="kw">=</span><span class="no">D1</span>[<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"MAF"</span>,<span class="st">"snp"</span>,<span class="st">"position"</span>,<span class="st">"N"</span>)]
 <span class="no">nobeta_ccdata</span>$<span class="no">pvalues</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span>(-<span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="no">D1</span>$<span class="no">beta</span>/<span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span>(<span class="no">D1</span>$<span class="no">varbeta</span>)))*<span class="fl">2</span>
 <span class="no">nobeta_ccdata</span>$<span class="no">type</span><span class="kw">=</span><span class="st">"cc"</span>
 <span class="no">nobeta_ccdata</span>$<span class="no">s</span><span class="kw">=</span><span class="fl">0.5</span>
@@ -217,7 +223,7 @@
 ##   ..- attr(*, "names")= chr [1:50] "s1" "s2" "s3" "s4" ...
 ##  $ type    : chr "cc"
 ##  $ s       : num 0.5</code></pre>
-<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="fu"><a href="../reference/check.dataset.html">check.dataset</a></span>(<span class="no">nobeta_ccdata</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="../reference/check_dataset.html">check_dataset</a></span>(<span class="no">nobeta_ccdata</span>)</pre></body></html></div>
 <pre><code>## NULL</code></pre>
 <p>Note that coloc doesn’t mind if your dataset has more entries than it minimally needs, it will use what it needs, preferring supplied beta/varbeta and sdY over estimation, and leave the rest.</p>
 </div>
@@ -227,7 +233,7 @@
 </h2>
 <p><code>coloc.abf</code> makes the simplifying assumption that each trait has at most one causal variant in the region under consideration. This means it does not need to know about correlation (LD) between SNPs, because no model under consideration has two or more SNPs in it. <code>coloc.susie</code> extends the functionality by allowing more than one causal variant, but this means it needs to know the LD between the SNPs. You may be able to get this from the study data, but if not, reference data such as 1000 Genomes can be used.</p>
 <p>Our test data has an LD matrix already. This will be a square numeric matrix of dimension equal to the number of SNPs, with dimnames corresponding to the SNP ids.</p>
-<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">D1</span>$<span class="no">LD</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">D1</span>$<span class="no">LD</span>)</pre></body></html></div>
 <pre><code>##  num [1:50, 1:50] 1 0.726 0.775 0.727 0.535 ...
 ##  - attr(*, "dimnames")=List of 2
 ##   ..$ : chr [1:50] "s1" "s2" "s3" "s4" ...
@@ -235,7 +241,7 @@
 <div id="nb-studies-from-different-populations" class="section level3">
 <h3 class="hasAnchor">
 <a href="#nb-studies-from-different-populations" class="anchor"></a>NB studies from different populations</h3>
-<p>One of the nice things about coloc is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region. The same thing still applies to <code>coloc.susie</code>, just add an appropriate LD matrix to each study.</p>
+<p>One of the nice things about <code>coloc.abf</code> is that it does not assume that LD structures are similar between studies, as long as there is a dense map of SNPs across the region. The same thing still applies to <code>coloc.susie</code>, just add an appropriate LD matrix to each study.</p>
 </div>
 <div id="nb-allele-order-matters" class="section level3">
 <h3 class="hasAnchor">
@@ -331,13 +337,13 @@
 </table>
 <p>the beta is telling you about the effect of allele A compared to allele G at the snp rs908742. If the alleles were reversed, beta would be -0.0826. The LD matrix needs to be aligned the same way. This will be easy if you have the GWAS data and are making the LD matrix yourself. If you get it from a public source, it will almost certainly be telling you about the LD between non-reference alleles. In this case, you need to make sure your data is also listing the non-reference allele as the “alternative” or “risk” allele. If it is not, switch the sign of beta.</p>
 <p>To avoid hassles, I recommend: * if using GWAS catalog data, download the <a href="https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics"><em>harmonised</em> version</a> which will do this for you. * if using eQTL summary data that has been processed by the <a href="https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics">eQTL catalogue</a>, use that version because it will also be harmonised * Otherwise, check the alleles in your summary table match those in the information files from the LD source * Finally, always plot the coloc result with the <a href="a04_sensitivity.html"><code>sensitivity</code> function</a> because weird effects are much easier to understand visually</p>
-<p>You can also use the coloc function <code>check.alignment</code> as a visual guide. It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD. We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa. Therefore this plot <em>should be</em> skewed to have more positive values than negative. Here I show a good (left) and bad (right) example.</p>
-<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">2</span>))
-<span class="fu"><a href="../reference/check.alignment.html">check.alignment</a></span>(<span class="no">goodD</span>)
+<p>You can also use the coloc function <code>check_alignment</code> as a visual guide. It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD. We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa. Therefore this plot <em>should be</em> skewed to have more positive values than negative. Here I show a good (left) and bad (right) example.</p>
+<div class="sourceCode" id="cb27"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">2</span>))
+<span class="fu"><a href="../reference/check_alignment.html">check_alignment</a></span>(<span class="no">goodD</span>)
 <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span>(<span class="fl">40</span>,<span class="fl">200</span>,<span class="st">"good"</span>,<span class="kw">col</span><span class="kw">=</span><span class="st">"red"</span>,<span class="kw">cex</span><span class="kw">=</span><span class="fl">4</span>)
-<span class="fu"><a href="../reference/check.alignment.html">check.alignment</a></span>(<span class="no">badD</span>)
+<span class="fu"><a href="../reference/check_alignment.html">check_alignment</a></span>(<span class="no">badD</span>)
 <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span>(<span class="fl">0</span>,<span class="fl">200</span>,<span class="st">"bad"</span>,<span class="kw">col</span><span class="kw">=</span><span class="st">"red"</span>,<span class="kw">cex</span><span class="kw">=</span><span class="fl">4</span>)</pre></body></html></div>
-<p><img src="a02_data_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 </div>
 </div>
 </div>

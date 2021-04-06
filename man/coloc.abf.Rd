@@ -8,7 +8,7 @@ coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
 }
 \arguments{
 \item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check.dataset}} for details.}
+to be analysed. See \code{\link{check_dataset}} for details.}
 
 \item{dataset2}{as above, for dataset 2}
 

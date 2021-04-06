@@ -8,7 +8,7 @@ finemap.abf(dataset, p1 = 1e-04)
 }
 \arguments{
 \item{dataset}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check.dataset}} for details.}
+to be analysed. See \code{\link{check_dataset}} for details.}
 
 \item{p1}{prior probability a SNP is associated with the trait 1, default 1e-4}
 }

@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
       </span>
     </div>
 
@@ -104,7 +104,7 @@
       <h1 data-toc-skip>Coloc: sensitivity to prior values</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2021-03-23</h4>
+            <h4 class="date">2021-04-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a04_sensitivity.Rmd"><code>vignettes/a04_sensitivity.Rmd</code></a></small>
       <div class="hidden name"><code>a04_sensitivity.Rmd</code></div>
@@ -195,10 +195,13 @@
 <div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b1</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X1</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y1</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
                     <span class="kw">dataset2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">beta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">beta</span>, <span class="kw">varbeta</span><span class="kw">=</span><span class="no">b2</span>$<span class="no">varbeta</span>, <span class="kw">N</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">X2</span>),<span class="kw">sdY</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">Y2</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"quant"</span>),
                     <span class="kw">MAF</span><span class="kw">=</span><span class="no">maf</span>,<span class="kw">p12</span><span class="kw">=</span><span class="fl">1e-6</span>)</pre></body></html></div>
+<pre><code>## Warning in check_dataset(d = dataset1, 1): minimum p value is: 3.4904e-05
+## If this is what you expected, this is not a problem.
+## If this is not as small as you expected, please check the 02_data vignette.</code></pre>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
 ##  0.005010  0.000444  0.122000  0.002100  0.871000 
 ## [1] "PP abf for shared variant: 87.1%"</code></pre>
-<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="no">my.res</span></pre></body></html></div>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">my.res</span></pre></body></html></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -212,12 +215,12 @@
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
 ## 5.000000e+01 5.010313e-03 4.440917e-04 1.219223e-01 2.101426e-03 8.705219e-01</code></pre>
-<div class="sourceCode" id="cb28"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="kw">rule</span><span class="kw">=</span><span class="st">"H4 &gt; 0.5"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb29"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="kw">rule</span><span class="kw">=</span><span class="st">"H4 &gt; 0.5"</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 0.5</code></pre>
 <p><img src="a04_sensitivity_files/figure-html/sens2-1.png" width="768"></p>
 <p>In this case, we find there is evidence for colocalisation according to a rule <span class="math inline">\(H_4&gt;0.5\)</span> only for <span class="math inline">\(p_{12} &gt;&gt; 10^{-6}\)</span>, which corresponds to an <em>a priori</em> belief that <span class="math inline">\(P(H_4) &gt;&gt; P(H_3)\)</span>. This means but you would need to think it reasonable that <span class="math inline">\(H_4\)</span> is much more likely than <span class="math inline">\(H_3\)</span> to begin with to find these data convincing.</p>
 <p>Note, the syntax can also consider more complicated rules:</p>
-<div class="sourceCode" id="cb30"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="kw">rule</span><span class="kw">=</span><span class="st">"H4 &gt; 3*H3 &amp; H0 &lt; 0.1"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb31"><html><body><pre class="r"><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span>(<span class="no">my.res</span>,<span class="kw">rule</span><span class="kw">=</span><span class="st">"H4 &gt; 3*H3 &amp; H0 &lt; 0.1"</span>)</pre></body></html></div>
 <pre><code>## Results pass decision rule H4 &gt; 3*H3 &amp; H0 &lt; 0.1</code></pre>
 <p><img src="a04_sensitivity_files/figure-html/sens3-1.png" width="768"></p>
 </div>

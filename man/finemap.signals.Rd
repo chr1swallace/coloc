@@ -16,7 +16,7 @@ finemap.signals(
 }
 \arguments{
 \item{D}{list of summary stats for a single disease, see
-\link{check.dataset}}
+\link{check_dataset}}
 
 \item{LD}{matrix of signed r values (not rsq!) giving correlation between
 SNPs}
