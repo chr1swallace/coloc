@@ -352,8 +352,6 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
     message("please install susieR https://github.com/stephenslab/susieR")
     return(NULL)
   }
-  if(is.null(nref))
-    stop("Please give nref, the number of samples used to estimate the LD matrix")
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
   check_dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
@@ -377,6 +375,11 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
   converged=FALSE; maxit=100;
   ## set some defaults for susie arguments
   susie_args=list(...)
+  if(!("z_ld_weight" %in% names(susie_args))) {
+    if(is.null(nref))
+      stop("Please give nref, the number of samples used to estimate the LD matrix")
+    args$z_ld_weight=1/nref
+  }
   if(!("null_weight" %in% names(susie_args))) { # set it ourselves
     susie_args$null_weight=if(!is.null(p)) {
                               max(1 - length(d$snp)*p, p)
@@ -388,16 +391,14 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
       res=do.call(susieR::susie_rss,
-                  c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit,s_init=s_init),
-                    susie_args))
+                  c(list(z=z, R=LD, max_iter=maxit, s_init=s_init), susie_args))
       ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
       ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
       ##                null_weight=susie_args$null_weight)
       ## res1$sets
     } else {
       res=do.call(susieR::susie_rss,
-                  c(list(z=z, R=LD, z_ld_weight = 1/nref, max_iter=maxit),
-                    susie_args))
+                  c(list(z=z, R=LD, max_iter=maxit), susie_args))
     }
     converged=res$converged; s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)

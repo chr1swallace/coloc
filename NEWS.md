@@ -1,3 +1,6 @@
+# coloc 5.0.0.9002
+* in runsusie, allow nref to be overridden if user passes z_ld_weight
+
 # coloc 5.0.0.9001
 * deprecate coloc.signals for multiple causal variants
 * introduce coloc.susie for multiple causal variants
