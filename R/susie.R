@@ -378,7 +378,7 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
   if(!("z_ld_weight" %in% names(susie_args))) {
     if(is.null(nref))
       stop("Please give nref, the number of samples used to estimate the LD matrix")
-    args$z_ld_weight=1/nref
+    susie_args$z_ld_weight=1/nref
   }
   if(!("null_weight" %in% names(susie_args))) { # set it ourselves
     susie_args$null_weight=if(!is.null(p)) {
