@@ -17,14 +17,35 @@ ymax <- NULL
 ##'
 ##' @title plot a coloc dataset
 ##' @param d a coloc dataset
+##' @param susie_obj optional, the output of a call to runsusie()
+##' @param color optional, specify the colours to use for each credible set when
+##'   susie_obj is supplied. Default is shamelessly copied from
+##'   susieR::susie_plot() so that colours will match
 ##' @param ... other arguments passed to the base graphics plot() function
 ##' @author Chris Wallace
 ##' @export
-plot_dataset <- function(d,...) {
+plot_dataset <- function(d,susie_obj=NULL,
+                         color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
+                                   "gold1", "skyblue2", "#FB9A99", "palegreen2", "#CAB2D6",
+                                   "#FDBF6F", "gray70", "khaki2", "maroon", "orchid1", "deeppink1",
+                                   "blue1", "steelblue4", "darkturquoise", "green1", "yellow4",
+                                   "yellow3", "darkorange4", "brown"),
+                         ...) {
   if(!("position" %in% names(d)))
     stop("no position element given")
   p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2
-  plot(d$position,-log10(p),xlab="Position",...)
+  plot(d$position,-log10(p),xlab="Position",pch=16,col="grey")#,...)
+  if(!is.null(susie_obj)) {
+    cs=susie_obj$sets$cs
+    for(i in 1:length(cs)) {
+      w=which(d$snp %in% names(cs[[i]]))
+      ## print(w)
+      ## print(d$position[w])
+      ## print(p[w])
+      points(d$position[w], -log10(p[w]), col=color[i], cex=2)
+    }
+    legend("topright",col=color[1:length(cs)],pch=rep(1,length(cs)),legend=1:length(cs))
+  }
 }
 
 ##' Print summary of a coloc.abf run

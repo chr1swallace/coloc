@@ -312,11 +312,6 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @title Run susie on a single coloc-structured dataset
 ##' @param d coloc dataset, must include LD (signed correlation matrix)
 ##' @param suffix suffix label that will be printed with any error messages
-##' @param nref number of samples in the dataset used to estimate the LD matrix
-##'   in d
-##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
-##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
-##'   greater than r2.prune
 ##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
 ##'   coloc.abf). By default, this is set to NULL, upon which we will set a
 ##'   small null_weight to pass to susie_rss() (see vignette a06 for details
@@ -325,8 +320,23 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   that neither of these options correspond to the susie_rss() defaults,
 ##'   because our goal here is not fine mapping alone.
 ##' @param trimz used to trim datasets for development purposes
+##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
+##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
+##'   greater than r2.prune
+##' @param maxit maximum number of iterations for the first run of susie_rss().
+##'   If susie_rss() does not report convergence, runs will be extended assuming
+##'   repeat_until_convergence=TRUE. Most users will not need to change this
+##'   default.
+##' @param repeat_until_convergence keep running until susie_rss() indicates
+##'   convergence. Default TRUE. If FALSE, susie_rss() will run with maxit
+##'   iterations, and if not converged, runsusie() will error. Most users will
+##'   not need to change this default.
 ##' @param s_init used internally to extend runs that haven't converged. don't
 ##'   use.
+##' @param nref number of samples in the dataset used to estimate the LD matrix
+##'   in d. If you supply this argument, it will be used to set the z_ld_weight
+##'   parameter in susie_rss. This is no longer recommended by the susieR
+##'   authors, so this parameter is deprecated.
 ##' @param ... arguments passed to susie_rss. In particular, if you want to
 ##'   match some coloc defaults, set
 ##'
@@ -345,9 +355,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   summary(result)
 ##' }
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,nref=NULL,p=NULL,
-                  trimz=NULL,
-                  r2.prune=NULL,s_init=NULL, ...) {
+runsusie=function(d,suffix=1,p=NULL,
+                  trimz=NULL,r2.prune=NULL,
+                  maxit=100,repeat_until_convergence=TRUE,
+                  s_init=NULL,nref=NULL, ...) {
   if(!requireNamespace("susieR", quietly = TRUE)) {
     message("please install susieR https://github.com/stephenslab/susieR")
     return(NULL)
@@ -372,13 +383,13 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
     LD=LD[which(keep),which(keep)]
     snp=snp[keep]
   }
-  converged=FALSE; maxit=100;
+  converged=FALSE;
   ## set some defaults for susie arguments
   susie_args=list(...)
   if(!("z_ld_weight" %in% names(susie_args))) {
-    if(is.null(nref))
-      stop("Please give nref, the number of samples used to estimate the LD matrix")
-    susie_args$z_ld_weight=1/nref
+    if(!is.null(nref))
+      ## stop("Please give nref, the number of samples used to estimate the LD matrix")
+      susie_args$z_ld_weight=1/nref
   }
   if(!("null_weight" %in% names(susie_args))) { # set it ourselves
     susie_args$null_weight=if(!is.null(p)) {
@@ -388,6 +399,8 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
                             }
   }
   while(!converged) {
+    if(repeat_until_convergence==FALSE)
+      stop("susie_rss() did not converge in ",maxit," iterations. Try running with run_until_convergence=TRUE")
     message("running iterations: ",maxit)
     if(!is.null(s_init)) {
       res=do.call(susieR::susie_rss,
@@ -459,6 +472,7 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
 
 .susie_setld=function(s,ld) {
 	stmp=lapply(s, setdiff, ncol(ld)+1)
+	stmp=lapply(s, names)
 	if(!length(stmp))
 		return(0)
 	if(length(stmp)==1)
@@ -466,10 +480,10 @@ runsusie=function(d,suffix=1,nref=NULL,p=NULL,
 	sld=matrix(0,length(stmp),length(stmp))
 	for(i in 2:length(stmp)) {
 		for(j in 1:(i-1)) {
-			if(length(stmp[[i]])==0 || length(stmp[[j]]==0)) {
-				sld[i,j]=0
+			if(length(stmp[[i]]) && length(stmp[[j]])) {
+				sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2, na.rm=TRUE)
 			} else {
-				sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2,na.rm=TRUE)
+				sld[i,j]=0
 			}
 		}
 	}
