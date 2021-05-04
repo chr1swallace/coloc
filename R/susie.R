@@ -110,7 +110,7 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
-coloc.susie=function(dataset1,dataset2, nref, susie.args=list(),  ...) {
+coloc.susie=function(dataset1,dataset2, nref, back_calculate_lbf=FALSE, susie.args=list(),  ...) {
   if(!requireNamespace("susieR", quietly = TRUE)) {
     message("please install susieR https://github.com/stephenslab/susieR")
     return(NULL)
@@ -141,8 +141,13 @@ coloc.susie=function(dataset1,dataset2, nref, susie.args=list(),  ...) {
   idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
   idx2=cs2$cs_index #sapply(names(cs2$cs), get_idx)
   ## calculate bayes factors, using susie's priors
-  bf1=alpha_to_logbf(s1$alpha[idx1,,drop=FALSE], s1$pi)
-  bf2=alpha_to_logbf(s2$alpha[idx2,,drop=FALSE], s2$pi)
+  ## if(back_calculate_lbf) {
+  ##   bf1=alpha_to_logbf(s1$alpha[idx1,,drop=FALSE], s1$pi)
+  ##   bf2=alpha_to_logbf(s2$alpha[idx2,,drop=FALSE], s2$pi)
+  ## } else {
+    bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
+    bf2=s2$lbf_variable[idx2,,drop=FALSE][,setdiff(colnames(s2$lbf_variable),"")]
+  ## }
 
   ret=coloc.bf_bf(bf1,bf2,...)
   ## renumber index to match
@@ -246,12 +251,12 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       warning("snp overlap too small between datasets: too few snps with high posterior in one trait represented in other")
       return(
         list(summary=cbind(
-          data.table(nsnps=length(isnps),
-                     hit1=colnames(pp1)[apply(pp1,1,which.max)][todo$i],
-                     hit2=colnames(pp2)[apply(pp2,1,which.max)][todo$j],
-                     PP.H0.abf=pmin(ph0.1[todo$i],ph0.2[todo$j]),
-                     PP.H1.abf=NA, PP.H2.abf=NA, PP.H3.abf=NA, PP.H4.abf=NA),
-          todo[,.(idx1=i,idx2=j)]))
+               data.table(nsnps=length(isnps),
+                          hit1=colnames(pp1)[apply(pp1,1,which.max)][todo$i],
+                          hit2=colnames(pp2)[apply(pp2,1,which.max)][todo$j],
+                          PP.H0.abf=pmin(ph0.1[todo$i],ph0.2[todo$j]),
+                          PP.H1.abf=NA, PP.H2.abf=NA, PP.H3.abf=NA, PP.H4.abf=NA),
+               todo[,.(idx1=i,idx2=j)]))
       )
     }
     if(any(drop))
@@ -274,16 +279,16 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       pp.abf[1:5]=c(1,0,0,0,0)
     }
     common.snps <- nrow(df)
-      hit1=names(which.max(bf1[todo$i[k],])) #df$snp[ which.max(abs(df$bf1)) ]
-      if(is.null(hit1)) {
-        hit1="-"
-        pp.abf[c(1,3)]=c(0,1)
-      }
+    hit1=names(which.max(bf1[todo$i[k],])) #df$snp[ which.max(abs(df$bf1)) ]
+    if(is.null(hit1)) {
+      hit1="-"
+      pp.abf[c(1,3)]=c(0,1)
+    }
     hit2=names(which.max(bf2[todo$j[k],])) #df$snp[ which.max(abs(df$bf2)) ]
-      if(is.null(hit2)) {
-        hit2="-"
-        pp.abf[c(1,2)]=c(0,1)
-      }
+    if(is.null(hit2)) {
+      hit2="-"
+      pp.abf[c(1,2)]=c(0,1)
+    }
     results[[k]]=do.call("data.frame",c(list(nsnps=common.snps, hit1=hit1, hit2=hit2),
                                         as.list(pp.abf)))
   }
@@ -393,30 +398,32 @@ runsusie=function(d,suffix=1,p=NULL,
   }
   if(!("null_weight" %in% names(susie_args))) { # set it ourselves
     susie_args$null_weight=if(!is.null(p)) {
-                              max(1 - length(d$snp)*p, p)
-                            } else {
-                              susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
-                            }
+                             max(1 - length(d$snp)*p, p)
+                           } else {
+                             susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
+                           }
   }
   while(!converged) {
-    if(repeat_until_convergence==FALSE)
-      stop("susie_rss() did not converge in ",maxit," iterations. Try running with run_until_convergence=TRUE")
-    message("running iterations: ",maxit)
-    if(!is.null(s_init)) {
-      res=do.call(susieR::susie_rss,
-                  c(list(z=z, R=LD, max_iter=maxit, s_init=s_init), susie_args))
-      ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
-      ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
-      ##                null_weight=susie_args$null_weight)
-      ## res1$sets
-    } else {
-      res=do.call(susieR::susie_rss,
-                  c(list(z=z, R=LD, max_iter=maxit), susie_args))
-    }
+    message("running max iterations: ",maxit)
+  ## if(!is.null(s_init)) {
+  ##   res=do.call(susieR::susie_rss,
+  ##               c(list(z=z, R=LD, max_iter=maxit, s_init=s_init), susie_args))
+  ##   ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
+  ##   ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
+  ##   ##                null_weight=susie_args$null_weight)
+  ##   ## res1$sets
+  ## } else {
+    res=do.call(susieR::susie_rss,
+                c(list(z=z, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
+    if(!converged && repeat_until_convergence==FALSE)
+      stop("susie_rss() did not converge in ",maxit," iterations. Try running with run_until_convergence=TRUE")
+    if(!converged)
+      maxit=maxit * 100 # no point in half measures!
   }
-  colnames(res$alpha)=c(snp,"null")[1:ncol(res$alpha)]
+  colnames(res$lbf_variable) = colnames(res$alpha) =
+    c(snp,"null")[1:ncol(res$alpha)]
   names(res$pip)=snp
   if(length(res$sets$cs))
     res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
@@ -471,23 +478,23 @@ runsusie=function(d,suffix=1,p=NULL,
 }
 
 .susie_setld=function(s,ld) {
-	stmp=lapply(s, setdiff, ncol(ld)+1)
-	stmp=lapply(s, names)
-	if(!length(stmp))
-		return(0)
-	if(length(stmp)==1)
-		return(matrix(0,1,1))
-	sld=matrix(0,length(stmp),length(stmp))
-	for(i in 2:length(stmp)) {
-		for(j in 1:(i-1)) {
-			if(length(stmp[[i]]) && length(stmp[[j]])) {
-				sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2, na.rm=TRUE)
-			} else {
-				sld[i,j]=0
-			}
-		}
-	}
-	sld
+  ## stmp=lapply(s, setdiff, ncol(ld)+1)
+  stmp=lapply(s, names)
+  if(!length(stmp))
+    return(0)
+  if(length(stmp)==1)
+    return(matrix(0,1,1,dimnames=list(names(stmp),names(stmp))))
+  sld=matrix(0,length(stmp),length(stmp),dimnames=list(names(stmp),names(stmp)))
+  for(i in 2:length(stmp)) {
+    for(j in 1:(i-1)) {
+      if(length(stmp[[i]]) && length(stmp[[j]])) {
+        sld[i,j]=max(ld[stmp[[i]],stmp[[j]]]^2, na.rm=TRUE)
+      } else {
+        sld[i,j]=0
+      }
+    }
+  }
+  sld
 }
 
 .susie_dropsets=function(res, wh) {
@@ -511,9 +518,9 @@ runsusie=function(d,suffix=1,p=NULL,
   x[-m[2],,drop=FALSE]
 }
 
-  .sum1=function(x) {
-    pmin(1, sum(x))
-  }
+.sum1=function(x) {
+  pmin(1, sum(x))
+}
 
 .susie_mergesets=function(res, wh) {
   m=res$sets$cs_index[as.vector(wh)] # convert to index
