@@ -7,10 +7,11 @@
 runsusie(
   d,
   suffix = 1,
-  nref = NULL,
   p = NULL,
   trimz = NULL,
   r2.prune = NULL,
+  maxit = 100,
+  repeat_until_convergence = TRUE,
   s_init = NULL,
   ...
 )
@@ -19,9 +20,6 @@ runsusie(
 \item{d}{coloc dataset, must include LD (signed correlation matrix)}
 
 \item{suffix}{suffix label that will be printed with any error messages}
-
-\item{nref}{number of samples in the dataset used to estimate the LD matrix
-in d}
 
 \item{p}{prior probability a snp is causal (equivalent to p1 or p2 in
 coloc.abf). By default, this is set to NULL, upon which we will set a
@@ -36,6 +34,16 @@ because our goal here is not fine mapping alone.}
 \item{r2.prune}{sometimes SuSiE can return multiple signals in high LD. if
 you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
 greater than r2.prune}
+
+\item{maxit}{maximum number of iterations for the first run of susie_rss().
+If susie_rss() does not report convergence, runs will be extended assuming
+repeat_until_convergence=TRUE. Most users will not need to change this
+default.}
+
+\item{repeat_until_convergence}{keep running until susie_rss() indicates
+convergence. Default TRUE. If FALSE, susie_rss() will run with maxit
+iterations, and if not converged, runsusie() will error. Most users will
+not need to change this default.}
 
 \item{s_init}{used internally to extend runs that haven't converged. don't
 use.}
@@ -59,10 +67,8 @@ run susie_rss storing some additional information for coloc
 \examples{
 library(coloc)
 data(coloc_test_data)
-if(requireNamespace("susieR", quietly = TRUE)) {
-  result=runsusie(coloc_test_data$D1,nref=500)
-  summary(result)
-}
+result=runsusie(coloc_test_data$D1)
+summary(result)
 }
 \author{
 Chris Wallace

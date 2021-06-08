@@ -4,7 +4,13 @@
 \alias{coloc.susie}
 \title{run coloc using susie to detect separate signals}
 \usage{
-coloc.susie(dataset1, dataset2, nref, susie.args = list(), ...)
+coloc.susie(
+  dataset1,
+  dataset2,
+  back_calculate_lbf = FALSE,
+  susie.args = list(),
+  ...
+)
 }
 \arguments{
 \item{dataset1}{\emph{either} a coloc-style input dataset (see
@@ -15,7 +21,10 @@ dataset}
 \link{check_dataset}), or the result of running \link{runsusie} on such a
 dataset}
 
-\item{nref}{number of individuals from whom the LD matrix was estimated}
+\item{back_calculate_lbf}{by default, use the log Bayes factors returned by
+susie_rss. It is also possible to back-calculate these from the posterior
+probabilities. It is not advised to set this to TRUE, the option exists
+really for testing purposes only.}
 
 \item{susie.args}{a named list of additional arguments to be passed to
 \link{runsusie}}
@@ -24,17 +33,13 @@ dataset}
 values for causal association with one trait (p1, p2) or both (p12)}
 }
 \value{
-a list, containing elements
-\itemize{
-\item summary a data.table of posterior
+a list, containing elements * summary a data.table of posterior
 probabilities of each global hypothesis, one row per pairwise comparison
-of signals from the two traits
-\item results a data.table of detailed results giving the posterior probability
-for each snp to be jointly causal for both traits \emph{assuming H4 is true}.
-Please ignore this column if the corresponding posterior support for H4
-is not high.
-\item priors a vector of the priors used for the analysis
-}
+of signals from the two traits * results a data.table of detailed results
+giving the posterior probability for each snp to be jointly causal for
+both traits \emph{assuming H4 is true}. Please ignore this column if the
+corresponding posterior support for H4 is not high. * priors a vector of
+the priors used for the analysis
 }
 \description{
 colocalisation with multiple causal variants via SuSiE

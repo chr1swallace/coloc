@@ -5,7 +5,7 @@
 \alias{plot.coloc_abf}
 \title{plot a coloc_abf object}
 \usage{
-plot.coloc_abf(x, ...)
+\method{plot}{coloc_abf}(x, ...)
 }
 \arguments{
 \item{x}{coloc_abf object to be plotted}

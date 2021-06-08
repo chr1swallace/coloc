@@ -1,3 +1,4 @@
+#' @importFrom graphics points
 globalVariables(c("variable","pp","position","value"))
 
                                         # ds1: dataset1
@@ -18,13 +19,22 @@ ymax <- NULL
 ##' @title plot a coloc dataset
 ##' @param d a coloc dataset
 ##' @param susie_obj optional, the output of a call to runsusie()
+##' @param alty default is to plot a standard manhattan. If you wish to plot a
+##'   different y value, pass it here. You may also want to change ylab to
+##'   describe what you are plotting.
+##' @param ylab label for y axis, default is -log10(p) and assumes you are
+##'   plotting a manhattan
+##' @param show_legend optional, show the legend or not. default is TRUE
 ##' @param color optional, specify the colours to use for each credible set when
 ##'   susie_obj is supplied. Default is shamelessly copied from
 ##'   susieR::susie_plot() so that colours will match
 ##' @param ... other arguments passed to the base graphics plot() function
 ##' @author Chris Wallace
 ##' @export
-plot_dataset <- function(d,susie_obj=NULL,
+plot_dataset <- function(d,
+                         susie_obj=NULL,
+                         alty=NULL,ylab="-log10(p)",
+                         show_legend=TRUE,
                          color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
                                    "gold1", "skyblue2", "#FB9A99", "palegreen2", "#CAB2D6",
                                    "#FDBF6F", "gray70", "khaki2", "maroon", "orchid1", "deeppink1",
@@ -33,8 +43,12 @@ plot_dataset <- function(d,susie_obj=NULL,
                          ...) {
   if(!("position" %in% names(d)))
     stop("no position element given")
-  p=pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2
-  plot(d$position,-log10(p),xlab="Position",pch=16,col="grey")#,...)
+  if(is.null(alty)) {
+    y= -log10( pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2 )
+  } else {
+    y=alty
+  }
+  plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
   if(!is.null(susie_obj)) {
     cs=susie_obj$sets$cs
     for(i in 1:length(cs)) {
@@ -42,9 +56,10 @@ plot_dataset <- function(d,susie_obj=NULL,
       ## print(w)
       ## print(d$position[w])
       ## print(p[w])
-      points(d$position[w], -log10(p[w]), col=color[i], cex=2)
+      points(d$position[w], y[w], col=color[i], cex=2)
     }
-    legend("topright",col=color[1:length(cs)],pch=rep(1,length(cs)),legend=1:length(cs))
+    if(show_legend)
+      legend("topright",col=color[1:length(cs)],pch=rep(1,length(cs)),legend=1:length(cs))
   }
 }
 

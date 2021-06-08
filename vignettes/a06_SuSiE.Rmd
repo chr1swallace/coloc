@@ -59,13 +59,13 @@ check_dataset(D3,req="LD")
 check_dataset(D4,req="LD")
 ```
 
-SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4.  We need also to supply the number of individuals used to estimate the LD matrix, =nref=.
+SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4. 
 
 ```{r}
 if(requireNamespace("susieR",quietly=TRUE)) {
-  S3=runsusie(D3,nref=200)
+  S3=runsusie(D3)
   summary(S3)
-  S4=runsusie(D4,nref=200)
+  S4=runsusie(D4)
   summary(S4)
 }
 ```
@@ -110,21 +110,21 @@ if(requireNamespace("susieR",quietly=TRUE)) {
   par(mfrow=c(1,2))
   plot_dataset(D3, main="original D3")
   plot_dataset(D5, main="weaker signal D5")
-  summary(runsusie(D5,nref=1000)) # default coverage 0.95
+  summary(runsusie(D5)) # default coverage 0.95
 }
 ```
 
 But by reducing the coverage we can find one signal
 ``` r
 if(requireNamespace("susieR",quietly=TRUE)) {
-  summary(runsusie(D5,nref=1000,coverage=0.1))  # lower coverage
+  summary(runsusie(D5,coverage=0.1))  # lower coverage
 }
 ```
 
 And reducing it further finds the other as well
 ``` r
 if(requireNamespace("susieR",quietly=TRUE)) {
-  summary(runsusie(D5,nref=1000,coverage=0.01)) # even lower
+  summary(runsusie(D5,coverage=0.01)) # even lower
 }
 ```
 
@@ -132,7 +132,7 @@ These values are just for illustration, I probably wouldn't believe a signal in 
 
 ``` r
 if(requireNamespace("susieR",quietly=TRUE)) {
-  S5=runsusie(D5,nref=1000,coverage=0.1)  # lower coverage
+  S5=runsusie(D5,coverage=0.1)  # lower coverage
   summary(S5)
   res=coloc.susie(S5,S4)
   print(res$summary)

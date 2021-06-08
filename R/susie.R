@@ -1,11 +1,4 @@
-## NB - susieR is not (yet?) on cran. Until then it must live in the Enhances
-## catergory, and we need workarounds in these functions and their docs.
-
-## '@importFrom susieR susie_rss susie_get_cs
-## NULL
 globalVariables(c("pp4", "i", "j"))
-
-
 
 ##' convert alpha matrix to log BF matrix
 ##'
@@ -88,15 +81,13 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' colocalisation with multiple causal variants via SuSiE
 ##'
 ##' @title run coloc using susie to detect separate signals
-##' @return a list, containing elements
-##' * summary a data.table of posterior
+##' @return a list, containing elements * summary a data.table of posterior
 ##'   probabilities of each global hypothesis, one row per pairwise comparison
-##'   of signals from the two traits
-##' * results a data.table of detailed results giving the posterior probability
-##'   for each snp to be jointly causal for both traits *assuming H4 is true*.
-##'   Please ignore this column if the corresponding posterior support for H4
-##'   is not high.
-##' * priors a vector of the priors used for the analysis
+##'   of signals from the two traits * results a data.table of detailed results
+##'   giving the posterior probability for each snp to be jointly causal for
+##'   both traits *assuming H4 is true*. Please ignore this column if the
+##'   corresponding posterior support for H4 is not high. * priors a vector of
+##'   the priors used for the analysis
 ##' @export
 ##' @author Chris Wallace
 ##' @param dataset1 *either* a coloc-style input dataset (see
@@ -105,24 +96,27 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @param dataset2 *either* a coloc-style input dataset (see
 ##'   \link{check_dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
-##' @param nref number of individuals from whom the LD matrix was estimated
+##' @param back_calculate_lbf by default, use the log Bayes factors returned by
+##'   susie_rss. It is also possible to back-calculate these from the posterior
+##'   probabilities. It is not advised to set this to TRUE, the option exists
+##'   really for testing purposes only.
 ##' @param susie.args a named list of additional arguments to be passed to
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
-coloc.susie=function(dataset1,dataset2, nref, back_calculate_lbf=FALSE, susie.args=list(),  ...) {
-  if(!requireNamespace("susieR", quietly = TRUE)) {
-    message("please install susieR https://github.com/stephenslab/susieR")
-    return(NULL)
-  }
+coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=list(),  ...) {
+  ## if(!requireNamespace("susieR", quietly = TRUE)) {
+  ##   message("please install susieR https://github.com/stephenslab/susieR")
+  ##   return(NULL)
+  ## }
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1,nref=nref),susie.args))
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
   if("susie" %in% class(dataset2))
     s2=dataset2
   else
-    s2=do.call("runsusie", c(list(d=dataset2,suffix=1,nref=nref),susie.args))
+    s2=do.call("runsusie", c(list(d=dataset2,suffix=1),susie.args))
   cs1=s1$sets
   cs2=s2$sets
   ## cs1=susie_get_cs(s1)
@@ -132,11 +126,10 @@ coloc.susie=function(dataset1,dataset2, nref, back_calculate_lbf=FALSE, susie.ar
   ## names(cs) = paste0("L", which(include_idx))
   ## get_idx=function(x)
   ##   sub("L","",x) %>% as.numeric()
-  isnps=setdiff(intersect(colnames(s1$alpha),colnames(s2$alpha)),
-                "null")
+  isnps=intersect(colnames(s1$lbf_variable),colnames(s2$lbf_variable))
   if(!length(isnps))
     return(data.table(nsnps=NA))
-  message("Using ",length(isnps),"/ ",ncol(s1$alpha)-1," and ",ncol(s2$alpha)-1," available")
+  message("Using ",length(isnps),"/ ",ncol(s1$lbf_variable)," and ",ncol(s2$lbf_variable)," available")
 
   idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
   idx2=cs2$cs_index #sapply(names(cs2$cs), get_idx)
@@ -145,8 +138,8 @@ coloc.susie=function(dataset1,dataset2, nref, back_calculate_lbf=FALSE, susie.ar
   ##   bf1=alpha_to_logbf(s1$alpha[idx1,,drop=FALSE], s1$pi)
   ##   bf2=alpha_to_logbf(s2$alpha[idx2,,drop=FALSE], s2$pi)
   ## } else {
-    bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
-    bf2=s2$lbf_variable[idx2,,drop=FALSE][,setdiff(colnames(s2$lbf_variable),"")]
+    bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
+    bf2=s2$lbf_variable[idx2,isnps,drop=FALSE]
   ## }
 
   ret=coloc.bf_bf(bf1,bf2,...)
@@ -167,10 +160,10 @@ coloc.susie=function(dataset1,dataset2, nref, back_calculate_lbf=FALSE, susie.ar
 ##' @export
 ##' @author Chris Wallace
 coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
-  if(!requireNamespace("susieR", quietly = TRUE)) {
-    message("please install susieR https://github.com/stephenslab/susieR")
-    return(NULL)
-  }
+  ## if(!requireNamespace("susieR", quietly = TRUE)) {
+  ##   message("please install susieR https://github.com/stephenslab/susieR")
+  ##   return(NULL)
+  ## }
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
@@ -181,11 +174,12 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
     return(data.table(nsnps=NA))
   idx1=cs1$cs_index
   ## alpha: an L by p matrix of posterior inclusion probabilites
-  isnps=setdiff(intersect(colnames(s1$alpha),names(bf2)),
+  isnps=setdiff(intersect(colnames(s1$lbf_variable),names(bf2)),
                 "null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
-  bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
+  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
+  ## bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
 
   ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
@@ -194,11 +188,11 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
 }
 
 susie_get_cs_with_names=function(s) {
-  if(!requireNamespace("susieR", quietly = TRUE)) {
-    message("please install susieR https://github.com/stephenslab/susieR")
-    return(NULL)
-  }
-  sets=susieR::susie_get_cs(s)
+  ## if(!requireNamespace("susieR", quietly = TRUE)) {
+  ##   message("please install susieR https://github.com/stephenslab/susieR")
+  ##   return(NULL)
+  ## }
+  sets=susie_get_cs(s)
   sets$cs=lapply(sets$cs, function(x) structure(x, names=colnames(s$alpha)[x]))
   sets
 }
@@ -338,10 +332,6 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   not need to change this default.
 ##' @param s_init used internally to extend runs that haven't converged. don't
 ##'   use.
-##' @param nref number of samples in the dataset used to estimate the LD matrix
-##'   in d. If you supply this argument, it will be used to set the z_ld_weight
-##'   parameter in susie_rss. This is no longer recommended by the susieR
-##'   authors, so this parameter is deprecated.
 ##' @param ... arguments passed to susie_rss. In particular, if you want to
 ##'   match some coloc defaults, set
 ##'
@@ -355,19 +345,17 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @examples
 ##' library(coloc)
 ##' data(coloc_test_data)
-##' if(requireNamespace("susieR", quietly = TRUE)) {
-##'   result=runsusie(coloc_test_data$D1,nref=500)
-##'   summary(result)
-##' }
+##' result=runsusie(coloc_test_data$D1)
+##' summary(result)
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,p=NULL,
                   trimz=NULL,r2.prune=NULL,
                   maxit=100,repeat_until_convergence=TRUE,
-                  s_init=NULL,nref=NULL, ...) {
-  if(!requireNamespace("susieR", quietly = TRUE)) {
-    message("please install susieR https://github.com/stephenslab/susieR")
-    return(NULL)
-  }
+                  s_init=NULL, ...) {
+  ## if(!requireNamespace("susieR", quietly = TRUE)) {
+  ##   message("please install susieR https://github.com/stephenslab/susieR")
+  ##   return(NULL)
+  ## }
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
   check_dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
@@ -391,18 +379,23 @@ runsusie=function(d,suffix=1,p=NULL,
   converged=FALSE;
   ## set some defaults for susie arguments
   susie_args=list(...)
-  if(!("z_ld_weight" %in% names(susie_args))) {
-    if(!is.null(nref))
-      ## stop("Please give nref, the number of samples used to estimate the LD matrix")
-      susie_args$z_ld_weight=1/nref
+  ## if(!("z_ld_weight" %in% names(susie_args))) {
+  ##   if(!is.null(nref))
+  ##     ## stop("Please give nref, the number of samples used to estimate the LD matrix")
+  ##     susie_args$z_ld_weight=1/nref
+  ## }
+  if("max_iter" %in% names(susie_args)) {
+    maxit=susie_args$max_iter
+    susie_args = susie_args[ setdiff(names(susie_args), "max_iter") ]
   }
-  if(!("null_weight" %in% names(susie_args))) { # set it ourselves
-    susie_args$null_weight=if(!is.null(p)) {
-                             max(1 - length(d$snp)*p, p)
-                           } else {
-                             susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
-                           }
-  }
+
+  ## if(!("null_weight" %in% names(susie_args))) { # set it ourselves
+  ##   susie_args$null_weight=if(!is.null(p)) {
+  ##                            max(1 - length(d$snp)*p, p)
+  ##                          } else {
+  ##                            susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
+  ##                          }
+  ## }
   while(!converged) {
     message("running max iterations: ",maxit)
   ## if(!is.null(s_init)) {
@@ -413,17 +406,17 @@ runsusie=function(d,suffix=1,p=NULL,
   ##   ##                null_weight=susie_args$null_weight)
   ##   ## res1$sets
   ## } else {
-    res=do.call(susieR::susie_rss,
+    res=do.call(susie_rss,
                 c(list(z=z, R=LD, max_iter=maxit), susie_args))
-    converged=res$converged; s_init=res; maxit=maxit*2
+    converged=res$converged; #s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
     if(!converged && repeat_until_convergence==FALSE)
       stop("susie_rss() did not converge in ",maxit," iterations. Try running with run_until_convergence=TRUE")
     if(!converged)
       maxit=maxit * 100 # no point in half measures!
   }
-  colnames(res$lbf_variable) = colnames(res$alpha) =
-    c(snp,"null")[1:ncol(res$alpha)]
+  colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
+  colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
   names(res$pip)=snp
   if(length(res$sets$cs))
     res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
@@ -460,6 +453,10 @@ runsusie=function(d,suffix=1,p=NULL,
                            dimnames=list(rownames(res$alpha),snps_to_add)),
                     res$alpha)
     res$alpha=res$alpha/matrix(rowSums(res$alpha),nrow(res$alpha),ncol(res$alph))
+    res$lbf_variable=cbind(matrix(apply(res$lbf_variable,1,min,na.rm=TRUE),
+                                  nrow(res$lbf_variable),length(snps_to_add),
+                                  dimnames=list(rownames(res$lbf_variable),snps_to_add)),
+                           res$lbf_variable)
   }
   res
 }

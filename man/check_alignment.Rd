@@ -5,7 +5,7 @@
 \alias{check.alignment}
 \title{check alignment}
 \usage{
-check_alignment(D, thr = 0.2)
+check_alignment(D, thr = 0.2, do_plot = TRUE)
 
 check.alignment(...)
 }
@@ -14,10 +14,12 @@ check.alignment(...)
 
 \item{thr}{plot SNP pairs in absolute LD > thr}
 
+\item{do_plot}{if TRUE (default) plot the diagnostic}
+
 \item{...}{arguments passed to check_alignment()}
 }
 \value{
-a plot for a visual check that alleles in your data are aligned the same way for the beta vector and the LD matrix
+proportion of pairs that are positive
 }
 \description{
 check alignment between beta and LD

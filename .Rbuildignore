@@ -1,4 +1,5 @@
 _pkgdown.yaml
+pkgdown
 docs
 Rjunk
 R/junkyard.R
@@ -10,3 +11,4 @@ errors
 ^doc$
 ^Meta$
 FAQ.md
+^CRAN-RELEASE$

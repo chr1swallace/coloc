@@ -8,8 +8,6 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-```{r sim, child="simdata.Rmd" }
-```
 
 # Fine mapping under a single causal variant assumption
 

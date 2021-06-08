@@ -1,3 +1,7 @@
+# coloc 5.1.0
+* release to CRAN of coloc.susie
+* remove nref now not recommended
+
 # coloc 5.0.0.9002
 * in runsusie, allow nref to be overridden if user passes z_ld_weight
 
