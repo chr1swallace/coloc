@@ -20,9 +20,9 @@
 <script src="pkgdown.js"></script><meta property="og:title" content="Colocalisation Tests of Two Genetic Traits">
 <meta property="og:description" content="Performs the colocalisation tests described in
     Giambartolomei et al (2013) &lt;doi:10.1371/journal.pgen.1004383&gt;,
-    Wallace (2020) &lt;doi:doi.org/10.1371/journal.pgen.1008720&gt;,
-    Wallace (2021) &lt;https://doi.org/10.1101/2021.02.23.432421&gt;.">
-<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
+    Wallace (2020) &lt;doi:10.1371/journal.pgen.1008720&gt;,
+    Wallace (2021) &lt;doi:10.1101/2021.02.23.432421&gt;.">
+<meta property="og:image" content="https://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -87,7 +87,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -135,7 +135,8 @@ install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
 <li>Run <code>coloc.susie</code> on the two outputs from above</li>
 </ol>
 <p>More detail is available in the vignette a06_SuSiE.html accessible by</p>
-<div class="sourceCode" id="cb2"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span>(<span class="st">"a06_SuSiE"</span>,<span class="kw">package</span><span class="kw">=</span><span class="st">"coloc"</span>)</pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span><span class="op">(</span><span class="st">"a06_SuSiE"</span>,package<span class="op">=</span><span class="st">"coloc"</span><span class="op">)</span></code></pre></div>
 <!-- ## version 4 -->
 <!-- This is an updated version of coloc.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).   -->
 <!-- It is not yet on CRAN. To install the new version, do -->
@@ -153,11 +154,11 @@ install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
 <p>For usage, please see the vignette at <a href="https://chr1swallace.github.io/coloc" class="uri">https://chr1swallace.github.io/coloc</a></p>
 <p>Key previous references are:</p>
 <ul>
-<li>original propostion of proportional colocalisation <a href="http://www.ncbi.nlm.nih.gov/pubmed/19039033">Plagnol et al (2009)</a>
+<li>original propostion of proportional colocalisation <a href="https://www.ncbi.nlm.nih.gov/pubmed/19039033">Plagnol et al (2009)</a>
 </li>
-<li>proportional colocalisation with type 1 error rate control <a href="http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract">Wallace et al (2013)</a>
+<li>proportional colocalisation with type 1 error rate control <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/gepi.21765">Wallace et al (2013)</a>
 </li>
-<li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
+<li>colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait <a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">Giambartolomei et al (2013)</a>
 </li>
 <li>Thoughts about priors in coloc are described in <a href="https://doi.org/10.1371/journal.pgen.1008720">Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720</a>
 </li>
@@ -166,7 +167,7 @@ install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
 <div id="frequently-asked-questions" class="section level1">
 <h1 class="hasAnchor">
 <a href="#frequently-asked-questions" class="anchor"></a>Frequently Asked Questions</h1>
-<p>see <a href="FAQ.html">FAQ</a></p>
+<p>see <a href="https://chr1swallace.github.io/coloc/FAQ.html">FAQ</a></p>
 </div>
 <div id="notes-to-self" class="section level1">
 <h1 class="hasAnchor">
@@ -218,7 +219,7 @@ install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://travis-ci.org/chr1swallace/coloc"><img src="https://travis-ci.org/chr1swallace/coloc.svg?branch=master" alt="Build Status"></a></li>
-<li><a href="https://cran.r-project.org/package=coloc"><img src="http://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></li>
+<li><a href="https://cran.r-project.org/package=coloc"><img src="https://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a></li>
 </ul>
 </div>
 </div>
@@ -230,7 +231,7 @@ install_github("chr1swallace/coloc",build_vignettes=TRUE)</code></pre>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -19,7 +19,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: under a single causal variant assumption">
 <meta property="og:description" content="coloc">
-<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png">
+<meta property="og:image" content="https://chr1swallace.github.io/coloc/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
       </span>
     </div>
 
@@ -46,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -84,7 +84,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -104,7 +104,7 @@
       <h1 data-toc-skip>Coloc: under a single causal variant assumption</h1>
                         <h4 class="author">Chris Wallace</h4>
             
-            <h4 class="date">2021-04-06</h4>
+            <h4 class="date">2021-06-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a03_enumeration.Rmd"><code>vignettes/a03_enumeration.Rmd</code></a></small>
       <div class="hidden name"><code>a03_enumeration.Rmd</code></div>
@@ -113,90 +113,39 @@
 
     
     
-<p>vignette: &gt; % % %</p>
-<div id="simulate-a-small-dataset" class="section level2">
-<h2 class="hasAnchor">
-<a href="#simulate-a-small-dataset" class="anchor"></a>Simulate a small dataset</h2>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu">setClass</span>(<span class="st">"simdata"</span>,
-         <span class="fu">representation</span>(<span class="kw">df1</span><span class="kw">=</span><span class="st">"data.frame"</span>,<span class="kw">df2</span><span class="kw">=</span><span class="st">"data.frame"</span>))
-<span class="fu">setValidity</span>(<span class="st">"simdata"</span>, <span class="kw">function</span>(<span class="no">object</span>) {
-  <span class="no">n</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">object</span>@<span class="kw">df1</span>)
-  <span class="kw">if</span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">object</span>@<span class="kw">df2</span>)<span class="kw">!=</span><span class="no">n</span>)
-    <span class="fu"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="st">"nrow of '@df1' should equal nrow of '@df2'"</span>)
-})</pre></body></html></div>
-<pre><code>## Class "simdata" [in ".GlobalEnv"]
-## 
-## Slots:
-##                             
-## Name:         df1        df2
-## Class: data.frame data.frame</code></pre>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu">setMethod</span>(<span class="st">"show"</span>, <span class="kw">signature</span><span class="kw">=</span><span class="st">"simdata"</span>, <span class="kw">function</span>(<span class="no">object</span>) {
-  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="st">"pair of simulated datasets, with"</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">object</span>@<span class="kw">df1</span>)-<span class="fl">1</span>,<span class="st">"SNPs and"</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">object</span>@<span class="kw">df1</span>),<span class="st">"samples.\n"</span>)
-})</pre></body></html></div>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">mvtnorm</span>)
-<span class="no">simx</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">nsnps</span>,<span class="no">nsamples</span>,<span class="no">S</span>,<span class="no">maf</span><span class="kw">=</span><span class="fl">0.1</span>) {
-    <span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0</span>,<span class="no">nsnps</span>)
-    <span class="no">rawvars</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="kw">n</span><span class="kw">=</span><span class="no">nsamples</span>, <span class="kw">mean</span><span class="kw">=</span><span class="no">mu</span>, <span class="kw">sigma</span><span class="kw">=</span><span class="no">S</span>)
-    <span class="no">pvars</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span>(<span class="no">rawvars</span>)
-    <span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">qbinom</a></span>(<span class="fl">1</span>-<span class="no">pvars</span>, <span class="fl">2</span>, <span class="no">maf</span>)
-}
-
-
-<span class="no">sim.data</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">nsnps</span><span class="kw">=</span><span class="fl">50</span>,<span class="no">nsamples</span><span class="kw">=</span><span class="fl">200</span>,<span class="no">causals</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span>(<span class="no">nsnps</span>/<span class="fl">2</span>),<span class="no">nsim</span><span class="kw">=</span><span class="fl">1</span>) {
-  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="st">"Generate"</span>,<span class="no">nsim</span>,<span class="st">"small sets of data\n"</span>)
-  <span class="no">ntotal</span> <span class="kw">&lt;-</span> <span class="no">nsnps</span> * <span class="no">nsamples</span> * <span class="no">nsim</span>
-  <span class="no">S</span> <span class="kw">&lt;-</span> (<span class="fl">1</span> - (<span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span>(<span class="fl">1</span>:<span class="no">nsnps</span>,<span class="fl">1</span>:<span class="no">nsnps</span>,<span class="no">`-`</span>))/<span class="no">nsnps</span>))^<span class="fl">4</span>
-  <span class="no">X1</span> <span class="kw">&lt;-</span> <span class="fu">simx</span>(<span class="no">nsnps</span>,<span class="no">ntotal</span>,<span class="no">S</span>)
-  <span class="no">X2</span> <span class="kw">&lt;-</span> <span class="fu">simx</span>(<span class="no">nsnps</span>,<span class="no">ntotal</span>,<span class="no">S</span>)
-  <span class="no">Y1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">ntotal</span>,<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(<span class="no">X1</span>[,<span class="no">causals</span>,<span class="kw">drop</span><span class="kw">=</span><span class="fl">FALSE</span>]/<span class="fl">2</span>),<span class="fl">2</span>)
-  <span class="no">Y2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">ntotal</span>,<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(<span class="no">X2</span>[,<span class="no">causals</span>,<span class="kw">drop</span><span class="kw">=</span><span class="fl">FALSE</span>]/<span class="fl">2</span>),<span class="fl">2</span>)
-  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">X1</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">X2</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"s"</span>,<span class="fl">1</span>:<span class="no">nsnps</span>,<span class="kw">sep</span><span class="kw">=</span><span class="st">""</span>)
-  <span class="no">df1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="kw">Y</span><span class="kw">=</span><span class="no">Y1</span>,<span class="no">X1</span>)
-  <span class="no">df2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="kw">Y</span><span class="kw">=</span><span class="no">Y2</span>,<span class="no">X2</span>)
-  <span class="kw">if</span>(<span class="no">nsim</span><span class="kw">==</span><span class="fl">1</span>) {
-    <span class="fu"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="fu">new</span>(<span class="st">"simdata"</span>,
-               <span class="kw">df1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="no">df1</span>),
-               <span class="kw">df2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="no">df2</span>)))
-  } <span class="kw">else</span> {
-    <span class="no">index</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span>(<span class="fl">1</span>:(<span class="no">nsamples</span> * <span class="no">nsim</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">1</span>:<span class="no">nsim</span>, <span class="no">nsamples</span>))
-    <span class="no">objects</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">index</span>, <span class="kw">function</span>(<span class="no">i</span>) <span class="fu">new</span>(<span class="st">"simdata"</span>, <span class="kw">df1</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="no">df1</span>[<span class="no">i</span>,]),
-                                             <span class="kw">df2</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="no">df2</span>[<span class="no">i</span>,])))
-    <span class="fu"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="no">objects</span>)
-  }
-}
-
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">46411</span>)
-<span class="no">data</span> <span class="kw">&lt;-</span> <span class="fu">sim.data</span>()</pre></body></html></div>
-<pre><code>## Generate 1 small sets of data</code></pre>
-</div>
 <div id="fine-mapping-under-a-single-causal-variant-assumption" class="section level1">
 <h1 class="hasAnchor">
 <a href="#fine-mapping-under-a-single-causal-variant-assumption" class="anchor"></a>Fine mapping under a single causal variant assumption</h1>
 <p>The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared. Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.</p>
 <p>First we load some simulated data. See <a href="a02_data.html">the data vignette</a> to understand how to format your datasets.</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">coloc</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc">coloc</a></span><span class="op">)</span></code></pre></div>
 <pre><code>## This is a new update to coloc.</code></pre>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">coloc_test_data</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/attach.html">attach</a></span>(<span class="no">coloc_test_data</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/attach.html">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></code></pre></div>
 <p>Then we analyse the statistics from a single study, asking about the evidence that each SNP in turn is solely causal for any association signal we see. As we might expect, that evidence is maximised at the SNP with the smallest p value</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span>(<span class="no">D1</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span><span class="op">(</span><span class="va">D1</span><span class="op">)</span></code></pre></div>
 <p><img src="a03_enumeration_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span>(<span class="kw">dataset</span><span class="kw">=</span><span class="no">D1</span>)
-<span class="no">my.res</span>[<span class="fl">21</span>:<span class="fl">30</span>,]</pre></body></html></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span><span class="op">(</span>dataset<span class="op">=</span><span class="va">D1</span><span class="op">)</span>
+<span class="va">my.res</span><span class="op">[</span><span class="fl">21</span><span class="op">:</span><span class="fl">30</span>,<span class="op">]</span></code></pre></div>
 <pre><code>##              V.       z.        r.       lABF. snp position prior       SNP.PP
-## s21 0.018382750 2.134434 0.6983820  0.99154985 s21       21 1e-04 4.682012e-06
-## s22 0.034439795 2.522096 0.5527542  1.35570279 s22       22 1e-04 6.738793e-06
-## s23 0.019899615 2.041965 0.6814226  0.84869249 s23       23 1e-04 4.058732e-06
-## s24 0.038248005 2.079800 0.5267061  0.76513252 s24       24 1e-04 3.733367e-06
-## s25 0.007464217 4.027523 0.8508010  5.94915946 s25       25 1e-04 6.660318e-04
-## s26 0.044959037 1.146038 0.4863199 -0.01371031 s26       26 1e-04 1.713379e-06
-## s27 0.045794693 2.201098 0.4817205  0.83830739 s27       27 1e-04 4.016799e-06
-## s28 0.016456259 2.077413 0.7211779  0.91758247 s28       28 1e-04 4.348194e-06
-## s29 0.013113047 2.181412 0.7644818  1.09593176 s29       29 1e-04 5.197147e-06
-## s30 0.011002838 2.494244 0.7945975  1.68030511 s30       30 1e-04 9.322988e-06</code></pre>
+## s21 0.013574490 2.210771 0.6760490  1.08851608 s21       21 1e-04 6.993866e-06
+## s22 0.022519401 2.832099 0.5571217  1.82704569 s22       22 1e-04 1.463715e-05
+## s23 0.013008412 2.381939 0.6853070  1.36601147 s23       23 1e-04 9.230645e-06
+## s24 0.024858631 3.177590 0.5326188  2.30864180 s24       24 1e-04 2.369252e-05
+## s25 0.005031597 1.470717 0.8491729 -0.02742696 s25       25 1e-04 2.291234e-06
+## s26 0.027329180 3.027380 0.5089767  1.97676103 s26       26 1e-04 1.700111e-05
+## s27 0.029092316 2.833849 0.4933483  1.64100022 s27       27 1e-04 1.215229e-05
+## s28 0.012057181 2.079938 0.7014486  0.91287665 s28       28 1e-04 5.867297e-06
+## s29 0.009216961 1.496951 0.7545115  0.14312596 s29       29 1e-04 2.717313e-06
+## s30 0.007073637 1.725572 0.8001914  0.38612656 s30       30 1e-04 3.464762e-06</code></pre>
 <p>The <code>SNP.PP</code> column shows the posterior probability that exactly that SNP is causal. Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.</p>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span>(<span class="no">my.res</span>,<span class="fl">3</span>)</pre></body></html></div>
-<p>Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too. One package that allows you to do this is <a href="http://github.com/chr1swallace/GUESSFM">GUESSFM</a>, described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">my.res</span>,<span class="fl">3</span><span class="op">)</span></code></pre></div>
+<p>Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too. One package that allows you to do this is <a href="https://github.com/chr1swallace/GUESSFM">GUESSFM</a>, described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup></p>
 <p><a id="org6973f37"></a></p>
 </div>
 <div id="approximate-bayes-factor-colocalisation-analyses" class="section level1">
@@ -225,12 +174,14 @@
 <h2 class="hasAnchor">
 <a href="#the-basic-coloc-abf-function" class="anchor"></a>The basic <code>coloc.abf</code> function</h2>
 <p>The function <code>coloc.abf</code> is ideally suited to the case when only summary data are available.</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">my.res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span>(<span class="kw">dataset1</span><span class="kw">=</span><span class="no">D1</span>,
-                    <span class="kw">dataset2</span><span class="kw">=</span><span class="no">D2</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="va">D1</span>,
+                    dataset2<span class="op">=</span><span class="va">D2</span><span class="op">)</span></code></pre></div>
 <pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  6.34e-07  3.59e-05  1.94e-05  9.72e-05  1.00e+00 
+##  1.73e-08  7.16e-07  2.61e-05  8.20e-05  1.00e+00 
 ## [1] "PP abf for shared variant: 100%"</code></pre>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">my.res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">)</span> </code></pre></div>
 <pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
 <pre><code>## 
 ## SNP Priors</code></pre>
@@ -243,19 +194,21 @@
 <pre><code>## 
 ## Posterior</code></pre>
 <pre><code>##        nsnps           H0           H1           H2           H3           H4 
-## 5.000000e+01 6.340607e-07 3.587164e-05 1.939055e-05 9.716316e-05 9.998469e-01</code></pre>
+## 5.000000e+01 1.725901e-08 7.157108e-07 2.608839e-05 8.196399e-05 9.998912e-01</code></pre>
 <p>Note that if you do find strong evidence for H4, we can extract the posterior probabilities for each SNP to be causal <em>conditional on H4 being true</em>. This is part of the calculation required by coloc, and contained in the column SNP.PP.H4 in the “results” element of the returned list. So we can extract the more likely causal variants by</p>
-<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">my.res</span>$<span class="no">results</span>,<span class="no">SNP.PP.H4</span><span class="kw">&gt;</span><span class="fl">0.01</span>)</pre></body></html></div>
-<pre><code>##   snp position       V.df1    z.df1     r.df1 lABF.df1       V.df2    z.df2
-## 5 s13       13 0.007335407 5.756249 0.8529972 13.17313 0.006483471 5.643536
-##       r.df2 lABF.df2 internal.sum.lABF SNP.PP.H4
-## 5 0.8518436 12.61065          25.78378  0.999884</code></pre>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span>,<span class="va">SNP.PP.H4</span><span class="op">&gt;</span><span class="fl">0.01</span><span class="op">)</span></code></pre></div>
+<pre><code>##    snp position       V.df1    z.df1     r.df1 lABF.df1       V.df2    z.df2
+## 34  s4        4 0.005910959 5.775391 0.8273637 12.92013 0.004828876 6.460469
+##        r.df2 lABF.df2 internal.sum.lABF SNP.PP.H4
+## 34 0.8318075 16.46752          29.38766 0.9999081</code></pre>
 <p>or the 95% credible set by</p>
-<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="no">o</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span>(<span class="no">my.res</span>$<span class="no">results</span>$<span class="no">SNP.PP.H4</span>,<span class="kw">decreasing</span><span class="kw">=</span><span class="fl">TRUE</span>)
-<span class="no">cs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">my.res</span>$<span class="no">results</span>$<span class="no">SNP.PP.H4</span>[<span class="no">o</span>])
-<span class="no">w</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="no">cs</span> <span class="kw">&gt;</span> <span class="fl">0.95</span>)[<span class="fl">1</span>]
-<span class="no">my.res</span>$<span class="no">results</span>[<span class="no">o</span>,][<span class="fl">1</span>:<span class="no">w</span>,]$<span class="no">snp</span></pre></body></html></div>
-<pre><code>## [1] "s13"</code></pre>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span>,decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span><span class="op">[</span><span class="va">o</span><span class="op">]</span><span class="op">)</span>
+<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">cs</span> <span class="op">&gt;</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
+<span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">[</span><span class="va">o</span>,<span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">w</span>,<span class="op">]</span><span class="op">$</span><span class="va">snp</span></code></pre></div>
+<pre><code>## [1] "s4"</code></pre>
 </div>
 </div>
   </div>
@@ -275,7 +228,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

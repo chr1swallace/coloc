@@ -1,5 +1,5 @@
-pandoc: '2.5'
-pkgdown: 1.5.1
+pandoc: '2.3'
+pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   a01_intro: a01_intro.html
@@ -8,9 +8,8 @@ articles:
   a04_sensitivity: a04_sensitivity.html
   a05_conditioning: a05_conditioning.html
   a06_SuSiE: a06_SuSiE.html
-  simdata: simdata.html
-last_built: 2021-04-06T08:53Z
+last_built: 2021-06-08T17:49Z
 urls:
-  reference: http://chr1swallace.github.io/coloc/reference
-  article: http://chr1swallace.github.io/coloc/articles
+  reference: https://chr1swallace.github.io/coloc/reference
+  article: https://chr1swallace.github.io/coloc/articles
 

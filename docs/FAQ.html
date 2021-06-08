@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="If I understand correctly, coloc.abf() can be run with correlated variants, that is, no prerequisite for taking through LD pruning/clumping is required. Am I correct in my understanding ?" />
-<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png" />
+<meta property="og:image" content="https://chr1swallace.github.io/coloc/logo.png" />
 
 
 
@@ -79,7 +79,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
       </span>
     </div>
 
@@ -87,7 +87,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -125,7 +125,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -155,13 +155,13 @@
 <li><a href="#how-to-define-priors-is-it-dependent-on-sample-size-or-any-other-parameters">How to define priors, is it dependent on sample size or any other parameters?</a></li>
 <li><a href="#what-does-high-pp4-mean">What does high PP4 mean?</a></li>
 </ul>
-<!-- markdown-toc end --><div id="if-i-understand-correctly-colocabf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruningclumping-is-required-am-i-correct-in-my-understanding-" class="section level1">
+<!-- markdown-toc end --><div id="if-i-understand-correctly-coloc-abf-can-be-run-with-correlated-variants-that-is-no-prerequisite-for-taking-through-ld-pruningclumping-is-required--am-i-correct-in-my-understanding" class="section level1">
 
 <p>Yes, coloc.abf() and coloc.signals() assume they are given a dense map of all SNPs in a region that could be causal. Do not prune and clump.</p>
 </div>
-<div id="assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-colocabf" class="section level1">
+<div id="assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc-abf" class="section level1">
 <h1 class="hasAnchor">
-<a href="#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-colocabf" class="anchor"></a>Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?</h1>
+<a href="#assume-i-identify-a-sentinel-variant-for-a-block-of-genome-can-i-do-a-comparison-with-just-one-variant-using-coloc-abf" class="anchor"></a>Assume I identify a sentinel variant for a block of genome, can I do a comparison with just one variant using coloc.abf()?</h1>
 <p>No, coloc.abf() and coloc.signals() assume they are given a dense map of all SNPs in a region that could be causal. This means you need to give all SNPs in a region. You can imagine they ask whether the patterns “match” across this region of SNPs, and a single variant does not represent a pattern.</p>
 </div>
 <div id="can-the-process-of-identifying-colocalized-variants-be-carried-out-genome-wide" class="section level1">
@@ -170,9 +170,9 @@
 <p>Coloc is designed to address whether two traits share causal variant(s) in a genomic region. It leaves the definition of “region” up to the user. You need to break the genome into smaller regions, within which it is reasonable to assume there is at most one (coloc.abf) or a small number (coloc.signals) of causal variants per trait. One way to do this is to use the boundaries defined by recombination hotspots, proxied by <a href="https://bitbucket.org/nygcresearch/ldetect-data/src/master/">this map</a> created by <a href="https://academic.oup.com/bioinformatics/article/32/2/283/1743626">lddetect</a>.</p>
 <p>How big should a region be? Big enough that all variants in LD with a lead SNP are included; small enough that only one or a small number of causal variants might exist in it. I have found using densely genotyped studies and the lddetect boundaries above that regions typically contain 1,000-10,000 SNPs.</p>
 </div>
-<div id="how-is-colocabf-accounting-for-the-correlated-variants" class="section level1">
+<div id="how-is-coloc-abf-accounting-for-the-correlated-variants" class="section level1">
 <h1 class="hasAnchor">
-<a href="#how-is-colocabf-accounting-for-the-correlated-variants" class="anchor"></a>How is coloc.abf accounting for the correlated variants?</h1>
+<a href="#how-is-coloc-abf-accounting-for-the-correlated-variants" class="anchor"></a>How is coloc.abf accounting for the correlated variants?</h1>
 <p>That’s really how coloc works - by exploiting a dense SNP map - please see the <a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383">original paper</a></p>
 </div>
 <div id="how-to-define-priors-is-it-dependent-on-sample-size-or-any-other-parameters" class="section level1">
@@ -205,7 +205,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

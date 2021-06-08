@@ -48,7 +48,7 @@
 
 <meta property="og:title" content="run coloc using susie to detect separate signals — coloc.susie" />
 <meta property="og:description" content="colocalisation with multiple causal variants via SuSiE" />
-<meta property="og:image" content="http://chr1swallace.github.io/coloc/logo.png" />
+<meta property="og:image" content="https://chr1swallace.github.io/coloc/logo.png" />
 
 
 
@@ -80,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.0.0.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -126,7 +126,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/chr1swallace/coloc/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -152,7 +152,13 @@
     <p>colocalisation with multiple causal variants via SuSiE</p>
     </div>
 
-    <pre class="usage"><span class='fu'>coloc.susie</span>(<span class='no'>dataset1</span>, <span class='no'>dataset2</span>, <span class='no'>nref</span>, <span class='kw'>susie.args</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(), <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>coloc.susie</span><span class='op'>(</span>
+  <span class='va'>dataset1</span>,
+  <span class='va'>dataset2</span>,
+  back_calculate_lbf <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  susie.args <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -170,8 +176,11 @@ dataset</p></td>
 dataset</p></td>
     </tr>
     <tr>
-      <th>nref</th>
-      <td><p>number of individuals from whom the LD matrix was estimated</p></td>
+      <th>back_calculate_lbf</th>
+      <td><p>by default, use the log Bayes factors returned by
+susie_rss. It is also possible to back-calculate these from the posterior
+probabilities. It is not advised to set this to TRUE, the option exists
+really for testing purposes only.</p></td>
     </tr>
     <tr>
       <th>susie.args</th>
@@ -187,17 +196,16 @@ values for causal association with one trait (p1, p2) or both (p12)</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a list, containing elements</p><ul>
-<li><p>summary a data.table of posterior
+    <p>a list, containing elements * summary a data.table of posterior
 probabilities of each global hypothesis, one row per pairwise comparison
-of signals from the two traits</p></li>
-<li><p>results a data.table of detailed results giving the posterior probability
-for each snp to be jointly causal for both traits <em>assuming H4 is true</em>.
-Please ignore this column if the corresponding posterior support for H4
-is not high.</p></li>
-<li><p>priors a vector of the priors used for the analysis</p></li>
-</ul>
+of signals from the two traits * results a data.table of detailed results
+giving the posterior probability for each snp to be jointly causal for
+both traits <em>assuming H4 is true</em>. Please ignore this column if the
+corresponding posterior support for H4 is not high. * priors a vector of
+the priors used for the analysis</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
+    <p>Chris Wallace</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -214,7 +222,7 @@ is not high.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
