@@ -12,7 +12,7 @@ vignette: >
 
 Specifying prior values for coloc.abf() is important, as results can be dependent on these values.  Defaults of \(p_1=p_2=10^{-4}\) seem justified in a wide range of scenarios, because these broadly correspond to a 99% belief that there is true association when we see \(p<5\times 10^{-8}\) in a GWAS.  However, choice of \(p_{12}\) is more difficult.  We hope the [coloc explorer app](https://chr1swallace.shinyapps.io/coloc-priors/) will be helpful in exploring what various choices mean, at a per-SNP and per-hypothesis level.  However, having conducted an enumeration-based coloc analysis, it is still helpful to check that any inference about colocalisation is robust to variations in prior values specified.
 
-Continuing on from [a03_enumeration](the last vignette), we have
+Continuing on from [the last vignette](./a03_enumeration.html), we have
 
 
 ```{r prep}

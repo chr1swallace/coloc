@@ -35,7 +35,7 @@ The `SNP.PP` column shows the posterior probability that exactly that SNP is cau
 tail(my.res,3)
 ```
 
-Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too.  One package that allows you to do this is [GUESSFM](http://github.com/chr1swallace/GUESSFM), described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup> 
+Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too.  One package that allows you to do this is [GUESSFM](https://github.com/chr1swallace/GUESSFM), described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup> 
 
 <a id="org6973f37"></a>
 

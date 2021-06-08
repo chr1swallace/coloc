@@ -18,7 +18,7 @@ Suggests:
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 5.1.0
-Date: 2021-04-08
+Date: 2021-06-08
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -28,8 +28,8 @@ Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Description: Performs the colocalisation tests described in
     Giambartolomei et al (2013) <doi:10.1371/journal.pgen.1004383>,
-    Wallace (2020) <doi:doi.org/10.1371/journal.pgen.1008720>,
-    Wallace (2021) <https://doi.org/10.1101/2021.02.23.432421>.
+    Wallace (2020) <doi:10.1371/journal.pgen.1008720>,
+    Wallace (2021) <doi:10.1101/2021.02.23.432421>.
 License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr

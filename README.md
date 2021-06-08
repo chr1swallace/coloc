@@ -2,7 +2,7 @@ coloc
 =====
 
 [![Build Status](https://travis-ci.org/chr1swallace/coloc.svg?branch=master)](https://travis-ci.org/chr1swallace/coloc)
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
 
 <img src="man/figures/logo30.png" align="right" />
 The coloc package can be used to perform genetic colocalisation
@@ -63,14 +63,14 @@ vignette("a06_SuSiE",package="coloc")
 For usage, please see the vignette at https://chr1swallace.github.io/coloc
 
 Key previous references are:
-- original propostion of proportional colocalisation [Plagnol et al (2009)](http://www.ncbi.nlm.nih.gov/pubmed/19039033)
-- proportional colocalisation with type 1 error rate control [Wallace et al (2013)](http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract)
-- colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait [Giambartolomei et al (2013)](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383)
+- original propostion of proportional colocalisation [Plagnol et al (2009)](https://www.ncbi.nlm.nih.gov/pubmed/19039033)
+- proportional colocalisation with type 1 error rate control [Wallace et al (2013)](https://onlinelibrary.wiley.com/doi/abs/10.1002/gepi.21765)
+- colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait [Giambartolomei et al (2013)](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383)
 - Thoughts about priors in coloc are described in [Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720](https://doi.org/10.1371/journal.pgen.1008720)
 
 # Frequently Asked Questions
 
-see [FAQ](FAQ.md)
+see [FAQ](https://chr1swallace.github.io/coloc/FAQ.html)
 
 # Notes to self
 

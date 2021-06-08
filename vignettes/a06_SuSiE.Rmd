@@ -11,14 +11,6 @@ vignette: >
 
 # Multiple causal variants, using SuSiE to separate the signals
 
-Note that this vignette depends on the [susieR](https://github.com/stephenslab/susieR) package.  Please install it, following the directions on that site, before running the code here.  Because that package is not (yet?) on CRAN, this vignette built on CRAN will not include the code that depends on susieR.  Please build the vignette locally, after installing the susieR package.  Once you have installed susieR, you can skip `if()` conditions around the code here, they exist to allow this package on CRAN.
-
-```{r}
-if(requireNamespace("susieR",quietly=TRUE)) {
-  message("susieR found")
-}
-```
-
 We load some simulated data.
 
 ```{r   }
@@ -62,12 +54,10 @@ check_dataset(D4,req="LD")
 SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4. 
 
 ```{r}
-if(requireNamespace("susieR",quietly=TRUE)) {
   S3=runsusie(D3)
   summary(S3)
   S4=runsusie(D4)
   summary(S4)
-}
 ```
 
 With these susie output objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).

@@ -40,7 +40,7 @@ relative support for models which support colocalisation to those that
 don't.
 
 You can see more about the enumeration approach on
-[this blogpost](http://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/).
+[this blogpost](https://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/).
 
 See vignette: [enumeration](a03_enumeration.html)
 
@@ -61,7 +61,7 @@ See vignette: [conditioning/masking](a05_conditioning.html)
 
 ## An improved approach to relaxing the single causal variant assumption: SuSiE
 
-The sum of single effects regression method proposed by Wang et al <sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup> can instead simultaneously decompose multiple signals from the marginal summary stats, and appears to work better than conditioning.  
+The sum of single effects regression method proposed by Wang et al <sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup> can instead simultaneously decompose multiple signals from the marginal summary stats, and appears to work better than conditioning.
 
 See vignette: [SuSiE](a06_SuSiE.html)
 
@@ -69,14 +69,14 @@ See vignette: [SuSiE](a06_SuSiE.html)
 
 # Footnotes
 
-<sup><a id="fn.1" href="#fnr.1">1</a></sup> <http://www.ncbi.nlm.nih.gov/pubmed/19039033>
+<sup><a id="fn.1" href="#fnr.1">1</a></sup> <https://www.ncbi.nlm.nih.gov/pubmed/19039033/>
 
-<sup><a id="fn.2" href="#fnr.2">2</a></sup> <http://onlinelibrary.wiley.com/doi/10.1002/gepi.21765/abstract>
+<sup><a id="fn.2" href="#fnr.2">2</a></sup> <https://doi.org/10.1002/gepi.21765>
 
-<sup><a id="fn.3" href="#fnr.3">3</a></sup> <http://www.ncbi.nlm.nih.gov/pubmed/18642345>
+<sup><a id="fn.3" href="#fnr.3">3</a></sup> <https://www.ncbi.nlm.nih.gov/pubmed/18642345/>
 
-<sup><a id="fn.4" href="#fnr.4">4</a></sup> <http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383>
+<sup><a id="fn.4" href="#fnr.4">4</a></sup> <https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383>
 
-<sup><a id="fn.5" href="#fnr.5">5</a></sup> <http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272>
+<sup><a id="fn.5" href="#fnr.5">5</a></sup> <https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272>
 
 <sup><a id="fn.5" href="#fnr.6">6</a></sup> <https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388>
