@@ -11,7 +11,7 @@ vignette: >
 
 # Data structures
 
-  The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.Rmd) and [`coloc.susie`](a06_susie.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.
+  The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.Rmd) and [`coloc.susie`](a06_susie.Rmd) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.
   
 ## First: select the SNPs to study.
 

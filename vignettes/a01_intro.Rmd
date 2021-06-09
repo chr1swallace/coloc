@@ -69,11 +69,11 @@ See vignette: [SuSiE](a06_SuSiE.html)
 
 # Footnotes
 
-<sup><a id="fn.1" href="#fnr.1">1</a></sup> <https://www.ncbi.nlm.nih.gov/pubmed/19039033/>
+<sup><a id="fn.1" href="#fnr.1">1</a></sup> <https://pubmed.ncbi.nlm.nih.gov/19039033/>
 
 <sup><a id="fn.2" href="#fnr.2">2</a></sup> <https://doi.org/10.1002/gepi.21765>
 
-<sup><a id="fn.3" href="#fnr.3">3</a></sup> <https://www.ncbi.nlm.nih.gov/pubmed/18642345/>
+<sup><a id="fn.3" href="#fnr.3">3</a></sup> <https://pubmed.ncbi.nlm.nih.gov/18642345/>
 
 <sup><a id="fn.4" href="#fnr.4">4</a></sup> <https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383>
 

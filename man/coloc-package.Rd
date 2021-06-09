@@ -6,29 +6,9 @@
 \title{Colocalisation tests of two genetic traits}
 \description{
 Performs the colocalisation tests described in Plagnol et al (2009) and
-Wallace et al (in preparation) and draws some plots.
-}
-\details{
-\code{coloc.test()} tests for colocalisation and returns an object of class
-\code{coloc}.
-}
-\references{
-Plagnol et al (2009).  Statistical independence of the
-colocalized association signals for type 1 diabetes and RPS26 gene expression
-on chromosome 12q13. Biostatistics 10:327-34.
-
-\url{http://www.ncbi.nlm.nih.gov/pubmed/19039033}
-
-Wallace et al (2013).  Statistical Testing of Shared Genetic Control
-for Potentially Related Traits. Genetic Epidemiology 37:802-813.
-
-\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4158901/}
-
-Giambartolomei et al (2014).  Bayesian Test for Colocalisation between Pairs of Genetic Association Studies Using Summary Statistics.  PLOS Genet e1004383.
-
-\url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4022491/}
+Wallace et al (2020) and draws some plots.
 }
 \author{
-Chris Wallace \href{mailto:chris.wallace@cimr.cam.ac.uk}{chris.wallace@cimr.cam.ac.uk}
+Chris Wallace \href{mailto:cew54@cam.ac.uk}{cew54@cam.ac.uk}
 }
 \keyword{package}

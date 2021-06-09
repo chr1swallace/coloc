@@ -1,10 +1,7 @@
 #'Colocalisation tests of two genetic traits
 #'
 #'Performs the colocalisation tests described in Plagnol et al (2009) and
-#'Wallace et al (in preparation) and draws some plots.
-#'
-#'\code{coloc.test()} tests for colocalisation and returns an object of class
-#'\code{coloc}.
+#'Wallace et al (2020) and draws some plots.
 #'
 #'@name coloc-package
 #'@docType package

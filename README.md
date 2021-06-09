@@ -63,7 +63,7 @@ vignette("a06_SuSiE",package="coloc")
 For usage, please see the vignette at https://chr1swallace.github.io/coloc
 
 Key previous references are:
-- original propostion of proportional colocalisation [Plagnol et al (2009)](https://www.ncbi.nlm.nih.gov/pubmed/19039033)
+- original propostion of proportional colocalisation [Plagnol et al (2009)](https://pubmed.ncbi.nlm.nih.gov/19039033/)
 - proportional colocalisation with type 1 error rate control [Wallace et al (2013)](https://onlinelibrary.wiley.com/doi/abs/10.1002/gepi.21765)
 - colocalisation by enumerating all the possible causal SNP configurations between two traits, assuming at most one causal variant per trait [Giambartolomei et al (2013)](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383)
 - Thoughts about priors in coloc are described in [Wallace C (2020) Eliciting priors and relaxing the single causal variant assumption in colocalisation analyses. PLOS Genetics 16(4): e1008720](https://doi.org/10.1371/journal.pgen.1008720)
