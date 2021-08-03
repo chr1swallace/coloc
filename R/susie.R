@@ -149,6 +149,34 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
   ret
 }
 
+finemap.susie=function(dataset1, susie.args=list(),  ...) {
+  if("susie" %in% class(dataset1))
+    s1=dataset1
+  else
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
+  cs1=s1$sets
+  if(is.null(cs1$cs) || length(cs1$cs)==0 )
+    return(data.table(nsnps=NA))
+  isnps=colnames(s1$lbf_variable)
+  if(!length(isnps))
+    return(data.table(nsnps=NA))
+
+  idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
+  bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
+
+  ret=finemap.bf(bf1)
+  ## message("ret$summary")
+  ## print(ret$summary)
+  ## message("cs1")
+  ## print(cs1)
+  ## renumber index to match
+  ret$summary[,idx:=cs1$cs_index]
+  ## message("ret$summary")
+  ## print(ret$summary)
+  ret
+}
+
+
 ##' coloc for susie output + a separate BF matrix
 ##'
 ##' @title run coloc using susie to detect separate signals
@@ -195,6 +223,69 @@ susie_get_cs_with_names=function(s) {
   sets=susie_get_cs(s)
   sets$cs=lapply(sets$cs, function(x) structure(x, names=colnames(s$alpha)[x]))
   sets
+}
+
+##' Finemap one dataset represented by Bayes factors
+##'
+##' This is the workhorse behind many finemap functions
+##'
+##' @title Finemap data through Bayes factors
+##' @inheritParams finemap.signals
+##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @return finemap.signals style result
+##' @export
+##' @author Chris Wallace
+finemap.bf=function(bf1, p1=1e-4) {
+  if(is.vector(bf1))
+    bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
+  todo <- data.table(i=1:nrow(bf1))
+  todo[,pp4:=0]
+  isnps=setdiff(colnames(bf1), "null")
+  if(!length(isnps))
+    return(data.table(nsnps=NA))
+  ## scale bf in case needed
+  if("null" %in% colnames(bf1))
+    bf1=bf1 - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
+
+  ## check whether isnps covers the signal for each trait
+  pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
+  ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
+  prop1=rowSums(pp1[,c(isnps),drop=FALSE]) / rowSums(pp1[,setdiff(colnames(pp1),"null"),drop=FALSE])
+  bf1=bf1[,isnps,drop=FALSE]
+  results <- PP <- vector("list",nrow(todo))
+  for(k in 1:nrow(todo)) {
+    df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ])
+    my.denom.log.abf <- logsum(df$bf1)
+    df$SNP.PP <- exp(df$bf1 - my.denom.log.abf)
+    PP[[k]]=df$SNP.PP
+    if(all(is.na(df$SNP.PP))) {
+      df$SNP.PP=0
+      pp.abf[1:5]=c(1,0,0,0,0)
+    }
+    common.snps <- nrow(df)
+    hit1=names(which.max(bf1[todo$i[k],])) #df$snp[ which.max(abs(df$bf1)) ]
+    if(is.null(hit1)) {
+      hit1="-"
+    }
+    results[[k]]=do.call("data.frame",c(list(nsnps=common.snps, hit=hit1)))
+  }
+  results <- as.data.table(do.call("rbind",results))
+  PP <- as.data.table(do.call("cbind",PP))
+  if(nrow(todo)>1)
+    colnames(PP)=paste0("SNP.PP.row",1:nrow(todo))
+  else
+    colnames(PP)="SNP.PP.abf"
+
+  ## rarely, susie puts the same cred set twice. check, and prune if found
+  hits=results$hit1
+  if(any(duplicated(hits))) {
+    PP=PP[,!duplicated(hits)]
+  }
+  PP=cbind(data.table(snp=isnps),PP)
+  ## print(results)
+  list(summary=results,
+       results=PP,
+       priors=c(p1=p1))
 }
 
 ##' Colocalise two datasets represented by Bayes factors
@@ -262,6 +353,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   results <- PP <- vector("list",nrow(todo))
   ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
+    message(i)
     df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
@@ -295,11 +387,12 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 
   results=cbind(results,todo[,.(idx1=i,idx2=j)])
   ## rarely, susie puts the same cred set twice. check, and prune if found
-  hits=paste(results$hit1,results$hit2,sep=".")
-  if(any(duplicated(hits))) {
-    results=results[!duplicated(hits)]
-    PP=PP[,!duplicated(hits)]
-  }
+  ## hits=paste(results$hit1,results$hit2,sep=".")
+  ## if(any(duplicated(hits))) {
+  ##   message("trimming ",sum(duplicated(hits))," duplicate signals")
+  ##   results=results[!duplicated(hits)]
+  ##   PP=PP[,which(!duplicated(hits)),with=FALSE]
+  ## }
   PP=cbind(data.table(snp=isnps),PP)
   list(summary=results,
        results=PP,

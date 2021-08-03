@@ -2,6 +2,7 @@ cran-comments.md
 _pkgdown.yaml
 pkgdown
 docs
+issues
 Rjunk
 R/junkyard.R
 R/bma.R
