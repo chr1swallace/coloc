@@ -353,7 +353,6 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   results <- PP <- vector("list",nrow(todo))
   ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
-    message(i)
     df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
