@@ -43,7 +43,7 @@ manh.plot <- function(df,wh,
     znm <- if(wh==1) { "z.df1" } else {"z.df2" }
     ## print(znm)
     ## print(head(df))
-    logp <- - ( pnorm(-abs(df[[znm]])) + log(2) ) / log(10)
+    logp <- - ( pnorm(-abs(df[[znm]]),log.p=TRUE) + log(2) ) / log(10)
     ## mycol <- ifelse(A$snp %in% nCV, "red","black")
     Pal <- colorRampPalette(c('white','blue'))
 
