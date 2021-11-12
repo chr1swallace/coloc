@@ -161,6 +161,8 @@ check_ld <- function(D,LD) {
         stop("LD required")
     if(nrow(LD)!=ncol(LD))
         stop("LD not square")
+    if(is.null(colnames(LD)) || is.null(rownames(LD)))
+      stop("LD required to have row and column names")
     if(!identical(colnames(LD),rownames(LD)))
       stop("LD rownames != colnames")
     if(length(setdiff(D$snp,colnames(LD))))
