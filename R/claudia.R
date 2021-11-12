@@ -248,22 +248,24 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-    check_dataset(dataset,"")
-  
+  check_dataset(dataset,"")
+
     df <- process.dataset(d=dataset, suffix="")
-    nsnps <- nrow(df)
-    dfnull <- df[1,]
-    for(nm in colnames(df))
-        dfnull[,nm] <- NA
-    dfnull[,"snp"] <- "null"
-    dfnull[,"lABF."] <- 0
-    df <- rbind(df,dfnull)
-                ## data.frame("V."=NA,
-                ##            z.=NA,
+  nsnps <- nrow(df)
+  p1=adjust_prior(p1,nsnps,"1")
+
+  dfnull <- df[1,]
+  for(nm in colnames(df))
+    dfnull[,nm] <- NA
+  dfnull[,"snp"] <- "null"
+  dfnull[,"lABF."] <- 0
+  df <- rbind(df,dfnull)
+  ## data.frame("V."=NA,
+  ##            z.=NA,
                 ##            r.=NA,
-                ##            lABF.=1,
-                ##            snp="null"))
-    df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
+  ##            lABF.=1,
+  ##            snp="null"))
+  df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
 
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
     ## BUGFIX 16/5/19
@@ -273,6 +275,15 @@ finemap.abf <- function(dataset, p1=1e-4) {
   df$SNP.PP <- exp(df$lABF + log(df$prior) - my.denom.log.abf)
  
   return(df)
+}
+
+adjust_prior=function(p,nsnps,suffix="") {
+  if(nsnps * p >= 1) { ## for very large regions
+    warning(paste0("p",suffix," * nsnps >= 1, setting p",suffix,"=1/(nsnps + 1)"))
+    1/(nsnps + 1)
+  } else {
+    p
+  }
 }
 
 
@@ -315,7 +326,11 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
+  p1=adjust_prior(p1,nrow(df1),"1")
+  p2=adjust_prior(p2,nrow(df2),"2")
+
   merged.df <- merge(df1,df2)
+  p12=adjust_prior(p12,nrow(merged.df),"12")
 
   if(!nrow(merged.df))
     stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")

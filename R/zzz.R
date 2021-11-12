@@ -1,3 +1,3 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("This is a new update to coloc.")
+  packageStartupMessage(paste("This is coloc version",packageVersion("coloc")))
 }

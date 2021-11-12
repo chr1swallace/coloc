@@ -43,14 +43,14 @@ manh.plot <- function(df,wh,
     znm <- if(wh==1) { "z.df1" } else {"z.df2" }
     ## print(znm)
     ## print(head(df))
-    p <- pnorm(abs(df[[znm]]),lower.tail=FALSE)*2
+    logp <- - ( pnorm(-abs(df[[znm]])) + log(2) ) / log(10)
     ## mycol <- ifelse(A$snp %in% nCV, "red","black")
     Pal <- colorRampPalette(c('white','blue'))
 
     ##This adds a column of color values
     ## based on the y values
     Col <- Pal(100)[ceiling(100*df$SNP.PP.H4)]
-    plot(position,-log10(p),col="gray20",
+    plot(position,logp,col="gray20",
          bg = Col, # Fill colour
          pch = 21, # Shape: circles that can filed
          frame.plot = FALSE, # Remove the frame 

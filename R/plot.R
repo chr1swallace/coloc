@@ -44,7 +44,7 @@ plot_dataset <- function(d,
   if(!("position" %in% names(d)))
     stop("no position element given")
   if(is.null(alty)) {
-    y= -log10( pnorm(-abs(d$beta/sqrt(d$varbeta))) * 2 )
+    y= - ( pnorm(-abs(d$beta)/sqrt(d$varbeta),log.p=TRUE) + log(2) ) / log(10)
   } else {
     y=alty
   }
