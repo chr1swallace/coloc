@@ -67,10 +67,12 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
 
   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
   ## req <- unique(c("snp",req)) # always need snp to match now
+  for (r in req) {
+    if(!r %in% nd)
+      stop("dataset ",suffix,": missing required element ",r)
+  }
   n <- 0
   for(v in nd) {
-    if(v %in% req && !(v %in% nd))
-      stop("dataset ",suffix,": missing required element ",v)
     if(any(is.na(d[[v]])))
       stop("dataset ",suffix,": ",v," contains missing values")
   }
