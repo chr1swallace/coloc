@@ -30,7 +30,7 @@ To install from R, do
 if(!require("remotes"))
    install.packages("remotes") # if necessary
 library(remotes)
-install_github("chr1swallace/coloc",build_vignettes=TRUE)
+install_github("chr1swallace/coloc@main",build_vignettes=TRUE)
 ```
 
 Note that in all simulations, susie outperforms the earlier conditioning approach, so is recommended.

@@ -321,7 +321,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   if("null" %in% colnames(bf2))
     bf2=bf2 - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
 
-  ## check whether isnps covers the signal for each trait
+  ## check whether isnps covers the signal for each trait by considering posterior probs for each
   pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
   pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
   ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
@@ -348,10 +348,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       todo=todo[!drop,,drop=FALSE]
   }
 
+  ## restrict to snps found for both traits
   bf1=bf1[,isnps,drop=FALSE]
   bf2=bf2[,isnps,drop=FALSE]
-  results <- PP <- vector("list",nrow(todo))
-  ## results=lapply(1:nrow(todo), function(k) {
+  results <- PP <- vector("list",nrow(todo)) ## perform one comparison per pair of credsets
   for(k in 1:nrow(todo)) {
     df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
