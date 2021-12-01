@@ -113,12 +113,27 @@ approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
 ##' @return named numeric vector of posterior probabilities
 ##' @author Claudia Giambartolomei, Chris Wallace
 combine.abf <- function(l1, l2, p1, p2, p12) {
+  print(list(p1,p2,p12))
+  if(length(p1)==1)
+    p1=rep(p1,length(l1))
+  if(length(p2)==1)
+    p2=rep(p2,length(l1))
+  if(length(p12)==1)
+    p12=rep(p12,length(l1))
+  stopifnot(length(l1)==length(l2) &&
+            length(l1)==length(p1) &&
+            length(l1)==length(p2) &&
+            length(l1)==length(p12))
   lsum <- l1 + l2
   lH0.abf <- 0
-  lH1.abf <- log(p1) + logsum(l1)
-  lH2.abf <- log(p2) + logsum(l2)
-  lH3.abf <- log(p1) + log(p2) + logdiff(logsum(l1) + logsum(l2), logsum(lsum))
-  lH4.abf <- log(p12) + logsum(lsum)
+  ## lH1.abf <- log(p1) + logsum(l1)
+  lH1.abf <- logsum(log(p1) + l1)
+  ## lH2.abf <- log(p2) + logsum(l2)
+  lH2.abf <- logsum(log(p2) + l2)
+  ## lH3.abf <- log(p1) + log(p2) + logdiff(logsum(l1) + logsum(l2), logsum(lsum))
+  lH3.abf <- logdiff(logsum(l1 + log(p1)) + logsum(l2 + log(p2)), logsum(log(p1) + log(p2) + lsum))
+  ## lH4.abf <- log(p12) + logsum(lsum)
+  lH4.abf <- logsum(log(p12) + lsum)
 
   all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
   my.denom.log.abf <- logsum(all.abf)
@@ -278,13 +293,17 @@ finemap.abf <- function(dataset, p1=1e-4) {
 }
 
 adjust_prior=function(p,nsnps,suffix="") {
-  if(nsnps * p >= 1) { ## for very large regions
+  if(length(p)==1 && nsnps * p >= 1) { ## for very large regions
     warning(paste0("p",suffix," * nsnps >= 1, setting p",suffix,"=1/(nsnps + 1)"))
-    1/(nsnps + 1)
-  } else {
-    p
+    p=1/(nsnps + 1)
   }
+  if(length(p)>1 && sum(p) > 1) {
+    warning(paste0("p",suffix," * nsnps >= 1, setting p",suffix,"=1/(nsnps + 1)"))
+    p=rep(1/(nsnps + 1),nsnps)
+  }
+p
 }
+
 
 
 ##' Bayesian colocalisation analysis

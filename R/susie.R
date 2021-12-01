@@ -348,8 +348,18 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       todo=todo[!drop,,drop=FALSE]
   }
 
-  bf1=bf1[,isnps,drop=FALSE]
-  bf2=bf2[,isnps,drop=FALSE]
+  if(length(isnps)!=ncol(bf1)) {
+    keep=match(isnps,colnames(bf1))
+    bf1=bf1[,keep,drop=FALSE]
+    if(length(p1)>1)
+      p1=p1[keep]
+  }
+  if(length(isnps)!=ncol(bf2)) {
+    keep=match(isnps,colnames(bf2))
+    bf2=bf2[,keep,drop=FALSE]
+    if(length(p2)>2)
+      p2=p2[keep]
+  }
   results <- PP <- vector("list",nrow(todo))
   ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
@@ -395,7 +405,11 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   PP=cbind(data.table(snp=isnps),PP)
   list(summary=results,
        results=PP,
-       priors=c(p1=p1,p2=p2,p12=p12))
+       priors=if(length(p1)==1 && length(p2)==1 && length(p12)==1) {
+                c(p1=p1,p2=p2,p12=p12)
+              } else {
+                list(p1=p1,p2=p2,p12=p12)
+              })
 }
 
 ##' run susie_rss storing some additional information for coloc
