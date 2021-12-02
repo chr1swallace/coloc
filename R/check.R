@@ -86,6 +86,7 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
                        any(d$MAF<=0) || any(d$MAF>=1)))
     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
 
+
   ## lengths of these should match
   l <- -1 # impossible length
   shouldmatch <- c("pvalues","MAF","beta","varbeta","snp","position")
@@ -109,6 +110,14 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
     stop("dataset ",suffix,": variable type not set")
   if(!(d$type %in% c("quant","cc")))
     stop("dataset ",suffix,": ","type must be quant or cc")
+
+  ## varbeta should be > 0
+  if("varbeta" %in% nd & !all(varbeta > 0))
+	  stop("varbeta should be strictly > 0")
+
+  ## MAF should be > 0
+  if("MAF" %in% nd & !all(MAF > 0))
+	  stop("MAF should be strictly > 0")
 
   ## no beta/varbeta
   if(("s" %in% nd) && (!is.numeric(d$s) || d$s<=0 || d$s>=1))
