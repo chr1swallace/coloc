@@ -115,10 +115,6 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
   if("varbeta" %in% nd & !all(varbeta > 0))
 	  stop("varbeta should be strictly > 0")
 
-  ## MAF should be > 0
-  if("MAF" %in% nd & !all(MAF > 0))
-	  stop("MAF should be strictly > 0")
-
   ## no beta/varbeta
   if(("s" %in% nd) && (!is.numeric(d$s) || d$s<=0 || d$s>=1))
     stop("dataset ",suffix,": ","s must be between 0 and 1")
