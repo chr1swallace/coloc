@@ -112,7 +112,7 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
     stop("dataset ",suffix,": ","type must be quant or cc")
 
   ## varbeta should be > 0
-  if("varbeta" %in% nd & !all(varbeta > 0))
+  if("varbeta" %in% nd && !all(varbeta > 0))
 	  stop("varbeta should be strictly > 0")
 
   ## no beta/varbeta
