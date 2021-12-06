@@ -187,7 +187,7 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
-coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
+coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=list(), ...) {
   ## if(!requireNamespace("susieR", quietly = TRUE)) {
   ##   message("please install susieR https://github.com/stephenslab/susieR")
   ##   return(NULL)
@@ -195,7 +195,7 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
-    s1=runsusie(dataset1,suffix=1,...)
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
   ## cs1=susie_get_cs(s1)
   cs1=s1$sets
   if(is.null(cs1$cs) || length(cs1$cs)==0 )
