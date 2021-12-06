@@ -4,10 +4,12 @@ Imports:
     data.table,
     ggplot2,
     methods,
+    mgcv,
     viridis,
     stats,
     grDevices,
     susieR (>= 0.11.33),
+    scam,
     utils
 Suggests:
     knitr,
@@ -17,8 +19,8 @@ Suggests:
     magrittr,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 5.1.1
-Date: 2021-06-08
+Version: 5.1.9000
+Date: 2021-12-01
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
@@ -34,7 +36,7 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc
 BugReports: https://github.com/chr1swallace/coloc/issues

@@ -1,0 +1,80 @@
+---
+title: "Coloc: using variable per SNP priors"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: references.bib  
+fig_width: 8
+fig_height: 8
+vignette: >
+  %\VignetteIndexEntry{Coloc: using variable per SNP priors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Coloc priors, a review
+
+coloc requires the specification of three prior parameters:
+- $p_1$ the probability that a random SNP in the region is causal for trait 1 only
+- $p_2$ the probability that a random SNP in the region is causal for trait 2 only
+- $p_{12}$ the probability that a random SNP in the region is causal for both traits 1 and 2
+and these are assumed to be equal between SNPs.  But there is evidence against such equality, with SNPs closer to a gene's TSS more likely to be eQTLs, for example.  Fitting a curve to data from GTeX, we found TODO
+
+So it would make sense to allow these parameters to be variable in some way.
+
+# How variable priors might work, for one trait with a variable prior
+
+<!-- There are constraints on the priors.  For example, at any SNP, $p_1 + p_2 + p_{12} << 1$.  But there are logical constraints too.   -->
+
+Suppose for now that trait 1 is gene expression, and trait 2 is disease, and that we have no relevant information that would imply a variable prior for the disease trait.  We write $p_1(d)=f_1(d)$ to emphasise that $p_1(d)$ is a function of distance, $d$. 
+We estimated $f_1(d)$ by using SuSiE @susie to fine map multiple eqtl signals and fitted a spline to the results (manuscript in prep).   Because the data used to fit the curve are selected to include only datasets with evidence for association ($p<10^{-6}) we anticipate the shape of the curve may be right, but that its absolute value overestimated.  The curve asymptotes about 1 mb from the TSS, and the so we scale the curve so that the value at 1 mb is equal to $10^{-4}$ which was the default value for $p_1$ and $p_2$ in coloc.abf().
+
+
+```{r, fig.width=6, fig.height=6}
+library(coloc)
+dist=seq(0,2e+6,by=1000)
+p1=eqtl_prior(dist)
+plot(dist, p1, type="l", main="Estimated prior for eQTL as a function of distance", xlab="distance from TSS", ylab="prior p1 or p2")
+abline(h=1e-4,lty=3)
+  abline(v=c(0),lty=3,col="red")
+```
+
+Note that if $p_{1}$ is a function of distance, then $p_{12}$ must *also* vary with distance. Assuming this is proportional to $p_1(d)$, we write $p_{12}(d)=c_{12}p_1(d)$.
+What are sensible values for $c_{12}$?
+Well the "standard" priors proposed in @pg2020 are $p_1=p_2=10^{-4}$, $p_{12}=5\times 10^{-6}$, which give rise to a conditional probability of causal assocation with the second trait *given* causal association with the first of $p_{12}/p_1 = 5\times 10^{-2}$.  If we hold this constant, then $c_{12}=5\times 10^{-2}$.
+
+# Two traits with different variable priors
+
+**NOTE: this is my current thinking, it is not completely thought through.  Please comment via [issues](https://github.com/chr1swallace/coloc/issues) to discuss!**
+
+  Let us consider two traits with different variable priors (eg two different gene expression traits). Then $p_1(d)=f_1(d)$, $p_2(d)=f_2(d)=f_1(d-t_2)$ where $t_2$ is the distance between TSS of the two genes and a plausible $p_{12}=c_{12}f_1(d)f_2(d)=c_{12}f_1(d)f_1(d-t_2)$.
+
+Then $p_{12}(d) = c_{12}f_1(d)f_2(d)$
+$p_{12}/p_1 = c_{12}f_2(d), p_{12}/p2 = c_{12}f_1(d)$
+
+For genes with 10kb, 100kb, 500kb distance between TSS (shown by the red dashed lines), this results in a profile for $p_12$ proportional to
+
+```{r, fig.width=6, fig.height=6}
+library(coloc)
+dist1=seq(-1e+6,1e+6,by=1000)
+par(mfrow=c(2,2))
+for(tss_dist in c(1,10,100,500)*1000) {
+  dist2=abs(dist1-tss_dist)
+  p1=eqtl_prior(dist1)
+  p2=eqtl_prior(dist2)
+  plot(dist1, p1*p2, type="l",
+       main=paste0("TSS distance: ",tss_dist/1000," kb"),
+       xlab="distance from TSS for gene 1",
+       ylab="prior p12",
+       ylim=c(0,1.2e-7))
+  abline(h=1e-4,lty=3)
+  abline(v=c(0,tss_dist),lty=3,col="red")
+  }
+```
+
+What is $c_{12}$?
+
+
+# Two traits with proportional variable priors
+
+  Let us consider two traits with proportional variable priors (eg expression of the same gene in two tissues). Here it seems that $p_{12}\neq p_1p_2$, but rather $p_{12} \propto p_1 \propto p_2$, or $p_{12}=c_{12}p_1$.  This implies the conditional probability that a variant causal in tissue 1 is also causal in tissue 2, $p_{12}/p_1$ would be constant, which makes some sense.  The value of $c_{12}$ from the single variable prior above suggests this would be 0.05.  I don't have data to say whether this is sensible or not.
