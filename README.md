@@ -1,7 +1,6 @@
 coloc
 =====
 
-[![R-CMD-check](https://github.com/chr1swallace/coloc/workflows/R-CMD-check/badge.svg)](https://github.com/chr1swallace/coloc/actions)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
 
 <img src="man/figures/logo30.png" align="right" />
