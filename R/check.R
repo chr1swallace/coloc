@@ -156,7 +156,11 @@ check.dataset=function(...) {
 
 check_ld <- function(D,LD) {
     if(is.null(LD))
-        stop("LD required")
+      stop("LD required")
+    if(!is.matrix(LD))
+      stop("LD must be of class matrix")
+    ## if(any(LD[upper.tri(LD)]==1))
+    ##   stop("LD includes SNPs in perfect LD")
     if(nrow(LD)!=ncol(LD))
         stop("LD not square")
     if(!identical(colnames(LD),rownames(LD)))

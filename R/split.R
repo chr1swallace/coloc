@@ -310,18 +310,19 @@ find.best.signal <- function(D) {
 ##'   \link{check_dataset}
 ##' @param LD matrix of signed r values (not rsq!) giving correlation between
 ##'   SNPs
-##' @param mask use masking if TRUE, otherwise conditioning. defaults to TRUE
-##' @param r2thr if mask==TRUE, all snps will be masked with r2 > r2thr with any
-##'   sigsnps. Otherwise ignored
-##' @param sigsnps SNPs already deemed significant, to condition on or mask,
-##'   expressed as a numeric vector, whose *names* are the snp names
 ##' @param method if method="cond", then use conditioning to coloc multiple
 ##'   signals. The default is mask - this is less powerful, but safer because it
 ##'   does not assume that the LD matrix is properly allelically aligned to
 ##'   estimated effect
+##' @param r2thr if mask==TRUE, all snps will be masked with r2 > r2thr with any
+##'   sigsnps. Otherwise ignored
+##' @param sigsnps SNPs already deemed significant, to condition on or mask,
+##'   expressed as a numeric vector, whose *names* are the snp names
 ##' @param pthr when p > pthr, stop successive searching
 ##' @param maxhits maximum depth of conditioning. procedure will stop if p >
 ##'   pthr OR abs(z)<zthr OR maxhits hits have been found.
+##' @param return.pp if FALSE (default), just return the hits. Otherwise return vectors of PP
+##' @param mask use masking if TRUE, otherwise conditioning. defaults to TRUE
 ##' @export
 ##' @return list of successively significant fine mapped SNPs, named by the SNPs
 ##' @author Chris Wallace
@@ -330,10 +331,11 @@ finemap.signals <- function(D,LD=D$LD,
                                   r2thr=0.01,
                                   sigsnps=NULL,
                                   pthr=1e-6,
-                                  maxhits=3) {
+                            maxhits=3,
+                            return.pp=FALSE) {
     method <- match.arg(method)
     if(method=="cond") {
-        check_dataset(D,req=c("MAF","beta","varbeta"))
+        check_dataset(D,req=c("N","MAF","beta","varbeta"))
         check_ld(D,LD)
     } else {
         check_dataset(D)
@@ -372,7 +374,23 @@ finemap.signals <- function(D,LD=D$LD,
         if(method=="single") # stop after one
             break
     }
-    hits
+    if(!return.pp)
+      return(hits)
+    cond_results=est_all_cond(D, hits, mode="cond")
+    xtra <- D[ intersect(names(D), c("N","sdY","type","s")) ]
+    finemap_results=lapply(cond_results, function(cond) {
+      finemap.abf(c(cond, xtra))
+    })
+    result=finemap_results[[1]]
+    if(length(finemap_results)>1) {
+      for(k in 2:length(finemap_results)) {
+        finemap_results[[k]]=finemap_results[[k]][,c("snp","SNP.PP"),drop=FALSE]
+        colnames(finemap_results[[k]])[2]=paste0(colnames(finemap_results[[k]])[2],k,sep="")
+        result=merge(result,finemap_results[[k]],by="snp",all=TRUE)
+      }
+    }
+    attr(result,"conditioned")=names(finemap_results)
+   result
 }
 
 gethits <- function(hits,i,mode) {
@@ -682,23 +700,29 @@ est_all_cond <- function(D,FM,mode) {
        } else {
            sum(D$N * D$s * ( 1 - D$s ))
        }
-    sigs <- lapply(seq_along(FM), function(i) {
-        if(mode=="allbutone") {
-            names(FM)[-i]
-        } else {
-            if(i==1)
-                NULL
-            else
-                names(FM)[1:(i-1)]
-        }
-    })
+    if(mode=="allbutone") {
+      sigs=lapply(seq_along(FM), function(i) {
+        names(FM)[-i]
+      })
+    } else {
+      sigs <- lapply(1:(length(FM)+1), function(i) {
+        if(i==1)
+          NULL
+        else
+          names(FM)[1:(i-1)]
+      })
+    }
     cond <- lapply(sigs, function(sigsnps) {
         if(is.null(sigsnps))
             as.data.table(D[intersect(c("beta","varbeta","snp","MAF","position","z"),names(D))])
         else
             est_cond(D,D$LD,YY=YY, sigsnps=sigsnps)
     })
-    names(cond) <- names(FM)
+    names(cond) <- if(mode=="allbutone") {
+                     names(FM)
+                   } else {
+                     sapply(sigs,paste,collapse="+")
+                   }
     cond
 }
 

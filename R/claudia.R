@@ -109,11 +109,13 @@ approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
 ##' @title combine.abf
 ##' @param l1 merged.df$lABF.df1
 ##' @param l2 merged.df$lABF.df2
+##' @param quiet don't print posterior summary if TRUE. default=FALSE
 ##' @inheritParams coloc.abf
 ##' @return named numeric vector of posterior probabilities
 ##' @author Claudia Giambartolomei, Chris Wallace
-combine.abf <- function(l1, l2, p1, p2, p12) {
-  print(list(p1,p2,p12))
+combine.abf <- function(l1, l2, p1, p2, p12, quiet=FALSE) {
+  if(!quiet && length(p1)==1 && length(p2)==1 & length(p12)==1)
+    print(list(p1,p2,p12))
   if(length(p1)==1)
     p1=rep(p1,length(l1))
   if(length(p2)==1)
@@ -139,8 +141,10 @@ combine.abf <- function(l1, l2, p1, p2, p12) {
   my.denom.log.abf <- logsum(all.abf)
   pp.abf <- exp(all.abf - my.denom.log.abf)
   names(pp.abf) <- paste("PP.H", (1:length(pp.abf)) - 1, ".abf", sep = "")
-  print(signif(pp.abf,3))
-  print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
+  if(!quiet) {
+    print(signif(pp.abf,3))
+    print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
+  }
   return(pp.abf)
 }
 ##' Estimate trait standard deviation given vectors of variance of coefficients,  MAF and sample size

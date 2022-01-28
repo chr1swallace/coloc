@@ -19,6 +19,7 @@ ymax <- NULL
 ##' @title plot a coloc dataset
 ##' @param d a coloc dataset
 ##' @param susie_obj optional, the output of a call to runsusie()
+##' @param credset  optional, a list of vectors, with each vector = one credible set
 ##' @param alty default is to plot a standard manhattan. If you wish to plot a
 ##'   different y value, pass it here. You may also want to change ylab to
 ##'   describe what you are plotting.
@@ -33,6 +34,7 @@ ymax <- NULL
 ##' @export
 plot_dataset <- function(d,
                          susie_obj=NULL,
+                         credset=NULL,
                          alty=NULL,ylab="-log10(p)",
                          show_legend=TRUE,
                          color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
@@ -60,6 +62,14 @@ plot_dataset <- function(d,
     }
     if(show_legend)
       legend("topright",col=color[1:length(cs)],pch=rep(1,length(cs)),legend=1:length(cs))
+  }
+  if(!is.null(credset)) {
+    for(i in 1:length(credset)) {
+      w=which(d$snp %in% credset[[i]])
+      points(d$position[w], y[w], col=color[i], cex=2)
+    }
+    if(show_legend)
+      legend("topright",col=color[1:length(credset)],pch=rep(1,length(credset)),legend=1:length(credset))
   }
 }
 

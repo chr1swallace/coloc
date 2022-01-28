@@ -126,10 +126,19 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
   ## names(cs) = paste0("L", which(include_idx))
   ## get_idx=function(x)
   ##   sub("L","",x) %>% as.numeric()
-  isnps=intersect(colnames(s1$lbf_variable),colnames(s2$lbf_variable))
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
-  message("Using ",length(isnps),"/ ",ncol(s1$lbf_variable)," and ",ncol(s2$lbf_variable)," available")
+  ## isnps=intersect(colnames(s1$lbf_variable),colnames(s2$lbf_variable))
+  ## if(!length(isnps))
+  ##   return(data.table(nsnps=NA))
+  ## message("Using ",length(isnps),"/ ",ncol(s1$lbf_variable)," and ",ncol(s2$lbf_variable)," available")
+
+  ## trimp=function(p1,allsnps,keepsnps) {
+  ##   if(length(p1)==1)
+  ##     return(p1)
+  ##   keep=which(allsnps %in% isnps)
+  ##   p1[keep]
+  ## }
+  ## p1=trimp(p1, allsnps=colnames(s1$lbf_variable), keepsnps=isnps)
+  ## p2=trimp(p2, allsnps=colnames(s2$lbf_variable), keepsnps=isnps)
 
   idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
   idx2=cs2$cs_index #sapply(names(cs2$cs), get_idx)
@@ -138,8 +147,8 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
   ##   bf1=alpha_to_logbf(s1$alpha[idx1,,drop=FALSE], s1$pi)
   ##   bf2=alpha_to_logbf(s2$alpha[idx2,,drop=FALSE], s2$pi)
   ## } else {
-    bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
-    bf2=s2$lbf_variable[idx2,isnps,drop=FALSE]
+    bf1=s1$lbf_variable[idx1,,drop=FALSE]
+    bf2=s2$lbf_variable[idx2,,drop=FALSE]
   ## }
 
   ret=coloc.bf_bf(bf1,bf2,...)
@@ -157,12 +166,12 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
   cs1=s1$sets
   if(is.null(cs1$cs) || length(cs1$cs)==0 )
     return(data.table(nsnps=NA))
-  isnps=colnames(s1$lbf_variable)
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
+  ## isnps=colnames(s1$lbf_variable)
+  ## if(!length(isnps))
+  ##   return(data.table(nsnps=NA))
 
   idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
-  bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
+  bf1=s1$lbf_variable[idx1,,drop=FALSE]
 
   ret=finemap.bf(bf1)
   ## message("ret$summary")
@@ -202,10 +211,10 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
     return(data.table(nsnps=NA))
   idx1=cs1$cs_index
   ## alpha: an L by p matrix of posterior inclusion probabilites
-  isnps=setdiff(intersect(colnames(s1$lbf_variable),names(bf2)),
-                "null")
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
+  ## isnps=setdiff(intersect(colnames(s1$lbf_variable),names(bf2)),
+  ##               "null")
+  ## if(!length(isnps))
+  ##   return(data.table(nsnps=NA))
   bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
   ## bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
 
@@ -347,7 +356,13 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     if(any(drop))
       todo=todo[!drop,,drop=FALSE]
   }
+  ## check p12
+  if(length(p12)>1) { # only proceed if didn't need to trim snps
+    if(length(isnps)!=ncol(bf1) || length(isnps)!=ncol(bf2))
+      stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
+  }
 
+  ## restrict bf1/2, p1, p2, for incomplete snp overlap
   if(length(isnps)!=ncol(bf1)) {
     keep=match(isnps,colnames(bf1))
     bf1=bf1[,keep,drop=FALSE]
@@ -360,6 +375,16 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     if(length(p2)>2)
       p2=p2[keep]
   }
+  ## sort p12 if length(p1)>1 || length(p2)>1
+  if(length(p12)==1) {
+    if(length(p1)>1 || length(p2)>1) {
+      p1_at_dist=min(p1)
+      p2_at_dist=min(p2)
+      c12=p12 / p1_at_dist / p2_at_dist
+      p12=p1*p2*c12
+    }
+  }
+
   results <- PP <- vector("list",nrow(todo))
   ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
@@ -367,7 +392,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
     df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)
-    pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12)
+    pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12, quiet=TRUE)
     PP[[k]]=df$SNP.PP.H4
     if(all(is.na(df$SNP.PP.H4))) {
       df$SNP.PP.H4=0
@@ -412,6 +437,77 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
               })
 }
 
+##' tries to be smart about it.
+##'
+##' @title trim a dataset to central peak(s)
+##' @param d a coloc dataset
+##' @param maxz keep all snps between the leftmost and rightmost snp with |z| >
+##'   maxz
+##' @param maxr2 expand window to keep all snps between snps with r2 > maxr2
+##'   with the left/rightmost snps defined by the maxz threshold
+##' @param plot if TRUE, plot dataset + boundaries
+##' @return logical vector of length d$position indicating which snps to keep
+##' @author Chris Wallace
+findends=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
+  if(!("position" %in% names(d)))
+    stop("need position")
+  ord=order(d$position)
+  find_bound=function(o) {
+    ## find left boundary
+    left=cummax(abs(d$z[o]))
+    left5=which(left>maxz)
+    if(length(left5))
+      left5=left5[1]
+    else
+      stop("no z > supplied maxz ", maxz)
+    all5=which(abs(d$z)[o]>maxz)
+    ld5=apply(d$LD[d$snp,d$snp][o,o][1:left5,all5,drop=FALSE], 1, max)
+    leftr2=which(ld5^2 > maxr2)
+    if(length(leftr2))
+      leftr2=min(leftr2)
+    else
+      leftr2=left5
+    left_bound=d$position[o][leftr2]
+  }
+  left_bound=find_bound(ord)
+  right_bound=find_bound(rev(ord))
+  if(do.plot) {
+    plot_dataset(d); abline(v=c(left_bound, right_bound))
+  }
+  keep=d$position >= left_bound & d$position <= right_bound
+}
+
+##' tries to be smart about it.
+##'
+##' @title trim a dataset to only peak(s)
+##' @inheritParams findends
+##' @return logical vector of length d$position indicating which snps to keep
+##' @author Chris Wallace
+findpeaks=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
+  if(!("position" %in% names(d)))
+    stop("need position")
+  ord=order(d$position)
+  find_peak=function(o) {
+    ## find left boundary
+    peak=which.max(abs(d$z[o]))
+    if(abs(d$z[o][peak])< maxz)
+      return(NULL)
+    ld5=d$LD[d$snp,d$snp][o,o][,peak]
+    limr2=which(ld5^2 > maxr2)
+    bounds=d$position[o][c(min(limr2),max(limr2))]
+    keep=d$position >= bounds[1] & d$position <= bounds[2]
+  }
+  keep=find_peak(ord)
+  while(any(abs(d$z)[!keep] > maxz))
+    keep = keep | find_peak(ord[!keep])
+  if(do.plot)
+     plot(d$position,-log10(pnorm(-abs(d$z))*2),pch=16,col=ifelse(keep,"red","grey"))
+  keep
+}
+
+
+
+
 ##' run susie_rss storing some additional information for coloc
 ##'
 ##' @title Run susie on a single coloc-structured dataset
@@ -425,6 +521,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##'   that neither of these options correspond to the susie_rss() defaults,
 ##'   because our goal here is not fine mapping alone.
 ##' @param trimz used to trim datasets for development purposes
+##' @param trimpeaks used to trim datasets from region ends for development purposes
 ##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
 ##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
 ##'   greater than r2.prune
@@ -455,7 +552,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' summary(result)
 ##' @author Chris Wallace
 runsusie=function(d,suffix=1,p=NULL,
-                  trimz=NULL,r2.prune=NULL,
+                  trimz=NULL,trimpeaks=NULL,r2.prune=NULL,
                   maxit=100,repeat_until_convergence=TRUE,
                   s_init=NULL, ...) {
   ## if(!requireNamespace("susieR", quietly = TRUE)) {
@@ -468,20 +565,27 @@ runsusie=function(d,suffix=1,p=NULL,
   check_ld(d,d$LD)
   ##make copies of z and LD so we can subset if needed
   if(!"z" %in% names(d))
-    z=d$beta/sqrt(d$varbeta)
-  else
-    z=d$z
+    d$z=d$beta/sqrt(d$varbeta)
+  z=d$z
   LD=d$LD[d$snp,d$snp] # just in case
   names(z)=d$snp
   snp=d$snp
-  if(!is.null(trimz) && trimz!=0) {
-    dbak=d
-    keep=abs(z) > abs(trimz)
+  ## prepare for trimming
+  dbak=d; keep=rep(TRUE,length(z))
+  if(!is.null(trimz)) {
+    keep=keep & (abs(z) > abs(trimz))
     message("trimming to subset of SNPs with |z| > ",trimz," : ",sum(keep)," / ",length(keep))
+  }
+  if(!is.null(trimpeaks)) {
+    keep=keep & findpeaks(d, maxz=trimpeaks)
+    message("trimming to subset of SNPs with |z| > ",trimpeaks," : ",sum(keep)," / ",length(keep))
+  }
+  if(!all(keep)) {
     z=z[keep]
     LD=LD[which(keep),which(keep)]
     snp=snp[keep]
   }
+
   converged=FALSE;
   ## set some defaults for susie arguments
   susie_args=list(...)
@@ -549,8 +653,9 @@ runsusie=function(d,suffix=1,p=NULL,
   ##   }
   ## }
 
-  if(!is.null(trimz) && trimz!=0) {
+  if(!all(keep)) {
     res$trimz=trimz
+    res$trimpeaks=trimpeaks
     snps_to_add=setdiff(dbak$snp,snp)
     res$pip=c(structure(rep(0,length(snps_to_add)), names=snps_to_add),
               res$pip)
