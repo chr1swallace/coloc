@@ -122,10 +122,10 @@ combine.abf <- function(l1, l2, p1, p2, p12, quiet=FALSE) {
     p2=rep(p2,length(l1))
   if(length(p12)==1)
     p12=rep(p12,length(l1))
-  stopifnot(length(l1)==length(l2) &&
-            length(l1)==length(p1) &&
-            length(l1)==length(p2) &&
-            length(l1)==length(p12))
+  stopifnot(length(l1)==length(l2))
+  stopifnot( length(l1)==length(p1))
+  stopifnot(length(l1)==length(p2))
+  stopifnot(length(l1)==length(p12))
   lsum <- l1 + l2
   lH0.abf <- 0
   ## lH1.abf <- log(p1) + logsum(l1)
@@ -349,14 +349,14 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
-  p1=adjust_prior(p1,nrow(df1),"1")
-  p2=adjust_prior(p2,nrow(df2),"2")
 
   merged.df <- merge(df1,df2)
+  p1=adjust_prior(p1,nrow(merged.df),"1")
+  p2=adjust_prior(p2,nrow(merged.df),"2")
   p12=adjust_prior(p12,nrow(merged.df),"12")
 
-  if(!nrow(merged.df))
-    stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
+  if(!nrow(merged.df) || nrow(merged.df) > max(nrow(df1),nrow(df2)))
+    stop("dataset1 and dataset2 should contain snp names through which the common snps can be identified")
 
   merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
@@ -366,7 +366,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
  
 ############################## 
 
-  pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
+  pp.abf <- combine.abf(l1=merged.df$lABF.df1, l2=merged.df$lABF.df2, p1, p2, p12)
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
