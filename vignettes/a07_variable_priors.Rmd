@@ -41,7 +41,7 @@ abline(h=1e-4,lty=3)
 
 Note that if $p_{1}$ is a function of distance, then $p_{12}$ must *also* vary with distance. Assuming this is proportional to $p_1(d)$, we write $p_{12}(d)=c_{12}p_1(d)$.
 What are sensible values for $c_{12}$?
-Well the "standard" priors proposed in @pg2020 are $p_1=p_2=10^{-4}$, $p_{12}=5\times 10^{-6}$, which give rise to a conditional probability of causal assocation with the second trait *given* causal association with the first of $p_{12}/p_1 = 5\times 10^{-2}$.  If we hold this constant, then $c_{12}=5\times 10^{-2}$.
+Well the "standard" priors proposed in @pg2020 are $p_1=p_2=10^{-4}$, $p_{12}=5\times 10^{-6}$, which give rise to a conditional probability of causal assocation with the second trait *given* causal association with the first of $p_{12}/p_1 = 5\times 10^{-2}$.  If we hold this constant, then $c_{12}=0.05$.
 
 # Two traits with different variable priors
 
@@ -72,8 +72,7 @@ for(tss_dist in c(1,10,100,500)*1000) {
   }
 ```
 
-What is $c_{12}$?
-
+What is $c_{12}$?  We can consider that at a location far from either TSS, using values suggested in @pg2020 we want $p_{12} = 5\times10^{-6} = c_{12} \times 10^{-4}\times10^{-4}$ so that $c_{12}=500$, but this calculation can be performed for other values of priors at long distance from both TSS.
 
 # Two traits with proportional variable priors
 
