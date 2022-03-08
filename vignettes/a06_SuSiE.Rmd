@@ -77,9 +77,7 @@ if(requireNamespace("susieR",quietly=TRUE)) {
 ```
 
 # Important notes on running SuSiE
-`runsusie()` is a wrapper around `susieR::susie_rss()`.  It sets the null_weight parameter - this must be non-zero or we cannot back calculate Bayes factors needed for coloc - adds some colnames to the returned objects (so that snps can be identified easily) and repeats the calls to `susie_rss()` until convergence is achieved. In particular, the `null_weight` is by default set to an (implausibly) small value of \(\frac{1}{1+nsnps}\).  This ensures that we get a posterior probability for the null hypothesis of no association, so we can calculate Bayes factors when needed, but also, by setting such a low value, allows us to capture weak signals that would not be detected if `null_weight` is large.  For coloc purposes, this is fine, because we will include in the coloc step our real prior for a SNP to be causally associated (and by implication our prior belief that no SNPs are causally associated).  At this stage, weak signals will get weeded out.
-
-You can also pass that per-SNP prior to `runsusie()` by setting the parameter `p` (equivalent to `p1` or `p2` in coloc functions).  But **be aware** either option differs from the default behaviour of `susie_rss()` which is not to specify a prior for the null hypothesis at all.
+`runsusie()` is a wrapper around `susieR::susie_rss()`.  It adds some colnames to the returned objects (so that snps can be identified easily) and repeats the calls to `susie_rss()` until convergence is achieved.
 
 `susie_rss()` has many other options and you should look at them if `runsusie()` is not giving the output you expect.  They can be passed directly through `runsusie()`.
 
