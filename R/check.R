@@ -67,10 +67,12 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
 
   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
   ## req <- unique(c("snp",req)) # always need snp to match now
+  for (r in req) {
+    if(!r %in% nd)
+      stop("dataset ",suffix,": missing required element ",r)
+  }
   n <- 0
   for(v in nd) {
-    if(v %in% req && !(v %in% nd))
-      stop("dataset ",suffix,": missing required element ",v)
     if(any(is.na(d[[v]])))
       stop("dataset ",suffix,": ",v," contains missing values")
   }
@@ -85,6 +87,7 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
   if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
                        any(d$MAF<=0) || any(d$MAF>=1)))
     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
+
 
   ## lengths of these should match
   l <- -1 # impossible length
@@ -109,6 +112,10 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
     stop("dataset ",suffix,": variable type not set")
   if(!(d$type %in% c("quant","cc")))
     stop("dataset ",suffix,": ","type must be quant or cc")
+
+  ## varbeta should be > 0
+  if("varbeta" %in% nd && !all(d$varbeta > 0))
+	  stop("varbeta should be strictly > 0")
 
   ## no beta/varbeta
   if(("s" %in% nd) && (!is.numeric(d$s) || d$s<=0 || d$s>=1))
@@ -159,6 +166,8 @@ check_ld <- function(D,LD) {
         stop("LD required")
     if(nrow(LD)!=ncol(LD))
         stop("LD not square")
+    if(is.null(colnames(LD)) || is.null(rownames(LD)))
+      stop("LD required to have row and column names")
     if(!identical(colnames(LD),rownames(LD)))
       stop("LD rownames != colnames")
     if(length(setdiff(D$snp,colnames(LD))))
