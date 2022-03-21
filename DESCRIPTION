@@ -48,7 +48,6 @@ Collate:
     'split.R'
     'susie.R'
     'testdata.R'
-    'varp.R'
     'zzz.R'
 Depends: 
     R (>= 2.10)
