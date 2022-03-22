@@ -1,3 +1,6 @@
+# coloc 5.1.2
+* deprecate runsusie() argument p
+
 # coloc 5.1.1
 * update plot_dataset() and sensitivity() to fix bug for very small p values displaying as 0
 

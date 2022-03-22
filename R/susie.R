@@ -403,13 +403,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @title Run susie on a single coloc-structured dataset
 ##' @param d coloc dataset, must include LD (signed correlation matrix)
 ##' @param suffix suffix label that will be printed with any error messages
-##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
-##'   coloc.abf). By default, this is set to NULL, upon which we will set a
-##'   small null_weight to pass to susie_rss() (see vignette a06 for details
-##'   why). You can override this by setting p as you would p1 or p2 in a coloc
-##'   function, but note that you may miss some true signals that way. Also note
-##'   that neither of these options correspond to the susie_rss() defaults,
-##'   because our goal here is not fine mapping alone.
+##' @param p \bold{Deprecated} Instead directly set the argument null_weight
+##'   (prior probability of no effect) to pass directly to susie_rss().
 ##' @param trimz used to trim datasets for development purposes
 ##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
 ##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
@@ -481,13 +476,10 @@ runsusie=function(d,suffix=1,p=NULL,
     susie_args = susie_args[ setdiff(names(susie_args), "max_iter") ]
   }
 
-  ## if(!("null_weight" %in% names(susie_args))) { # set it ourselves
-  ##   susie_args$null_weight=if(!is.null(p)) {
-  ##                            max(1 - length(d$snp)*p, p)
-  ##                          } else {
-  ##                            susie_args$null_weight=1/(length(d$snp)+1) #max(1 - length(d$snp)*p, p)
-  ##                          }
-  ## }
+  if(!is.null(p)) {
+    warning("Argument p is deprecated and has no effect. Set null_weight instead")
+  }
+
   while(!converged) {
     message("running max iterations: ",maxit)
   ## if(!is.null(s_init)) {
