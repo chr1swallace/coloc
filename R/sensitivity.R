@@ -18,7 +18,7 @@ prior.adjust <- function(summ,newp12,p1=1e-4,p2=1e-4,p12=1e-6) {
 
 
 prior.snp2hyp <- function(nsnp,p12=1e-6,p1=1e-4,p2=1e-4) {
-    if(any(p12<p1*p2) || any(p12 > p1) || any(p12 > p2))
+    if(any(p12 < 10^log10(p1*p2)) || any(p12 > 10^log10(p1)) || any(p12 > 10^log10(p2)))
         return(NULL)
     tmp <- cbind(nsnp * p1,
                  nsnp * p2,
@@ -113,7 +113,7 @@ sensitivity <- function(obj,rule="",
     pass.init <- check(pp)
     message("Results ",if(check(pp)) { "pass" } else { "fail" }, " decision rule ",rule.init)
 
-    testp12 <- 10^seq(log10(p1*p2),log10(min(p1,p1)),length.out=npoints)
+    testp12 <- 10^seq(log10(p1*p2),log10(min(p1,p2)),length.out=npoints)
     testH <- prior.snp2hyp(pp["nsnps"],p12=testp12,p1=p1,p2=p2)
     testpp <- as.data.frame(prior.adjust(summ=pp,newp12=testp12,p1=p1,p2=p2,p12=p12))
     colnames(testpp) <- gsub("(H.)","PP.\\1.abf",colnames(testpp),perl=TRUE)
