@@ -14,3 +14,6 @@ errors
 ^Meta$
 FAQ.md
 ^CRAN-RELEASE$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
