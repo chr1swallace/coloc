@@ -13,3 +13,20 @@ test_that("LD matrix must have dimnames", {
   attr(ld_no_dimnames, "dimnames") <- NULL
   expect_error(check_ld(D3, ld_no_dimnames), "LD required to have row and column names")
 })
+
+test_that("issue 79", {
+  d1=list(snp=letters[1:5],
+          position=1:5,
+          N=200000,
+          MAF=runif(5)/2,
+          beta=rnorm(5),
+          varbeta=rep(0.01,5),
+          type="cc")
+  d2=list(snp=letters[1:5],
+          position=1:5,
+          beta=rnorm(5),
+          varbeta=rep(0.01,5),
+          type="quant",
+          sdY=10)
+  expect_error(coloc.abf(d1,d2), NA)
+})
