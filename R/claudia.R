@@ -338,42 +338,65 @@ p
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
 coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
-                      p1=1e-4, p2=1e-4, p12=1e-5) {
+                      p1=1e-4, p2=1e-4, p12=1e-5,
+                      priors=c("asis","use_tss")) {
 
-    if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
-        dataset1$MAF <- MAF
-    if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
-        dataset2$MAF <- MAF
-    check_dataset(d=dataset1,1)
-    check_dataset(d=dataset2,2)
-    
+  if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
+    dataset1$MAF <- MAF
+  if(!("MAF" %in% names(dataset2)) & !is.null(MAF))
+    dataset2$MAF <- MAF
+  check_dataset(d=dataset1,1)
+  check_dataset(d=dataset2,2)
+
   df1 <- process.dataset(d=dataset1, suffix="df1")
   df2 <- process.dataset(d=dataset2, suffix="df2")
 
   merged.df <- merge(df1,df2)
-  p1=adjust_prior(p1,nrow(merged.df),"1")
-  p2=adjust_prior(p2,nrow(merged.df),"2")
-  p12=adjust_prior(p12,nrow(merged.df),"12")
-
   if(!nrow(merged.df) || nrow(merged.df) > max(nrow(df1),nrow(df2)))
     stop("dataset1 and dataset2 should contain snp names through which the common snps can be identified")
+
+  ## prior adjustments
+  priors = match.arg(priors)
+  if(priors=="use_tss") {
+    stopifnot(length(p1)==1 && length(p2)==1 && length(p12)==1)
+    prior_values=eqtl_priors(merged.df$position, dataset1$tss, dataset2$tss,
+                             p1_at_mb=p1, p2_at_mb=p2, p12_at_mb=p12)
+  } else {
+    ## if length(p1), length(p2) > 1, and we adjusted snps, need to fix
+    fixer=function(p,df) {
+      if(length(p)>1) {
+        m=match(merged.df$snp,df$snp)
+        p[m]
+      } else {
+        p
+      }
+    }
+    p1=fixer(p1,df1)
+    p2=fixer(p2,df2)
+
+    ## ensure p1, p2 not inconsistent with number of snps under single CV
+    prior_values=list(p1=adjust_prior(p1,nrow(merged.df),"1"),
+                      p2=adjust_prior(p2,nrow(merged.df),"2"),
+                      p12=adjust_prior(p12,nrow(merged.df),"12"))
+  }
 
   merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
   ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
   my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
   merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
   
- 
+
 ############################## 
 
-  pp.abf <- combine.abf(l1=merged.df$lABF.df1, l2=merged.df$lABF.df2, p1, p2, p12)
+  pp.abf <- combine.abf(l1=merged.df$lABF.df1, l2=merged.df$lABF.df2,
+                        prior_values$p1, prior_values$p2, prior_values$p12)
   common.snps <- nrow(merged.df)
   results <- c(nsnps=common.snps, pp.abf)
   
-    output<-list(summary=results,
-                 results=merged.df,
-                 priors=c(p1=p1,p2=p2,p12=p12))
-    class(output) <- c("coloc_abf",class(output))
-    return(output)
+  output<-list(summary=results,
+               results=merged.df,
+               priors=c(p1=p1,p2=p2,p12=p12))
+  class(output) <- c("coloc_abf",class(output))
+  return(output)
 }
 

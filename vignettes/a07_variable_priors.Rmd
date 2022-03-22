@@ -26,8 +26,8 @@ So it would make sense to allow these parameters to be variable in some way.
 
 <!-- There are constraints on the priors.  For example, at any SNP, $p_1 + p_2 + p_{12} << 1$.  But there are logical constraints too.   -->
 
-Suppose for now that trait 1 is gene expression, and trait 2 is disease, and that we have no relevant information that would imply a variable prior for the disease trait.  We write $p_1(d)=f_1(d)$ to emphasise that $p_1(d)$ is a function of distance, $d$. 
-We estimated $f_1(d)$ by using SuSiE @susie to fine map multiple eqtl signals and fitted a spline to the results (manuscript in prep).   Because the data used to fit the curve are selected to include only datasets with evidence for association ($p<10^{-6}) we anticipate the shape of the curve may be right, but that its absolute value overestimated.  The curve asymptotes about 1 mb from the TSS, and the so we scale the curve so that the value at 1 mb is equal to $10^{-4}$ which was the default value for $p_1$ and $p_2$ in coloc.abf().
+Suppose for now that trait 1 is gene expression, and trait 2 is disease, and that we have no relevant information that would imply a variable prior for the disease trait.  We write $p_1(d)=f(d)$ to emphasise that $p_1(d)$ is a function of distance between base pair and TSS, $d$. 
+We estimated $f(d)$ by using SuSiE @susie to fine map multiple eqtl signals and fitted a spline to the results (manuscript in prep).   Because the data used to fit the curve are selected to include only datasets with evidence for association ($p<10^{-6}) we anticipate the shape of the curve may be right, but that its absolute value overestimated.  The curve asymptotes about 1 mb from the TSS, and the so we scale the curve so that the value at 1 mb is equal to $10^{-4}$ which was the default value for $p_1$ and $p_2$ in coloc.abf().
 
 
 ```{r, fig.width=6, fig.height=6}
@@ -47,12 +47,13 @@ Well the "standard" priors proposed in @pg2020 are $p_1=p_2=10^{-4}$, $p_{12}=5\
 
 **NOTE: this is my current thinking, it is not completely thought through.  Please comment via [issues](https://github.com/chr1swallace/coloc/issues) to discuss!**
 
-  Let us consider two traits with different variable priors (eg two different gene expression traits). Then $p_1(d)=f_1(d)$, $p_2(d)=f_2(d)=f_1(d-t_2)$ where $t_2$ is the distance between TSS of the two genes and a plausible $p_{12}=c_{12}f_1(d)f_2(d)=c_{12}f_1(d)f_1(d-t_2)$.
+  Let us consider two traits with different variable priors (eg two different gene expression traits). Then 
+  $$p_1(d_1)=f(d_1)$$
+  $$p_2(d_2)=f(d_2)$$ 
+where $d_1,d_2$ are the distances between a SNP position and the TSS of the two genes, and a plausible 
+$$p_{12}=c'_{12}f(d_2)f(d_2)$$
 
-Then $p_{12}(d) = c_{12}f_1(d)f_2(d)$
-$p_{12}/p_1 = c_{12}f_2(d), p_{12}/p2 = c_{12}f_1(d)$
-
-For genes with 10kb, 100kb, 500kb distance between TSS (shown by the red dashed lines), this results in a profile for $p_12$ proportional to
+For genes with 10kb, 100kb, 500kb distance between TSS (shown by the red dashed lines), this results in a profile for $p_{12}$ proportional to
 
 ```{r, fig.width=6, fig.height=6}
 library(coloc)
@@ -72,7 +73,10 @@ for(tss_dist in c(1,10,100,500)*1000) {
   }
 ```
 
-What is $c_{12}$?  We can consider that at a location far from either TSS, using values suggested in @pg2020 we want $p_{12} = 5\times10^{-6} = c_{12} \times 10^{-4}\times10^{-4}$ so that $c_{12}=500$, but this calculation can be performed for other values of priors at long distance from both TSS.
+What is $c_{12}$?  
+Again, we appeal to the constant values of f() at long distance to estimate
+$$c'_{12} = \frac{p_{12}(\inf)}{p_1(\inf)p_2(\inf)}$$
+Using values suggested in @pg2020 we have $p_{12} = 5\times10^{-6} = c_{12} \times 10^{-4}\times10^{-4}$ so that $c_{12}=500$, but this calculation can be performed for other values of priors at long distance from both TSS.
 
 # Two traits with proportional variable priors
 

@@ -350,6 +350,8 @@ finemap.signals <- function(D,LD=D$LD,
     ## make nicer data table
     ## x <- as.data.table(D[c("beta","varbeta","snp","MAF")])
     ## x[,z:=beta/sqrt(varbeta)]
+    D$LD <- LD[D$snp,D$snp]
+    D.orig=D
     if(D$type=="cc" & method=="cond") {
         message("approximating linear analysis of binary trait")
         D <- bin2lin(D)
@@ -360,7 +362,6 @@ finemap.signals <- function(D,LD=D$LD,
            sum(D$N * D$s * (1 - D$s))
        }
     ## check_ld in matching order
-    LD <- LD[D$snp,D$snp]
     hits <- NULL
     while(length(hits)<maxhits) {
         newhit=if(method=="mask") {
@@ -376,7 +377,7 @@ finemap.signals <- function(D,LD=D$LD,
     }
     if(!return.pp)
       return(hits)
-    cond_results=est_all_cond(D, hits, mode="cond")
+    cond_results=est_all_cond(D.orig, hits, mode="cond")
     xtra <- D[ intersect(names(D), c("N","sdY","type","s")) ]
     finemap_results=lapply(cond_results, function(cond) {
       finemap.abf(c(cond, xtra))
@@ -384,8 +385,8 @@ finemap.signals <- function(D,LD=D$LD,
     result=finemap_results[[1]]
     if(length(finemap_results)>1) {
       for(k in 2:length(finemap_results)) {
-        finemap_results[[k]]=finemap_results[[k]][,c("snp","SNP.PP"),drop=FALSE]
-        colnames(finemap_results[[k]])[2]=paste0(colnames(finemap_results[[k]])[2],k,sep="")
+        finemap_results[[k]]=finemap_results[[k]][,c("snp","lABF.","SNP.PP"),drop=FALSE]
+        colnames(finemap_results[[k]])[c(2,3)]=paste0(colnames(finemap_results[[k]])[c(2,3)],k,sep="")
         result=merge(result,finemap_results[[k]],by="snp",all=TRUE)
       }
     }
