@@ -12,14 +12,13 @@ globalVariables(c("variable","pp","position","value"))
 # trait1: name of trait 1
 # trait2: name of trait 2   
 ymin <- NULL
-ymax <- NULL
-
-##' Plot a coloc structured dataset
 ##'
 ##' @title plot a coloc dataset
 ##' @param d a coloc dataset
 ##' @param susie_obj optional, the output of a call to runsusie()
-##' @param credset  optional, a list of vectors, with each vector = one credible set
+##' @param highlight_list optional, a list of character vectors. any snp in the
+##'   character vector will be highlighted, using a different colour for each
+##'   list.
 ##' @param alty default is to plot a standard manhattan. If you wish to plot a
 ##'   different y value, pass it here. You may also want to change ylab to
 ##'   describe what you are plotting.
@@ -34,7 +33,7 @@ ymax <- NULL
 ##' @export
 plot_dataset <- function(d,
                          susie_obj=NULL,
-                         credset=NULL,
+                         highlight_list=NULL,
                          alty=NULL,ylab="-log10(p)",
                          show_legend=TRUE,
                          color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
@@ -51,25 +50,74 @@ plot_dataset <- function(d,
     y=alty
   }
   plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
-  if(!is.null(susie_obj)) {
-    cs=susie_obj$sets$cs
-    for(i in 1:length(cs)) {
-      w=which(d$snp %in% names(cs[[i]]))
-      ## print(w)
-      ## print(d$position[w])
-      ## print(p[w])
+  if(!is.null(susie_obj))
+    highlight_list=lapply(susie_obj$sets$cs, names)
+  if(!is.null(highlight_list)) {
+    for(i in 1:length(highlight_list)) {
+      w=which(d$snp %in% highlight_[[i]])
       points(d$position[w], y[w], col=color[i], cex=2)
     }
     if(show_legend)
-      legend("topright",col=color[1:length(cs)],pch=rep(1,length(cs)),legend=1:length(cs))
+      legend("topright",col=color[1:length(highlight_list)],
+             pch=rep(1,length(highlight_list)),legend=1:length(highlight_list))
   }
-  if(!is.null(credset)) {
-    for(i in 1:length(credset)) {
-      w=which(d$snp %in% credset[[i]])
+}
+
+ymax <- NULL
+
+##' Plot a coloc structured dataset
+##'
+##' @title plot a coloc dataset
+##' @param d a coloc dataset
+##' @param susie_obj optional, the output of a call to runsusie()
+<<<<<<< HEAD
+##' @param credset  optional, a list of vectors, with each vector = one credible set
+=======
+##' @param highlight_list optional, a list of character vectors. any snp in the
+##'   character vector will be highlighted, using a different colour for each
+##'   list.
+>>>>>>> b259956... generalise plot_dataset
+##' @param alty default is to plot a standard manhattan. If you wish to plot a
+##'   different y value, pass it here. You may also want to change ylab to
+##'   describe what you are plotting.
+##' @param ylab label for y axis, default is -log10(p) and assumes you are
+##'   plotting a manhattan
+##' @param show_legend optional, show the legend or not. default is TRUE
+##' @param color optional, specify the colours to use for each credible set when
+##'   susie_obj is supplied. Default is shamelessly copied from
+##'   susieR::susie_plot() so that colours will match
+##' @param ... other arguments passed to the base graphics plot() function
+##' @author Chris Wallace
+##' @export
+plot_dataset <- function(d,
+                         susie_obj=NULL,
+                         highlight_list=NULL,
+                         alty=NULL,ylab="-log10(p)",
+                         show_legend=TRUE,
+                         color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
+                                   "gold1", "skyblue2", "#FB9A99", "palegreen2", "#CAB2D6",
+                                   "#FDBF6F", "gray70", "khaki2", "maroon", "orchid1", "deeppink1",
+                                   "blue1", "steelblue4", "darkturquoise", "green1", "yellow4",
+                                   "yellow3", "darkorange4", "brown"),
+                         ...) {
+  if(!("position" %in% names(d)))
+    stop("no position element given")
+  if(is.null(alty)) {
+    y= - ( pnorm(-abs(d$beta)/sqrt(d$varbeta),log.p=TRUE) + log(2) ) / log(10)
+  } else {
+    y=alty
+  }
+  plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
+  if(!is.null(susie_obj))
+    highlight_list=lapply(susie_obj$sets$cs, names)
+  if(!is.null(highlight_list)) {
+    for(i in 1:length(highlight_list)) {
+      w=which(d$snp %in% highlight_list[[i]])
       points(d$position[w], y[w], col=color[i], cex=2)
     }
     if(show_legend)
-      legend("topright",col=color[1:length(credset)],pch=rep(1,length(credset)),legend=1:length(credset))
+      legend("topright",col=color[1:length(highlight_list)],
+             pch=rep(1,length(highlight_list)),legend=1:length(highlight_list))
   }
 }
 
