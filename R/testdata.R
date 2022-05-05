@@ -127,12 +127,19 @@ return(list(D1=list(beta=b1$beta,
   data=sim.data(nsamples=1000,nsnps=500,sd.y=c(1.1,1),ncausals=c(1,1))
   data$causals # 105
 D1=make_data(data)[[1]]
+  ## D1$causals=data$causals[1]
   D2=make_data(data)[[2]]
+  causals=list(D1=data$causals, D2=data$causals)
+  ## D2$causals=data$causals[1]
   par(mfrow=c(2,1)); plot_dataset(D1); abline(v=data$causals); plot_dataset(D2); abline(v=data$causals)
+  set.seed(42)
   data=sim.data(nsamples=1000,nsnps=500,sd.y=c(1.2,1.3),ncausals=c(2,1))
   data$causals # 84, 379
   D3=make_data(data)[[1]]
-D4=make_data(data)[[2]]
+  ## D3$causals=data$causals[1:2]
+  D4=make_data(data)[[2]]
+  causals=c(causals,list(D3=data$causals, D4=data$causals[1]))
+  ## D4$causals=data$causals[1]
   par(mfrow=c(2,1)); plot_dataset(D3); abline(v=data$causals); plot_dataset(D4); abline(v=data$causals)
   null=sim.null(nsamples=1000,nsnps=500,sd.y=c(1.1,1))
 N1=make_data(null)[[1]]
@@ -161,7 +168,7 @@ N2=make_data(null)[[2]]
   summary(runsusie(D5,coverage=0.1))  # lower coverage
   summary(runsusie(D5,coverage=0.01)) # even lower
 
-  coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4,N1=N1,N2=N2)
-  save(coloc_test_data, file="data/coloc_test_data.rda", version=2)
+  coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4,N1=N1,N2=N2,causals=causals)
+  save(coloc_test_data, file="data/coloc_test_data.rda", compress="xz")
 
 }

@@ -17,7 +17,8 @@ runsusie(
 )
 }
 \arguments{
-\item{d}{coloc dataset, must include LD (signed correlation matrix)}
+\item{d}{coloc dataset, must include LD (signed correlation matrix) and N
+(sample size)}
 
 \item{suffix}{suffix label that will be printed with any error messages}
 

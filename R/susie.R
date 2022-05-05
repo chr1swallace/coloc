@@ -170,6 +170,7 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
   ## message("cs1")
   ## print(cs1)
   ## renumber index to match
+  idx=NULL
   ret$summary[,idx:=cs1$cs_index]
   ## message("ret$summary")
   ## print(ret$summary)
@@ -230,8 +231,8 @@ susie_get_cs_with_names=function(s) {
 ##' This is the workhorse behind many finemap functions
 ##'
 ##' @title Finemap data through Bayes factors
-##' @inheritParams finemap.signals
 ##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @param p1 prior probability that a randomly chosen snp is causal for the trait
 ##' @return finemap.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -401,7 +402,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' run susie_rss storing some additional information for coloc
 ##'
 ##' @title Run susie on a single coloc-structured dataset
-##' @param d coloc dataset, must include LD (signed correlation matrix)
+##' @param d coloc dataset, must include LD (signed correlation matrix) and N
+##'   (sample size)
 ##' @param suffix suffix label that will be printed with any error messages
 ##' @param p \bold{Deprecated} Instead directly set the argument null_weight
 ##'   (prior probability of no effect) to pass directly to susie_rss().
@@ -445,7 +447,7 @@ runsusie=function(d,suffix=1,p=NULL,
   ## }
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
-  check_dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
+  check_dataset(d,suffix,req=c("beta","varbeta","LD","snp","N"))
   check_ld(d,d$LD)
   ##make copies of z and LD so we can subset if needed
   if(!"z" %in% names(d))
@@ -491,7 +493,7 @@ runsusie=function(d,suffix=1,p=NULL,
   ##   ## res1$sets
   ## } else {
     res=do.call(susie_rss,
-                c(list(z=z, R=LD, max_iter=maxit), susie_args))
+                c(list(z=z, n=d$N, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; #s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
     if(!converged && repeat_until_convergence==FALSE)

@@ -93,7 +93,7 @@ One option I have varied to help SuSiE detect weaker signals, is the coverage pa
 if(requireNamespace("susieR",quietly=TRUE)) {
   ## make a dataset with a weaker signal
   D5=D3
-  D5$varbeta=D5$varbeta * 2
+  D5$varbeta=D5$varbeta * 4
   D5$N=D5$N / 2
   par(mfrow=c(1,2))
   plot_dataset(D3, main="original D3")
@@ -109,14 +109,14 @@ if(requireNamespace("susieR",quietly=TRUE)) {
 }
 ```
 
-And reducing it further finds the other as well
-``` r
-if(requireNamespace("susieR",quietly=TRUE)) {
-  summary(runsusie(D5,coverage=0.01)) # even lower
-}
-```
+<!-- And reducing it further finds the other as well -->
+<!-- ``` r -->
+<!-- if(requireNamespace("susieR",quietly=TRUE)) { -->
+<!--   summary(runsusie(D5,coverage=0.001)) # even lower -->
+<!-- } -->
+<!-- ``` -->
 
-These values are just for illustration, I probably wouldn't believe a signal in a real dataset with a \( p > 10^{-5} \).  They let you find weaker signals, but the coloc results should be treated with caution.
+These values are just for illustration, I probably wouldn't believe a signal in a real dataset with a \( p > 10^{-5} \).  They let you find weaker signals, but the signals they find may not be real! coloc results should be treated with caution.  Nonetheless, this may be worthwhile if you have a dataset with a weak signal which you know has replicated in independent data.
 
 ``` r
 if(requireNamespace("susieR",quietly=TRUE)) {
