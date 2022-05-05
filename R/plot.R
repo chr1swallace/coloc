@@ -70,13 +70,9 @@ ymax <- NULL
 ##' @title plot a coloc dataset
 ##' @param d a coloc dataset
 ##' @param susie_obj optional, the output of a call to runsusie()
-<<<<<<< HEAD
-##' @param credset  optional, a list of vectors, with each vector = one credible set
-=======
 ##' @param highlight_list optional, a list of character vectors. any snp in the
 ##'   character vector will be highlighted, using a different colour for each
 ##'   list.
->>>>>>> b259956... generalise plot_dataset
 ##' @param alty default is to plot a standard manhattan. If you wish to plot a
 ##'   different y value, pass it here. You may also want to change ylab to
 ##'   describe what you are plotting.
