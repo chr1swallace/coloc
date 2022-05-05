@@ -30,13 +30,13 @@
 ##'
 ##' Then scalars describing the samples used:
 ##' \describe{
-##' \item{}{\code{N}}
+##' \item{always needed}{\code{N}}
 ##' \item{if \code{type}=="cc"}{\code{s}}
 ##' \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
 ##' }
 ##' If \code{sdY} is unknown, it will be approximated, and this will require
 ##' \describe{
-##' \item{}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
+##' \item{summary data to estimate \code{sdY}}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 ##' }
 ##'
 ##' Then, if not already covered above, the summary statistics describing the results
@@ -67,12 +67,10 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
 
   ## no missing values - make people clean their own data rather than make assumptions here for datasets I don't know
   ## req <- unique(c("snp",req)) # always need snp to match now
-  for (r in req) {
-    if(!r %in% nd)
-      stop("dataset ",suffix,": missing required element ",r)
-  }
   n <- 0
   for(v in nd) {
+    if(v %in% req && !(v %in% nd))
+      stop("dataset ",suffix,": missing required element ",v)
     if(any(is.na(d[[v]])))
       stop("dataset ",suffix,": ",v," contains missing values")
   }
@@ -87,7 +85,6 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
   if("MAF" %in% nd && (!is.numeric(d$MAF) || any(is.na(d$MAF)) ||
                        any(d$MAF<=0) || any(d$MAF>=1)))
     stop("dataset ",suffix,": MAF should be a numeric, strictly >0 & <1")
-
 
   ## lengths of these should match
   l <- -1 # impossible length
@@ -112,10 +109,6 @@ check_dataset <- function(d,suffix="",req=c("snp"),warn.minp=1e-6) {
     stop("dataset ",suffix,": variable type not set")
   if(!(d$type %in% c("quant","cc")))
     stop("dataset ",suffix,": ","type must be quant or cc")
-
-  ## varbeta should be > 0
-  if("varbeta" %in% nd && !all(d$varbeta > 0))
-	  stop("varbeta should be strictly > 0")
 
   ## no beta/varbeta
   if(("s" %in% nd) && (!is.numeric(d$s) || d$s<=0 || d$s>=1))
@@ -163,11 +156,13 @@ check.dataset=function(...) {
 
 check_ld <- function(D,LD) {
     if(is.null(LD))
-        stop("LD required")
+      stop("LD required")
+    if(!is.matrix(LD))
+      stop("LD must be of class matrix")
+    ## if(any(LD[upper.tri(LD)]==1))
+    ##   stop("LD includes SNPs in perfect LD")
     if(nrow(LD)!=ncol(LD))
         stop("LD not square")
-    if(is.null(colnames(LD)) || is.null(rownames(LD)))
-      stop("LD required to have row and column names")
     if(!identical(colnames(LD),rownames(LD)))
       stop("LD rownames != colnames")
     if(length(setdiff(D$snp,colnames(LD))))
