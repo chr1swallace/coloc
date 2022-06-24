@@ -35,3 +35,10 @@ This is described in detail in the [latest paper](https://journals.plos.org/plos
 # What does high PP4 mean?
 
 The summary printed on the screen by coloc.abf() and coloc.signals() shows the posterior probability of whether a shared causal variant exists in the region. High PP4 does not mean all variants are causal and shared - to check which variants are most likely to be causal look at the SNP.PP column in the returned detailed results data.frame.
+
+# I have a question. How should we interpret a high overall PP4 (>95%) but a low PP4 for single SNP (<50%) in coloc.abf? In this scenario, PP0-PP3 were small than 0.0001.
+
+high overall PP4 (>95%) means there is a high probability of colocalisation
+
+low PP4 for single SNP (<50%) means we cannot identify which individual SNP is jointly causal with confidence
+

@@ -56,13 +56,13 @@ Some of these items may be missing, but you must always give {\code{type}}.
 
 Then scalars describing the samples used:
 \describe{
-\item{}{\code{N}}
+\item{always needed}{\code{N}}
 \item{if \code{type}=="cc"}{\code{s}}
 \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
 }
 If \code{sdY} is unknown, it will be approximated, and this will require
 \describe{
-\item{}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
+\item{summary data to estimate \code{sdY}}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 }
 
 Then, if not already covered above, the summary statistics describing the results

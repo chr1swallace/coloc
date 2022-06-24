@@ -42,7 +42,9 @@ list for that dataset.}
 
 \item{mode}{"iterative" or "allbutone".  Easiest understood with
 an example.  Suppose there are 3 signal SNPs detected for
-trait 1, A, B, C and only one for trait 2, D.\preformatted{Under "iterative" mode, 3 coloc will be performed:
+trait 1, A, B, C and only one for trait 2, D.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{Under "iterative" mode, 3 coloc will be performed:
 * trait 1 - trait 2
 * trait 1 conditioned on A - trait 2
 * trait 1 conditioned on A+B - trait 2
@@ -60,7 +62,7 @@ signal to be tested without influence of the others.  When
 there is uncertainty, it may make sense to use iterative mode,
 because the strongest signals aren't affected by conditioning
 incorrectly on weaker secondary and less certain signals.
-}}
+}\if{html}{\out{</div>}}}
 
 \item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
 

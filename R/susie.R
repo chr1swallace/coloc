@@ -437,89 +437,17 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
               })
 }
 
-##' tries to be smart about it.
-##'
-##' @title trim a dataset to central peak(s)
-##' @param d a coloc dataset
-##' @param maxz keep all snps between the leftmost and rightmost snp with |z| >
-##'   maxz
-##' @param maxr2 expand window to keep all snps between snps with r2 > maxr2
-##'   with the left/rightmost snps defined by the maxz threshold
-##' @param plot if TRUE, plot dataset + boundaries
-##' @return logical vector of length d$position indicating which snps to keep
-##' @author Chris Wallace
-findends=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
-  if(!("position" %in% names(d)))
-    stop("need position")
-  ord=order(d$position)
-  find_bound=function(o) {
-    ## find left boundary
-    left=cummax(abs(d$z[o]))
-    left5=which(left>maxz)
-    if(length(left5))
-      left5=left5[1]
-    else
-      stop("no z > supplied maxz ", maxz)
-    all5=which(abs(d$z)[o]>maxz)
-    ld5=apply(d$LD[d$snp,d$snp][o,o][1:left5,all5,drop=FALSE], 1, max)
-    leftr2=which(ld5^2 > maxr2)
-    if(length(leftr2))
-      leftr2=min(leftr2)
-    else
-      leftr2=left5
-    left_bound=d$position[o][leftr2]
-  }
-  left_bound=find_bound(ord)
-  right_bound=find_bound(rev(ord))
-  if(do.plot) {
-    plot_dataset(d); abline(v=c(left_bound, right_bound))
-  }
-  keep=d$position >= left_bound & d$position <= right_bound
-}
-
-##' tries to be smart about it.
-##'
-##' @title trim a dataset to only peak(s)
-##' @inheritParams findends
-##' @return logical vector of length d$position indicating which snps to keep
-##' @author Chris Wallace
-findpeaks=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
-  if(!("position" %in% names(d)))
-    stop("need position")
-  ord=order(d$position)
-  find_peak=function(o) {
-    ## find left boundary
-    peak=which.max(abs(d$z[o]))
-    if(abs(d$z[o][peak])< maxz)
-      return(NULL)
-    ld5=d$LD[d$snp,d$snp][o,o][,peak]
-    limr2=which(ld5^2 > maxr2)
-    bounds=d$position[o][c(min(limr2),max(limr2))]
-    keep=d$position >= bounds[1] & d$position <= bounds[2]
-  }
-  keep=find_peak(ord)
-  while(any(abs(d$z)[!keep] > maxz))
-    keep = keep | find_peak(ord[!keep])
-  if(do.plot)
-     plot(d$position,-log10(pnorm(-abs(d$z))*2),pch=16,col=ifelse(keep,"red","grey"))
-  keep
-}
-
 
 
 
 ##' run susie_rss storing some additional information for coloc
 ##'
 ##' @title Run susie on a single coloc-structured dataset
-##' @param d coloc dataset, must include LD (signed correlation matrix)
+##' @param d coloc dataset, must include LD (signed correlation matrix) and N
+##'   (sample size)
 ##' @param suffix suffix label that will be printed with any error messages
-##' @param p prior probability a snp is causal (equivalent to p1 or p2 in
-##'   coloc.abf). By default, this is set to NULL, upon which we will set a
-##'   small null_weight to pass to susie_rss() (see vignette a06 for details
-##'   why). You can override this by setting p as you would p1 or p2 in a coloc
-##'   function, but note that you may miss some true signals that way. Also note
-##'   that neither of these options correspond to the susie_rss() defaults,
-##'   because our goal here is not fine mapping alone.
+##' @param p \bold{Deprecated} Instead directly set the argument null_weight
+##'   (prior probability of no effect) to pass directly to susie_rss().
 ##' @param trimz used to trim datasets for development purposes
 ##' @param trimpeaks used to trim datasets from region ends for development purposes
 ##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
@@ -561,10 +489,10 @@ runsusie=function(d,suffix=1,p=NULL,
   ## }
   ## if(!is.null(ld.prune) && !is.null(ld.merge))
   ##   stop("please specicify at most one of ld.prune and ld.merge")
-  check_dataset(d,suffix,req=c("beta","varbeta","LD","snp"))
+  check_dataset(d,suffix,req=c("beta","varbeta","LD","snp","N"))
   check_ld(d,d$LD)
   ##make copies of z and LD so we can subset if needed
-  if(!"z" %in% names(d))
+  if(!("z" %in% names(d)))
     d$z=d$beta/sqrt(d$varbeta)
   z=d$z
   LD=d$LD[d$snp,d$snp] # just in case
@@ -608,14 +536,10 @@ runsusie=function(d,suffix=1,p=NULL,
   ## }
   while(!converged) {
     message("running max iterations: ",maxit)
-  ## if(!is.null(s_init)) {
-  ##   res=do.call(susieR::susie_rss,
-  ##               c(list(z=z, R=LD, max_iter=maxit, s_init=s_init), susie_args))
-  ##   ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
-  ##   ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
-  ##   ##                null_weight=susie_args$null_weight)
-  ##   ## res1$sets
-  ## } else {
+    ## at 0.12.6 susieR introduced need for n,
+    if(utils::compareVersion("0.12.6",
+                             as.character(packageVersion("susieR"))) < 1)
+      susie_args=c(list(n=d$N), susie_args)
     res=do.call(susie_rss,
                 c(list(z=z, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; #s_init=res; maxit=maxit*2

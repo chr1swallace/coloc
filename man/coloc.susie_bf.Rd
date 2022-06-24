@@ -4,7 +4,15 @@
 \alias{coloc.susie_bf}
 \title{run coloc using susie to detect separate signals}
 \usage{
-coloc.susie_bf(dataset1, bf2, p1 = 1e-04, p2 = 1e-04, p12 = 5e-06, ...)
+coloc.susie_bf(
+  dataset1,
+  bf2,
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = 5e-06,
+  susie.args = list(),
+  ...
+)
 }
 \arguments{
 \item{dataset1}{a list with specifically named elements defining the dataset

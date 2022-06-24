@@ -4,7 +4,7 @@
 \alias{combine.abf}
 \title{combine.abf}
 \usage{
-combine.abf(l1, l2, p1, p2, p12)
+combine.abf(l1, l2, p1, p2, p12, quiet = FALSE)
 }
 \arguments{
 \item{l1}{merged.df$lABF.df1}
@@ -16,6 +16,8 @@ combine.abf(l1, l2, p1, p2, p12)
 \item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
 
 \item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+
+\item{quiet}{don't print posterior summary if TRUE. default=FALSE}
 }
 \value{
 named numeric vector of posterior probabilities

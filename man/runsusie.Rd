@@ -9,6 +9,7 @@ runsusie(
   suffix = 1,
   p = NULL,
   trimz = NULL,
+  trimpeaks = NULL,
   r2.prune = NULL,
   maxit = 100,
   repeat_until_convergence = TRUE,
@@ -17,19 +18,17 @@ runsusie(
 )
 }
 \arguments{
-\item{d}{coloc dataset, must include LD (signed correlation matrix)}
+\item{d}{coloc dataset, must include LD (signed correlation matrix) and N
+(sample size)}
 
 \item{suffix}{suffix label that will be printed with any error messages}
 
-\item{p}{prior probability a snp is causal (equivalent to p1 or p2 in
-coloc.abf). By default, this is set to NULL, upon which we will set a
-small null_weight to pass to susie_rss() (see vignette a06 for details
-why). You can override this by setting p as you would p1 or p2 in a coloc
-function, but note that you may miss some true signals that way. Also note
-that neither of these options correspond to the susie_rss() defaults,
-because our goal here is not fine mapping alone.}
+\item{p}{\bold{Deprecated} Instead directly set the argument null_weight
+(prior probability of no effect) to pass directly to susie_rss().}
 
 \item{trimz}{used to trim datasets for development purposes}
+
+\item{trimpeaks}{used to trim datasets from region ends for development purposes}
 
 \item{r2.prune}{sometimes SuSiE can return multiple signals in high LD. if
 you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
