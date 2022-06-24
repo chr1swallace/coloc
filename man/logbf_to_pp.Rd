@@ -21,7 +21,7 @@ ways.}
 matrix of posterior probabilies, same dimensions as bf
 }
 \description{
-convert logbf matrix to PP matrix
+generic convenience function to convert logbf matrix to PP matrix
 }
 \author{
 Chris Wallace

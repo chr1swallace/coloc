@@ -1,3 +1,11 @@
+# coloc 5.2.0
+* update to new susieR >= 0.12.06 which requires sample size
+* general tidy up of susie-related code
+* new functions to help find subregions for finemapping - findpeaks, findends
+* updated FAQ.md
+* tidied empty items in documentation to make CRAN happy
+* slimmed down example dataset to make CRAN even happier
+
 # coloc 5.1.2
 * deprecate runsusie() argument p
 

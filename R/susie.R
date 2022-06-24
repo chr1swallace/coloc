@@ -1,45 +1,6 @@
-globalVariables(c("pp4", "i", "j"))
+globalVariables(c("pp4", "i", "j","idx"))
 
-##' convert alpha matrix to log BF matrix
-##'
-##' @title alpha_to_logbf
-##' @param alpha an L by p+1 matrix of posterior inclusion probabilites
-##' @param pi per snp prior probability of causality
-##' @return L by p+1 matrix of log BF
-##' @author Chris Wallace
-alpha_to_logbf=function(alpha,pi) {
-  n=ncol(alpha)-1 # number of snps
-  if(length(pi)==1 && pi > 1/n) # scalar pi, but too big
-    pi=1/n
-  if(length(pi)==1) { # scalar pi
-    pi=c(rep(pi,n),1-n*pi)
-  }
-  if(any(pi == 0)) { # avoid division by zero
-    pi[ pi==0 ] = 1e-16
-    pi=pi/sum(pi)
-  }
-  if(any(alpha == 0)) { # avoid division by zero
-    alpha[ alpha==0 ] = min(1e-64,min(alpha[alpha>0]))
-  }
-  ## cope with approx from runsusie
-  approx=length(pi) < ncol(alpha)
-  if(approx) { # vector pi, add on zeroes to cope with legacy runsusie version
-    nullcols=1:(ncol(alpha)-length(pi))
-    alpha0=alpha[,nullcols,drop=FALSE]
-    alpha=alpha[,-nullcols,drop=FALSE]
-    ## pi=c(rep(0, ncol(alpha)-length(pi)), pi)
-  }
-  bf_unscaled=log(alpha) - matrix(log(pi),nrow(alpha),length(pi),byrow=TRUE)
-  bf=bf_unscaled - bf_unscaled[,"null"]
-  colnames(bf)=colnames(alpha)
-  if(approx) {
-    bf0=matrix(apply(bf,1,min),nrow(bf),length(nullcols),dimnames=list(NULL,colnames(alpha0)))
-    bf=cbind(bf0,bf)
-  }
-  bf
-}
-
-##' convert logbf matrix to PP matrix
+##' generic convenience function to convert logbf matrix to PP matrix
 ##'
 ##' @title logbf 2 pp
 ##' @param bf an L by p or p+1 matrix of log Bayes factors
@@ -119,28 +80,13 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
     s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
   cs1=s1$sets
   cs2=s2$sets
-  ## cs1=susie_get_cs(s1)
-  ## cs2=susie_get_cs(s2)
   if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 )
     return(data.table(nsnps=NA))
-  ## names(cs) = paste0("L", which(include_idx))
-  ## get_idx=function(x)
-  ##   sub("L","",x) %>% as.numeric()
-  isnps=intersect(colnames(s1$lbf_variable),colnames(s2$lbf_variable))
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
-  message("Using ",length(isnps),"/ ",ncol(s1$lbf_variable)," and ",ncol(s2$lbf_variable)," available")
 
-  idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
-  idx2=cs2$cs_index #sapply(names(cs2$cs), get_idx)
-  ## calculate bayes factors, using susie's priors
-  ## if(back_calculate_lbf) {
-  ##   bf1=alpha_to_logbf(s1$alpha[idx1,,drop=FALSE], s1$pi)
-  ##   bf2=alpha_to_logbf(s2$alpha[idx2,,drop=FALSE], s2$pi)
-  ## } else {
-    bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
-    bf2=s2$lbf_variable[idx2,isnps,drop=FALSE]
-  ## }
+  idx1=cs1$cs_index
+  idx2=cs2$cs_index
+  bf1=s1$lbf_variable[idx1,,drop=FALSE]
+  bf2=s2$lbf_variable[idx2,,drop=FALSE]
 
   ret=coloc.bf_bf(bf1,bf2,...)
   ## renumber index to match
@@ -157,23 +103,12 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
   cs1=s1$sets
   if(is.null(cs1$cs) || length(cs1$cs)==0 )
     return(data.table(nsnps=NA))
-  isnps=colnames(s1$lbf_variable)
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
 
-  idx1=cs1$cs_index #sapply(names(cs1$cs), get_idx) ## use sapply here to keep set names
-  bf1=s1$lbf_variable[idx1,isnps,drop=FALSE]
+  idx1=cs1$cs_index
+  bf1=s1$lbf_variable[idx1,,drop=FALSE]
 
   ret=finemap.bf(bf1)
-  ## message("ret$summary")
-  ## print(ret$summary)
-  ## message("cs1")
-  ## print(cs1)
-  ## renumber index to match
-  idx=NULL
   ret$summary[,idx:=cs1$cs_index]
-  ## message("ret$summary")
-  ## print(ret$summary)
   ret
 }
 
@@ -183,32 +118,23 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
 ##' @param bf2 named vector of BF, names are snp ids and will be matched to column names of susie object's alpha
+##' @param susie.args named list of arguments to be passed to susieR::susie_rss()
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
-coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
+coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=list(), ...) {
   if("susie" %in% class(dataset1))
     s1=dataset1
   else
-    s1=runsusie(dataset1,suffix=1,...)
-  ## cs1=susie_get_cs(s1)
+    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
   cs1=s1$sets
   if(is.null(cs1$cs) || length(cs1$cs)==0 )
     return(data.table(nsnps=NA))
   idx1=cs1$cs_index
   ## alpha: an L by p matrix of posterior inclusion probabilites
-  isnps=setdiff(intersect(colnames(s1$lbf_variable),names(bf2)),
-                "null")
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
   bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
-  ## bf1=alpha_to_logbf(alpha=s1$alpha[idx1,,drop=FALSE], pi=s1$pi)
 
   ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
@@ -216,23 +142,13 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, ...) {
   ret
 }
 
-susie_get_cs_with_names=function(s) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
-  sets=susie_get_cs(s)
-  sets$cs=lapply(sets$cs, function(x) structure(x, names=colnames(s$alpha)[x]))
-  sets
-}
-
 ##' Finemap one dataset represented by Bayes factors
 ##'
 ##' This is the workhorse behind many finemap functions
 ##'
 ##' @title Finemap data through Bayes factors
+##' @inheritParams finemap.abf
 ##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
-##' @param p1 prior probability that a randomly chosen snp is causal for the trait
 ##' @return finemap.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -322,7 +238,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
   if("null" %in% colnames(bf2))
     bf2=bf2 - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
 
-  ## check whether isnps covers the signal for each trait by considering posterior probs for each
+  ## check whether isnps covers the signal for each trait
   pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
   pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
   ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
@@ -348,17 +264,43 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     if(any(drop))
       todo=todo[!drop,,drop=FALSE]
   }
+  ## check p12
+  if(length(p12)>1) { # only proceed if didn't need to trim snps
+    if(length(isnps)!=ncol(bf1) || length(isnps)!=ncol(bf2))
+      stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
+  }
 
-  ## restrict to snps found for both traits
-  bf1=bf1[,isnps,drop=FALSE]
-  bf2=bf2[,isnps,drop=FALSE]
-  results <- PP <- vector("list",nrow(todo)) ## perform one comparison per pair of credsets
+  ## restrict bf1/2, p1, p2, for incomplete snp overlap
+  if(length(isnps)!=ncol(bf1)) {
+    keep=match(isnps,colnames(bf1))
+    bf1=bf1[,keep,drop=FALSE]
+    if(length(p1)>1)
+      p1=p1[keep]
+  }
+  if(length(isnps)!=ncol(bf2)) {
+    keep=match(isnps,colnames(bf2))
+    bf2=bf2[,keep,drop=FALSE]
+    if(length(p2)>2)
+      p2=p2[keep]
+  }
+  ## sort p12 if length(p1)>1 || length(p2)>1
+  if(length(p12)==1) {
+    if(length(p1)>1 || length(p2)>1) {
+      p1_at_dist=min(p1)
+      p2_at_dist=min(p2)
+      c12=p12 / p1_at_dist / p2_at_dist
+      p12=p1*p2*c12
+    }
+  }
+
+  results <- PP <- vector("list",nrow(todo))
+  ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
     df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
     df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)
-    pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12)
+    pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12, quiet=TRUE)
     PP[[k]]=df$SNP.PP.H4
     if(all(is.na(df$SNP.PP.H4))) {
       df$SNP.PP.H4=0
@@ -386,18 +328,18 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     colnames(PP)="SNP.PP.H4.abf"
 
   results=cbind(results,todo[,.(idx1=i,idx2=j)])
-  ## rarely, susie puts the same cred set twice. check, and prune if found
-  ## hits=paste(results$hit1,results$hit2,sep=".")
-  ## if(any(duplicated(hits))) {
-  ##   message("trimming ",sum(duplicated(hits))," duplicate signals")
-  ##   results=results[!duplicated(hits)]
-  ##   PP=PP[,which(!duplicated(hits)),with=FALSE]
-  ## }
   PP=cbind(data.table(snp=isnps),PP)
   list(summary=results,
        results=PP,
-       priors=c(p1=p1,p2=p2,p12=p12))
+       priors=if(length(p1)==1 && length(p2)==1 && length(p12)==1) {
+                c(p1=p1,p2=p2,p12=p12)
+              } else {
+                list(p1=p1,p2=p2,p12=p12)
+              })
 }
+
+
+
 
 ##' run susie_rss storing some additional information for coloc
 ##'
@@ -405,12 +347,6 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' @param d coloc dataset, must include LD (signed correlation matrix) and N
 ##'   (sample size)
 ##' @param suffix suffix label that will be printed with any error messages
-##' @param p \bold{Deprecated} Instead directly set the argument null_weight
-##'   (prior probability of no effect) to pass directly to susie_rss().
-##' @param trimz used to trim datasets for development purposes
-##' @param r2.prune sometimes SuSiE can return multiple signals in high LD. if
-##'   you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
-##'   greater than r2.prune
 ##' @param maxit maximum number of iterations for the first run of susie_rss().
 ##'   If susie_rss() does not report convergence, runs will be extended assuming
 ##'   repeat_until_convergence=TRUE. Most users will not need to change this
@@ -437,63 +373,34 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
 ##' result=runsusie(coloc_test_data$D1)
 ##' summary(result)
 ##' @author Chris Wallace
-runsusie=function(d,suffix=1,p=NULL,
-                  trimz=NULL,r2.prune=NULL,
+runsusie=function(d,suffix=1,
                   maxit=100,repeat_until_convergence=TRUE,
                   s_init=NULL, ...) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
-  ## if(!is.null(ld.prune) && !is.null(ld.merge))
-  ##   stop("please specicify at most one of ld.prune and ld.merge")
   check_dataset(d,suffix,req=c("beta","varbeta","LD","snp","N"))
   check_ld(d,d$LD)
   ##make copies of z and LD so we can subset if needed
-  if(!"z" %in% names(d))
+  if(!("z" %in% names(d)))
     z=d$beta/sqrt(d$varbeta)
   else
     z=d$z
   LD=d$LD[d$snp,d$snp] # just in case
   names(z)=d$snp
   snp=d$snp
-  if(!is.null(trimz) && trimz!=0) {
-    dbak=d
-    keep=abs(z) > abs(trimz)
-    message("trimming to subset of SNPs with |z| > ",trimz," : ",sum(keep)," / ",length(keep))
-    z=z[keep]
-    LD=LD[which(keep),which(keep)]
-    snp=snp[keep]
-  }
+
   converged=FALSE;
   ## set some defaults for susie arguments
   susie_args=list(...)
-  ## if(!("z_ld_weight" %in% names(susie_args))) {
-  ##   if(!is.null(nref))
-  ##     ## stop("Please give nref, the number of samples used to estimate the LD matrix")
-  ##     susie_args$z_ld_weight=1/nref
-  ## }
   if("max_iter" %in% names(susie_args)) {
     maxit=susie_args$max_iter
     susie_args = susie_args[ setdiff(names(susie_args), "max_iter") ]
   }
 
-  if(!is.null(p)) {
-    warning("Argument p is deprecated and has no effect. Set null_weight instead")
-  }
-
   while(!converged) {
     message("running max iterations: ",maxit)
-  ## if(!is.null(s_init)) {
-  ##   res=do.call(susieR::susie_rss,
-  ##               c(list(z=z, R=LD, max_iter=maxit, s_init=s_init), susie_args))
-  ##   ## res0=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init)
-  ##   ## res1=susie_rss(z=z,R=LD,z_ld_weight=1/nref,max_iter=maxit,s_init=s_init,
-  ##   ##                null_weight=susie_args$null_weight)
-  ##   ## res1$sets
-  ## } else {
+    ## at 0.12.6 susieR introduced need for n = sample size
+    susie_args=c(list(n=d$N), susie_args)
     res=do.call(susie_rss,
-                c(list(z=z, n=d$N, R=LD, max_iter=maxit), susie_args))
+                c(list(z=z, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; #s_init=res; maxit=maxit*2
     message("\tconverged: ",converged)
     if(!converged && repeat_until_convergence==FALSE)
@@ -509,41 +416,26 @@ runsusie=function(d,suffix=1,p=NULL,
   res$sld=.susie_setld(res$sets$cs,LD)
   res$pruned=FALSE
 
-  ## prune sets in high LD
-  if(!is.null(r2.prune))
-    res=.susie_prune(res,r2.prune)
+  ## ## prune sets in high LD
+  ## if(!is.null(r2.prune))
+  ##   res=.susie_prune(res,r2.prune)
 
-  ## ## merge sets in high LD
-  ## if(!is.null(r2.merge)) {
-  ##   s=res$sets$cs
-  ##   if(length(s)>1) {
-  ##     ## trim null if present
-  ##     sld=.susie_setld(s,LD)
-  ##     wh=which(sld>r2.prune,arr.ind=TRUE)
-  ##     while(length(wh)) {
-  ##       message("merging sets in high LD")
-  ##       wh=which(sld==max(sld),arr.ind=TRUE) # make sure we merge one pair at a time
-  ##       res = .susie_mergesets(res, wh)
-  ##       wh=which(sld>r2.merge,arr.ind=TRUE)
-  ##     }
-  ##   }
+  ## if(!all(keep)) {
+  ##   res$trimz=trimz
+  ##   res$trimpeaks=trimpeaks
+  ##   snps_to_add=setdiff(dbak$snp,snp)
+  ##   res$pip=c(structure(rep(0,length(snps_to_add)), names=snps_to_add),
+  ##             res$pip)
+  ##   res$alpha=cbind(matrix(apply(res$alpha,1,min,na.rm=TRUE),
+  ##                          nrow(res$alpha),length(snps_to_add),
+  ##                          dimnames=list(rownames(res$alpha),snps_to_add)),
+  ##                   res$alpha)
+  ##   res$alpha=res$alpha/matrix(rowSums(res$alpha),nrow(res$alpha),ncol(res$alph))
+  ##   res$lbf_variable=cbind(matrix(apply(res$lbf_variable,1,min,na.rm=TRUE),
+  ##                                 nrow(res$lbf_variable),length(snps_to_add),
+  ##                                 dimnames=list(rownames(res$lbf_variable),snps_to_add)),
+  ##                          res$lbf_variable)
   ## }
-
-  if(!is.null(trimz) && trimz!=0) {
-    res$trimz=trimz
-    snps_to_add=setdiff(dbak$snp,snp)
-    res$pip=c(structure(rep(0,length(snps_to_add)), names=snps_to_add),
-              res$pip)
-    res$alpha=cbind(matrix(apply(res$alpha,1,min,na.rm=TRUE),
-                           nrow(res$alpha),length(snps_to_add),
-                           dimnames=list(rownames(res$alpha),snps_to_add)),
-                    res$alpha)
-    res$alpha=res$alpha/matrix(rowSums(res$alpha),nrow(res$alpha),ncol(res$alph))
-    res$lbf_variable=cbind(matrix(apply(res$lbf_variable,1,min,na.rm=TRUE),
-                                  nrow(res$lbf_variable),length(snps_to_add),
-                                  dimnames=list(rownames(res$lbf_variable),snps_to_add)),
-                           res$lbf_variable)
-  }
   res
 }
 

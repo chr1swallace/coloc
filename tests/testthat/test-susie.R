@@ -19,9 +19,10 @@ test_that("adding dimnames", {
   expect_equal(colnames(result.nonull$alpha), c(D1$snp))
 })
 
-test_that("runsusie argument p is deprecated", {
-  expect_warning(runsusie(D1,p=pi0), "Argument p is deprecated")
-})
+## p now removed
+## test_that("runsusie argument p is deprecated", {
+##   expect_warning(runsusie(D1,p=pi0), "Argument p is deprecated")
+## })
 
 test_that("null_weight=0 and null_weight=NULL are equivalent", {
   # Confirm that upstream susieR behavior hasn't changed

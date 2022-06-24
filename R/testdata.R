@@ -94,15 +94,15 @@ make_data=function(data) {
 
   snpnames=make.unique(colnames(X2))
   maf <- colMeans(data$X3)/2
-  names(maf) <- snpnames
+  ## names(maf) <- snpnames
   LD <- cor(data$X3)
   nsnp=length(maf)
   dimnames(LD)=list(snpnames,snpnames)
   b1 <- get.beta(tests1,colnames(LD))
   b2 <- get.beta(tests2,colnames(LD))
 
-return(list(D1=list(beta=b1$beta,
-             varbeta=b1$varbeta,
+return(list(D1=list(beta=unname(b1$beta),
+             varbeta=unname(b1$varbeta),
              N=nrow(X1),
              sdY=sd(Y1),
              type="quant",
@@ -110,8 +110,8 @@ return(list(D1=list(beta=b1$beta,
              LD=LD,
              snp=names(b1$beta),
              position=1:nsnp),
-  D2=list(beta=b2$beta,
-             varbeta=b2$varbeta,
+  D2=list(beta=unname(b2$beta),
+             varbeta=unname(b2$varbeta),
              N=nrow(X2),
              sdY=sd(Y2),
              type="quant",
@@ -168,7 +168,8 @@ N2=make_data(null)[[2]]
   summary(runsusie(D5,coverage=0.1))  # lower coverage
   summary(runsusie(D5,coverage=0.01)) # even lower
 
-  coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4,N1=N1,N2=N2,causals=causals)
+  coloc_test_data=list(D1=D1,D2=D2,D3=D3,D4=D4,#N1=N1,N2=N2,
+                       causals=causals)
   save(coloc_test_data, file="data/coloc_test_data.rda", compress="xz")
 
 }

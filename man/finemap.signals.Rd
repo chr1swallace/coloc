@@ -11,7 +11,8 @@ finemap.signals(
   r2thr = 0.01,
   sigsnps = NULL,
   pthr = 1e-06,
-  maxhits = 3
+  maxhits = 3,
+  return.pp = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ expressed as a numeric vector, whose \emph{names} are the snp names}
 
 \item{maxhits}{maximum depth of conditioning. procedure will stop if p >
 pthr OR abs(z)<zthr OR maxhits hits have been found.}
+
+\item{return.pp}{if FALSE (default), just return the hits. Otherwise return vectors of PP}
 
 \item{mask}{use masking if TRUE, otherwise conditioning. defaults to TRUE}
 }

@@ -7,9 +7,6 @@
 runsusie(
   d,
   suffix = 1,
-  p = NULL,
-  trimz = NULL,
-  r2.prune = NULL,
   maxit = 100,
   repeat_until_convergence = TRUE,
   s_init = NULL,
@@ -21,15 +18,6 @@ runsusie(
 (sample size)}
 
 \item{suffix}{suffix label that will be printed with any error messages}
-
-\item{p}{\bold{Deprecated} Instead directly set the argument null_weight
-(prior probability of no effect) to pass directly to susie_rss().}
-
-\item{trimz}{used to trim datasets for development purposes}
-
-\item{r2.prune}{sometimes SuSiE can return multiple signals in high LD. if
-you set r2.prune to a value between 0 and 1, sets with index SNPs with LD
-greater than r2.prune}
 
 \item{maxit}{maximum number of iterations for the first run of susie_rss().
 If susie_rss() does not report convergence, runs will be extended assuming

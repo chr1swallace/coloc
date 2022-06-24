@@ -61,6 +61,4 @@ Plot a coloc structured dataset
 }
 \author{
 Chris Wallace
-
-Chris Wallace
 }

@@ -9,7 +9,7 @@ finemap.bf(bf1, p1 = 1e-04)
 \arguments{
 \item{bf1}{named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)}
 
-\item{p1}{prior probability that a randomly chosen snp is causal for the trait}
+\item{p1}{prior probability a SNP is associated with the trait 1, default 1e-4}
 }
 \value{
 finemap.signals style result
