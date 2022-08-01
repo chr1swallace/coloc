@@ -173,10 +173,10 @@ print.coloc_abf <- function(x,...) {
 ##' @rdname plot-methods
 ##' @author Chris Wallace
 plot.coloc_abf <- function(x,...) {
-  x=x$results
+  x=as.data.table(x$results)
   if(!("position" %in% names(x)))
     x$position <- 1:nrow(x)
-  m=melt(x,id.vars=c("snp","position"), measure.vars=grep("z.df",names(x),value=TRUE))
+  m= melt(x,id.vars=c("snp","position"), measure.vars=grep("z.df",names(x),value=TRUE))
   m2=melt(x,id.vars=c("snp","position"), measure.vars=grep("PP",names(x),value=TRUE))
   setnames(m2,"value","pp")
   if(length(grep("row",m$variable))) {
