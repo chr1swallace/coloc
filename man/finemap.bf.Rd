@@ -7,7 +7,7 @@
 finemap.bf(bf1, p1 = 1e-04)
 }
 \arguments{
-\item{bf1}{named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)}
+\item{bf1}{named vector of log BF, or matrix of log BF with colnames (cols=snps, rows=signals)}
 
 \item{p1}{prior probability a SNP is associated with the trait 1, default 1e-4}
 }
