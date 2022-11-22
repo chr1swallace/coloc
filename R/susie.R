@@ -394,11 +394,12 @@ runsusie=function(d,suffix=1,
     maxit=susie_args$max_iter
     susie_args = susie_args[ setdiff(names(susie_args), "max_iter") ]
   }
+  ## at 0.12.6 susieR introduced need for n = sample size
+  if(!("n" %in% names(susie_args)))
+	  susie_args=c(list(n=d$N), susie_args)
 
   while(!converged) {
     message("running max iterations: ",maxit)
-    ## at 0.12.6 susieR introduced need for n = sample size
-    susie_args=c(list(n=d$N), susie_args)
     res=do.call(susie_rss,
                 c(list(z=z, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; #s_init=res; maxit=maxit*2
