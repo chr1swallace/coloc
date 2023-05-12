@@ -117,7 +117,7 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##'
 ##' @title run coloc using susie to detect separate signals
 ##' @inheritParams coloc.signals
-##' @param bf2 named vector of BF, names are snp ids and will be matched to column names of susie object's alpha
+##' @param bf2 named vector of log BF, names are snp ids and will be matched to column names of susie object's alpha
 ##' @param susie.args named list of arguments to be passed to susieR::susie_rss()
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
@@ -148,7 +148,7 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
 ##'
 ##' @title Finemap data through Bayes factors
 ##' @inheritParams finemap.abf
-##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @param bf1 named vector of log BF, or matrix of log BF with colnames (cols=snps, rows=signals)
 ##' @return finemap.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -211,8 +211,8 @@ finemap.bf=function(bf1, p1=1e-4) {
 ##'
 ##' @title Coloc data through Bayes factors
 ##' @inheritParams coloc.signals
-##' @param bf1 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
-##' @param bf2 named vector of BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @param bf1 named vector of log BF, or matrix of BF with colnames (cols=snps, rows=signals)
+##' @param bf2 named vector of log BF, or matrix of BF with colnames (cols=snps, rows=signals)
 ##' @param trim_by_posterior it is important that the signals to be colocalised
 ##'   are covered by adequate numbers of snps in both datasets. If TRUE, signals
 ##'   for which snps in common do not capture least overlap.min proportion of
@@ -394,11 +394,12 @@ runsusie=function(d,suffix=1,
     maxit=susie_args$max_iter
     susie_args = susie_args[ setdiff(names(susie_args), "max_iter") ]
   }
+  ## at 0.12.6 susieR introduced need for n = sample size
+  if(!("n" %in% names(susie_args)))
+	  susie_args=c(list(n=d$N), susie_args)
 
   while(!converged) {
     message("running max iterations: ",maxit)
-    ## at 0.12.6 susieR introduced need for n = sample size
-    susie_args=c(list(n=d$N), susie_args)
     res=do.call(susie_rss,
                 c(list(z=z, R=LD, max_iter=maxit), susie_args))
     converged=res$converged; #s_init=res; maxit=maxit*2

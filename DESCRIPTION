@@ -17,7 +17,7 @@ Suggests:
     rmarkdown,
     snpStats
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 5.2.0
+Version: 5.2.1
 Date: 2022-06-24
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),

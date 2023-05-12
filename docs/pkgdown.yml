@@ -1,5 +1,5 @@
-pandoc: '2.3'
-pkgdown: 1.6.1
+pandoc: '0'
+pkgdown: 2.0.4
 pkgdown_sha: ~
 articles:
   a01_intro: a01_intro.html
@@ -8,7 +8,7 @@ articles:
   a04_sensitivity: a04_sensitivity.html
   a05_conditioning: a05_conditioning.html
   a06_SuSiE: a06_SuSiE.html
-last_built: 2021-06-09T15:26Z
+last_built: 2022-06-24T14:13Z
 urls:
   reference: https://chr1swallace.github.io/coloc/reference
   article: https://chr1swallace.github.io/coloc/articles
