@@ -46,7 +46,7 @@ See vignette: [enumeration](a03_enumeration.html)
 
 ## Sensitivity analysis
 
-As a Bayesian method, coloc.abf() requires the user to specify prior probabilities of SSNP causality and colocalisation.  Post-hoc sensitivity analysis can be used to assess whether results are robust across a range of plausible priors.
+As a Bayesian method, coloc.abf() requires the user to specify prior probabilities of SNP causality and colocalisation.  Post-hoc sensitivity analysis can be used to assess whether results are robust across a range of plausible priors.
 
 See vignette: [sensitivity](a04_sensitivity.html)
 

@@ -2,9 +2,18 @@ library(coloc)
 data(coloc_test_data)
 attach(coloc_test_data)
 
-test_that("missing required elements throws error", {
+B1=C1=D1
+C1[c("type","s")]=list(type="cc",s=0.5)
+B1[c("type","s")]=list(type="cc",s=2)
+
+test_that("missing or bad required elements throws error", {
   expect_null(check_dataset(D1, req = names(D1)))
   expect_error(check_dataset(D1, req = "test"))
+  ## type="cc" and s
+  expect_null(check_dataset(C1))
+  expect_error(check_dataset(B1))
+  expect_that(check_dataset(list(), ""), throws_error())
+  expect_that(check_dataset(list(beta=1,p=2,type="blah"), ""), throws_error())
 })
 
 test_that("LD matrix must have dimnames", {

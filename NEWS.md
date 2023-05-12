@@ -1,3 +1,6 @@
+# coloc 5.2.2
+* better checking of dataset inputs, and better documentation of what that data should look like
+
 # coloc 5.2.0
 * update to new susieR >= 0.12.06 which requires sample size
 * general tidy up of susie-related code
@@ -70,17 +73,17 @@
 # coloc 2.3-2 
 - tidied code relating mainly to proportional
 - colocalisation testing methods, making more methods confirm to S4.
-- pcs.prepare now imputates missing genotypes by default
+- pcs.prepare now imputes missing genotypes by default
 2013-05-22 
 
 # coloc 2.3 
 ## coloc BUGFIX
-- Introduced a function to estimate trait variance from supplied coefficients and standard errors.  This is used within the approach implemented in coloc.abf(), and replaces the earlier version which implicity assumed that var(Y)=1 for quantitative traits, which could lead to incorrect inference when var(Y) was far from 1.
+- Introduced a function to estimate trait variance from supplied coefficients and standard errors.  This is used within the approach implemented in coloc.abf(), and replaces the earlier version which implicitly assumed that var(Y)=1 for quantitative traits, which could lead to incorrect inference when var(Y) was far from 1.
 
 2013-09-25  
 
 # coloc 2.2
-- Merged coloc.abf and coloc.abf.imputed(), so that datasets for wheich beta, var(beta) are available can be matched to datasets with only p values and maf.2 This means the arguments to coloc.abf() have been changed!  Please
+- Merged coloc.abf and coloc.abf.imputed(), so that datasets for which beta, var(beta) are available can be matched to datasets with only p values and maf.2 This means the arguments to coloc.abf() have been changed!  Please
 check ?coloc.abf for the new function.
 
 2013-19-06  

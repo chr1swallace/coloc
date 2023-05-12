@@ -10,7 +10,7 @@ globalVariables(c("pp4", "i", "j","idx"))
 ##'   bf matrix relates to the null hypothesis of no association. This is
 ##'   standard for SuSiE results, but may not be for BF constructed in other
 ##'   ways.
-##' @return matrix of posterior probabilies, same dimensions as bf
+##' @return matrix of posterior probabilities, same dimensions as bf
 ##' @author Chris Wallace
 logbf_to_pp=function(bf,pi, last_is_null) {
   n=if(last_is_null) {

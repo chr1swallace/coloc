@@ -1,30 +1,31 @@
-library(snpStats)
-data(testdata)
-X <- Autosomes[,101:201]
-cs <- col.summary(X)
-X <- X[, cs[,"MAF"]>0.05 & cs[,"Call.rate"]>0.9]
-maf <- col.summary(X)[,"MAF"]
+## library(snpStats)
+## data(testdata)
 set.seed(42)
+X <- do.call("cbind", lapply(runif(100,0.05,0.5), function(maf) rbinom(400,2,maf)))
+colnames(X)=paste0("S",1:ncol(X))
+maf <- colMeans(X)/2
 
 ## quantitative trait
-Y<-rnorm(nrow(X),mean=as(X[,8],"numeric"),sd=4) + rnorm(nrow(X),sd=2)
-eff<-snp.rhs.estimates(Y ~ 1, snp.data=X, family="gaussian")
-beta.q <- sapply(eff@.Data, "[[", "beta")
-vbeta.q <- sapply(eff@.Data, "[[", "Var.beta")
+Y<-rnorm(nrow(X),mean=as(X[,1],"numeric"),sd=4) + rnorm(nrow(X),sd=2)
+m=sapply(1:ncol(X), function(i) {
+    mod=lm(Y ~ X[,i])
+    c(coefficients(mod)[-1], vcov(mod)[-1,-1])
+})
+beta.q <- m[1,]
+vbeta.q <- m[2,]
 p.q <- pchisq(beta.q^2/vbeta.q,df=1,lower.tail=FALSE)
 sd.est <- suppressWarnings(coloc:::sdY.est(vbeta=vbeta.q, maf=maf, n=nrow(X)))
 
 ## case-control trait
-cc <- rbinom(nrow(X),1, p=(1+as(X[,8],"numeric"))/4)
-eff<-snp.rhs.estimates(cc ~ 1, snp.data=X, family="binomial")
-beta.cc <- sapply(eff@.Data, "[[", "beta")
-vbeta.cc <- sapply(eff@.Data, "[[", "Var.beta")
+cc <- rbinom(nrow(X),1, p=(1+as(X[,1],"numeric"))/4)
+m=sapply(1:ncol(X), function(i) {
+    mod=glm(cc ~ X[,i], family="binomial")
+    c(coefficients(mod)[-1], vcov(mod)[-1,-1])
+})
+beta.cc <- m[1,]
+vbeta.cc <- m[2,]
 p.cc <- pchisq(beta.cc^2/vbeta.cc,df=1,lower.tail=FALSE)
 
-## general things
-test_that("sdY.est", {
-  expect_true(abs(sd.est - sd(Y)) < 0.1)
-})
 DQ <- list(beta=beta.q,
            varbeta=vbeta.q,
            type="quant",
@@ -58,6 +59,10 @@ PCC.bad <- list(pvalues=p.cc,
             s=sum(cc),
             N=nrow(X))
 
+## general things
+test_that("sdY.est", {
+  expect_true(abs(sd.est - sd(Y)) < 0.1)
+})
 
 RESULTS <- suppressWarnings(list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
                                  dp = coloc.abf(dataset1=DQ,dataset2=PCC),
@@ -66,13 +71,10 @@ RESULTS <- suppressWarnings(list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
 lapply(RESULTS,"[[","summary")
 
 test_that("process.dataset", {
-  expect_that(process.dataset(list(), ""), throws_error())
-  expect_that(process.dataset(list(beta=1,p=2,type="blah"), ""), throws_error())
   expect_error(process.dataset(DQ,suffix=".q"), NA)
   expect_error(process.dataset(DCC,suffix=".q"), NA)
   expect_error(process.dataset(PQ,suffix=".q"), NA)
   expect_error(process.dataset(PCC,suffix=".q"), NA)
-  expect_error(process.dataset(PCC.bad,suffix=".q"))
   pd.cc <- process.dataset(DCC,suffix=".cc")
   pd.q <- process.dataset(DQ,suffix=".q")
   expect_is(pd.q,"data.frame")
@@ -88,21 +90,5 @@ test_that("coloc.abf", {
     expect_true(which.max(result$summary[-1]) == 5)
     expect_true(result$summary[1] == ncol(X))
 })
-
-
-## alternative test data
-## colocdata<- read.table("inst/tests/test.txt", sep="\t", header=T)
-## N <- 18124
-## result <- coloc.abf(dataset1=list(beta=colocdata$beta.dataset1,
-##             varbeta=colocdata$varbeta.dataset1,
-##             type="quant",
-##             snp=colocdata$SNP,
-##             N=N),
-##           dataset2=list(beta=colocdata$beta.dataset1,
-##             varbeta=colocdata$varbeta.dataset1,
-##             type="quant",
-##             snp=colocdata$SNP,
-##             N=N),
-##           MAF=colocdata$MAF)
 
 

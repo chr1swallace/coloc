@@ -13,7 +13,12 @@ articles:
   - a03_enumeration
   - a04_sensitivity
   - a06_SuSiE
+  - a05_conditioning
 reference:
+  - title: Coloc data structure
+    desc: Description of coloc data structure
+    contents:
+      - '`check_dataset`'
   - title: Bayesian enumeration of hypotheses
     desc: Two trait colocalisation and single trait fine mapping under
       single causal variant assumptions
@@ -29,3 +34,38 @@ reference:
     contents:
       - '`coloc.susie`'
       - '`runsusie`'
+  - title: Others
+    desc: included for completeness, but the main functions you need should be in the sections above
+    contents:
+      - '`Var.data`'
+      - '`Var.data.cc`'
+      - '`approx.bf.estimates`'
+      - '`approx.bf.p`'
+      - '`bin2lin`'
+      - '`check_alignment`'
+      - '`coloc-package`'
+      - '`coloc.bf_bf`'
+      - '`coloc.detail`'
+      - '`coloc.process`'
+      - '`coloc.signals`'
+      - '`coloc.susie_bf`'
+      - '`coloc_test_data`'
+      - '`combine.abf`'
+      - '`est_cond`'
+      - '`estgeno.1.ctl`'
+      - '`find.best.signal`'
+      - '`findends`'
+      - '`findpeaks`'
+      - '`finemap.bf`'
+      - '`finemap.signals`'
+      - '`logbf_to_pp`'
+      - '`logdiff`'
+      - '`logsum`'
+      - '`map_cond`'
+      - '`map_mask`'
+      - '`plot.coloc_abf`'
+      - '`plot_dataset`'
+      - '`print.coloc_abf`'
+      - '`process.dataset`'
+      - '`sdY.est`'
+      - '`subset_dataset`'

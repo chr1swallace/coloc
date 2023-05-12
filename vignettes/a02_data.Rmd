@@ -12,7 +12,7 @@ vignette: >
 # Data structures
 
   The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.html) and [`coloc.susie`](a06_SuSiE.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.
-  
+
 ## First: select the SNPs to study.
 
 SNPs must
@@ -27,14 +27,19 @@ the user can look at their data, identify a region with overlapping GWAS signals
 between two studies, and decide on the set of SNPs to include.  Some utilities are provided which can help check regions are sensible.
 
 Please do include all SNPs you have in the region: do not trim by significance or MAF or other means.  Coloc enumerates all possible configureations of shared and non-shared causal variants and evaluates their relative support; it cannot do this if it does not have all the SNPs available.
-  
+
 ## A minimum coloc dataset
 
-Colocalisation and fine-mapping work through evaluating approximate Bayes factors summarising evidence for association at each SNP.  This requires knowing the estimated effect size $\beta$ and its uncertainty $var(\beta)$.  $var(\beta)$ is the standard error of $\beta$, squared.  It is also good practice to supply SNP names, and SNP positions.
+Colocalisation and fine-mapping work through evaluating approximate Bayes factors summarising evidence for association at each SNP.  This requires knowing the estimated effect size $\beta$ (`beta`) and its uncertainty $var(\beta)$ (`varbeta`). $var(\beta)$ is the standard error of $\beta$, squared.  It is also good practice to supply SNP names (`snp`), and SNP positions (`position`) are useful if you want to use coloc's `plot_dataset()`.
 
 We also need a prior on the true effect sizes at causal variants, which is different depending on whether you have a quantitative or case-control (binary) trait.  To estimate a prior, we need to know the trait standard deviation (which allows us to interpret the scale of the estimated beta).
 
-Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait. `check_dataset()` returns NULL if it finds no errors.  It will stop with error if there are issues that absolutely must be fixed to run coloc, but may print warnings if it sees something merely suspicious - eg if there is no strong signal of association.  The warning doesn't mean you can't run coloc - it is perfectly valid to assess that there is only evidence for association in one of your datasets, but it may alert you to check something if you *thought* there was strong association there.  One common mistake is to use the standard error of beta in place of the variance of beta.  If your dataset provides the standard error, simply square it to get the variance.
+A minimum coloc dataset is a **list**, containing a mix of vectors (values that vary across snps, such as effect sizes `beta` or variance of beta `varbeta`) and scalars (values assumed to be constant across snps, such as sample size [`N`] or data type [`type="cc"` for case control or `type="quant"` for quantitative]). See `?check_dataset` for the full set of entries, some combination of which are compulsory.
+
+It can be useful to run `check_dataset()` on each of your datasets if coloc functions aren't running.  It will return NULL if it finds no errors.  It will stop with error if there are issues that absolutely must be fixed to run coloc, but may print warnings if it sees something merely suspicious - eg if there is no strong signal of association.  
+
+Coloc comes with test data, so you can explore the structure for a quantitative trait.  Here we show the minimum dataset needed for a quantitative trait.
+
 ```{r   }
 library(coloc)
 data(coloc_test_data)
@@ -43,6 +48,10 @@ minimum_data=D1[c("beta","varbeta","snp","position","type","sdY")]
 str(minimum_data)
 check_dataset(minimum_data,warn.minp=1e-10)
 ```
+Here we see (from `str`) that `minimum_data` is a list. It has vector entries beta, varbeta, snp and position, all of the same length (the number of snps in the region) and scalar entries for type and sdY (the standard deviation of the quantitative trait).
+
+`check_dataset()` issues a **warning** that the minimum p value exceeds `warn.minp`. (The default value for `warn.minp` is 10^{-6}). The warning doesn't mean you can't run coloc - it is perfectly valid to assess that there is only evidence for association in one of your datasets, but it may alert you to check something if you *thought* there was strong association there.  One common mistake is to use the standard error of beta in place of the variance of beta.  If your dataset provides the standard error, simply square it to get the variance.
+
 It's also useful to plot your datasets, and check 
 * coverage is dense
 * the level of association matches your expectation
@@ -126,7 +135,7 @@ To avoid hassles, I recommend:
 * Otherwise, check the alleles in your summary table match those in the information files from the LD source
 * Finally, always plot the coloc result with the [`sensitivity` function](a04_sensitivity.html) because weird effects are much easier to understand visually
 
-You can also use the coloc function `check_alignment` as a visual guide.  It comparse the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
+You can also use the coloc function `check_alignment` as a visual guide.  It compares the product of the Z scores for all SNP pairs against their correlation, and plots a histogram of this ratio for SNPs in some degree of LD.  We do not expect to see strongly negative products of Z scores for strongly positive correlations or vice versa.  Therefore this plot *should be* skewed to have more positive values than negative.  Here I show a good (left) and bad (right) example.
 
 ```{r,echo=FALSE}
 goodD=D1

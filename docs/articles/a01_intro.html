@@ -26,6 +26,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -38,23 +40,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">5.2.2</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -75,6 +71,9 @@
     <li>
       <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
+    <li>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -83,7 +82,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/chr1swallace/coloc/">
+  <a href="https://github.com/chr1swallace/coloc/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -101,12 +100,14 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Coloc: a package for colocalisation analyses</h1>
-                        <h4 class="author">Chris Wallace</h4>
+      <h1 data-toc-skip>Coloc: a package for colocalisation
+analyses</h1>
+                        <h4 data-toc-skip class="author">Chris
+Wallace</h4>
             
-            <h4 class="date">2021-06-09</h4>
+            <h4 data-toc-skip class="date">2023-05-12</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a01_intro.Rmd"><code>vignettes/a01_intro.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/HEAD/vignettes/a01_intro.Rmd" class="external-link"><code>vignettes/a01_intro.Rmd</code></a></small>
       <div class="hidden name"><code>a01_intro.Rmd</code></div>
 
     </div>
@@ -114,48 +115,75 @@
     
     
 <p><a id="org63a948f"></a></p>
-<div id="a-brief-outline-of-colocalisation-analysis" class="section level1">
-<h1 class="hasAnchor">
-<a href="#a-brief-outline-of-colocalisation-analysis" class="anchor"></a>A brief outline of colocalisation analysis</h1>
-<p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region. There are a few key references which this vignette will not duplicate (see below).</p>
-<p>In brief, two approaches can be implemented. The proportional testing approach <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup><sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup> has now been moved to its own package, coloc.prop.</p>
+<div class="section level2">
+<h2 id="a-brief-outline-of-colocalisation-analysis">A brief outline of colocalisation analysis<a class="anchor" aria-label="anchor" href="#a-brief-outline-of-colocalisation-analysis"></a>
+</h2>
+<p>The coloc package can be used to perform genetic colocalisation
+analysis of two potentially related phenotypes, to ask whether they
+share common genetic causal variant(s) in a given region. There are a
+few key references which this vignette will not duplicate (see
+below).</p>
+<p>In brief, two approaches can be implemented. The proportional testing
+approach <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup><sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup> has now been
+moved to its own package, coloc.prop.</p>
 <p>This package implements the more population enumeration approach.</p>
-<p>You can read about how to prepare your data in <a href="a02_data.html">this vignette</a> or read the vignettes listed in one of the sections below to understand how coloc works.</p>
-<div id="a-single-causal-variant-assumption" class="section level2">
-<h2 class="hasAnchor">
-<a href="#a-single-causal-variant-assumption" class="anchor"></a>A single causal variant assumption</h2>
-<p>Claudia Giambartolomei and Vincent Plagnol proposed the enumeration method, which makes use of Jon Wakefield’s work on determining approximate Bayes Factors from p values <sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate a colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>, implemented in the function <code><a href="../reference/coloc.abf.html">coloc.abf()</a></code>. By assuming there is at most one causal variant per trait, every possible configuration can be individually enumerated and evaluated, and aggregating over these allows us to gauge the relative support for models which support colocalisation to those that don’t.</p>
-<p>You can see more about the enumeration approach on <a href="https://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/">this blogpost</a>.</p>
+<p>You can read about how to prepare your data in <a href="a02_data.html">this vignette</a> or read the vignettes listed in
+one of the sections below to understand how coloc works.</p>
+<div class="section level3">
+<h3 id="a-single-causal-variant-assumption">A single causal variant assumption<a class="anchor" aria-label="anchor" href="#a-single-causal-variant-assumption"></a>
+</h3>
+<p>Claudia Giambartolomei and Vincent Plagnol proposed the enumeration
+method, which makes use of Jon Wakefield’s work on determining
+approximate Bayes Factors from p values
+<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup> to generate
+a colocalisation analysis <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>, implemented in the function
+<code><a href="../reference/coloc.abf.html">coloc.abf()</a></code>. By assuming there is at most one causal
+variant per trait, every possible configuration can be individually
+enumerated and evaluated, and aggregating over these allows us to gauge
+the relative support for models which support colocalisation to those
+that don’t.</p>
+<p>You can see more about the enumeration approach on <a href="https://haldanessieve.org/2013/05/21/our-paper-bayesian-test-for-co-localisation-between-pairs-of-genetic-association-studies-using-summary-statistics/" class="external-link">this
+blogpost</a>.</p>
 <p>See vignette: <a href="a03_enumeration.html">enumeration</a></p>
 </div>
-<div id="sensitivity-analysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#sensitivity-analysis" class="anchor"></a>Sensitivity analysis</h2>
-<p>As a Bayesian method, coloc.abf() requires the user to specify prior probabilities of SSNP causality and colocalisation. Post-hoc sensitivity analysis can be used to assess whether results are robust across a range of plausible priors.</p>
+<div class="section level3">
+<h3 id="sensitivity-analysis">Sensitivity analysis<a class="anchor" aria-label="anchor" href="#sensitivity-analysis"></a>
+</h3>
+<p>As a Bayesian method, coloc.abf() requires the user to specify prior
+probabilities of SNP causality and colocalisation. Post-hoc sensitivity
+analysis can be used to assess whether results are robust across a range
+of plausible priors.</p>
 <p>See vignette: <a href="a04_sensitivity.html">sensitivity</a></p>
 </div>
-<div id="deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning" class="section level2">
-<h2 class="hasAnchor">
-<a href="#deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning" class="anchor"></a>Deprecated: relaxing the single causal variant assumption through conditioning</h2>
-<p>The single variant assumption can be relaxed through conditioning. We have implemented a conditioning step within coloc, which we hope will increase use of conditioning, and proposed an alternative, masking.</p>
+<div class="section level3">
+<h3 id="deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning">Deprecated: relaxing the single causal variant assumption through
+conditioning<a class="anchor" aria-label="anchor" href="#deprecated-relaxing-the-single-causal-variant-assumption-through-conditioning"></a>
+</h3>
+<p>The single variant assumption can be relaxed through conditioning. We
+have implemented a conditioning step within coloc, which we hope will
+increase use of conditioning, and proposed an alternative, masking.</p>
 <p>See vignette: <a href="a05_conditioning.html">conditioning/masking</a></p>
 </div>
-<div id="an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie" class="section level2">
-<h2 class="hasAnchor">
-<a href="#an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie" class="anchor"></a>An improved approach to relaxing the single causal variant assumption: SuSiE</h2>
-<p>The sum of single effects regression method proposed by Wang et al <sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup> can instead simultaneously decompose multiple signals from the marginal summary stats, and appears to work better than conditioning.</p>
+<div class="section level3">
+<h3 id="an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie">An improved approach to relaxing the single causal variant
+assumption: SuSiE<a class="anchor" aria-label="anchor" href="#an-improved-approach-to-relaxing-the-single-causal-variant-assumption-susie"></a>
+</h3>
+<p>The sum of single effects regression method proposed by Wang et al
+<sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup> can instead
+simultaneously decompose multiple signals from the marginal summary
+stats, and appears to work better than conditioning.</p>
 <p>See vignette: <a href="a06_SuSiE.html">SuSiE</a></p>
 </div>
 </div>
-<div id="footnotes" class="section level1">
-<h1 class="hasAnchor">
-<a href="#footnotes" class="anchor"></a>Footnotes</h1>
-<p><sup><a id="fn.1" href="#fnr.1">1</a></sup><a href="https://pubmed.ncbi.nlm.nih.gov/19039033/" class="uri">https://pubmed.ncbi.nlm.nih.gov/19039033/</a></p>
-<p><sup><a id="fn.2" href="#fnr.2">2</a></sup><a href="https://doi.org/10.1002/gepi.21765" class="uri">https://doi.org/10.1002/gepi.21765</a></p>
-<p><sup><a id="fn.3" href="#fnr.3">3</a></sup><a href="https://pubmed.ncbi.nlm.nih.gov/18642345/" class="uri">https://pubmed.ncbi.nlm.nih.gov/18642345/</a></p>
-<p><sup><a id="fn.4" href="#fnr.4">4</a></sup><a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383" class="uri">https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383</a></p>
-<p><sup><a id="fn.5" href="#fnr.5">5</a></sup><a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272" class="uri">https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272</a></p>
-<p><sup><a id="fn.5" href="#fnr.6">6</a></sup><a href="https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388" class="uri">https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388</a></p>
+<div class="section level2">
+<h2 id="footnotes">Footnotes<a class="anchor" aria-label="anchor" href="#footnotes"></a>
+</h2>
+<p><sup><a id="fn.1" href="#fnr.1">1</a></sup><a href="https://pubmed.ncbi.nlm.nih.gov/19039033/" class="external-link uri">https://pubmed.ncbi.nlm.nih.gov/19039033/</a></p>
+<p><sup><a id="fn.2" href="#fnr.2">2</a></sup><a href="https://doi.org/10.1002/gepi.21765" class="external-link uri">https://doi.org/10.1002/gepi.21765</a></p>
+<p><sup><a id="fn.3" href="#fnr.3">3</a></sup><a href="https://pubmed.ncbi.nlm.nih.gov/18642345/" class="external-link uri">https://pubmed.ncbi.nlm.nih.gov/18642345/</a></p>
+<p><sup><a id="fn.4" href="#fnr.4">4</a></sup><a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383" class="external-link uri">https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004383</a></p>
+<p><sup><a id="fn.5" href="#fnr.5">5</a></sup><a href="https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272" class="external-link uri">https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005272</a></p>
+<p><sup><a id="fn.5" href="#fnr.6">6</a></sup><a href="https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388" class="external-link uri">https://rss.onlinelibrary.wiley.com/doi/10.1111/rssb.12388</a></p>
 </div>
   </div>
 
@@ -170,11 +198,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
+  <p></p>
+<p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -182,6 +212,8 @@
 
   
 
+
+  
 
   </body>
 </html>

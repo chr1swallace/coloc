@@ -17,7 +17,7 @@ c(bibentry("article",
            header="Using SuSiE to accomodate multiple causal variants",
            author = "C Wallace",
            title = "{A more accurate method for colocalisation analysis allowing for multiple causal variants}",
-           journal = "{bioRxiv}",
+           journal = "{PLOS Genetics}",
            year = 2021,
-           url = "https://doi.org/10.1101/2021.02.23.432421")
+           url = "https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1009440")
   )

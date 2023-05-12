@@ -26,6 +26,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -38,23 +40,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">coloc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">5.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">5.2.2</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -75,6 +71,9 @@
     <li>
       <a href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a>
     </li>
+    <li>
+      <a href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -83,7 +82,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/chr1swallace/coloc/">
+  <a href="https://github.com/chr1swallace/coloc/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -101,114 +100,149 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Coloc: under a single causal variant assumption</h1>
-                        <h4 class="author">Chris Wallace</h4>
+      <h1 data-toc-skip>Coloc: under a single causal variant
+assumption</h1>
+                        <h4 data-toc-skip class="author">Chris
+Wallace</h4>
             
-            <h4 class="date">2021-06-09</h4>
+            <h4 data-toc-skip class="date">2023-05-12</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/master/vignettes/a03_enumeration.Rmd"><code>vignettes/a03_enumeration.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/HEAD/vignettes/a03_enumeration.Rmd" class="external-link"><code>vignettes/a03_enumeration.Rmd</code></a></small>
       <div class="hidden name"><code>a03_enumeration.Rmd</code></div>
 
     </div>
 
     
     
-<div id="fine-mapping-under-a-single-causal-variant-assumption" class="section level1">
-<h1 class="hasAnchor">
-<a href="#fine-mapping-under-a-single-causal-variant-assumption" class="anchor"></a>Fine mapping under a single causal variant assumption</h1>
-<p>The Approximate Bayes Factor colocalisation analysis described in the next section essentially works by fine mapping each trait under a single causal variant assumption and then integrating over those two posterior distributions to calculate probabilities that those variants are shared. Of course, this means we can look at each trait on its own quite simply, and we can do that with the function <code>finemap.abf</code>.</p>
-<p>First we load some simulated data. See <a href="a02_data.html">the data vignette</a> to understand how to format your datasets.</p>
+<div class="section level2">
+<h2 id="fine-mapping-under-a-single-causal-variant-assumption">Fine mapping under a single causal variant assumption<a class="anchor" aria-label="anchor" href="#fine-mapping-under-a-single-causal-variant-assumption"></a>
+</h2>
+<p>The Approximate Bayes Factor colocalisation analysis described in the
+next section essentially works by fine mapping each trait under a single
+causal variant assumption and then integrating over those two posterior
+distributions to calculate probabilities that those variants are shared.
+Of course, this means we can look at each trait on its own quite simply,
+and we can do that with the function <code>finemap.abf</code>.</p>
+<p>First we load some simulated data. See <a href="a02_data.html">the
+data vignette</a> to understand how to format your datasets.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc">coloc</a></span><span class="op">)</span></code></pre></div>
-<pre><code>## This is a new update to coloc.</code></pre>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc" class="external-link">coloc</a></span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## This is coloc version 5.2.2</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/attach.html">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></code></pre></div>
-<p>Then we analyse the statistics from a single study, asking about the evidence that each SNP in turn is solely causal for any association signal we see. As we might expect, that evidence is maximised at the SNP with the smallest p value</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span></code></pre></div>
+<p>Then we analyse the statistics from a single study, asking about the
+evidence that each SNP in turn is solely causal for any association
+signal we see. As we might expect, that evidence is maximised at the SNP
+with the smallest p value</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span><span class="op">(</span><span class="va">D1</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span><span class="op">(</span><span class="va">D1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a03_enumeration_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span><span class="op">(</span>dataset<span class="op">=</span><span class="va">D1</span><span class="op">)</span>
-<span class="va">my.res</span><span class="op">[</span><span class="fl">21</span><span class="op">:</span><span class="fl">30</span>,<span class="op">]</span></code></pre></div>
-<pre><code>##              V.       z.        r.       lABF. snp position prior       SNP.PP
-## s21 0.013574490 2.210771 0.6760490  1.08851608 s21       21 1e-04 6.993866e-06
-## s22 0.022519401 2.832099 0.5571217  1.82704569 s22       22 1e-04 1.463715e-05
-## s23 0.013008412 2.381939 0.6853070  1.36601147 s23       23 1e-04 9.230645e-06
-## s24 0.024858631 3.177590 0.5326188  2.30864180 s24       24 1e-04 2.369252e-05
-## s25 0.005031597 1.470717 0.8491729 -0.02742696 s25       25 1e-04 2.291234e-06
-## s26 0.027329180 3.027380 0.5089767  1.97676103 s26       26 1e-04 1.700111e-05
-## s27 0.029092316 2.833849 0.4933483  1.64100022 s27       27 1e-04 1.215229e-05
-## s28 0.012057181 2.079938 0.7014486  0.91287665 s28       28 1e-04 5.867297e-06
-## s29 0.009216961 1.496951 0.7545115  0.14312596 s29       29 1e-04 2.717313e-06
-## s30 0.007073637 1.725572 0.8001914  0.38612656 s30       30 1e-04 3.464762e-06</code></pre>
-<p>The <code>SNP.PP</code> column shows the posterior probability that exactly that SNP is causal. Note the last line in this data.frame does not correspond to a SNP, but to the null model, that no SNP is causal.</p>
+<code class="sourceCode R"><span><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/finemap.abf.html">finemap.abf</a></span><span class="op">(</span>dataset<span class="op">=</span><span class="va">D1</span><span class="op">)</span></span>
+<span><span class="va">my.res</span><span class="op">[</span><span class="fl">21</span><span class="op">:</span><span class="fl">30</span>,<span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">##             V.       z.        r.       lABF. snp position prior       SNP.PP</span></span>
+<span><span class="co">## 21 0.006158578 3.105184 0.8155100  3.08656163 s21       21 1e-04 1.026731e-11</span></span>
+<span><span class="co">## 22 0.006047354 3.010816 0.8182363  2.85613791 s22       22 1e-04 8.154269e-12</span></span>
+<span><span class="co">## 23 0.017869410 1.247449 0.6037164  0.00691776 s23       23 1e-04 4.720461e-13</span></span>
+<span><span class="co">## 24 0.005427008 3.746694 0.8337827  4.95497248 s24       24 1e-04 6.651159e-11</span></span>
+<span><span class="co">## 25 0.005699008 3.168342 0.8268940  3.27341820 s25       25 1e-04 1.237678e-11</span></span>
+<span><span class="co">## 26 0.004712835 5.305229 0.8524283 11.03926980 s26       26 1e-04 2.919269e-08</span></span>
+<span><span class="co">## 27 0.006988649 2.570785 0.7957235  1.83530152 s27       27 1e-04 2.937930e-12</span></span>
+<span><span class="co">## 28 0.004730114 5.483924 0.8519673 11.85562507 s28       28 1e-04 6.604085e-08</span></span>
+<span><span class="co">## 29 0.004929736 4.771115 0.8466779  8.69908643 s29       29 1e-04 2.811547e-09</span></span>
+<span><span class="co">## 30 0.005566298 3.176653 0.8302407  3.30234473 s30       30 1e-04 1.274002e-11</span></span></code></pre>
+<p>The <code>SNP.PP</code> column shows the posterior probability that
+exactly that SNP is causal. Note the last line in this data.frame does
+not correspond to a SNP, but to the null model, that no SNP is
+causal.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">my.res</span>,<span class="fl">3</span><span class="op">)</span></code></pre></div>
-<p>Finally, if you do have full genotype data as here, while this is a fast method for fine mapping, it can be sensible to consider multiple causal variant models too. One package that allows you to do this is <a href="https://github.com/chr1swallace/GUESSFM">GUESSFM</a>, described in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup></p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">my.res</span>,<span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<p>Finally, if you do have full genotype data as here, while this is a
+fast method for fine mapping, it can be sensible to consider multiple
+causal variant models too. One package that allows you to do this is <a href="https://github.com/chr1swallace/GUESSFM" class="external-link">GUESSFM</a>, described
+in<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup></p>
 <p><a id="org6973f37"></a></p>
 </div>
-<div id="approximate-bayes-factor-colocalisation-analyses" class="section level1">
-<h1 class="hasAnchor">
-<a href="#approximate-bayes-factor-colocalisation-analyses" class="anchor"></a>(Approximate) Bayes Factor colocalisation analyses</h1>
+<div class="section level2">
+<h2 id="approximate-bayes-factor-colocalisation-analyses">(Approximate) Bayes Factor colocalisation analyses<a class="anchor" aria-label="anchor" href="#approximate-bayes-factor-colocalisation-analyses"></a>
+</h2>
 <p><a id="org192e16b"></a></p>
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>Introduction</h2>
-<p>The idea behind the ABF analysis is that the association of each trait with SNPs in a region may be summarised by a vector of 0s and at most a single 1, with the 1 indicating the causal SNP (so, assuming a single causal SNP for each trait). The posterior probability of each possible configuration can be calculated and so, crucially, can the posterior probabilities that the traits share their configurations. This allows us to estimate the support for the following cases:</p>
+<div class="section level3">
+<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h3>
+<p>The idea behind the ABF analysis is that the association of each
+trait with SNPs in a region may be summarised by a vector of 0s and at
+most a single 1, with the 1 indicating the causal SNP (so, assuming a
+single causal SNP for each trait). The posterior probability of each
+possible configuration can be calculated and so, crucially, can the
+posterior probabilities that the traits share their configurations. This
+allows us to estimate the support for the following cases:</p>
 <ul>
 <li>
-<span class="math inline">\(H_0\)</span>: neither trait has a genetic association in the region</li>
+<span class="math inline">\(H_0\)</span>: neither trait has a
+genetic association in the region</li>
 <li>
-<span class="math inline">\(H_1\)</span>: only trait 1 has a genetic association in the region</li>
+<span class="math inline">\(H_1\)</span>: only trait 1 has a genetic
+association in the region</li>
 <li>
-<span class="math inline">\(H_2\)</span>: only trait 2 has a genetic association in the region</li>
+<span class="math inline">\(H_2\)</span>: only trait 2 has a genetic
+association in the region</li>
 <li>
-<span class="math inline">\(H_3\)</span>: both traits are associated, but with different causal variants</li>
+<span class="math inline">\(H_3\)</span>: both traits are
+associated, but with different causal variants</li>
 <li>
-<span class="math inline">\(H_4\)</span>: both traits are associated and share a single causal variant</li>
+<span class="math inline">\(H_4\)</span>: both traits are associated
+and share a single causal variant</li>
 </ul>
 <p><a id="orgb0fa807"></a></p>
 </div>
-<div id="the-basic-coloc-abf-function" class="section level2">
-<h2 class="hasAnchor">
-<a href="#the-basic-coloc-abf-function" class="anchor"></a>The basic <code>coloc.abf</code> function</h2>
-<p>The function <code>coloc.abf</code> is ideally suited to the case when only summary data are available.</p>
+<div class="section level3">
+<h3 id="the-basic-coloc-abf-function">The basic <code>coloc.abf</code> function<a class="anchor" aria-label="anchor" href="#the-basic-coloc-abf-function"></a>
+</h3>
+<p>The function <code>coloc.abf</code> is ideally suited to the case
+when only summary data are available.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="va">D1</span>,
-                    dataset2<span class="op">=</span><span class="va">D2</span><span class="op">)</span></code></pre></div>
-<pre><code>## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
-##  1.73e-08  7.16e-07  2.61e-05  8.20e-05  1.00e+00 
-## [1] "PP abf for shared variant: 100%"</code></pre>
+<code class="sourceCode R"><span><span class="va">my.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/coloc.abf.html">coloc.abf</a></span><span class="op">(</span>dataset1<span class="op">=</span><span class="va">D1</span>,</span>
+<span>                    dataset2<span class="op">=</span><span class="va">D2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf </span></span>
+<span><span class="co">##  1.38e-18  2.94e-10  8.59e-12  8.34e-04  9.99e-01 </span></span>
+<span><span class="co">## [1] "PP abf for shared variant: 99.9%"</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">)</span> </code></pre></div>
-<pre><code>## Coloc analysis of trait 1, trait 2</code></pre>
-<pre><code>## 
-## SNP Priors</code></pre>
-<pre><code>##    p1    p2   p12 
-## 1e-04 1e-04 1e-05</code></pre>
-<pre><code>## 
-## Hypothesis Priors</code></pre>
-<pre><code>##         H0    H1    H2       H3    H4
-##  0.9894755 0.005 0.005 2.45e-05 5e-04</code></pre>
-<pre><code>## 
-## Posterior</code></pre>
-<pre><code>##        nsnps           H0           H1           H2           H3           H4 
-## 5.000000e+01 1.725901e-08 7.157108e-07 2.608839e-05 8.196399e-05 9.998912e-01</code></pre>
-<p>Note that if you do find strong evidence for H4, we can extract the posterior probabilities for each SNP to be causal <em>conditional on H4 being true</em>. This is part of the calculation required by coloc, and contained in the column SNP.PP.H4 in the “results” element of the returned list. So we can extract the more likely causal variants by</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">)</span> </span></code></pre></div>
+<pre><code><span><span class="co">## Coloc analysis of trait 1, trait 2</span></span></code></pre>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## SNP Priors</span></span></code></pre>
+<pre><code><span><span class="co">##    p1    p2   p12 </span></span>
+<span><span class="co">## 1e-04 1e-04 1e-05</span></span></code></pre>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Hypothesis Priors</span></span></code></pre>
+<pre><code><span><span class="co">##        H0   H1   H2       H3    H4</span></span>
+<span><span class="co">##  0.892505 0.05 0.05 0.002495 0.005</span></span></code></pre>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Posterior</span></span></code></pre>
+<pre><code><span><span class="co">##        nsnps           H0           H1           H2           H3           H4 </span></span>
+<span><span class="co">## 5.000000e+02 1.377000e-18 2.937336e-10 8.593226e-12 8.338917e-04 9.991661e-01</span></span></code></pre>
+<p>Note that if you do find strong evidence for H4, we can extract the
+posterior probabilities for each SNP to be causal <em>conditional on H4
+being true</em>. This is part of the calculation required by coloc, and
+contained in the column SNP.PP.H4 in the “results” element of the
+returned list. So we can extract the more likely causal variants by</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span>,<span class="va">SNP.PP.H4</span><span class="op">&gt;</span><span class="fl">0.01</span><span class="op">)</span></code></pre></div>
-<pre><code>##    snp position       V.df1    z.df1     r.df1 lABF.df1       V.df2    z.df2
-## 34  s4        4 0.005910959 5.775391 0.8273637 12.92013 0.004828876 6.460469
-##        r.df2 lABF.df2 internal.sum.lABF SNP.PP.H4
-## 34 0.8318075 16.46752          29.38766 0.9999081</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span>,<span class="va">SNP.PP.H4</span><span class="op">&gt;</span><span class="fl">0.01</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##    snp position       V.df1    z.df1     r.df1 lABF.df1       V.df2    z.df2</span></span>
+<span><span class="co">## 6 s103      103 0.004846592 7.780900 0.8488730 24.75159 0.004102488 7.560002</span></span>
+<span><span class="co">## 8 s105      105 0.004808487 8.302463 0.8498828 28.34342 0.004100753 7.699676</span></span>
+<span><span class="co">##       r.df2 lABF.df2 internal.sum.lABF  SNP.PP.H4</span></span>
+<span><span class="co">## 6 0.8513388 23.37551           48.1271 0.01098066</span></span>
+<span><span class="co">## 8 0.8513923 24.28418           52.6276 0.98894507</span></span></code></pre>
 <p>or the 95% credible set by</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span>,decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span><span class="op">[</span><span class="va">o</span><span class="op">]</span><span class="op">)</span>
-<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">cs</span> <span class="op">&gt;</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
-<span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">[</span><span class="va">o</span>,<span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">w</span>,<span class="op">]</span><span class="op">$</span><span class="va">snp</span></code></pre></div>
-<pre><code>## [1] "s4"</code></pre>
+<code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span>,decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">$</span><span class="va">SNP.PP.H4</span><span class="op">[</span><span class="va">o</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">cs</span> <span class="op">&gt;</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">my.res</span><span class="op">$</span><span class="va">results</span><span class="op">[</span><span class="va">o</span>,<span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">w</span>,<span class="op">]</span><span class="op">$</span><span class="va">snp</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "s105"</span></span></code></pre>
 </div>
 </div>
   </div>
@@ -224,11 +258,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
+  <p></p>
+<p>Developed by Chris Wallace, Claudia Giambartolomei.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -236,6 +272,8 @@
 
   
 
+
+  
 
   </body>
 </html>

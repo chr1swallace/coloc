@@ -5,7 +5,7 @@
 \alias{check.dataset}
 \title{check_dataset}
 \usage{
-check_dataset(d, suffix = "", req = c("snp"), warn.minp = 1e-06)
+check_dataset(d, suffix = "", req = c("type", "snp"), warn.minp = 1e-06)
 
 check.dataset(...)
 }
@@ -27,51 +27,54 @@ NULL if no errors found
 Check coloc dataset inputs for errors
 }
 \details{
+A coloc dataset is a list, containing a mixture of vectors
+capturing quantities that vary between snps (these vectors must
+all have equal length) and scalars capturing quantities that
+describe the dataset.
+
 Coloc is flexible, requiring perhaps only p values, or z scores, or effect
 estimates and standard errors, but with this flexibility, also comes
 difficulties describing exactly the combinations of items required.
+
+Required vectors are some subset of
+
 \describe{
-
-\item{pvalues}{P-values for each SNP in dataset 1}
-
-\item{N}{Number of samples in dataset 1}
-
-\item{MAF}{minor allele frequency of the variants}
-
 \item{beta}{regression coefficient for each SNP from dataset 1}
-
 \item{varbeta}{variance of beta}
-
-\item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
-
-\item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
-
-\item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
-
-\item{snp}{a character vector of snp ids, optional. If present, it will be used to merge dataset1 and dataset2.  Otherwise, the function assumes dataset1 and dataset2 contain results for the same SNPs in the same order.}
-
+\item{pvalues}{P-values for each SNP in dataset 1}
+\item{MAF}{minor allele frequency of the variants}
+\item{snp}{a character vector of snp ids, optional. It will be used to merge dataset1 and dataset2 and will be retained in the results.}
 }
 
-Some of these items may be missing, but you must always give {\code{type}}.
+Preferably, give \code{beta} and \code{varbeta}.  But if these are not available, sufficient statistics can be approximated from \code{pvalues} and \code{MAF}.
 
-Then scalars describing the samples used:
+Required scalars are some subset of
+
 \describe{
-\item{always needed}{\code{N}}
+\item{N}{Number of samples in dataset 1}
+\item{type}{the type of data in dataset 1 - either "quant" or "cc" to denote quantitative or case-control}
+\item{s}{for a case control dataset, the proportion of samples in dataset 1 that are cases}
+\item{sdY}{for a quantitative trait, the population standard deviation of the trait.  if not given, it can be estimated from the vectors of varbeta and MAF}
+}
+
+You must always give {\code{type}}.  Then,
+\describe{
 \item{if \code{type}=="cc"}{\code{s}}
 \item{if \code{type}=="quant" and \code{sdY} known}{\code{sdY}}
+\item{if beta, varbeta not known}{\code{N}}
 }
 If \code{sdY} is unknown, it will be approximated, and this will require
 \describe{
 \item{summary data to estimate \code{sdY}}{\code{beta}, \code{varbeta}, \code{N}, \code{MAF}}
 }
 
-Then, if not already covered above, the summary statistics describing the results
+Optional vectors are
+
 \describe{
-\item{preferably}{\code{beta}, \code{varbeta}}
-\item{alternatively}{\code{pvalues}, \code{MAF}}
+\item{position}{a vector of snp positions, required for \code{plot_dataset}}
 }
 
-\code{check_dataset} call stop() unless a series of expectations on dataset
+\code{check_dataset} calls stop() unless a series of expectations on dataset
 input format are met
 
 This is a helper function for use by other coloc functions, but

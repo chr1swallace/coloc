@@ -7,7 +7,7 @@
 ##' @return variance of MLE beta
 ##' @author Claudia Giambartolomei
 Var.data <- function(f, N) {
-  1 / (2 * N * f * (1 - f))
+    1 / (2 * N * f * (1 - f))
 }
 
 ##' variance of MLE of beta for case-control
@@ -19,7 +19,7 @@ Var.data <- function(f, N) {
 ##' @return variance of MLE beta
 ##' @author Claudia Giambartolomei
 Var.data.cc <- function(f, N, s) {
-  1 / (2 * N * f * (1 - f) * s * (1 - s))
+    1 / (2 * N * f * (1 - f) * s * (1 - s))
 }
 
 ##' Internal function, logsum
@@ -31,9 +31,9 @@ Var.data.cc <- function(f, N, s) {
 ##' @return max(x) + log(sum(exp(x - max(x))))
 ##' @author Claudia Giambartolomei
 logsum <- function(x) {
-  my.max <- max(x)                              ##take out the maximum value in log form
-  my.res <- my.max + log(sum(exp(x - my.max ))) 
-  return(my.res)
+    my.max <- max(x)                              ##take out the maximum value in log form
+    my.res <- my.max + log(sum(exp(x - my.max ))) 
+    return(my.res)
 }
 
 ##' Internal function, logdiff
@@ -46,9 +46,9 @@ logsum <- function(x) {
 ##' @return max(x) + log(exp(x - max(x,y)) - exp(y-max(x,y)))
 ##' @author Chris Wallace
 logdiff <- function(x,y) {
-  my.max <- max(x,y)                              ##take out the maximum value in log form
-  my.res <- my.max + log(exp(x - my.max ) - exp(y-my.max))
-  return(my.res)
+    my.max <- max(x,y)                              ##take out the maximum value in log form
+    my.res <- my.max + log(exp(x - my.max ) - exp(y-my.max))
+    return(my.res)
 }
 
 
@@ -65,22 +65,22 @@ logdiff <- function(x,y) {
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Claudia Giambartolomei, Chris Wallace
 approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
-  if(type=="quant") {
-    sd.prior <- 0.15
-    V <- Var.data(f, N)
-  } else {
-    sd.prior <- 0.2
-    V <- Var.data.cc(f, N, s)
-  }
-  z <- qnorm(0.5 * p, lower.tail = FALSE)
-  ## Shrinkage factor: ratio of the prior variance to the total variance
-  r <- sd.prior^2 / (sd.prior^2 + V)
-  ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
-  lABF = 0.5 * (log(1-r) + (r * z^2))
-  ret <- data.frame(V,z,r,lABF)
-  if(!is.null(suffix))
-    colnames(ret) <- paste(colnames(ret), suffix, sep=".")
-  return(ret)  
+    if(type=="quant") {
+        sd.prior <- 0.15
+        V <- Var.data(f, N)
+    } else {
+        sd.prior <- 0.2
+        V <- Var.data.cc(f, N, s)
+    }
+    z <- qnorm(0.5 * p, lower.tail = FALSE)
+    ## Shrinkage factor: ratio of the prior variance to the total variance
+    r <- sd.prior^2 / (sd.prior^2 + V)
+    ## Approximate BF  # I want ln scale to compare in log natural scale with LR diff
+    lABF = 0.5 * (log(1-r) + (r * z^2))
+    ret <- data.frame(V,z,r,lABF)
+    if(!is.null(suffix))
+        colnames(ret) <- paste(colnames(ret), suffix, sep=".")
+    return(ret)  
 }
 
 ##' Internal function, approx.bf.estimates
@@ -94,13 +94,13 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace
 approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
-  sd.prior <- if (type == "quant") { 0.15*sdY } else { 0.2 }
-  r <- sd.prior^2/(sd.prior^2 + V)
-  lABF = 0.5 * (log(1 - r) + (r * z^2))
-  ret <- data.frame(V, z, r, lABF)
-  if(!is.null(suffix))
-    colnames(ret) <- paste(colnames(ret), suffix, sep = ".")
-  return(ret)
+    sd.prior <- if (type == "quant") { 0.15*sdY } else { 0.2 }
+    r <- sd.prior^2/(sd.prior^2 + V)
+    lABF = 0.5 * (log(1 - r) + (r * z^2))
+    ret <- data.frame(V, z, r, lABF)
+    if(!is.null(suffix))
+        colnames(ret) <- paste(colnames(ret), suffix, sep = ".")
+    return(ret)
 }
 
 
@@ -114,23 +114,23 @@ approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
 ##' @return named numeric vector of posterior probabilities
 ##' @author Claudia Giambartolomei, Chris Wallace
 combine.abf <- function(l1, l2, p1, p2, p12, quiet=FALSE) {
-  stopifnot(length(l1)==length(l2))
-  lsum <- l1 + l2
-  lH0.abf <- 0
-  lH1.abf <- log(p1) + logsum(l1)
-  lH2.abf <- log(p2) + logsum(l2)
-  lH3.abf <- log(p1) + log(p2) + logdiff(logsum(l1) + logsum(l2), logsum(lsum))
-  lH4.abf <- log(p12) + logsum(lsum)
+    stopifnot(length(l1)==length(l2))
+    lsum <- l1 + l2
+    lH0.abf <- 0
+    lH1.abf <- log(p1) + logsum(l1)
+    lH2.abf <- log(p2) + logsum(l2)
+    lH3.abf <- log(p1) + log(p2) + logdiff(logsum(l1) + logsum(l2), logsum(lsum))
+    lH4.abf <- log(p12) + logsum(lsum)
 
-  all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
-  my.denom.log.abf <- logsum(all.abf)
-  pp.abf <- exp(all.abf - my.denom.log.abf)
-  names(pp.abf) <- paste("PP.H", (1:length(pp.abf)) - 1, ".abf", sep = "")
-  if(!quiet) {
-    print(signif(pp.abf,3))
-    print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
-  }
-  return(pp.abf)
+    all.abf <- c(lH0.abf, lH1.abf, lH2.abf, lH3.abf, lH4.abf)
+    my.denom.log.abf <- logsum(all.abf)
+    pp.abf <- exp(all.abf - my.denom.log.abf)
+    names(pp.abf) <- paste("PP.H", (1:length(pp.abf)) - 1, ".abf", sep = "")
+    if(!quiet) {
+        print(signif(pp.abf,3))
+        print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"],3)*100 , '%', sep=''))
+    }
+    return(pp.abf)
 }
 ##' Estimate trait standard deviation given vectors of variance of coefficients,  MAF and sample size
 ##'
@@ -164,68 +164,68 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @return data.frame with log(abf) or log(bf)
 ##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
-  #message('Processing dataset')
+                                        #message('Processing dataset')
 
-  nd <- names(d)
-  if (! 'type' %in% nd)
-    stop("dataset ",suffix,": ",'The variable type must be set, otherwise the Bayes factors cannot be computed')
+    nd <- names(d)
+    ## if (! 'type' %in% nd)
+    ##   stop("dataset ",suffix,": ",'The variable type must be set, otherwise the Bayes factors cannot be computed')
 
-  if(!(d$type %in% c("quant","cc")))
-      stop("dataset ",suffix,": ","type must be quant or cc")
-  
-  if(d$type=="cc" & "pvalues" %in% nd) {
-      if(!( "s" %in% nd))
-          stop("dataset ",suffix,": ","please give s, proportion of samples who are cases, if using p values")
-      if(!("MAF" %in% nd))
-          stop("dataset ",suffix,": ","please give MAF if using p values")
-      if(d$s<=0 || d$s>=1)
-          stop("dataset ",suffix,": ","s must be between 0 and 1")
-  }
-  
-  if(d$type=="quant") {
-      if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
-          stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
-  }
-  
-  if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
-    if(length(d$beta) != length(d$varbeta))
-      stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
-    if(!("snp" %in% nd))
-      d$snp <- sprintf("SNP.%s",1:length(d$beta))
-    if(length(d$snp) != length(d$beta))
-      stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
- 
-    if(d$type=="quant" && !('sdY' %in% nd)) 
-          d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
-   df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
-                              V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
-    df$snp <- as.character(d$snp)
-    if("position" %in% nd)
-        df <- cbind(df,position=d$position)
-    return(df)
-  }
+    ## if(!(d$type %in% c("quant","cc")))
+    ##     stop("dataset ",suffix,": ","type must be quant or cc")
+    
+    ## if(d$type=="cc" & "pvalues" %in% nd) {
+    ## if(!( "s" %in% nd))
+    ##     stop("dataset ",suffix,": ","please give s, proportion of samples who are cases, if using p values")
+    ## if(!("MAF" %in% nd))
+    ##     stop("dataset ",suffix,": ","please give MAF if using p values")
+    ## if(d$s<=0 || d$s>=1)
+    ##     stop("dataset ",suffix,": ","s must be between 0 and 1")
+    ## }
+    
+    ## if(d$type=="quant") {
+    ##     if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
+    ##         stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
+    ## }
+    
+    if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
+        ## if(length(d$beta) != length(d$varbeta))
+        ##   stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
+        ## if(!("snp" %in% nd))
+        ##   d$snp <- sprintf("SNP.%s",1:length(d$beta))
+        ## if(length(d$snp) != length(d$beta))
+        ##   stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
+        
+        if(d$type=="quant" && !('sdY' %in% nd)) 
+            d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
+        df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
+                                  V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
+        df$snp <- as.character(d$snp)
+        if("position" %in% nd)
+            df <- cbind(df,position=d$position)
+        return(df)
+    }
 
-  if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd) { ## no beta/varbeta: use p value / MAF approximation
-    if (length(d$pvalues) != length(d$MAF))
-      stop('Length of the P-value vectors and MAF vector must match')
-    if(!("snp" %in% nd))
-      d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
-    df <- data.frame(pvalues = d$pvalues,
-                     MAF = d$MAF,
-                     N=d$N,
-                     snp=as.character(d$snp))    
-    snp.index <- which(colnames(df)=="snp")
-    colnames(df)[-snp.index] <- paste(colnames(df)[-snp.index], suffix, sep=".")
-    keep <- which(df$MAF>0 & df$pvalues > 0) # all p values and MAF > 0
-    df <- df[keep,]
-    abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=df$N, s=d$s, suffix=suffix)
-    df <- cbind(df, abf)
-    if("position" %in% nd)
-        df <- cbind(df,position=d$position[keep])
-    return(df)  
-  }
+    if("pvalues" %in% nd & "MAF" %in% nd & "N" %in% nd) { ## no beta/varbeta: use p value / MAF approximation
+        ## if (length(d$pvalues) != length(d$MAF))
+        ##   stop('Length of the P-value vectors and MAF vector must match')
+        ## if(!("snp" %in% nd))
+        ##   d$snp <- sprintf("SNP.%s",1:length(d$pvalues))
+        df <- data.frame(pvalues = d$pvalues,
+                         MAF = d$MAF,
+                         N=d$N,
+                         snp=as.character(d$snp))    
+        snp.index <- which(colnames(df)=="snp")
+        colnames(df)[-snp.index] <- paste(colnames(df)[-snp.index], suffix, sep=".")
+        ## keep <- which(df$MAF>0 & df$pvalues > 0) # all p values and MAF > 0
+        ## df <- df[keep,]
+        abf <- approx.bf.p(p=df$pvalues, f=df$MAF, type=d$type, N=df$N, s=d$s, suffix=suffix)
+        df <- cbind(df, abf)
+        if("position" %in% nd)
+            df <- cbind(df,position=d$position)
+        return(df)  
+    }
 
-  stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
+    stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
 }
 
 ##' Bayesian finemapping analysis
@@ -252,42 +252,42 @@ process.dataset <- function(d, suffix) {
 ##' @export
 finemap.abf <- function(dataset, p1=1e-4) {
 
-  check_dataset(dataset,"")
+    check_dataset(dataset,"")
 
     df <- process.dataset(d=dataset, suffix="")
-  nsnps <- nrow(df)
-  p1=adjust_prior(p1,nsnps,"1")
+    nsnps <- nrow(df)
+    p1=adjust_prior(p1,nsnps,"1")
 
-  dfnull <- df[1,]
-  for(nm in colnames(df))
-    dfnull[,nm] <- NA
-  dfnull[,"snp"] <- "null"
-  dfnull[,"lABF."] <- 0
-  df <- rbind(df,dfnull)
-  ## data.frame("V."=NA,
-  ##            z.=NA,
-                ##            r.=NA,
-  ##            lABF.=1,
-  ##            snp="null"))
-  df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
+    dfnull <- df[1,]
+    for(nm in colnames(df))
+        dfnull[,nm] <- NA
+    dfnull[,"snp"] <- "null"
+    dfnull[,"lABF."] <- 0
+    df <- rbind(df,dfnull)
+    ## data.frame("V."=NA,
+    ##            z.=NA,
+    ##            r.=NA,
+    ##            lABF.=1,
+    ##            snp="null"))
+    df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
 
-  ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
+    ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
     ## BUGFIX 16/5/19
     ## my.denom.log.abf <- logsum(df$lABF + df$prior)
     ## df$SNP.PP <- exp(df$lABF - my.denom.log.abf)
-  my.denom.log.abf <- logsum(df$lABF + log(df$prior))
-  df$SNP.PP <- exp(df$lABF + log(df$prior) - my.denom.log.abf)
- 
-  return(df)
+    my.denom.log.abf <- logsum(df$lABF + log(df$prior))
+    df$SNP.PP <- exp(df$lABF + log(df$prior) - my.denom.log.abf)
+    
+    return(df)
 }
 
 adjust_prior=function(p,nsnps,suffix="") {
-  if(nsnps * p >= 1) { ## for very large regions
-    warning(paste0("p",suffix," * nsnps >= 1, setting p",suffix,"=1/(nsnps + 1)"))
-    1/(nsnps + 1)
-  } else {
-    p
-  }
+    if(nsnps * p >= 1) { ## for very large regions
+        warning(paste0("p",suffix," * nsnps >= 1, setting p",suffix,"=1/(nsnps + 1)"))
+        1/(nsnps + 1)
+    } else {
+        p
+    }
 }
 
 
@@ -328,29 +328,29 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     check_dataset(d=dataset1,1)
     check_dataset(d=dataset2,2)
     
-  df1 <- process.dataset(d=dataset1, suffix="df1")
-  df2 <- process.dataset(d=dataset2, suffix="df2")
-  p1=adjust_prior(p1,nrow(df1),"1")
-  p2=adjust_prior(p2,nrow(df2),"2")
+    df1 <- process.dataset(d=dataset1, suffix="df1")
+    df2 <- process.dataset(d=dataset2, suffix="df2")
+    p1=adjust_prior(p1,nrow(df1),"1")
+    p2=adjust_prior(p2,nrow(df2),"2")
 
-  merged.df <- merge(df1,df2)
-  p12=adjust_prior(p12,nrow(merged.df),"12")
+    merged.df <- merge(df1,df2)
+    p12=adjust_prior(p12,nrow(merged.df),"12")
 
-  if(!nrow(merged.df))
-    stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
+    if(!nrow(merged.df))
+        stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
 
-  merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
-  ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
-  my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
-  merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
-  
- 
+    merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
+    ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
+    my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
+    merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
+    
+    
 ############################## 
 
-  pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
-  common.snps <- nrow(merged.df)
-  results <- c(nsnps=common.snps, pp.abf)
-  
+    pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
+    common.snps <- nrow(merged.df)
+    results <- c(nsnps=common.snps, pp.abf)
+    
     output<-list(summary=results,
                  results=merged.df,
                  priors=c(p1=p1,p2=p2,p12=p12))

@@ -31,7 +31,7 @@ sensitivity(
 
 \item{plot.manhattans}{if TRUE, show Manhattans of input data}
 
-\item{preserve.par}{if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample}
+\item{preserve.par}{if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, for example}
 
 \item{row}{when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot}
 }

@@ -76,7 +76,7 @@ manh.plot <- function(df,wh,
 ##' @param npoints the number of points over which to evaluate the prior values for p12, equally spaced on a log scale between p1*p2 and min(p1,p2) - these are logical limits on p12, but not scientifically sensible values.
 ##' @param doplot draw the plot. set to FALSE if you want to just evaluate the prior and posterior matrices and work with them yourself
 ##' @param plot.manhattans if TRUE, show Manhattans of input data
-##' @param preserve.par if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, forexample
+##' @param preserve.par if TRUE, do not change par() of current graphics device - this is to allow sensitivity plots to be incoporated into a larger set of plots, or to be plot one per page on a pdf, for example
 ##' @param row when coloc.signals() has been used and multiple rows are returned in the coloc summary, which row to plot
 ##' @return list of 3: prior matrix, posterior matrix, and a pass/fail indicator (returned invisibly)
 ##' @export
