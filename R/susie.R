@@ -1,5 +1,6 @@
 globalVariables(c("pp4", "i", "j","idx"))
 
+
 ##' generic convenience function to convert logbf matrix to PP matrix
 ##'
 ##' @title logbf 2 pp
@@ -57,42 +58,54 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @param dataset2 *either* a coloc-style input dataset (see
 ##'   \link{check_dataset}), or the result of running \link{runsusie} on such a
 ##'   dataset
-##' @param back_calculate_lbf by default, use the log Bayes factors returned by
-##'   susie_rss. It is also possible to back-calculate these from the posterior
-##'   probabilities. It is not advised to set this to TRUE, the option exists
-##'   really for testing purposes only.
 ##' @param susie.args a named list of additional arguments to be passed to
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
 ##'   values for causal association with one trait (p1, p2) or both (p12)
-coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=list(),  ...) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
-  if("susie" %in% class(dataset1))
-    s1=dataset1
-  else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
-  if("susie" %in% class(dataset2))
-    s2=dataset2
-  else
-    s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
-  cs1=s1$sets
-  cs2=s2$sets
-  if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 )
-    return(data.table(nsnps=NA))
+coloc.susie=function(dataset1,dataset2, susie.args=list(),  ...) {
+    ## if(!requireNamespace("susieR", quietly = TRUE)) {
+    ##   message("please install susieR https://github.com/stephenslab/susieR")
+    ##   return(NULL)
+    ## }
+    if("susie" %in% class(dataset1))
+        s1=dataset1
+    else
+        s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
+    if("susie" %in% class(dataset2))
+        s2=dataset2
+    else
+        s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
+    cs1=s1$sets
+    cs2=s2$sets
+    if(is.null(cs1$cs) || length(cs1$cs)==0 ) {
+        message("susie found no credible sets in dataset 1, falling back to Wakefield")
+        res=finemap.abf(dataset1)
+        bf1=matrix(res$lABF.[ res$snp!="null" ], 1, dimnames=list("Wakefield", setdiff(res$snp, "null")))
+        ## return(data.table(nsnps=NA))
+    } else {
+        idx1=cs1$cs_index
+        bf1=s1$lbf_variable[idx1,,drop=FALSE]
+    }
+    if(is.null(cs2$cs) || length(cs2$cs)==0 ) {
+        message("susie found no credible sets in dataset 2, falling back to Wakefield")
+        res=finemap.abf(dataset2)
+        bf2=matrix(res$lABF.[ res$snp!="null" ], 1, dimnames=list("Wakefield", setdiff(res$snp, "null")))
+        ## return(data.table(nsnps=NA))
+    } else {
+        idx2=cs2$cs_index
+        bf2=s2$lbf_variable[idx2,,drop=FALSE]
+    }
+    
+    ## if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 )
+    ##    return(data.table(nsnps=NA))
 
-  idx1=cs1$cs_index
-  idx2=cs2$cs_index
-  bf1=s1$lbf_variable[idx1,,drop=FALSE]
-  bf2=s2$lbf_variable[idx2,,drop=FALSE]
-
-  ret=coloc.bf_bf(bf1,bf2,...)
-  ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
-  ret$summary[,idx2:=cs2$cs_index[idx2]]
-  ret
+    ret=coloc.bf_bf(bf1,bf2,...)
+    ## renumber index to match
+    if(!is.null(cs1$cs) && length(cs1$cs)>0)
+        ret$summary[,idx1:=cs1$cs_index[idx1]]
+    if(!is.null(cs2$cs) && length(cs2$cs)>0)
+        ret$summary[,idx2:=cs2$cs_index[idx2]]
+    ret
 }
 
 finemap.susie=function(dataset1, susie.args=list(),  ...) {
@@ -130,15 +143,20 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
   else
     s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
   cs1=s1$sets
-  if(is.null(cs1$cs) || length(cs1$cs)==0 )
-    return(data.table(nsnps=NA))
-  idx1=cs1$cs_index
-  ## alpha: an L by p matrix of posterior inclusion probabilites
-  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
-
+  if(is.null(cs1$cs) || length(cs1$cs)==0 ) {
+      message("susie found no credible sets, falling back to Wakefield")
+      res=finemap.abf(dataset1)
+      bf1=matrix(res$lABF.[ res$snp!="null" ], 1, dimnames=list("Wakefield", setdiff(res$snp, "null")))
+    ## return(data.table(nsnps=NA))
+  } else {
+      idx1=cs1$cs_index
+      ## alpha: an L by p matrix of posterior inclusion probabilites
+      bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
+  }
   ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
+  if(!is.null(cs1$cs) && length(cs1$cs)>0)
+      ret$summary[,idx1:=cs1$cs_index[idx1]]
   ret
 }
 
