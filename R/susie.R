@@ -1,5 +1,6 @@
 globalVariables(c("pp4", "i", "j","idx"))
 
+
 ##' generic convenience function to convert logbf matrix to PP matrix
 ##'
 ##' @title logbf 2 pp
