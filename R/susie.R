@@ -450,13 +450,15 @@ runsusie=function(d,suffix=1,
 ##' @export
 ##' @author Chris Wallace
 annotate_susie=function(res,snp) {
-      colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
-  colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
-  names(res$pip)=snp
-  if(length(res$sets$cs))
-    res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
-  res$sld=.susie_setld(res$sets$cs,LD)
-  res$pruned=FALSE
+    if(ncol(res$lbf_variable) != length(snp)+1)
+        stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")
+    colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
+    colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
+    names(res$pip)=snp
+    if(length(res$sets$cs))
+        res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
+    res$sld=.susie_setld(res$sets$cs,LD)
+    res$pruned=FALSE
 }
 
 .susie_prune=function(res,r2.prune) {
