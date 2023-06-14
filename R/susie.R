@@ -410,14 +410,7 @@ runsusie=function(d,suffix=1,
     if(!converged)
       maxit=maxit * 100 # no point in half measures!
   }
-  colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
-  colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
-  names(res$pip)=snp
-  if(length(res$sets$cs))
-    res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
-  res$sld=.susie_setld(res$sets$cs,LD)
-  res$pruned=FALSE
-
+ res=annotate_susie(res, snp)
   ## ## prune sets in high LD
   ## if(!is.null(r2.prune))
   ##   res=.susie_prune(res,r2.prune)
@@ -439,6 +432,31 @@ runsusie=function(d,suffix=1,
   ##                          res$lbf_variable)
   ## }
   res
+}
+##' annotate susie_rss output for use with coloc_susie
+##'
+##' coloc functions need to be able to link summary stats from two
+##' different datasets and they do this through snp identifiers.  This
+##' function takes the output of susie_rss() and adds snp
+##' identifiers. It is entirely the user's responsibility to ensure
+##' snp identifiers are in the correct order, coloc cannot make any
+##' sanity checks.
+##'
+##' Note: this annotation step is not needed if you use runsusie() -
+##' this is only required if you use the susieR functions directly
+##' @param res output of susie_rss()
+##' @param snp vector of snp identifiers
+##' @return res with column names added to some components
+##' @export
+##' @author Chris Wallace
+annotate_susie=function(res,snp) {
+      colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
+  colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
+  names(res$pip)=snp
+  if(length(res$sets$cs))
+    res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
+  res$sld=.susie_setld(res$sets$cs,LD)
+  res$pruned=FALSE
 }
 
 .susie_prune=function(res,r2.prune) {
