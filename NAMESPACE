@@ -2,6 +2,7 @@
 
 S3method(plot,coloc_abf)
 S3method(print,coloc_abf)
+export(annotate_susie)
 export(check.alignment)
 export(check.dataset)
 export(check_alignment)
