@@ -450,8 +450,8 @@ runsusie=function(d,suffix=1,
 ##' @export
 ##' @author Chris Wallace
 annotate_susie=function(res,snp) {
-    if(ncol(res$lbf_variable) != length(snp)+1)
-        stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")
+    ## if(ncol(res$lbf_variable) != length(snp)+1)
+    ##     stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")
     colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
     colnames(res$alpha) = c(snp,"null")[1:ncol(res$alpha)]
     names(res$pip)=snp
