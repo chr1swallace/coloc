@@ -156,12 +156,15 @@ sdY.est <- function(vbeta, maf, n) {
     return(sqrt(cf))
 }
 
-##' Internal function, process each dataset list for coloc.abf
+##' Internal function, process each dataset list for coloc.abf.
+##' 
+##' Made public for another package to use, but not intended for users to use.
 ##'
 ##' @title process.dataset
 ##' @param d list
 ##' @param suffix "df1" or "df2"
 ##' @return data.frame with log(abf) or log(bf)
+##' @export
 ##' @author Chris Wallace
 process.dataset <- function(d, suffix) {
                                         #message('Processing dataset')

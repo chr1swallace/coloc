@@ -15,7 +15,10 @@ process.dataset(d, suffix)
 data.frame with log(abf) or log(bf)
 }
 \description{
-Internal function, process each dataset list for coloc.abf
+Internal function, process each dataset list for coloc.abf.
+}
+\details{
+Made public for another package to use, but not intended for users to use.
 }
 \author{
 Chris Wallace

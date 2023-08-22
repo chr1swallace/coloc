@@ -1,3 +1,6 @@
+# coloc 5.2.3
+* minor change, for another package to be able to access one of the internal functions, it was exported
+
 # coloc 5.2.2
 * better checking of dataset inputs, and better documentation of what that data should look like
 
