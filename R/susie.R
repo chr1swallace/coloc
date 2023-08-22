@@ -410,7 +410,7 @@ runsusie=function(d,suffix=1,
     if(!converged)
       maxit=maxit * 100 # no point in half measures!
   }
- res=annotate_susie(res, snp)
+ res=annotate_susie(res, snp, LD)
   ## ## prune sets in high LD
   ## if(!is.null(r2.prune))
   ##   res=.susie_prune(res,r2.prune)
@@ -446,10 +446,13 @@ runsusie=function(d,suffix=1,
 ##' this is only required if you use the susieR functions directly
 ##' @param res output of susie_rss()
 ##' @param snp vector of snp identifiers
+##' @param LD matrix of LD (r) between snps in snp
+##'     identifiers. Columns, rows should be named by a string that
+##'     exists in the vector snp
 ##' @return res with column names added to some components
 ##' @export
 ##' @author Chris Wallace
-annotate_susie=function(res,snp) {
+annotate_susie=function(res,snp, LD) {
     ## if(ncol(res$lbf_variable) != length(snp)+1)
     ##     stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")
     colnames(res$lbf_variable) = c(snp,"null")[1:ncol(res$lbf_variable)]
@@ -459,6 +462,7 @@ annotate_susie=function(res,snp) {
         res$sets$cs = lapply(res$sets$cs, function(x) { names(x) = snp[x]; x })
     res$sld=.susie_setld(res$sets$cs,LD)
     res$pruned=FALSE
+    res
 }
 
 .susie_prune=function(res,r2.prune) {
