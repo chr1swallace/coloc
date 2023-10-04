@@ -17,7 +17,7 @@ Suggests:
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 5.2.3
-Date: 2023-08-22
+Date: 2023-09-22
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
