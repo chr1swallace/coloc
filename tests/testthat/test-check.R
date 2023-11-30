@@ -39,3 +39,13 @@ test_that("issue 79", {
           sdY=10)
   expect_error(coloc.abf(d1,d2), NA)
 })
+
+test_that("Infinite values in beta/varbeta triggers specific error", {
+  D1_beta_inf <- D1
+  D1_beta_inf$beta[[1]] <- Inf
+  expect_error(check_dataset(D1_beta_inf), "Infinite")
+
+  D1_varbeta_inf <- D1
+  D1_varbeta_inf$varbeta[[1]] <- Inf
+  expect_error(check_dataset(D1_varbeta_inf), "Infinite")
+})
