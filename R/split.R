@@ -391,6 +391,7 @@ finemap.signals <- function(D,LD=D$LD,
       }
     }
     attr(result,"conditioned")=names(finemap_results)
+    attr(result,"hits")=hits
    result
 }
 
