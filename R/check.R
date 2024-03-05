@@ -10,7 +10,7 @@
 ##' difficulties describing exactly the combinations of items required.
 ##'
 ##' Required vectors are some subset of
-##' 
+##'
 ##' \describe{
 ##'   \item{beta}{regression coefficient for each SNP from dataset 1}
 ##'   \item{varbeta}{variance of beta}
@@ -20,7 +20,7 @@
 ##' }
 ##'
 ##' Preferably, give \code{beta} and \code{varbeta}.  But if these are not available, sufficient statistics can be approximated from \code{pvalues} and \code{MAF}.
-##' 
+##'
 ##' Required scalars are some subset of
 ##'
 ##' \describe{
@@ -81,10 +81,10 @@ check_dataset <- function(d,
         if(any(is.na(d[[v]])))
             stop("dataset ",suffix,": ",v," contains missing values")
     }
-    
-    if (!(d$type %in% c("quant", "cc"))) 
+
+    if (!(d$type %in% c("quant", "cc")))
         stop("dataset ", suffix, ": ", "type must be quant or cc")
-    
+
     ## snps should be unique
     if("snp" %in% nd && any(duplicated(d$snp)))
         stop("dataset ",suffix,": duplicated snps found")
@@ -130,6 +130,11 @@ check_dataset <- function(d,
         p=d$pvalues
     } else {
         p=pnorm( -abs( d$beta/sqrt(d$varbeta) ) ) * 2
+    }
+
+    # Infinite values.
+    if (any(is.infinite(d$beta) | is.infinite(d$varbeta))) {
+      stop("dataset ", suffix,": Infinite values in beta and/or varbeta")
     }
 
     ## minp
