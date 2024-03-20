@@ -361,3 +361,21 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     return(output)
 }
 
+##' Finemapping credible sets
+##'
+##' @title Find credible sets in finemap.abf results
+##' @param datasets data frame output of \code{\link{finemap.abf}}
+##' @param credible.size threshold of the credible set (Default: 0.95)
+##' @return SNP ids of the credible set
+##' @author Guillermo Reales
+##' @export 
+credible.sets <- function(dataset, credible.size = 0.95){
+    if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a SNP.PP column.")
+    t2 <- dataset[ order(dataset$SNP.PP, decreasing = TRUE),]
+    t2$csum <- cumsum(t2$SNP.PP)
+    t3 <- t2[ t2$csum < credible.size,]
+    return(t3$snp)
+    
+}
+
+
