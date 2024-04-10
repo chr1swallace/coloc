@@ -81,8 +81,10 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
     s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
   cs1=s1$sets
   cs2=s2$sets
-  if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 )
+  if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 ) {
+	  warning("at least one dataset has no credible sets, nothing to colocalise")
     return(data.table(nsnps=NA))
+	  }
 
   idx1=cs1$cs_index
   idx2=cs2$cs_index
