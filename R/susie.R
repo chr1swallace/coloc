@@ -386,7 +386,7 @@ runsusie=function(d,suffix=1,
     z=d$beta/sqrt(d$varbeta)
   else
     z=d$z
-  LD=d$LD[d$snp,d$snp] # just in case
+  LD=d$LD[d$snp,d$snp, drop = FALSE] # just in case
   names(z)=d$snp
   snp=d$snp
 
