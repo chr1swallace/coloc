@@ -5,6 +5,7 @@ Imports:
     ggplot2,
     methods,
     viridis,
+    matrixStats,
     stats,
     grDevices,
     susieR (>= 0.12.06),
@@ -42,6 +43,7 @@ Collate:
     'boundaries.R'
     'check.R'
     'claudia.R'
+    'compare.R'
     'plot.R'
     'private.R'
     'sensitivity.R'
