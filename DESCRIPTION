@@ -16,12 +16,14 @@ Suggests:
     magrittr,
     rmarkdown
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 5.2.3
+Version: 6.0.0
 Date: 2023-08-22
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
     email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut",
     email="claudia.giambartolomei.10@ucl.ac.uk"),
+    person("Jeffrey","Pullin", role="aut",
+    email="jp2045@cam.ac.uk"),
     person("Vincent","Plagnol", role="ctb",
     email="v.plagnol@ucl.ac.uk"))
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
@@ -33,7 +35,7 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc, https://chr1swallace.github.io/coloc/
 BugReports: https://github.com/chr1swallace/coloc/issues

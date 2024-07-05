@@ -11,7 +11,9 @@ coloc.bf_bf(
   p2 = 1e-04,
   p12 = 5e-06,
   overlap.min = 0.5,
-  trim_by_posterior = TRUE
+  trim_by_posterior = TRUE,
+  prior_weights1 = NULL,
+  prior_weights2 = NULL
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ coloc.bf_bf(
 are covered by adequate numbers of snps in both datasets. If TRUE, signals
 for which snps in common do not capture least overlap.min proportion of
 their posteriors support are dropped and colocalisation not attempted.}
+
+\item{prior_weights1}{TODO}
+
+\item{prior_weights2}{TODO}
 }
 \value{
 coloc.signals style result

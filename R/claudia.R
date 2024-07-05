@@ -47,7 +47,7 @@ logsum <- function(x) {
 ##' @author Chris Wallace
 logdiff <- function(x,y) {
     my.max <- max(x,y)                              ##take out the maximum value in log form
-    my.res <- my.max + log(exp(x - my.max ) - exp(y-my.max))
+    my.res <- my.max + log(max(exp(x - my.max) - exp(y-my.max), 0))
     return(my.res)
 }
 
@@ -132,6 +132,56 @@ combine.abf <- function(l1, l2, p1, p2, p12, quiet=FALSE) {
     }
     return(pp.abf)
 }
+
+combine_abf_weighted <- function(l1, l2, p1, p2, p12,
+                                prior_weights1, prior_weights2,
+                                quiet = FALSE) {
+
+  stopifnot(length(l1) == length(l2))
+
+  Q <- length(l1)
+
+  if (is.null(prior_weights1)) {
+    p1_vec <- rep(p1, Q)
+  } else {
+    prior_weights1 <- prior_weights1 / sum(prior_weights1)
+    p1_vec <- Q * p1 * prior_weights1
+  }
+
+  if (is.null(prior_weights2)) {
+    p2_vec <- rep(p2, Q)
+  } else {
+    prior_weights2 <- prior_weights2 / sum(prior_weights2)
+    p2_vec <- Q * p2 * prior_weights2
+  }
+
+  stopifnot(length(p1_vec) == length(p2_vec))
+  stopifnot(length(p1_vec) == length(l1))
+
+  p12_vec <- p1_vec * p2_vec * (p12 / (p1 * p2))
+
+  lsum <- l1 + l2
+  lH0_abf <- 0
+  lH1_abf <- logsum(log(p1_vec) + l1)
+  lH2_abf <- logsum(log(p2_vec) + l2)
+  lH3_abf <- logdiff(logsum(log(p1_vec) + l1) + logsum(log(p2_vec) + l2),
+                     logsum(log(p1_vec) + log(p2_vec) + lsum))
+  lH4_abf <- logsum(log(p12_vec) + lsum)
+
+  all_abf <- c(lH0_abf, lH1_abf, lH2_abf, lH3_abf, lH4_abf)
+  denom_log_abf <- logsum(all_abf)
+  pp_abf <- exp(all_abf - denom_log_abf)
+  names(pp_abf) <- paste0("PP.H", (1:length(pp_abf)) - 1, ".abf")
+
+  if(!quiet) {
+    print(signif(pp_abf,3))
+    print(paste("PP abf for shared variant: ", signif(pp_abf["PP.H4.abf"],3) * 100 ,
+                "%", sep = ""))
+  }
+
+  pp_abf
+}
+
 ##' Estimate trait standard deviation given vectors of variance of coefficients,  MAF and sample size
 ##'
 ##' Estimate is based on var(beta-hat) = var(Y) / (n * var(X))
@@ -247,15 +297,16 @@ process.dataset <- function(d, suffix) {
 ##'   to be analysed. See \code{\link{check_dataset}} for details.
 ##'
 ##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
+##' @param prior_weights Non-negative weights for the prior probability a SNP is causal 
 ##' @return a \code{data.frame}:
 ##' \itemize{
 ##' \item an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability of the SNP being causal
 ##' }
 ##' @author Chris Wallace
 ##' @export
-finemap.abf <- function(dataset, p1=1e-4) {
+finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
 
-    check_dataset(dataset,"")
+  check_dataset(dataset,"")
 
     df <- process.dataset(d=dataset, suffix="")
     nsnps <- nrow(df)
@@ -272,7 +323,13 @@ finemap.abf <- function(dataset, p1=1e-4) {
     ##            r.=NA,
     ##            lABF.=1,
     ##            snp="null"))
-    df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
+    if (!is.null(prior_weights)) {
+      stopifnot(length(prior_weights) == nsnps)
+      prior_vec <- p1 * nsnps * prior_weights / sum(prior_weights)
+      df$prior <- c(prior_vec, 1 - nsnps * p1)
+    } else {
+      df$prior <- c(rep(p1,nsnps),1-nsnps*p1)
+    }
 
     ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
     ## BUGFIX 16/5/19
@@ -314,15 +371,18 @@ adjust_prior=function(p,nsnps,suffix="") {
 ##' @param p1 prior probability a SNP is associated with trait 1, default 1e-4
 ##' @param p2 prior probability a SNP is associated with trait 2, default 1e-4
 ##' @param p12 prior probability a SNP is associated with both traits, default 1e-5
+##' @param prior_weights1 Non-negative weights for the prior probability a SNP is associated with trait 1 
+##' @param prior_weights2 Non-negative weights for the prior probability a SNP is asscoiated with trait 2
 ##' @return a list of two \code{data.frame}s:
 ##' \itemize{
 ##' \item summary is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
 ##' \item results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal *if* H4 is true. This is only relevant if the posterior support for H4 in summary is convincing.
 ##' }
-##' @author Claudia Giambartolomei, Chris Wallace
+##' @author Claudia Giambartolomei, Chris Wallace, Jeffrey Pullin
 ##' @export
 coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
-                      p1=1e-4, p2=1e-4, p12=1e-5) {
+                      p1=1e-4, p2=1e-4, p12=1e-5,
+                      prior_weights1 = NULL, prior_weights2 = NULL) {
 
     if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
         dataset1$MAF <- MAF
@@ -339,6 +399,9 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     merged.df <- merge(df1,df2)
     p12=adjust_prior(p12,nrow(merged.df),"12")
 
+    prior_weights1 <- prior_weights1[which(df1$snp %in% merged.df$snp)]
+    prior_weights2 <- prior_weights2[which(df2$snp %in% merged.df$snp)]
+
     if(!nrow(merged.df))
         stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
 
@@ -346,17 +409,28 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
     my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
     merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
-    
-    
-############################## 
 
-    pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)  
+    is_weighted <- !is.null(prior_weights1) || !is.null(prior_weights2)
+    if (is_weighted) {
+      pp.abf <- combine_abf_weighted(merged.df$lABF.df1, merged.df$lABF.df2,
+                                     p1, p2, p12, prior_weights1, prior_weights2)
+    } else {
+      pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12) 
+    }
+    
     common.snps <- nrow(merged.df)
     results <- c(nsnps=common.snps, pp.abf)
-    
     output<-list(summary=results,
                  results=merged.df,
                  priors=c(p1=p1,p2=p2,p12=p12))
+
+    if (is_weighted) {
+      output$weights <- list(
+        prior_weights1 = prior_weights1,
+        prior_weights2 = prior_weights2
+      )
+    }
+
     class(output) <- c("coloc_abf",class(output))
     return(output)
 }
