@@ -30,7 +30,8 @@ really for testing purposes only.}
 \link{runsusie}}
 
 \item{...}{other arguments passed to \link{coloc.bf_bf}, in particular prior
-values for causal association with one trait (p1, p2) or both (p12)}
+values for causal association with one trait (p1, p2) or both (p12) and
+and prior weights.}
 }
 \value{
 a list, containing elements * summary a data.table of posterior

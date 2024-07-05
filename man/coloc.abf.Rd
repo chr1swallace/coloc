@@ -4,7 +4,16 @@
 \alias{coloc.abf}
 \title{Fully Bayesian colocalisation analysis using Bayes Factors}
 \usage{
-coloc.abf(dataset1, dataset2, MAF = NULL, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
+coloc.abf(
+  dataset1,
+  dataset2,
+  MAF = NULL,
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = 1e-05,
+  prior_weights1 = NULL,
+  prior_weights2 = NULL
+)
 }
 \arguments{
 \item{dataset1}{a list with specifically named elements defining the dataset
@@ -19,6 +28,10 @@ to be analysed. See \code{\link{check_dataset}} for details.}
 \item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
 
 \item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+
+\item{prior_weights1}{Non-negative weights for the prior probability a SNP is associated with trait 1}
+
+\item{prior_weights2}{Non-negative weights for the prior probability a SNP is asscoiated with trait 2}
 }
 \value{
 a list of two \code{data.frame}s:
@@ -42,5 +55,5 @@ SNP's MAF and ignores any uncertainty in imputation.  Regression
 coefficients should be used if available.
 }
 \author{
-Claudia Giambartolomei, Chris Wallace
+Claudia Giambartolomei, Chris Wallace, Jeffrey Pullin
 }

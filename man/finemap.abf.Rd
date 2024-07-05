@@ -4,13 +4,15 @@
 \alias{finemap.abf}
 \title{Bayesian finemapping analysis}
 \usage{
-finemap.abf(dataset, p1 = 1e-04)
+finemap.abf(dataset, p1 = 1e-04, prior_weights = NULL)
 }
 \arguments{
 \item{dataset}{a list with specifically named elements defining the dataset
 to be analysed. See \code{\link{check_dataset}} for details.}
 
 \item{p1}{prior probability a SNP is associated with the trait 1, default 1e-4}
+
+\item{prior_weights}{Non-negative weights for the prior probability a SNP is causal}
 }
 \value{
 a \code{data.frame}:

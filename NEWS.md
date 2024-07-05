@@ -1,3 +1,6 @@
+# coloc 6.0.0
+* Add new ability to calculate varying prior probabilities based on distance to the gene in eQTL datasets.
+
 # coloc 5.2.3
 * minor change, for another package to be able to access one of the internal functions, it was exported
 

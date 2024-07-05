@@ -1,3 +1,21 @@
+#' eQTLGen estimated distance density
+#'
+#' @docType data
+#'
+#' @usage data(eqtlgen_density_data)
+#'
+#' @format A data.frame with two columns, "rel_dist" the relative distance
+#'   to the TSS and "dens_value" the estimated value of the density. This
+#'   density is esimated from the eQTLGen data. For details of how the
+#'   density was estiamted see Pullin and Wallace (2024+).
+#'
+#' @keywords datasets
+#'
+#' @examples
+#' data(eqtlgen_density_data)
+#' names(eqtlgen_density_data)
+"eqtlgen_density_data"
+
 #' Simulated data to use in testing and vignettes in the coloc package
 #'
 #' @docType data
