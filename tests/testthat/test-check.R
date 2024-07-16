@@ -49,3 +49,5 @@ test_that("Infinite values in beta/varbeta triggers specific error", {
   D1_varbeta_inf$varbeta[[1]] <- Inf
   expect_error(check_dataset(D1_varbeta_inf), "Infinite")
 })
+
+detach(coloc_test_data)
