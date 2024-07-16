@@ -4,12 +4,15 @@
 \alias{process.dataset}
 \title{process.dataset}
 \usage{
-process.dataset(d, suffix)
+process.dataset(d, suffix, ...)
 }
 \arguments{
 \item{d}{list}
 
 \item{suffix}{"df1" or "df2"}
+
+\item{...}{used to pass parameters to approx.bf.estimates, in
+particular the effect_priors parameter}
 }
 \value{
 data.frame with log(abf) or log(bf)

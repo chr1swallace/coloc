@@ -93,8 +93,9 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 ##' @inheritParams approx.bf.p
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace
-approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1) {
-    sd.prior <- if (type == "quant") { 0.15*sdY } else { 0.2 }
+approx.bf.estimates <- function (z, V, type, suffix=NULL, sdY=1,
+                                 effect_priors=c(quant=0.15,cc=0.2)) {
+    sd.prior <- if (type == "quant") { effect_priors["quant"] * sdY } else { effect_priors["cc"] }
     r <- sd.prior^2/(sd.prior^2 + V)
     lABF = 0.5 * (log(1 - r) + (r * z^2))
     ret <- data.frame(V, z, r, lABF)
@@ -163,10 +164,12 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @title process.dataset
 ##' @param d list
 ##' @param suffix "df1" or "df2"
+##' @param ... used to pass parameters to approx.bf.estimates, in
+##'     particular the effect_priors parameter
 ##' @return data.frame with log(abf) or log(bf)
 ##' @export
 ##' @author Chris Wallace
-process.dataset <- function(d, suffix) {
+process.dataset <- function(d, suffix, ...) {
                                         #message('Processing dataset')
 
     nd <- names(d)
@@ -307,22 +310,36 @@ adjust_prior=function(p,nsnps,suffix="") {
 ##' coefficients should be used if available.
 ##' 
 ##' @title Fully Bayesian colocalisation analysis using Bayes Factors
-##' @param dataset1 a list with specifically named elements defining the dataset
-##'   to be analysed. See \code{\link{check_dataset}} for details.
+##' @param dataset1 a list with specifically named elements defining
+##'     the dataset to be analysed. See \code{\link{check_dataset}}
+##'     for details.
 ##' @param dataset2 as above, for dataset 2
-##' @param MAF Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets
-##' @param p1 prior probability a SNP is associated with trait 1, default 1e-4
-##' @param p2 prior probability a SNP is associated with trait 2, default 1e-4
-##' @param p12 prior probability a SNP is associated with both traits, default 1e-5
-##' @return a list of two \code{data.frame}s:
-##' \itemize{
-##' \item summary is a vector giving the number of SNPs analysed, and the posterior probabilities of H0 (no causal variant), H1 (causal variant for trait 1 only), H2 (causal variant for trait 2 only), H3 (two distinct causal variants) and H4 (one common causal variant)
-##' \item results is an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability SNP.PP.H4 of the SNP being causal for the shared signal *if* H4 is true. This is only relevant if the posterior support for H4 in summary is convincing.
-##' }
+##' @param MAF Common minor allele frequency vector to be used for
+##'     both dataset1 and dataset2, a shorthand for supplying the same
+##'     vector as parts of both datasets
+##' @param p1 prior probability a SNP is associated with trait 1,
+##'     default 1e-4
+##' @param p2 prior probability a SNP is associated with trait 2,
+##'     default 1e-4
+##' @param p12 prior probability a SNP is associated with both traits,
+##'     default 1e-5
+##' @param ... used to pass parameters to approx.bf.estimates, in
+##'     particular the effect_priors parameter
+##' @return a list of two \code{data.frame}s: \itemize{ \item summary
+##'     is a vector giving the number of SNPs analysed, and the
+##'     posterior probabilities of H0 (no causal variant), H1 (causal
+##'     variant for trait 1 only), H2 (causal variant for trait 2
+##'     only), H3 (two distinct causal variants) and H4 (one common
+##'     causal variant) \item results is an annotated version of the
+##'     input data containing log Approximate Bayes Factors and
+##'     intermediate calculations, and the posterior probability
+##'     SNP.PP.H4 of the SNP being causal for the shared signal *if*
+##'     H4 is true. This is only relevant if the posterior support for
+##'     H4 in summary is convincing.  }
 ##' @author Claudia Giambartolomei, Chris Wallace
 ##' @export
 coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
-                      p1=1e-4, p2=1e-4, p12=1e-5) {
+                      p1=1e-4, p2=1e-4, p12=1e-5,...) {
 
     if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
         dataset1$MAF <- MAF

@@ -5,6 +5,7 @@ Imports:
     ggplot2,
     methods,
     viridis,
+    matrixStats,
     stats,
     grDevices,
     susieR (>= 0.12.06),

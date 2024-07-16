@@ -4,7 +4,14 @@
 \alias{approx.bf.estimates}
 \title{Internal function, approx.bf.estimates}
 \usage{
-approx.bf.estimates(z, V, type, suffix = NULL, sdY = 1)
+approx.bf.estimates(
+  z,
+  V,
+  type,
+  suffix = NULL,
+  sdY = 1,
+  effect_priors = c(quant = 0.15, cc = 0.2)
+)
 }
 \arguments{
 \item{z}{normal deviate associated with regression coefficient and its variance}

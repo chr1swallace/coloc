@@ -14,18 +14,24 @@ coloc.detail(
 )
 }
 \arguments{
-\item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check_dataset}} for details.}
+\item{dataset1}{a list with specifically named elements defining
+the dataset to be analysed. See \code{\link{check_dataset}}
+for details.}
 
 \item{dataset2}{as above, for dataset 2}
 
-\item{MAF}{Common minor allele frequency vector to be used for both dataset1 and dataset2, a shorthand for supplying the same vector as parts of both datasets}
+\item{MAF}{Common minor allele frequency vector to be used for
+both dataset1 and dataset2, a shorthand for supplying the same
+vector as parts of both datasets}
 
-\item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
+\item{p1}{prior probability a SNP is associated with trait 1,
+default 1e-4}
 
-\item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
+\item{p2}{prior probability a SNP is associated with trait 2,
+default 1e-4}
 
-\item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+\item{p12}{prior probability a SNP is associated with both traits,
+default 1e-5}
 }
 \value{
 a list of three \code{data.tables}s:

@@ -31,11 +31,14 @@ masking}
 
 \item{r2thr}{r2 threshold at which to mask}
 
-\item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
+\item{p1}{prior probability a SNP is associated with trait 1,
+default 1e-4}
 
-\item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
+\item{p2}{prior probability a SNP is associated with trait 2,
+default 1e-4}
 
-\item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+\item{p12}{prior probability a SNP is associated with both traits,
+default 1e-5}
 
 \item{LD1}{named LD matrix (for masking) for trait 1 only}
 
