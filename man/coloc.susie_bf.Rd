@@ -15,16 +15,20 @@ coloc.susie_bf(
 )
 }
 \arguments{
-\item{dataset1}{a list with specifically named elements defining the dataset
-to be analysed. See \code{\link{check_dataset}} for details.}
+\item{dataset1}{a list with specifically named elements defining
+the dataset to be analysed. See \code{\link{check_dataset}}
+for details.}
 
 \item{bf2}{named vector of log BF, names are snp ids and will be matched to column names of susie object's alpha}
 
-\item{p1}{prior probability a SNP is associated with trait 1, default 1e-4}
+\item{p1}{prior probability a SNP is associated with trait 1,
+default 1e-4}
 
-\item{p2}{prior probability a SNP is associated with trait 2, default 1e-4}
+\item{p2}{prior probability a SNP is associated with trait 2,
+default 1e-4}
 
-\item{p12}{prior probability a SNP is associated with both traits, default 1e-5}
+\item{p12}{prior probability a SNP is associated with both traits,
+default 1e-5}
 
 \item{susie.args}{named list of arguments to be passed to susieR::susie_rss()}
 
