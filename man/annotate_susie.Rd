@@ -10,6 +10,10 @@ annotate_susie(res, snp, LD)
 \item{res}{output of susie_rss()}
 
 \item{snp}{vector of snp identifiers}
+
+\item{LD}{matrix of LD (r) between snps in snp
+identifiers. Columns, rows should be named by a string that
+exists in the vector snp}
 }
 \value{
 res with column names added to some components

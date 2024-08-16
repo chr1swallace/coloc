@@ -2,6 +2,7 @@
 % Please edit documentation in R/coloc-package.R
 \docType{package}
 \name{coloc-package}
+\alias{-package}
 \alias{coloc-package}
 \title{Colocalisation tests of two genetic traits}
 \description{

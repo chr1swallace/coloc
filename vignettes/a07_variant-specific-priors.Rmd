@@ -1,0 +1,101 @@
+---
+title: "Coloc: using variant-specific priros in coloc"
+author: "Jeffrey Pullin"
+output: rmarkdown::html_vignette
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Coloc: using variant-specific priors in coloc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Variant-specific priors in coloc
+
+```{r}
+library(coloc)
+data(coloc_test_data)
+data(eqtlgen_density_data)
+attach(coloc_test_data)
+attach(eqtlgen_density_data)
+```
+
+By default coloc assumes that all variants in a region are equally 
+likely to be causal for the traits of interest. However, 
+there is substantial evidence that functional annotations and 
+other genetic information can provide evidence about whether
+variants are causal. 
+
+# Using general variant-specific information 
+
+To provide variant-specific information to coloc use the `prior_weights1` 
+or `prior_weights2` arguments for `coloc.abf()`, `coloc.susie()` or `coloc.bf()`. 
+The arguments specify non-negative weights that encode the 'weight' (proportional)
+to the probability of a variant being causal. Specifying weights 
+for either or both of the traits will automatically change the prior 
+probability of a variant being causal for *both* traits.
+
+For example, if we had prior information that the first 100 variants were twice
+as likely to be causal for trait 1 we could encode this in the following 
+prior weights:
+
+```{r}
+weights <- c(rep(2, 100), rep(1, 400))
+coloc.abf(D1, D2, prior_weights1 = weights)
+```
+
+# An example of variant-specific information
+
+Pullin and Wallace (2024) describe the implementation of 
+variant-specific priors in coloc and compare various sources 
+of prior information. The best performing source of prior information 
+was the density of the distance between an expression 
+quantative trait loci (eQTL) and the gene's transcription start site 
+(TSS). These estiamted densities show that 
+eQTLs often lie close to the TSS suggesting that we should
+expect variants that lie closer to the TSS to be more likely 
+to be causal. The density estimated from the eQTLGen dataset, 
+see Pullin and Wallace (2024) for details, is stored in the coloc 
+dataset `eqtlgen_density_data` and we can visualise the density, 
+where the middle of the interval is the TSS.
+
+```{r}
+plot(
+  eqtlgen_density_data$rel_dist,
+  eqtlgen_density_data$dens_value
+)
+```
+
+To illustrate the use of the TSS we augment coloc's simulated data
+with simulated genomic positions in a 1Mb window around the TSS of
+PTPN22. Then using a simple function we can compute prior weights for 
+these positions relative to different specified TSSs.
+
+```{r}
+pos <- sample(113371759:114371759, 500, replace = FALSE)
+D1$position <- pos
+D2$position <- pos
+
+compute_eqtl_tss_dist_weights <- function(pos, tss, density_data) {
+  rel <- pos - tss
+  closest <- numeric(length(pos))
+  for (i in seq_along(pos)) {
+    closest[[i]] <- which.min(abs(density_data$rel_dist - rel[[i]]))
+  }
+  out <- density_data$dens_value[closest]
+  out <- out / sum(out)
+  out
+}
+```
+
+Computing the weights and applying them shows little impact on the 
+probability of colalsiation because this simulated example has very strong 
+evidence for colcalsiation. In real data, the impact will be greater.
+
+```{r}
+# Compute the weights relative to the PTPN22 TSS.
+w1 <- compute_eqtl_tss_dist_weights(D1$position, 113871759, eqtlgen_density_data) 
+
+coloc.abf(D1, D2)
+coloc.abf(D1, D2, prior_weights1 = w1)
+```
