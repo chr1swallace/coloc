@@ -84,7 +84,7 @@ findpeaks=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
 subset_dataset=function(dataset, index) {
   if(!length(index))
     return(dataset)
-  if(!is.numeric(dataset))
+  if(!is.numeric(index))
     stop("index must be a numeric vector of indexing which snps to keep")
   d=dataset;
   n=length(d$snp) # how many we started with
