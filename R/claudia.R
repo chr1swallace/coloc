@@ -204,7 +204,7 @@ process.dataset <- function(d, suffix, ...) {
         if(d$type=="quant" && !('sdY' %in% nd)) 
             d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
         df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
-                                  V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
+                                  V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY, ...)
         df$snp <- as.character(d$snp)
         if("position" %in% nd)
             df <- cbind(df,position=d$position)
@@ -348,8 +348,8 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     check_dataset(d=dataset1,1)
     check_dataset(d=dataset2,2)
     
-    df1 <- process.dataset(d=dataset1, suffix="df1")
-    df2 <- process.dataset(d=dataset2, suffix="df2")
+    df1 <- process.dataset(d=dataset1, suffix="df1", ...)
+    df2 <- process.dataset(d=dataset2, suffix="df2", ...)
     p1=adjust_prior(p1,nrow(df1),"1")
     p2=adjust_prior(p2,nrow(df2),"2")
 
