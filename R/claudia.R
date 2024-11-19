@@ -90,6 +90,7 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 ##' @param z normal deviate associated with regression coefficient and its variance
 ##' @param V its variance
 ##' @param sdY standard deviation of the trait. If not supplied, will be estimated.
+##' @param effect_priors named vector with two entries, quant and cc. These give the standard deviation of the prior of the effect size distribution.
 ##' @inheritParams approx.bf.p
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace

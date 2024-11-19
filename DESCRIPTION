@@ -43,6 +43,7 @@ Collate:
     'boundaries.R'
     'check.R'
     'claudia.R'
+    'compare.R'
     'plot.R'
     'private.R'
     'sensitivity.R'

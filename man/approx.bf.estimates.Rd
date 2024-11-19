@@ -23,6 +23,8 @@ approx.bf.estimates(
 \item{suffix}{suffix to append to column names of returned data.frame}
 
 \item{sdY}{standard deviation of the trait. If not supplied, will be estimated.}
+
+\item{effect_priors}{named vector with two entries, quant and cc. These give the standard deviation of the prior of the effect size distribution.}
 }
 \value{
 data.frame containing lABF and intermediate calculations
