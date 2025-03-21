@@ -222,6 +222,8 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_high
     second_dataset[, .(snp, z), env = list(snp = snp_label)], 
     by = snp_label, suffixes = c(".x", ".y"))
 
+  z_cor <- merged[, cor(z.x, z.y, use = "pairwise.complete.obs")]
+
   ggplot(merged)+
     geom_point(aes(x = z.x, y = z.y))+
     xlab(first_trait)+
@@ -233,6 +235,7 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_high
     coord_fixed(ratio = 1)+
     xlim(c(min_z, max_z))+
     ylim(c(min_z, max_z))+
+    ggtitle(sprintf('Pearson correlation: %.3f', z_cor))+
     theme_bw() -> pls[[4]]
     
   coloc_summary <- data.table(variable = names(x$summary), value = x$summary)
