@@ -117,6 +117,134 @@ plot_dataset <- function(d,
   }
 }
 
+##' Plot a pair of coloc datasets in an extended format
+##' 
+##' @title Draw extended plot of summary statistics for two coloc datasets
+##'
+##' @description Draw Manhattan-style locus plots for p-values in each dataset, gene annotations, 
+##' a scatter plot of z-scores, and a table of coloc summary statistics.
+##'
+##' @details This function expects that the first two elements of the coloc 
+##' dataset list d contain summary statistics. Columns labelled 'chromosome',
+##' 'position', and 'p' (p-values) are expected in each dataset. The library
+##' containing the Ensembl database specified by ens_db must be loaded prior to 
+##' use (see the example). EnsDb.Hsapiens.v86 is the default database (GRCh38/hg19);
+##' for GRCh37/hg19, use EnsDb.Hsapiens.v75.
+##'
+##' @param d a coloc dataset
+##' @param x object of class \code{coloc_abf} returned by coloc.abf()
+##' @param first_highlight_list character vector of snps to highlight in the first dataset
+##' @param second_highlight_list character vector of snps to highlight in the second dataset
+##' @param first_trait label for the first trait
+##' @param second_trait label for the second trait
+##' @param snp_label label for the snp column
+##' @param ens_db character string specifying Ensembl database package from which to get gene positions
+##' @return a gtable object
+##'
+##' @importFrom ggplot2 ggplot geom_point geom_vline geom_hline coord_fixed xlim ylim
+##' @importFrom data.table data.table
+##' @importFrom locuszoomr locus gg_scatter gg_genetracks
+##' @importFrom gridExtra arrangeGrob tableGrob ttheme_minimal
+##' @export
+##' @author Tom Willis
+##' @examples
+##' \dontrun{
+##' library(coloc)
+##' library(EnsDb.Hsapiens.v86)
+##' plot(plot_extended_dataset(list(first_dataset, second_dataset), coloc,
+##' first_highlight_list = c("rs123", "rs456"), 
+##' second_highlight_list = c("rs789", "rs1011"), 
+##' ens_db = "EnsDb.Hsapiens.v86"))
+##' }
+plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_highlight_list = NULL,  
+  first_trait = "Trait 1", second_trait = "Trait 2", snp_label = "snp", ens_db = "EnsDb.Hsapiens.v86") {
+  if(!("chromosome" %in% names(d[[1]]) & "chromosome" %in% names(d[[1]]))) {
+    stop("A \"chromosome\" column is required in both datasets.")
+  }
+
+  if(!("position" %in% names(d[[1]]) & "position" %in% names(d[[1]]))) {
+    stop("A \"position\" column is required in both datasets.")
+  }
+
+  if(!("p" %in% names(d[[1]]) & "p" %in% names(d[[1]]))) {
+    stop("A \"p\" column is required in both datasets.")
+  }
+
+  if(length(unique(first_dataset$chromosome)) != 1 |
+   length(unique(second_dataset$chromosome)) != 1 |
+    unique(first_dataset$chromosome) != unique(second_dataset$chromosome)) {
+    print(unique(first_dataset$chromosome))
+    print(unique(second_dataset$chromosome))
+    stop("Dataset should contain summary statistics for variants on only one chromosome, 
+    which should be the same in both datasets.")
+  } else {
+    chromosome <- unique(first_dataset$chromosome)
+  }
+
+  # From locuszoomr::locus
+  if (!ens_db %in% (.packages())) {
+    stop("Ensembl database not loaded. Try: library(", ens_db, ")",
+          call. = FALSE)
+  }
+  # TODO plot LD if available
+  first_dataset <- as.data.table(d[[1]])
+  first_dataset[, p := as.numeric(p)]
+  first_dataset <- first_dataset[p > 0 & !is.na(p)]
+  first_dataset[, z := beta/sqrt(varbeta)]
+
+  second_dataset <- as.data.table(d[[2]])
+  second_dataset[, p := as.numeric(p)]
+  second_dataset <- second_dataset[p > 0 & !is.na(p)]
+  second_dataset[, z := beta/sqrt(varbeta)]
+
+  min_pos <- min(first_dataset[, min(position)], second_dataset[, min(position)])
+  max_pos <- max(first_dataset[, max(position)], second_dataset[, max(position)])
+
+  min_z <- min(first_dataset[, min(z)], second_dataset[, min(z)])
+  max_z <- max(first_dataset[, max(z)], second_dataset[, max(z)])
+
+  first_loc  <- locus(data = first_dataset, chrom = "chromosome", 
+    pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
+    xrange = c(min_pos, max_pos), ens_db = "EnsDb.Hsapiens.v86")
+  second_loc <- locus(data = second_dataset, chrom = "chromosome", 
+    pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
+    xrange = c(min_pos, max_pos), ens_db = "EnsDb.Hsapiens.v86")
+
+  pls <- list()
+
+  pls[[1]] <- gg_scatter(first_loc, showLD = F, min.segment.length = 0,
+   nudge_y = 5, ens_db = edb, labels = first_highlight_list)+ggtitle(first_trait)
+  pls[[2]] <- gg_scatter(second_loc, showLD = F, min.segment.length = 0,
+   nudge_y = 5, ens_db = edb, labels = second_highlight_list)+ggtitle(second_trait)
+  pls[[3]] <- gg_genetracks(first_loc)
+
+  merged <- merge(first_dataset[, .(snp, z), env = list(snp = snp_label)], 
+    second_dataset[, .(snp, z), env = list(snp = snp_label)], 
+    by = snp_label, suffixes = c(".x", ".y"))
+
+  ggplot(merged)+
+    geom_point(aes(x = z.x, y = z.y))+
+    xlab(first_trait)+
+    ylab(second_trait)+
+    geom_vline(xintercept = qnorm(2.5e-8), linetype = "dashed", col = "blue")+
+    geom_vline(xintercept = qnorm(2.5e-8, lower.tail = F), linetype = "dashed", col = "blue")+
+    geom_hline(yintercept = qnorm(2.5e-8), linetype = "dashed", col = "blue")+
+    geom_hline(yintercept = qnorm(2.5e-8, lower.tail = F), linetype = "dashed", col = "blue")+
+    coord_fixed(ratio = 1)+
+    xlim(c(min_z, max_z))+
+    ylim(c(min_z, max_z))+
+    theme_bw() -> pls[[4]]
+    
+  coloc_summary <- data.table(variable = names(x$summary), value = x$summary)
+  coloc_summary[variable == "nsnps",  pretty_value := format(value, big.mark = ",")]
+  coloc_summary[variable != "nsnps",  pretty_value := signif(value, digits =  2)]
+
+  pls[[5]] <- tableGrob(coloc_summary[, .(Variable = variable, Value = pretty_value)],
+   theme = ttheme_minimal(), rows = NULL)
+
+  arrangeGrob(grobs = pls, layout_matrix = cbind(1:3, c(4,4,5)))
+}
+
 ##' Print summary of a coloc.abf run
 ##'
 ##' @title print.coloc_abf
