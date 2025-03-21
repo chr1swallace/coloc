@@ -4,3 +4,5 @@ inst/doc
 doc
 Meta
 *~
+coloc.Rcheck/
+coloc_*.tar.gz
