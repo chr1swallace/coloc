@@ -6,3 +6,4 @@ Meta
 *~
 coloc.Rcheck/
 coloc_*.tar.gz
+.Rproj.user

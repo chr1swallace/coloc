@@ -156,8 +156,16 @@ plot_dataset <- function(d,
 ##' second_highlight_list = c("rs789", "rs1011"), 
 ##' ens_db = "EnsDb.Hsapiens.v86"))
 ##' }
-plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_highlight_list = NULL,  
-  first_trait = "Trait 1", second_trait = "Trait 2", snp_label = "snp", ens_db = "EnsDb.Hsapiens.v86") {
+plot_extended_dataset <- function(d, x, first_highlight_list = NULL, 
+                                  second_highlight_list = NULL, 
+                                  first_index_snp = NULL,
+                                  second_index_snp = NULL,
+                                  first_trait = "Trait 1",
+                                  second_trait = "Trait 2",
+                                  snp_label = "snp",
+                                  ld_label = NULL,
+                                  show_ld = FALSE,
+                                  ens_db = "EnsDb.Hsapiens.v86") {
   if(!("chromosome" %in% names(d[[1]]) & "chromosome" %in% names(d[[1]]))) {
     stop("A \"chromosome\" column is required in both datasets.")
   }
@@ -170,28 +178,32 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_high
     stop("A \"p\" column is required in both datasets.")
   }
 
-  if(length(unique(first_dataset$chromosome)) != 1 |
-   length(unique(second_dataset$chromosome)) != 1 |
-    unique(first_dataset$chromosome) != unique(second_dataset$chromosome)) {
-    print(unique(first_dataset$chromosome))
-    print(unique(second_dataset$chromosome))
+  if(length(unique(d[[1]]$chromosome)) != 1 | 
+     length(unique(d[[2]]$chromosome)) != 1 | 
+     unique(d[[1]]$chromosome) != unique(d[[2]]$chromosome)) {
+    print(unique(d[[1]]$chromosome))
+    print(unique(d[[2]]$chromosome))
     stop("Dataset should contain summary statistics for variants on only one chromosome, 
     which should be the same in both datasets.")
   } else {
-    chromosome <- unique(first_dataset$chromosome)
+    chromosome <- unique(d[[1]]$chromosome)
   }
+  
+  if(show_ld & is.null(ld_label)) {
+      stop("If show_ld is TRUE, ld_label must be specified.")
+   }
 
   # From locuszoomr::locus
   if (!ens_db %in% (.packages())) {
     stop("Ensembl database not loaded. Try: library(", ens_db, ")",
           call. = FALSE)
   }
-  # TODO plot LD if available
+  
   first_dataset <- as.data.table(d[[1]])
   first_dataset[, p := as.numeric(p)]
   first_dataset <- first_dataset[p > 0 & !is.na(p)]
   first_dataset[, z := beta/sqrt(varbeta)]
-
+  
   second_dataset <- as.data.table(d[[2]])
   second_dataset[, p := as.numeric(p)]
   second_dataset <- second_dataset[p > 0 & !is.na(p)]
@@ -205,17 +217,23 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL, second_high
 
   first_loc  <- locus(data = first_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
-    xrange = c(min_pos, max_pos), ens_db = "EnsDb.Hsapiens.v86")
+    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = first_index_snp,
+    ens_db = "EnsDb.Hsapiens.v86")
   second_loc <- locus(data = second_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
-    xrange = c(min_pos, max_pos), ens_db = "EnsDb.Hsapiens.v86")
+    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = second_index_snp,
+    ens_db = "EnsDb.Hsapiens.v86")
 
   pls <- list()
 
-  pls[[1]] <- gg_scatter(first_loc, showLD = F, min.segment.length = 0,
-   nudge_y = 5, ens_db = edb, labels = first_highlight_list)+ggtitle(first_trait)
-  pls[[2]] <- gg_scatter(second_loc, showLD = F, min.segment.length = 0,
-   nudge_y = 5, ens_db = edb, labels = second_highlight_list)+ggtitle(second_trait)
+  pls[[1]] <- gg_scatter(first_loc, min.segment.length = 0,
+   nudge_y = 5, ens_db = edb, labels = first_highlight_list, showLD = show_ld,
+   legend_pos = 'topright')+
+    ggtitle(first_trait)
+  pls[[2]] <- gg_scatter(second_loc, min.segment.length = 0,
+   nudge_y = 5, ens_db = edb, labels = second_highlight_list, showLD = show_ld,
+   legend_pos = 'topright')+
+    ggtitle(second_trait)
   pls[[3]] <- gg_genetracks(first_loc)
 
   merged <- merge(first_dataset[, .(snp, z), env = list(snp = snp_label)], 

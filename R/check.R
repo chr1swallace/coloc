@@ -74,6 +74,7 @@ check_dataset <- function(d,
     ## no missing values - make people clean their own data rather
     ## than make assumptions here for datasets I don't know
     n <- 0
+    
     if(length(setdiff(req,nd)))
         stop("dataset ",suffix,": missing required element(s) ",paste(setdiff(req,nd),collapse=", "))
 

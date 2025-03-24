@@ -15,3 +15,5 @@ issues
 pkgdown
 vignettes/.*.org
 ^CRAN-SUBMISSION$
+^.*\.Rproj$
+^\.Rproj\.user$
