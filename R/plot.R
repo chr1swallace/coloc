@@ -132,12 +132,22 @@ plot_dataset <- function(d,
 ##' for GRCh37/hg19, use EnsDb.Hsapiens.v75.
 ##'
 ##' @param d a coloc dataset
-##' @param x object of class \code{coloc_abf} returned by coloc.abf()
-##' @param first_highlight_list character vector of snps to highlight in the first dataset
-##' @param second_highlight_list character vector of snps to highlight in the second dataset
+##' @param x object of class \code{coloc_abf} returned by \code{coloc.abf()}
+##' @param first_highlight_list character vector of snps to highlight in the first dataset; 
+##' \code{'index'} can be passed to highlight the most significant SNP
+##' @param second_highlight_list character vector of snps to highlight in the second dataset;
+##' \code{'index'} can be passed to highlight the most significant SNP
+##' @param first_index_snp snp to designate as index snp in the first dataset 
+##' for the purpose of LD visualisation
+##' @param second_index_snp snp to designate as index snp in the second dataset
+##' for the purpose of LD visualisation
 ##' @param first_trait label for the first trait
 ##' @param second_trait label for the second trait
 ##' @param snp_label label for the snp column
+##' @param ld_label label for the LD column
+##' @param show_ld logical, whether to show LD in the locus plots
+##' @param locus_plot_ylim numeric vector of length 2 specifying the y-axis 
+##' limits for the locus plots on the -log10 scale
 ##' @param ens_db character string specifying Ensembl database package from which to get gene positions
 ##' @return a gtable object
 ##'
@@ -156,7 +166,9 @@ plot_dataset <- function(d,
 ##' second_highlight_list = c("rs789", "rs1011"), 
 ##' ens_db = "EnsDb.Hsapiens.v86"))
 ##' }
-plot_extended_dataset <- function(d, x, first_highlight_list = NULL, 
+plot_extended_dataset <- function(d, 
+                                  x, 
+                                  first_highlight_list = NULL, 
                                   second_highlight_list = NULL, 
                                   first_index_snp = NULL,
                                   second_index_snp = NULL,
@@ -165,7 +177,11 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL,
                                   snp_label = "snp",
                                   ld_label = NULL,
                                   show_ld = FALSE,
+                                  locus_plot_ylim = NULL,
                                   ens_db = "EnsDb.Hsapiens.v86") {
+  # See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
+  # tl;dr it stops the 'undefined global variables' warning in R CMD check
+  p <- z.x <- z.y <- pretty_value <- NULL  
   if(!("chromosome" %in% names(d[[1]]) & "chromosome" %in% names(d[[1]]))) {
     stop("A \"chromosome\" column is required in both datasets.")
   }
@@ -218,21 +234,37 @@ plot_extended_dataset <- function(d, x, first_highlight_list = NULL,
   first_loc  <- locus(data = first_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
     xrange = c(min_pos, max_pos), LD = ld_label, index_snp = first_index_snp,
-    ens_db = "EnsDb.Hsapiens.v86")
+    ens_db = ens_db)
   second_loc <- locus(data = second_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
     xrange = c(min_pos, max_pos), LD = ld_label, index_snp = second_index_snp,
-    ens_db = "EnsDb.Hsapiens.v86")
+    ens_db = ens_db)
+  
+  if(is.null(locus_plot_ylim)) {
+    # If we have any highlights we may have to make space for them by adding a 
+    # few log units to the y axis
+    first_locus_plot_ylim <- c(0, max(first_loc$data$logP, na.rm = T))
+    second_locus_plot_ylim <- c(0, max(second_loc$data$logP, na.rm = T))
+   if(!is.null(first_highlight_list)) {
+     first_locus_plot_ylim[2] <- first_locus_plot_ylim[2] + 8 
+   }
+   if(!is.null(second_highlight_list)) {
+     second_locus_plot_ylim[2] <- second_locus_plot_ylim[2] + 8 
+   }
+  } else {
+    first_locus_plot_ylim <- locus_plot_ylim
+    second_locus_plot_ylim <- locus_plot_ylim
+  }
 
   pls <- list()
 
   pls[[1]] <- gg_scatter(first_loc, min.segment.length = 0,
-   nudge_y = 5, ens_db = edb, labels = first_highlight_list, showLD = show_ld,
-   legend_pos = 'topright')+
+   nudge_y = 5, labels = first_highlight_list, showLD = show_ld,
+   legend_pos = 'topright', ylim = first_locus_plot_ylim)+
     ggtitle(first_trait)
   pls[[2]] <- gg_scatter(second_loc, min.segment.length = 0,
-   nudge_y = 5, ens_db = edb, labels = second_highlight_list, showLD = show_ld,
-   legend_pos = 'topright')+
+   nudge_y = 5, labels = second_highlight_list, showLD = show_ld,
+   legend_pos = 'topright', ylim = second_locus_plot_ylim)+
     ggtitle(second_trait)
   pls[[3]] <- gg_genetracks(first_loc)
 

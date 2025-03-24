@@ -9,26 +9,46 @@ plot_extended_dataset(
   x,
   first_highlight_list = NULL,
   second_highlight_list = NULL,
+  first_index_snp = NULL,
+  second_index_snp = NULL,
   first_trait = "Trait 1",
   second_trait = "Trait 2",
   snp_label = "snp",
+  ld_label = NULL,
+  show_ld = FALSE,
+  locus_plot_ylim = NULL,
   ens_db = "EnsDb.Hsapiens.v86"
 )
 }
 \arguments{
 \item{d}{a coloc dataset}
 
-\item{x}{object of class \code{coloc_abf} returned by coloc.abf()}
+\item{x}{object of class \code{coloc_abf} returned by \code{coloc.abf()}}
 
-\item{first_highlight_list}{character vector of snps to highlight in the first dataset}
+\item{first_highlight_list}{character vector of snps to highlight in the first dataset;
+\code{'index'} can be passed to highlight the most significant SNP}
 
-\item{second_highlight_list}{character vector of snps to highlight in the second dataset}
+\item{second_highlight_list}{character vector of snps to highlight in the second dataset;
+\code{'index'} can be passed to highlight the most significant SNP}
+
+\item{first_index_snp}{snp to designate as index snp in the first dataset
+for the purpose of LD visualisation}
+
+\item{second_index_snp}{snp to designate as index snp in the second dataset
+for the purpose of LD visualisation}
 
 \item{first_trait}{label for the first trait}
 
 \item{second_trait}{label for the second trait}
 
 \item{snp_label}{label for the snp column}
+
+\item{ld_label}{label for the LD column}
+
+\item{show_ld}{logical, whether to show LD in the locus plots}
+
+\item{locus_plot_ylim}{numeric vector of length 2 specifying the y-axis
+limits for the locus plots on the -log10 scale}
 
 \item{ens_db}{character string specifying Ensembl database package from which to get gene positions}
 }
