@@ -64,10 +64,11 @@ Plot a pair of coloc datasets in an extended format
 
 This function expects that the first two elements of the coloc
 dataset list d contain summary statistics. Columns labelled 'chromosome',
-'position', and 'p' (p-values) are expected in each dataset. The library
-containing the Ensembl database specified by ens_db must be loaded prior to
-use (see the example). EnsDb.Hsapiens.v86 is the default database (GRCh38/hg19);
-for GRCh37/hg19, use EnsDb.Hsapiens.v75.
+'position', and 'p' (p-values) are expected in each dataset. The packages \code{locuszoomr}
+and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
+for this function. One of the \code{EnsDb.Hsapiens} libraries containing the Ensembl database
+specified by ens_db must be loaded prior to  use (see the example). EnsDb.Hsapiens.v86
+is the default database (GRCh38/hg19); for GRCh37/hg19, use EnsDb.Hsapiens.v75.
 }
 \examples{
 \dontrun{

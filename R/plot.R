@@ -126,10 +126,11 @@ plot_dataset <- function(d,
 ##'
 ##' @details This function expects that the first two elements of the coloc 
 ##' dataset list d contain summary statistics. Columns labelled 'chromosome',
-##' 'position', and 'p' (p-values) are expected in each dataset. The library
-##' containing the Ensembl database specified by ens_db must be loaded prior to 
-##' use (see the example). EnsDb.Hsapiens.v86 is the default database (GRCh38/hg19);
-##' for GRCh37/hg19, use EnsDb.Hsapiens.v75.
+##' 'position', and 'p' (p-values) are expected in each dataset. The packages \code{locuszoomr}
+##' and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
+##' for this function. One of the \code{EnsDb.Hsapiens} libraries containing the Ensembl database
+##'  specified by ens_db must be loaded prior to  use (see the example). EnsDb.Hsapiens.v86
+##' is the default database (GRCh38/hg19); for GRCh37/hg19, use EnsDb.Hsapiens.v75.
 ##'
 ##' @param d a coloc dataset
 ##' @param x object of class \code{coloc_abf} returned by \code{coloc.abf()}
@@ -153,7 +154,6 @@ plot_dataset <- function(d,
 ##'
 ##' @importFrom ggplot2 ggplot geom_point geom_vline geom_hline coord_fixed xlim ylim
 ##' @importFrom data.table data.table
-##' @importFrom locuszoomr locus gg_scatter gg_genetracks
 ##' @importFrom gridExtra arrangeGrob tableGrob ttheme_minimal
 ##' @export
 ##' @author Tom Willis
@@ -179,6 +179,28 @@ plot_extended_dataset <- function(d,
                                   show_ld = FALSE,
                                   locus_plot_ylim = NULL,
                                   ens_db = "EnsDb.Hsapiens.v86") {
+  if(!requireNamespace("locuszoomr", quietly = TRUE)) {
+    stop("locuszoomr package is required for this function.")
+  } 
+ 
+  if(ens_db == "EnsDb.Hsapiens.v86") {
+    if(!requireNamespace("EnsDb.Hsapiens.v86", quietly = TRUE)) {
+      stop("EnsDb.Hsapiens.v86 package is required for this function.")
+    }
+  } else if(ens_db == "EnsDb.Hsapiens.v75") {
+    if(!requireNamespace("EnsDb.Hsapiens.v75", quietly = TRUE)) {
+      stop("EnsDb.Hsapiens.v75 package is required for this function.")
+    }
+  } else {
+    stop("Invalid Ensembl database specified.")
+  }
+  
+  # From locuszoomr::locus
+  if (!ens_db %in% (.packages())) {
+    stop("Ensembl database not loaded. Try: library(", ens_db, ")",
+          call. = FALSE)
+  }
+  
   # See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
   # tl;dr it stops the 'undefined global variables' warning in R CMD check
   p <- z.x <- z.y <- pretty_value <- NULL  
@@ -209,12 +231,6 @@ plot_extended_dataset <- function(d,
       stop("If show_ld is TRUE, ld_label must be specified.")
    }
 
-  # From locuszoomr::locus
-  if (!ens_db %in% (.packages())) {
-    stop("Ensembl database not loaded. Try: library(", ens_db, ")",
-          call. = FALSE)
-  }
-  
   first_dataset <- as.data.table(d[[1]])
   first_dataset[, p := as.numeric(p)]
   first_dataset <- first_dataset[p > 0 & !is.na(p)]
@@ -231,11 +247,11 @@ plot_extended_dataset <- function(d,
   min_z <- min(first_dataset[, min(z)], second_dataset[, min(z)])
   max_z <- max(first_dataset[, max(z)], second_dataset[, max(z)])
 
-  first_loc  <- locus(data = first_dataset, chrom = "chromosome", 
+  first_loc  <- locuszoomr::locus(data = first_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
     xrange = c(min_pos, max_pos), LD = ld_label, index_snp = first_index_snp,
     ens_db = ens_db)
-  second_loc <- locus(data = second_dataset, chrom = "chromosome", 
+  second_loc <- locuszoomr::locus(data = second_dataset, chrom = "chromosome", 
     pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
     xrange = c(min_pos, max_pos), LD = ld_label, index_snp = second_index_snp,
     ens_db = ens_db)
@@ -258,15 +274,15 @@ plot_extended_dataset <- function(d,
 
   pls <- list()
 
-  pls[[1]] <- gg_scatter(first_loc, min.segment.length = 0,
+  pls[[1]] <- locuszoomr::gg_scatter(first_loc, min.segment.length = 0,
    nudge_y = 5, labels = first_highlight_list, showLD = show_ld,
    legend_pos = 'topright', ylim = first_locus_plot_ylim)+
     ggtitle(first_trait)
-  pls[[2]] <- gg_scatter(second_loc, min.segment.length = 0,
+  pls[[2]] <- locuszoomr::gg_scatter(second_loc, min.segment.length = 0,
    nudge_y = 5, labels = second_highlight_list, showLD = show_ld,
    legend_pos = 'topright', ylim = second_locus_plot_ylim)+
     ggtitle(second_trait)
-  pls[[3]] <- gg_genetracks(first_loc)
+  pls[[3]] <- locuszoomr::gg_genetracks(first_loc)
 
   merged <- merge(first_dataset[, .(snp, z), env = list(snp = snp_label)], 
     second_dataset[, .(snp, z), env = list(snp = snp_label)], 
