@@ -117,22 +117,25 @@ plot_dataset <- function(d,
   }
 }
 
-##' Plot a pair of coloc datasets in an extended format
-##' 
 ##' @title Draw extended plot of summary statistics for two coloc datasets
 ##'
 ##' @description Draw Manhattan-style locus plots for p-values in each dataset, gene annotations, 
 ##' a scatter plot of z-scores, and a table of coloc summary statistics.
 ##'
 ##' @details This function expects that the first two elements of the coloc 
-##' dataset list d contain summary statistics. Columns labelled 'chromosome',
-##' 'position', and 'p' (p-values) are expected in each dataset. The packages \code{locuszoomr}
-##' and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
+##' dataset list d contain summary statistics. Columns labelled 'chromosome' and
+##' 'position' are expected in each dataset. 
+##' 
+##' The packages \code{locuszoomr} and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
 ##' for this function. One of the \code{EnsDb.Hsapiens} libraries containing the Ensembl database
 ##'  specified by ens_db must be loaded prior to  use (see the example). EnsDb.Hsapiens.v86
 ##' is the default database (GRCh38/hg19); for GRCh37/hg19, use EnsDb.Hsapiens.v75.
+##' 
+##' If \code{beta} and \code{varbeta} are absent, -log10(p) values will be plotted
+##' in lieu of z-scores.
 ##'
-##' @param d a coloc dataset
+##' @param dataset1 a coloc dataset
+##' @param dataset2 a coloc dataset
 ##' @param x object of class \code{coloc_abf} returned by \code{coloc.abf()}
 ##' @param first_highlight_list character vector of snps to highlight in the first dataset; 
 ##' \code{'index'} can be passed to highlight the most significant SNP
@@ -156,6 +159,7 @@ plot_dataset <- function(d,
 ##' @importFrom data.table data.table
 ##' @export
 ##' @author Tom Willis
+##' @author Chris Wallace
 ##' @examples
 ##' \dontrun{
 ##' library(coloc)
@@ -194,9 +198,8 @@ plot_extended_dataset <- function(dataset1,
     check_dataset(dataset1)
     check_dataset(dataset2)
     
-    ## See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
-    ## tl;dr it stops the 'undefined global variables' warning in R CMD check
     p <- z.x <- z.y <- pretty_value <- NULL  
+    
     if(!("chromosome" %in% names(dataset1) & "chromosome" %in% names(dataset2)))
         stop("A \"chromosome\" vector is required in both datasets.")
     if(!("position" %in% names(dataset1) & "position" %in% names(dataset2))) 
@@ -220,7 +223,7 @@ plot_extended_dataset <- function(dataset1,
     first_dataset <- as.data.table(dataset1)
     if("beta" %in% names(first_dataset) && "varbeta" %in% names(first_dataset)) {
         first_dataset[, z := beta/sqrt(varbeta)]
-        first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+        first_dataset[, logp := -(pnorm(-abs(z),log.p = TRUE) + log(2))/log(10)]
     } else {
         first_dataset[, logp := -log10(pvalues)]
         first_dataset[, z := -log10(pvalues)]
@@ -229,7 +232,7 @@ plot_extended_dataset <- function(dataset1,
     second_dataset <- as.data.table(dataset2)
     if("beta" %in% names(second_dataset) && "varbeta" %in% names(second_dataset)) {
         second_dataset[, z := beta/sqrt(varbeta)]
-        second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+        second_dataset[, logp := -(pnorm(-abs(z),log.p = TRUE) + log(2))/log(10)]
     } else {
         second_dataset[, logp := -log10(pvalues)]
         second_dataset[, z := -log10(pvalues)]
@@ -261,15 +264,15 @@ plot_extended_dataset <- function(dataset1,
                                     ens_db = ens_db)
     
     if(is.null(locus_plot_ylim)) {
-        ## If we have any highlights we may have to make space for them by adding a 
-        ## few log units to the y axis
+        ## If we have any highlights we may have to make space for them by adding
+        ## 20% to the y axis
         first_locus_plot_ylim <- c(0, max(first_loc$data$logp, na.rm = T))
         second_locus_plot_ylim <- c(0, max(second_loc$data$logp, na.rm = T))
         if(!is.null(first_highlight_list)) {
-            first_locus_plot_ylim[2] <- first_locus_plot_ylim[2] + 8 
+            first_locus_plot_ylim[2] <- first_locus_plot_ylim[2]*1.2
         }
         if(!is.null(second_highlight_list)) {
-            second_locus_plot_ylim[2] <- second_locus_plot_ylim[2] + 8 
+            second_locus_plot_ylim[2] <- second_locus_plot_ylim[2]*1.2
         }
     } else {
         first_locus_plot_ylim <- locus_plot_ylim
@@ -298,13 +301,9 @@ plot_extended_dataset <- function(dataset1,
         geom_point(aes(x = z.x, y = z.y))+
         xlab(first_trait)+
         ylab(second_trait)+
-        geom_vline(xintercept = qnorm(c(2.5e-8, 1-2.5e-8)), linetype = "dashed", col = "blue")+
-        geom_hline(yintercept = qnorm(c(2.5e-8, 1-2.5e-8)), linetype = "dashed", col = "blue")+
-        ## coord_fixed(ratio = 1)+
-        ## xlim(c(min_z, max_z))+
-        ## ylim(c(min_z, max_z))+
         ggtitle(sprintf('Pearson correlation: %.3f', z_cor))+
         theme_bw()     
+    
     coloc_summary <- data.table(variable = names(x$summary), value = x$summary)
     coloc_summary[variable == "nsnps",  pretty_value := format(value, big.mark = ",")]
     coloc_summary[variable != "nsnps",  pretty_value := signif(value, digits =  2)]

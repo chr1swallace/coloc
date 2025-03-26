@@ -22,6 +22,10 @@ plot_extended_dataset(
 )
 }
 \arguments{
+\item{dataset1}{a coloc dataset}
+
+\item{dataset2}{a coloc dataset}
+
 \item{x}{object of class \code{coloc_abf} returned by \code{coloc.abf()}}
 
 \item{first_highlight_list}{character vector of snps to highlight in the first dataset;
@@ -50,8 +54,6 @@ for the purpose of LD visualisation}
 limits for the locus plots on the -log10 scale}
 
 \item{ens_db}{character string specifying Ensembl database package from which to get gene positions. Current (at time of writing this documentation!) sensible values are  "EnsDb.Hsapiens.v86" for build 38 and "EnsDb.Hsapiens.v75" for build 37.}
-
-\item{d}{a coloc dataset}
 }
 \value{
 a gtable object
@@ -61,15 +63,17 @@ Draw Manhattan-style locus plots for p-values in each dataset, gene annotations,
 a scatter plot of z-scores, and a table of coloc summary statistics.
 }
 \details{
-Plot a pair of coloc datasets in an extended format
-
 This function expects that the first two elements of the coloc
-dataset list d contain summary statistics. Columns labelled 'chromosome',
-'position', and 'p' (p-values) are expected in each dataset. The packages \code{locuszoomr}
-and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
+dataset list d contain summary statistics. Columns labelled 'chromosome' and
+'position' are expected in each dataset.
+
+The packages \code{locuszoomr} and one of \code{EnsDb.Hsapiens.v86} or \code{EnsDb.Hsapiens.v75} are required
 for this function. One of the \code{EnsDb.Hsapiens} libraries containing the Ensembl database
 specified by ens_db must be loaded prior to  use (see the example). EnsDb.Hsapiens.v86
 is the default database (GRCh38/hg19); for GRCh37/hg19, use EnsDb.Hsapiens.v75.
+
+If \code{beta} and \code{varbeta} are absent, -log10(p) values will be plotted
+in lieu of z-scores.
 }
 \examples{
 \dontrun{
@@ -83,4 +87,6 @@ ens_db = "EnsDb.Hsapiens.v86"))
 }
 \author{
 Tom Willis
+
+Chris Wallace
 }
