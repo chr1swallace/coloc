@@ -154,7 +154,6 @@ plot_dataset <- function(d,
 ##'
 ##' @importFrom ggplot2 ggplot geom_point geom_vline geom_hline coord_fixed xlim ylim
 ##' @importFrom data.table data.table
-##' @importFrom gridExtra arrangeGrob tableGrob ttheme_minimal
 ##' @export
 ##' @author Tom Willis
 ##' @examples
@@ -181,6 +180,10 @@ plot_extended_dataset <- function(d,
                                   ens_db = "EnsDb.Hsapiens.v86") {
   if(!requireNamespace("locuszoomr", quietly = TRUE)) {
     stop("locuszoomr package is required for this function.")
+  } 
+  
+  if(!requireNamespace("gridExtra", quietly = TRUE)) {
+    stop("gridExtra package is required for this function.")
   } 
  
   if(ens_db == "EnsDb.Hsapiens.v86") {
@@ -308,10 +311,10 @@ plot_extended_dataset <- function(d,
   coloc_summary[variable == "nsnps",  pretty_value := format(value, big.mark = ",")]
   coloc_summary[variable != "nsnps",  pretty_value := signif(value, digits =  2)]
 
-  pls[[5]] <- tableGrob(coloc_summary[, .(Variable = variable, Value = pretty_value)],
-   theme = ttheme_minimal(), rows = NULL)
+  pls[[5]] <- gridExtra::tableGrob(coloc_summary[, .(Variable = variable, Value = pretty_value)],
+   theme = gridExtra::ttheme_minimal(), rows = NULL)
 
-  arrangeGrob(grobs = pls, layout_matrix = cbind(1:3, c(4,4,5)))
+  gridExtra::arrangeGrob(grobs = pls, layout_matrix = cbind(1:3, c(4,4,5)))
 }
 
 ##' Print summary of a coloc.abf run

@@ -10,8 +10,7 @@ Imports:
     stats,
     grDevices,
     susieR (>= 0.12.06),
-    utils,
-    gridExtra
+    utils
 Suggests:
     knitr,
     testthat,
@@ -20,7 +19,8 @@ Suggests:
     rmarkdown,
     EnsDb.Hsapiens.v86,
     EnsDb.Hsapiens.v75,
-    locuszoomr
+    locuszoomr,
+    gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 5.2.4
 Date: 2025-03-21
