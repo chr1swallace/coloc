@@ -149,7 +149,7 @@ plot_dataset <- function(d,
 ##' @param show_ld logical, whether to show LD in the locus plots
 ##' @param locus_plot_ylim numeric vector of length 2 specifying the y-axis 
 ##' limits for the locus plots on the -log10 scale
-##' @param ens_db character string specifying Ensembl database package from which to get gene positions
+##' @param ens_db character string specifying Ensembl database package from which to get gene positions. Current (at time of writing this documentation!) sensible values are  "EnsDb.Hsapiens.v86" for build 38 and "EnsDb.Hsapiens.v75" for build 37.
 ##' @return a gtable object
 ##'
 ##' @importFrom ggplot2 ggplot geom_point geom_vline geom_hline coord_fixed xlim ylim
@@ -165,7 +165,8 @@ plot_dataset <- function(d,
 ##' second_highlight_list = c("rs789", "rs1011"), 
 ##' ens_db = "EnsDb.Hsapiens.v86"))
 ##' }
-plot_extended_dataset <- function(d, 
+plot_extended_dataset <- function(dataset1,
+                                  dataset2,
                                   x, 
                                   first_highlight_list = NULL, 
                                   second_highlight_list = NULL, 
@@ -178,143 +179,130 @@ plot_extended_dataset <- function(d,
                                   show_ld = FALSE,
                                   locus_plot_ylim = NULL,
                                   ens_db = "EnsDb.Hsapiens.v86") {
-  if(!requireNamespace("locuszoomr", quietly = TRUE)) {
-    stop("locuszoomr package is required for this function.")
-  } 
-  
-  if(!requireNamespace("gridExtra", quietly = TRUE)) {
-    stop("gridExtra package is required for this function.")
-  } 
- 
-  if(ens_db == "EnsDb.Hsapiens.v86") {
-    if(!requireNamespace("EnsDb.Hsapiens.v86", quietly = TRUE)) {
-      stop("EnsDb.Hsapiens.v86 package is required for this function.")
-    }
-  } else if(ens_db == "EnsDb.Hsapiens.v75") {
-    if(!requireNamespace("EnsDb.Hsapiens.v75", quietly = TRUE)) {
-      stop("EnsDb.Hsapiens.v75 package is required for this function.")
-    }
-  } else {
-    stop("Invalid Ensembl database specified.")
-  }
-  
-  # From locuszoomr::locus
-  if (!ens_db %in% (.packages())) {
-    stop("Ensembl database not loaded. Try: library(", ens_db, ")",
-          call. = FALSE)
-  }
-  
-  # See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
-  # tl;dr it stops the 'undefined global variables' warning in R CMD check
-  p <- z.x <- z.y <- pretty_value <- NULL  
-  if(!("chromosome" %in% names(d[[1]]) & "chromosome" %in% names(d[[1]]))) {
-    stop("A \"chromosome\" column is required in both datasets.")
-  }
-
-  if(!("position" %in% names(d[[1]]) & "position" %in% names(d[[1]]))) {
-    stop("A \"position\" column is required in both datasets.")
-  }
-
-  if(!("p" %in% names(d[[1]]) & "p" %in% names(d[[1]]))) {
-    stop("A \"p\" column is required in both datasets.")
-  }
-
-  if(length(unique(d[[1]]$chromosome)) != 1 | 
-     length(unique(d[[2]]$chromosome)) != 1 | 
-     unique(d[[1]]$chromosome) != unique(d[[2]]$chromosome)) {
-    print(unique(d[[1]]$chromosome))
-    print(unique(d[[2]]$chromosome))
-    stop("Dataset should contain summary statistics for variants on only one chromosome, 
-    which should be the same in both datasets.")
-  } else {
-    chromosome <- unique(d[[1]]$chromosome)
-  }
-  
-  if(show_ld & is.null(ld_label)) {
-      stop("If show_ld is TRUE, ld_label must be specified.")
-   }
-
-  first_dataset <- as.data.table(d[[1]])
-  first_dataset[, p := as.numeric(p)]
-  first_dataset <- first_dataset[p > 0 & !is.na(p)]
-  first_dataset[, z := beta/sqrt(varbeta)]
-  
-  second_dataset <- as.data.table(d[[2]])
-  second_dataset[, p := as.numeric(p)]
-  second_dataset <- second_dataset[p > 0 & !is.na(p)]
-  second_dataset[, z := beta/sqrt(varbeta)]
-
-  min_pos <- min(first_dataset[, min(position)], second_dataset[, min(position)])
-  max_pos <- max(first_dataset[, max(position)], second_dataset[, max(position)])
-
-  min_z <- min(first_dataset[, min(z)], second_dataset[, min(z)])
-  max_z <- max(first_dataset[, max(z)], second_dataset[, max(z)])
-
-  first_loc  <- locuszoomr::locus(data = first_dataset, chrom = "chromosome", 
-    pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
-    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = first_index_snp,
-    ens_db = ens_db)
-  second_loc <- locuszoomr::locus(data = second_dataset, chrom = "chromosome", 
-    pos = "position", p = "p", labs = snp_label, seqname = chromosome, 
-    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = second_index_snp,
-    ens_db = ens_db)
-  
-  if(is.null(locus_plot_ylim)) {
-    # If we have any highlights we may have to make space for them by adding a 
-    # few log units to the y axis
-    first_locus_plot_ylim <- c(0, max(first_loc$data$logP, na.rm = T))
-    second_locus_plot_ylim <- c(0, max(second_loc$data$logP, na.rm = T))
-   if(!is.null(first_highlight_list)) {
-     first_locus_plot_ylim[2] <- first_locus_plot_ylim[2] + 8 
-   }
-   if(!is.null(second_highlight_list)) {
-     second_locus_plot_ylim[2] <- second_locus_plot_ylim[2] + 8 
-   }
-  } else {
-    first_locus_plot_ylim <- locus_plot_ylim
-    second_locus_plot_ylim <- locus_plot_ylim
-  }
-
-  pls <- list()
-
-  pls[[1]] <- locuszoomr::gg_scatter(first_loc, min.segment.length = 0,
-   nudge_y = 5, labels = first_highlight_list, showLD = show_ld,
-   legend_pos = 'topright', ylim = first_locus_plot_ylim)+
-    ggtitle(first_trait)
-  pls[[2]] <- locuszoomr::gg_scatter(second_loc, min.segment.length = 0,
-   nudge_y = 5, labels = second_highlight_list, showLD = show_ld,
-   legend_pos = 'topright', ylim = second_locus_plot_ylim)+
-    ggtitle(second_trait)
-  pls[[3]] <- locuszoomr::gg_genetracks(first_loc)
-
-  merged <- merge(first_dataset[, .(snp, z), env = list(snp = snp_label)], 
-    second_dataset[, .(snp, z), env = list(snp = snp_label)], 
-    by = snp_label, suffixes = c(".x", ".y"))
-
-  z_cor <- merged[, cor(z.x, z.y, use = "pairwise.complete.obs")]
-
-  ggplot(merged)+
-    geom_point(aes(x = z.x, y = z.y))+
-    xlab(first_trait)+
-    ylab(second_trait)+
-    geom_vline(xintercept = qnorm(2.5e-8), linetype = "dashed", col = "blue")+
-    geom_vline(xintercept = qnorm(2.5e-8, lower.tail = F), linetype = "dashed", col = "blue")+
-    geom_hline(yintercept = qnorm(2.5e-8), linetype = "dashed", col = "blue")+
-    geom_hline(yintercept = qnorm(2.5e-8, lower.tail = F), linetype = "dashed", col = "blue")+
-    coord_fixed(ratio = 1)+
-    xlim(c(min_z, max_z))+
-    ylim(c(min_z, max_z))+
-    ggtitle(sprintf('Pearson correlation: %.3f', z_cor))+
-    theme_bw() -> pls[[4]]
+    if(!requireNamespace("locuszoomr", quietly = TRUE)) 
+        stop("locuszoomr package is required for this function.")
+    if(!requireNamespace("gridExtra", quietly = TRUE)) 
+        stop("gridExtra package is required for this function.")
+    if(!requireNamespace(ens_db, quietly = TRUE)) 
+        stop(ens_db," package not found.")
     
-  coloc_summary <- data.table(variable = names(x$summary), value = x$summary)
-  coloc_summary[variable == "nsnps",  pretty_value := format(value, big.mark = ",")]
-  coloc_summary[variable != "nsnps",  pretty_value := signif(value, digits =  2)]
+    ## From locuszoomr::locus
+    if (!ens_db %in% (.packages())) {
+        stop("Ensembl database not loaded. Try: library(", ens_db, ")",
+             call. = FALSE)
+    }
+    check_dataset(dataset1)
+    check_dataset(dataset2)
+    
+    ## See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
+    ## tl;dr it stops the 'undefined global variables' warning in R CMD check
+    p <- z.x <- z.y <- pretty_value <- NULL  
+    if(!("chromosome" %in% names(dataset1) & "chromosome" %in% names(dataset2)))
+        stop("A \"chromosome\" vector is required in both datasets.")
+    if(!("position" %in% names(dataset1) & "position" %in% names(dataset2))) 
+        stop("A \"position\" vector is required in both datasets.")
 
-  pls[[5]] <- gridExtra::tableGrob(coloc_summary[, .(Variable = variable, Value = pretty_value)],
-   theme = gridExtra::ttheme_minimal(), rows = NULL)
+    if(length(unique(dataset1$chromosome)) != 1 || 
+       length(unique(dataset2$chromosome)) != 1 || 
+       unique(dataset1$chromosome) != unique(dataset2$chromosome)) {
+        print(unique(dataset1$chromosome))
+        print(unique(dataset2$chromosome))
+        stop("Dataset should contain summary statistics for variants on only one chromosome, 
+    which should be the same in both datasets.")
+    } else {
+        chromosome <- unique(dataset1$chromosome)
+    }
+    
+    if(show_ld & is.null(ld_label)) {
+        stop("If show_ld is TRUE, ld_label must be specified.")
+    }
 
-  gridExtra::arrangeGrob(grobs = pls, layout_matrix = cbind(1:3, c(4,4,5)))
+    first_dataset <- as.data.table(dataset1)
+    first_dataset[, z := beta/sqrt(varbeta)]
+    first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+    
+    second_dataset <- as.data.table(dataset2)
+    second_dataset[, z := beta/sqrt(varbeta)]
+    second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+
+    min_pos <- min(first_dataset[, min(position)], second_dataset[, min(position)])
+    max_pos <- max(first_dataset[, max(position)], second_dataset[, max(position)])
+
+    min_z <- min(first_dataset[, min(z)], second_dataset[, min(z)])
+    max_z <- max(first_dataset[, max(z)], second_dataset[, max(z)])
+
+    if(is.null(first_highlight_list))
+        first_highlight_list=as.list(unique(c(first_dataset[which.max(logp), snp],
+                                              second_dataset[which.max(logp), snp])))
+    if(is.null(second_highlight_list))
+        second_highlight_list=as.list(unique(c(first_dataset[which.max(logp), snp],
+                                               second_dataset[which.max(logp), snp])))
+    if(is.null(first_index_snp))
+        first_index_snp=first_dataset[which.max(logp), snp]
+    if(is.null(second_index_snp))
+        second_index_snp=second_dataset[which.max(logp), snp]
+    first_loc  <- locuszoomr::locus(data = first_dataset, chrom = "chromosome", 
+                                    pos = "position", yvar = "logp", labs = snp_label, seqname = chromosome, 
+                                    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = first_index_snp,
+                                    ens_db = ens_db)
+    second_loc <- locuszoomr::locus(data = second_dataset, chrom = "chromosome", 
+                                    pos = "position", yvar = "logp", labs = snp_label, seqname = chromosome, 
+                                    xrange = c(min_pos, max_pos), LD = ld_label, index_snp = second_index_snp,
+                                    ens_db = ens_db)
+    
+    if(is.null(locus_plot_ylim)) {
+        ## If we have any highlights we may have to make space for them by adding a 
+        ## few log units to the y axis
+        first_locus_plot_ylim <- c(0, max(first_loc$data$logp, na.rm = T))
+        second_locus_plot_ylim <- c(0, max(second_loc$data$logp, na.rm = T))
+        if(!is.null(first_highlight_list)) {
+            first_locus_plot_ylim[2] <- first_locus_plot_ylim[2] + 8 
+        }
+        if(!is.null(second_highlight_list)) {
+            second_locus_plot_ylim[2] <- second_locus_plot_ylim[2] + 8 
+        }
+    } else {
+        first_locus_plot_ylim <- locus_plot_ylim
+        second_locus_plot_ylim <- locus_plot_ylim
+    }
+
+    pls <- list()
+
+    pls[[1]] <- locuszoomr::gg_scatter(first_loc, min.segment.length = 0,
+                                       nudge_y = 5, labels = first_highlight_list, showLD = show_ld,
+                                       legend_pos = 'topright', ylim = first_locus_plot_ylim, ylab="-log10(p)")+
+        ggtitle(first_trait)
+    pls[[2]] <- locuszoomr::gg_scatter(second_loc, min.segment.length = 0,
+                                       nudge_y = 5, labels = second_highlight_list, showLD = show_ld,
+                                       legend_pos = 'topright', ylim = second_locus_plot_ylim, ylab="-log10(p)")+
+        ggtitle(second_trait)
+    pls[[3]] <- locuszoomr::gg_genetracks(first_loc)
+
+    merged <- merge(first_dataset[, .(snp, z), env = list(snp = snp_label)], 
+                    second_dataset[, .(snp, z), env = list(snp = snp_label)], 
+                    by = snp_label, suffixes = c(".x", ".y"))
+
+    z_cor <- merged[, cor(z.x, z.y, use = "pairwise.complete.obs")]
+
+    pls[[4]] <- ggplot(merged)+
+        geom_point(aes(x = z.x, y = z.y))+
+        xlab(first_trait)+
+        ylab(second_trait)+
+        geom_vline(xintercept = qnorm(c(2.5e-8, 1-2.5e-8)), linetype = "dashed", col = "blue")+
+        geom_hline(yintercept = qnorm(c(2.5e-8, 1-2.5e-8)), linetype = "dashed", col = "blue")+
+        ## coord_fixed(ratio = 1)+
+        ## xlim(c(min_z, max_z))+
+        ## ylim(c(min_z, max_z))+
+        ggtitle(sprintf('Pearson correlation: %.3f', z_cor))+
+        theme_bw()     
+    coloc_summary <- data.table(variable = names(x$summary), value = x$summary)
+    coloc_summary[variable == "nsnps",  pretty_value := format(value, big.mark = ",")]
+    coloc_summary[variable != "nsnps",  pretty_value := signif(value, digits =  2)]
+
+    pls[[5]] <- gridExtra::tableGrob(coloc_summary[, .(Variable = variable, Value = pretty_value)],
+                                     theme = gridExtra::ttheme_minimal(), rows = NULL)
+
+    gridExtra::arrangeGrob(grobs = pls, layout_matrix = cbind(1:3, c(4,4,5)))
 }
 
 ##' Print summary of a coloc.abf run

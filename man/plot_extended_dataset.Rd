@@ -5,7 +5,8 @@
 \title{Draw extended plot of summary statistics for two coloc datasets}
 \usage{
 plot_extended_dataset(
-  d,
+  dataset1,
+  dataset2,
   x,
   first_highlight_list = NULL,
   second_highlight_list = NULL,
@@ -21,8 +22,6 @@ plot_extended_dataset(
 )
 }
 \arguments{
-\item{d}{a coloc dataset}
-
 \item{x}{object of class \code{coloc_abf} returned by \code{coloc.abf()}}
 
 \item{first_highlight_list}{character vector of snps to highlight in the first dataset;
@@ -50,7 +49,9 @@ for the purpose of LD visualisation}
 \item{locus_plot_ylim}{numeric vector of length 2 specifying the y-axis
 limits for the locus plots on the -log10 scale}
 
-\item{ens_db}{character string specifying Ensembl database package from which to get gene positions}
+\item{ens_db}{character string specifying Ensembl database package from which to get gene positions. Current (at time of writing this documentation!) sensible values are  "EnsDb.Hsapiens.v86" for build 38 and "EnsDb.Hsapiens.v75" for build 37.}
+
+\item{d}{a coloc dataset}
 }
 \value{
 a gtable object
