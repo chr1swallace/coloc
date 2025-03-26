@@ -218,12 +218,22 @@ plot_extended_dataset <- function(dataset1,
     }
 
     first_dataset <- as.data.table(dataset1)
-    first_dataset[, z := beta/sqrt(varbeta)]
-    first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+    if("beta" %in% names(first_dataset) && "varbeta" %in% names(first_dataset)) {
+        first_dataset[, z := beta/sqrt(varbeta)]
+        first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+    } else {
+        first_dataset[, logp := -log10(pvalues)]
+        first_dataset[, z := -log10(pvalues)]
+    }
     
     second_dataset <- as.data.table(dataset2)
-    second_dataset[, z := beta/sqrt(varbeta)]
-    second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+    if("beta" %in% names(second_dataset) && "varbeta" %in% names(second_dataset)) {
+        second_dataset[, z := beta/sqrt(varbeta)]
+        second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+    } else {
+        second_dataset[, logp := -log10(pvalues)]
+        second_dataset[, z := -log10(pvalues)]
+    }
 
     min_pos <- min(first_dataset[, min(position)], second_dataset[, min(position)])
     max_pos <- max(first_dataset[, max(position)], second_dataset[, max(position)])
