@@ -30,8 +30,8 @@ variants are causal.
 
 To provide variant-specific information to coloc use the `prior_weights1` 
 or `prior_weights2` arguments for `coloc.abf()`, `coloc.susie()` or `coloc.bf()`. 
-The arguments specify non-negative weights that encode the 'weight' (proportional)
-to the probability of a variant being causal. Specifying weights 
+The arguments specify non-negative weights that encode the 'weight' (proportional
+to the probability of a variant being causal). Specifying weights 
 for either or both of the traits will automatically change the prior 
 probability of a variant being causal for *both* traits.
 
@@ -51,8 +51,8 @@ variant-specific priors in coloc and compare various sources
 of prior information. The best performing source of prior information 
 was the density of the distance between an expression 
 quantative trait loci (eQTL) and the gene's transcription start site 
-(TSS). These estiamted densities show that 
-eQTLs often lie close to the TSS suggesting that we should
+(TSS). These estimated densities show that 
+eQTLs often lie close to the TSS, suggesting that we should
 expect variants that lie closer to the TSS to be more likely 
 to be causal. The density estimated from the eQTLGen dataset, 
 see Pullin and Wallace (2024) for details, is stored in the coloc 
@@ -89,8 +89,8 @@ compute_eqtl_tss_dist_weights <- function(pos, tss, density_data) {
 ```
 
 Computing the weights and applying them shows little impact on the 
-probability of colalsiation because this simulated example has very strong 
-evidence for colcalsiation. In real data, the impact will be greater.
+probability of colocalisation because this simulated example has very strong 
+evidence for colocalisation. In real data, the impact will likely be greater.
 
 ```{r}
 # Compute the weights relative to the PTPN22 TSS.

@@ -14,7 +14,7 @@ Most of the questions I get relate to misunderstanding the assumptions behind co
 
 This update (version 6) adds the ability to use variant-specific priors in coloc. See 
 
- - [paper forthcoming] 
+ - Pullin, J., Wallace, C. (2024+). Variant-specific priors in colocalisation analysis. bioRxiv 2024.08.21.608957. https://doi.org/10.1101/2024.08.21.608957
  
 for a description of the implementation and a comparison of different sources of prior inforamtion. If you use variant-specific priors in coloc please cite this paper.
 
