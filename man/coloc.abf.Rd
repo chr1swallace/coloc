@@ -11,6 +11,8 @@ coloc.abf(
   p1 = 1e-04,
   p2 = 1e-04,
   p12 = 1e-05,
+  prior_weights1 = NULL,
+  prior_weights2 = NULL,
   ...
 )
 }
@@ -34,8 +36,18 @@ default 1e-4}
 \item{p12}{prior probability a SNP is associated with both traits,
 default 1e-5}
 
+\item{p12}{prior probability a SNP is associated with both traits,
+  default 1e-5}
+
+\item{prior_weights1}{Non-negative weights for the prior probability a
+  SNP is associated with trait 1}
+
+\item{prior_weights2}{Non-negative weights for the prior probability a
+  SNP is asscoiated with trait 2}
+
 \item{...}{used to pass parameters to approx.bf.estimates, in
 particular the effect_priors parameter}
+
 }
 \value{
 a list of two \code{data.frame}s: \itemize{ \item summary
@@ -65,5 +77,5 @@ SNP's MAF and ignores any uncertainty in imputation.  Regression
 coefficients should be used if available.
 }
 \author{
-Claudia Giambartolomei, Chris Wallace
+Claudia Giambartolomei, Chris Wallace, Jeffrey Pullin
 }

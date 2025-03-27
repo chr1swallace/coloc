@@ -1,6 +1,5 @@
 Package: coloc
 Type: Package
-biocViews:
 Imports:
     data.table,
     ggplot2,
@@ -22,17 +21,19 @@ Suggests:
     locuszoomr,
     gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 5.2.4
-Date: 2025-03-21
+Version: 6.0.0
+Date: 2025-03-27
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"), email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut", email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb", email="v.plagnol@ucl.ac.uk"),
-    person("Tom","Willis", role="ctb", email="tom.willis@live.com")
+    person("Tom","Willis", role="aut", email="tom.willis@live.com"),
+    person("Jeffrey","Pullin", role="aut", email="jp2045@cam.ac.uk"))
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Description: Performs the colocalisation tests described in
     Giambartolomei et al (2013) <doi:10.1371/journal.pgen.1004383>,
     Wallace (2020) <doi:10.1371/journal.pgen.1008720>,
-    Wallace (2021) <doi:10.1371/journal.pgen.1009440>.
+    Wallace (2021) <doi:10.1371/journal.pgen.1009440>,
+    Pullin and Wallace (2025) <doi:10.1101/2024.08.21.608957>.
 License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
@@ -51,7 +52,8 @@ Collate:
     'sensitivity.R'
     'split.R'
     'susie.R'
-    'testdata.R'
+    'data.R'
     'zzz.R'
 Depends: 
     R (>= 3.5)
+LazyData: true

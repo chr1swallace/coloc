@@ -14,6 +14,7 @@ articles:
   - a04_sensitivity
   - a06_SuSiE
   - a05_conditioning
+  - a07_variant-specific-priors
 reference:
   - title: Coloc data structure
     desc: Description of coloc data structure

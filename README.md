@@ -10,6 +10,19 @@ share common genetic causal variant(s) in a given region.
 
 Most of the questions I get relate to misunderstanding the assumptions behind coloc (dense genotypes across a single genomic region) and/or the data structures used.  Please read  `vignette("a02_data",package="coloc")` before starting an issue.
 
+## version 6
+
+This update (version 6) adds the ability to use variant-specific priors in coloc. See 
+
+ - Pullin, J., Wallace, C. (2024+). Variant-specific priors in colocalisation analysis. bioRxiv 2024.08.21.608957. https://doi.org/10.1101/2024.08.21.608957
+ 
+for a description of the implementation and a comparison of different sources of prior inforamtion. If you use variant-specific priors in coloc please cite this paper.
+
+More detail is also available in the vignette a07_variant_specific_priors.html accessible by
+
+``` R
+vignette("a07-variant_specific_priors",package="coloc")
+```
 
 ## version 5
 
@@ -42,19 +55,6 @@ More detail is available in the vignette a06_SuSiE.html accessible by
 ``` R
 vignette("a06_SuSiE",package="coloc")
 ```
-
-<!-- ## version 4 -->
-
-<!-- This is an updated version of coloc.  I have tested it, but there may be bugs. Please test it, and let me know whether it works or not (both kinds of feedback useful!).   -->
-
-<!-- It is not yet on CRAN. To install the new version, do -->
-<!-- ``` -->
-<!-- if(!require("remotes")) -->
-<!--    install.packages("remotes") # if necessary -->
-<!-- library(remotes) -->
-<!-- install_github("chr1swallace/coloc") -->
-<!-- ``` -->
-
 
 # Background reading
 

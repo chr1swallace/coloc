@@ -33,7 +33,8 @@ default 1e-5}
 \item{susie.args}{named list of arguments to be passed to susieR::susie_rss()}
 
 \item{...}{other arguments passed to \link{coloc.bf_bf}, in particular prior
-values for causal association with one trait (p1, p2) or both (p12)}
+values for causal association with one trait (p1, p2) or both (p12) and
+prior weights.}
 }
 \value{
 coloc.signals style result

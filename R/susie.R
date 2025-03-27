@@ -65,8 +65,9 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##' @param susie.args a named list of additional arguments to be passed to
 ##'   \link{runsusie}
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
-##'   values for causal association with one trait (p1, p2) or both (p12)
-coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=list(),  ...) {
+##'   values for causal association with one trait (p1, p2) or both (p12) and
+##'   and prior weights.
+coloc.susie=function(dataset1, dataset2, back_calculate_lbf=FALSE, susie.args=list(), ...) {
   ## if(!requireNamespace("susieR", quietly = TRUE)) {
   ##   message("please install susieR https://github.com/stephenslab/susieR")
   ##   return(NULL)
@@ -91,7 +92,7 @@ coloc.susie=function(dataset1,dataset2, back_calculate_lbf=FALSE, susie.args=lis
   bf1=s1$lbf_variable[idx1,,drop=FALSE]
   bf2=s2$lbf_variable[idx2,,drop=FALSE]
 
-  ret=coloc.bf_bf(bf1,bf2,...)
+  ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
   ret$summary[,idx1:=cs1$cs_index[idx1]]
   ret$summary[,idx2:=cs2$cs_index[idx2]]
@@ -123,7 +124,8 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##' @param bf2 named vector of log BF, names are snp ids and will be matched to column names of susie object's alpha
 ##' @param susie.args named list of arguments to be passed to susieR::susie_rss()
 ##' @param ... other arguments passed to \link{coloc.bf_bf}, in particular prior
-##'   values for causal association with one trait (p1, p2) or both (p12)
+##'   values for causal association with one trait (p1, p2) or both (p12) and
+##'   prior weights.
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
@@ -221,14 +223,39 @@ finemap.bf=function(bf1, p1=1e-4) {
 ##'   for which snps in common do not capture least overlap.min proportion of
 ##'   their posteriors support are dropped and colocalisation not attempted.
 ##' @param overlap.min see trim_by_posterior
+##' @param prior_weights1 Non-negative weights for the prior probability a SNP is associated with trait 1 
+##' @param prior_weights2 Non-negative weights for the prior probability a SNP is asscoiated with trait 2
 ##' @return coloc.signals style result
 ##' @export
 ##' @author Chris Wallace
-coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_by_posterior=TRUE) {
+coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
+                     trim_by_posterior=TRUE, prior_weights1 = NULL, prior_weights2 = NULL) {
+
+  if ((length(p1) != 1 || length(p2) != 1 || length(p12) != 1) &&
+      (!is.null(prior_weights1) || !is.null(prior_weights2))) {
+      stop("Prior weights can only be used with single values of the prior parameters.")
+  }
+
+  if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 <= 0))) {
+    stop("prior_weights1 must contain non-NA/non-negative weights.")
+  }
+
+  if (!is.null(prior_weights2) && any(is.na(prior_weights2) | (prior_weights2 <= 0))) {
+    stop("prior_weights2 must contain non-NA/non-negative weights.")
+  }
+  
   if(is.vector(bf1))
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
   if(is.vector(bf2))
     bf2=matrix(bf2,nrow=1,dimnames=list(NULL,names(bf2)))
+  
+  if (!is.null(prior_weights1) && ncol(bf1) != length(prior_weights1)) {
+    stop("Length of prior_weights1 must match size of dataset 1")
+  }
+  if (!is.null(prior_weights2) && ncol(bf2) != length(prior_weights2)) {
+    stop("Length of prior_weights2 must match size of dataset 2")
+  } 
+  
   todo <- as.data.table(expand.grid(i=1:nrow(bf1),j=1:nrow(bf2)))
   todo[,pp4:=0]
   isnps=setdiff(intersect(colnames(bf1),colnames(bf2)),
@@ -273,15 +300,17 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
       stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
   }
 
-  ## restrict bf1/2, p1, p2, for incomplete snp overlap
+  ## restrict bf1/2, p1, p2 and prior weights for incomplete snp overlap
   if(length(isnps)!=ncol(bf1)) {
     keep=match(isnps,colnames(bf1))
+    prior_weights1 <- prior_weights1[keep]
     bf1=bf1[,keep,drop=FALSE]
     if(length(p1)>1)
       p1=p1[keep]
   }
   if(length(isnps)!=ncol(bf2)) {
     keep=match(isnps,colnames(bf2))
+    prior_weights2 <- prior_weights2[keep]
     bf2=bf2[,keep,drop=FALSE]
     if(length(p2)>2)
       p2=p2[keep]
@@ -303,7 +332,17 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,trim_b
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
     df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)
-    pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12, quiet=TRUE)
+
+    if (!is.null(prior_weights1) || !is.null(prior_weights2)) {
+      pp.abf <- combine_abf_weighted(df$bf1, df$bf2,
+                                     p1, p2, p12,
+                                     prior_weights1,
+                                     prior_weights2,
+                                     quiet = TRUE)
+    } else {
+      pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12, quiet=TRUE)
+    }
+
     PP[[k]]=df$SNP.PP.H4
     if(all(is.na(df$SNP.PP.H4))) {
       df$SNP.PP.H4=0
