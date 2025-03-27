@@ -35,11 +35,15 @@ reference:
     contents:
       - '`coloc.susie`'
       - '`runsusie`'
+  - title: Visualisation
+    desc: see stuff
+    contents:
+      - '`plot_dataset`'
+      - '`plot_extended_dataset`'
   - title: Others
     desc: included for completeness, but the main functions you need should be in the sections above
     contents:
-      - '`Var.data`'
-      - '`Var.data.cc`'
+      - '`annotate_susie`'
       - '`approx.bf.estimates`'
       - '`approx.bf.p`'
       - '`bin2lin`'
@@ -52,6 +56,7 @@ reference:
       - '`coloc.susie_bf`'
       - '`coloc_test_data`'
       - '`combine.abf`'
+      - '`credible.sets`'
       - '`est_cond`'
       - '`estgeno.1.ctl`'
       - '`find.best.signal`'
@@ -65,8 +70,17 @@ reference:
       - '`map_cond`'
       - '`map_mask`'
       - '`plot.coloc_abf`'
-      - '`plot_dataset`'
       - '`print.coloc_abf`'
       - '`process.dataset`'
       - '`sdY.est`'
       - '`subset_dataset`'
+      - '`Var.data.cc`'
+      - '`Var.data`'
+      - '`eqtlgen_density_data`'
+
+
+
+
+
+
+

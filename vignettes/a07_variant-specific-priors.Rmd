@@ -1,7 +1,6 @@
 ---
 title: "Coloc: using variant-specific priros in coloc"
 author: "Jeffrey Pullin"
-output: rmarkdown::html_vignette
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >

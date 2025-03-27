@@ -1,255 +1,90 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/404.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/FAQ.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a00_data.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a01_intro.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a02_data.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a02_proportionality.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a03_enumeration.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a04_sensitivity.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a05_conditioning.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/a06_SuSiE.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/coloc.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/colocqq-tests.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/conditioning_05.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/enumeration_03.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/intro_01.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/proportionality_02.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/sensitivity_04.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/simdata.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/articles/vignette.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/index.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/Var.data.cc.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/Var.data.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/alpha_to_logbf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/approx.bf.estimates.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/approx.bf.p.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/bf-methods.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/bin2lin.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/check.alignment.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/check.dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/check_alignment.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/check_dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc-class.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc-package.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.datasets.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.snpStats.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.bf_bf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.bma.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.detail.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.process.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.qq.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.signals.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.susie.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.susie_bf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.test.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc.test.summary.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/colocABF-class.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/colocPCs-class.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/coloc_test_data.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/combine.abf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/est_cond.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/estgeno1.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/eta.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/fillin.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/find.best.signal.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/findends.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/findpeaks.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/finemap.abf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/finemap.bf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/finemap.signals.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/logbf_to_pp.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/logdiff.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/logsum.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/map_cond.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/map_mask.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/pcs.model.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/pcs.prepare.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/plot-methods.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/plot.coloc_abf.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/plot_dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/print-methods.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/process.dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/qq.onesnp.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/qq.twosnp.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/runsusie.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/sdY.est.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/sensitivity.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/subset_dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/tbf2.html</loc>
-  </url>
-  <url>
-    <loc>https://chr1swallace.github.io/coloc/reference/tbf4.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://chr1swallace.github.io/coloc/404.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/FAQ.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a00_data.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a01_intro.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a02_data.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a02_proportionality.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a03_enumeration.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a04_sensitivity.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a05_conditioning.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a06_SuSiE.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/a07_variant-specific-priors.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/coloc.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/colocqq-tests.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/conditioning_05.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/enumeration_03.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/index.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/intro_01.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/proportionality_02.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/sensitivity_04.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/simdata.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/articles/vignette.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/authors.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/index.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/news/index.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/Var.data.cc.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/Var.data.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/alpha_to_logbf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/annotate_susie.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/approx.bf.estimates.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/approx.bf.p.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/bf-methods.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/bin2lin.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/check_alignment.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/check_dataset.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc-class.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc-package.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.datasets.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.abf.snpStats.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.bf_bf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.bma.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.detail.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.process.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.qq.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.signals.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.susie.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.susie_bf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.test.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc.test.summary.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/colocABF-class.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/colocPCs-class.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/coloc_test_data.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/combine.abf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/credible.sets.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/eqtlgen_density_data.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/est_cond.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/estgeno1.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/eta.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/fillin.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/find.best.signal.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/findends.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/findpeaks.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/finemap.abf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/finemap.bf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/finemap.signals.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/index.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/logbf_to_pp.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/logdiff.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/logsum.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/map_cond.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/map_mask.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/pcs.model.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/pcs.prepare.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/plot-methods.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/plot.coloc_abf.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/plot_dataset.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/plot_extended_dataset.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/print-methods.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/process.dataset.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/qq.onesnp.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/qq.twosnp.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/runsusie.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/sdY.est.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/sensitivity.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/subset_dataset.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/tbf2.html</loc></url>
+<url><loc>https://chr1swallace.github.io/coloc/reference/tbf4.html</loc></url>
 </urlset>
+
