@@ -312,7 +312,7 @@ finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
     nsnps <- nrow(df)
     p1=adjust_prior(p1,nsnps,"1")
 
-    if (!is.null(prior_weights) && (nsnps != length(prior_weights))) {
+    if (!is.null(prior_weights) && (nsnps != length(prior_weights) | (prior_weights <= 0))) {
       stop("Length of prior weights must match size of dataset")
     }
 

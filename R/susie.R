@@ -231,9 +231,9 @@ finemap.bf=function(bf1, p1=1e-4) {
 coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
                      trim_by_posterior=TRUE, prior_weights1 = NULL, prior_weights2 = NULL) {
 
-  if (length(p1) != 1 || length(p2) != 1 || length(p2) != 1 &&
-     (!is.null(prior_weights1) || !is.null(prior_weights2))) {
-    stop("Prior weights can only be used with single values of the prior parameters.")
+  if ((length(p1) != 1 || length(p2) != 1 || length(p12) != 1) &&
+      (!is.null(prior_weights1) || !is.null(prior_weights2))) {
+      stop("Prior weights can only be used with single values of the prior parameters.")
   }
 
   if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 <= 0))) {
