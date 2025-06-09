@@ -32,7 +32,7 @@ remotes::install_github("chr1swallace/coloc@main",build_vignettes=TRUE)
 
 This update (version 6) adds the ability to use variant-specific priors in coloc. See 
 
- - Pullin, J., Wallace, C. (2024+). Variant-specific priors in colocalisation analysis. bioRxiv 2024.08.21.608957. https://doi.org/10.1101/2024.08.21.608957
+- Pullin JM, Wallace C (2025) Variant-specific priors clarify colocalisation analysis. PLoS Genet 21(5): e1011697. https://doi.org/10.1371/journal.pgen.1011697
  
 for a description of the implementation and a comparison of different sources of prior information. If you use variant-specific priors in coloc please cite this paper.
 
