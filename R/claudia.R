@@ -32,7 +32,7 @@ Var.data.cc <- function(f, N, s) {
 ##' @author Claudia Giambartolomei
 logsum <- function(x) {
     my.max <- max(x)                              ##take out the maximum value in log form
-    my.res <- my.max + log(sum(exp(x - my.max ))) 
+    my.res <- my.max + log(sum(exp(x - my.max )))
     return(my.res)
 }
 
@@ -80,7 +80,7 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
     ret <- data.frame(V,z,r,lABF)
     if(!is.null(suffix))
         colnames(ret) <- paste(colnames(ret), suffix, sep=".")
-    return(ret)  
+    return(ret)
 }
 
 ##' Internal function, approx.bf.estimates
@@ -188,13 +188,13 @@ combine_abf_weighted <- function(l1, l2, p1, p2, p12,
 ##' Estimate is based on var(beta-hat) = var(Y) / (n * var(X))
 ##' var(X) = 2*maf*(1-maf)
 ##' so we can estimate var(Y) by regressing n*var(X) against 1/var(beta)
-##' 
+##'
 ##' @title Estimate trait variance, internal function
 ##' @param vbeta vector of variance of coefficients
 ##' @param maf vector of MAF (same length as vbeta)
 ##' @param n sample size
 ##' @return estimated standard deviation of Y
-##' 
+##'
 ##' @author Chris Wallace
 sdY.est <- function(vbeta, maf, n) {
     warning("estimating sdY from maf and varbeta, please directly supply sdY if known")
@@ -208,7 +208,7 @@ sdY.est <- function(vbeta, maf, n) {
 }
 
 ##' Internal function, process each dataset list for coloc.abf.
-##' 
+##'
 ##' Made public for another package to use, but not intended for users to use.
 ##'
 ##' @title process.dataset
@@ -228,7 +228,7 @@ process.dataset <- function(d, suffix, ...) {
 
     ## if(!(d$type %in% c("quant","cc")))
     ##     stop("dataset ",suffix,": ","type must be quant or cc")
-    
+
     ## if(d$type=="cc" & "pvalues" %in% nd) {
     ## if(!( "s" %in% nd))
     ##     stop("dataset ",suffix,": ","please give s, proportion of samples who are cases, if using p values")
@@ -237,12 +237,12 @@ process.dataset <- function(d, suffix, ...) {
     ## if(d$s<=0 || d$s>=1)
     ##     stop("dataset ",suffix,": ","s must be between 0 and 1")
     ## }
-    
+
     ## if(d$type=="quant") {
     ##     if(!("sdY" %in% nd || ("MAF" %in% nd && "N" %in% nd )))
     ##         stop("dataset ",suffix,": ","must give sdY for type quant, or, if sdY unknown, MAF and N so it can be estimated")
     ## }
-    
+
     if("beta" %in% nd && "varbeta" %in% nd) {  ## use beta/varbeta.  sdY should be estimated by now for quant
         ## if(length(d$beta) != length(d$varbeta))
         ##   stop("dataset ",suffix,": ","Length of the beta vectors and variance vectors must match")
@@ -250,8 +250,8 @@ process.dataset <- function(d, suffix, ...) {
         ##   d$snp <- sprintf("SNP.%s",1:length(d$beta))
         ## if(length(d$snp) != length(d$beta))
         ##   stop("dataset ",suffix,": ","Length of snp names and beta vectors must match")
-        
-        if(d$type=="quant" && !('sdY' %in% nd)) 
+
+        if(d$type=="quant" && !('sdY' %in% nd))
             d$sdY <- sdY.est(d$varbeta, d$MAF, d$N)
         df <- approx.bf.estimates(z=d$beta/sqrt(d$varbeta),
                                   V=d$varbeta, type=d$type, suffix=suffix, sdY=d$sdY)
@@ -269,7 +269,7 @@ process.dataset <- function(d, suffix, ...) {
         df <- data.frame(pvalues = d$pvalues,
                          MAF = d$MAF,
                          N=d$N,
-                         snp=as.character(d$snp))    
+                         snp=as.character(d$snp))
         snp.index <- which(colnames(df)=="snp")
         colnames(df)[-snp.index] <- paste(colnames(df)[-snp.index], suffix, sep=".")
         ## keep <- which(df$MAF>0 & df$pvalues > 0) # all p values and MAF > 0
@@ -278,7 +278,7 @@ process.dataset <- function(d, suffix, ...) {
         df <- cbind(df, abf)
         if("position" %in% nd)
             df <- cbind(df,position=d$position)
-        return(df)  
+        return(df)
     }
 
     stop("Must give, as a minimum, one of:\n(beta, varbeta, type, sdY)\n(beta, varbeta, type, MAF)\n(pvalues, MAF, N, type)")
@@ -294,13 +294,13 @@ process.dataset <- function(d, suffix, ...) {
 ##' values are available, it uses an approximation that depends on the
 ##' SNP's MAF and ignores any uncertainty in imputation.  Regression
 ##' coefficients should be used if available.
-##' 
+##'
 ##' @title Bayesian finemapping analysis
 ##' @param dataset a list with specifically named elements defining the dataset
 ##'   to be analysed. See \code{\link{check_dataset}} for details.
 ##'
 ##' @param p1 prior probability a SNP is associated with the trait 1, default 1e-4
-##' @param prior_weights Non-negative weights for the prior probability a SNP is causal 
+##' @param prior_weights Non-negative weights for the prior probability a SNP is causal
 ##' @return a \code{data.frame}:
 ##' \itemize{
 ##' \item an annotated version of the input data containing log Approximate Bayes Factors and intermediate calculations, and the posterior probability of the SNP being causal
@@ -343,7 +343,7 @@ finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
     ## df$SNP.PP <- exp(df$lABF - my.denom.log.abf)
     my.denom.log.abf <- logsum(df$lABF + log(df$prior))
     df$SNP.PP <- exp(df$lABF + log(df$prior) - my.denom.log.abf)
-    
+
     return(df)
 }
 
@@ -368,7 +368,7 @@ adjust_prior=function(p,nsnps,suffix="") {
 ##' values are available, it uses an approximation that depends on the
 ##' SNP's MAF and ignores any uncertainty in imputation.  Regression
 ##' coefficients should be used if available.
-##' 
+##'
 ##' @title Fully Bayesian colocalisation analysis using Bayes Factors
 ##' @param dataset1 a list with specifically named elements defining
 ##'     the dataset to be analysed. See \code{\link{check_dataset}}
@@ -402,7 +402,7 @@ adjust_prior=function(p,nsnps,suffix="") {
 ##'     H4 in summary is convincing.  }
 ##' @author Claudia Giambartolomei, Chris Wallace, Jeffrey Pullin
 ##' @export
-coloc.abf <- function(dataset1, dataset2, MAF=NULL, 
+coloc.abf <- function(dataset1, dataset2, MAF=NULL,
                       p1=1e-4, p2=1e-4, p12=1e-5,
                       prior_weights1 = NULL, prior_weights2 = NULL, ...) {
     if(!("MAF" %in% names(dataset1)) & !is.null(MAF))
@@ -422,12 +422,18 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
       stop("Length of prior_weights2 must match size of dataset 2")
     }
 
-    if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 <= 0))) {
+    if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 < 0))) {
       stop("prior_weights1 must contain non-negative weights.")
     }
 
-    if (!is.null(prior_weights2) && any(is.na(prior_weights2) | (prior_weights2 <= 0))) {
+    if (!is.null(prior_weights2) && any(is.na(prior_weights2) | (prior_weights2 < 0))) {
       stop("prior_weights2 must contain non-negative weights.")
+    }
+
+    if (!is.null(prior_weights1) && !is.null(prior_weights2)) {
+      warning("Prior weights specified for both traits.\n",
+              "  The two weight vectors should be derived from independent sources of\n",
+              "  information, i.e. not computed using the same method.")
     }
 
     p1=adjust_prior(p1,nrow(df1),"1")
@@ -452,9 +458,9 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
       pp.abf <- combine_abf_weighted(merged.df$lABF.df1, merged.df$lABF.df2,
                                      p1, p2, p12, prior_weights1, prior_weights2)
     } else {
-      pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12) 
+      pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)
     }
-    
+
     common.snps <- nrow(merged.df)
     results <- c(nsnps=common.snps, pp.abf)
     output<-list(summary=results,
@@ -479,7 +485,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 ##' @param credible.size threshold of the credible set (Default: 0.95)
 ##' @return SNP ids of the credible set
 ##' @author Guillermo Reales, Chris Wallace
-##' @export 
+##' @export
 credible.sets <- function(dataset, credible.size = 0.95){
     if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a SNP.PP column.")
     t2 <- dataset[ order(dataset$SNP.PP, decreasing = TRUE),]
