@@ -36,8 +36,8 @@ test_that("issue 79", {
           beta=rnorm(5),
           varbeta=rep(0.01,5),
           type="quant",
-          sdY=10)
-  expect_error(coloc.abf(d1,d2), "per-snp sample sizes")
+          MAF=rep(0.5,5))
+  expect_error(coloc.abf(d1,d2), "must give sdY")
 })
 
 test_that("issue 160", {
@@ -54,7 +54,7 @@ test_that("issue 160", {
           varbeta=rep(0.01,5),
           N=rep(150000,5),
           type="quant",
-          sdY=10)
+          MAF=rep(0.5,5))
   expect_error(coloc.abf(d1,d2), "per-snp sample sizes")
 })
 
