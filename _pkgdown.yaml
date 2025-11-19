@@ -1,6 +1,7 @@
 title: coloc
 url: https://chr1swallace.github.io/coloc
 template:
+  bootstrap: 5
   params:
     bootswatch: simplex
 news:
@@ -39,7 +40,8 @@ reference:
     desc: see stuff
     contents:
       - '`plot_dataset`'
-      - '`plot_extended_dataset`'
+      - '`plot_datasets`'
+      - '`plot_extended_datasets`'
   - title: Others
     desc: included for completeness, but the main functions you need should be in the sections above
     contents:
