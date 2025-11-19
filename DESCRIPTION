@@ -21,8 +21,8 @@ Suggests:
     locuszoomr,
     gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 6.0.0
-Date: 2025-03-27
+Version: 6.0.1
+Date: 2025-11-19
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"), email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut", email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb", email="v.plagnol@ucl.ac.uk"),
