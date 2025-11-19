@@ -37,7 +37,25 @@ test_that("issue 79", {
           varbeta=rep(0.01,5),
           type="quant",
           sdY=10)
-  expect_error(coloc.abf(d1,d2), NA)
+  expect_error(coloc.abf(d1,d2), "per-snp sample sizes")
+})
+
+test_that("issue 160", {
+  d1=list(snp=letters[1:5],
+          position=1:5,
+          N=200000,
+          MAF=runif(5)/2,
+          beta=rnorm(5),
+          varbeta=rep(0.01,5),
+          type="cc")
+  d2=list(snp=letters[1:5],
+          position=1:5,
+          beta=rnorm(5),
+          varbeta=rep(0.01,5),
+          N=rep(150000,5),
+          type="quant",
+          sdY=10)
+  expect_error(coloc.abf(d1,d2), "per-snp sample sizes")
 })
 
 test_that("Infinite values in beta/varbeta triggers specific error", {
@@ -48,4 +66,8 @@ test_that("Infinite values in beta/varbeta triggers specific error", {
   D1_varbeta_inf <- D1
   D1_varbeta_inf$varbeta[[1]] <- Inf
   expect_error(check_dataset(D1_varbeta_inf), "Infinite")
+
+  D1_varbeta_inf <- D1
+  D1_varbeta_inf$varbeta[[1]] <- 0
+  expect_error(check_dataset(D1_varbeta_inf), "Zero")
 })
