@@ -13,12 +13,17 @@ vignette: >
 
   The enumeration approaches to coloc [`coloc.abf`](a03_enumeration.html) and [`coloc.susie`](a06_SuSiE.html) require the same data format.  To be flexible, `coloc.abf` allows a wider variety of inputs, which can sometimes be confusing.  This document aims to set out what ideal and acceptable data structures are, as well as covering some points on how you should select the SNPs for study.
 
+
 ## First: select the SNPs to study.
+
+Each dataset must represent the genetic association statistics for *a single trait* in *a single genomic region*. This means you should not, for example,
+* supply coloc with a whole genome or whole chromosome of test statistics
+* merge eQTL summary stats across multiple genes
 
 SNPs must
 * have summary data available in both studies
 * cover a single genomic region (perhaps defined by distance about some GWAS peak or delimited by recombination hotspots), and 
-* represent a dense coverage of the region
+* represent a dense coverage of the region (so don't threshold on p value)
 
 This can result in up to 10,000 SNPs on larger regions. A single genomic region
 *does not* correspond to the whole genome, nor to a whole chromosome. Coloc also
@@ -44,6 +49,7 @@ Coloc comes with test data, so you can explore the structure for a quantitative 
 library(coloc)
 data(coloc_test_data)
 attach(coloc_test_data)
+SNPs must
 minimum_data=D1[c("beta","varbeta","snp","position","type","sdY")]
 str(minimum_data)
 check_dataset(minimum_data,warn.minp=1e-10)
@@ -72,6 +78,25 @@ In either case, you can see that the lengths of beta, varbeta, snp and position 
 ## Analysing two datasets
 
 coloc is used to analyse exactly two datasets.  The snp identifiers are used to match snps between datasets, and only the snps that appear in both datasets will contribute to the analysis.
+
+It is useful to plot the pair of datasets, and check that the shared snps cover any peaks in either dataset. 
+
+```{r}
+plot_datasets(minimum_data, minimum_ccdata)
+```
+
+Here they will all be shared because they are copies of the same dataset. But any snps not coloured blue would be unique to one dataset or the other.
+
+```{r}
+short_data1=lapply(D1[c("beta","varbeta","snp","position")], "[", 200:500)
+short_data2=lapply(D1[c("beta","varbeta","snp","position")], "[", 1:400)
+short_data1$type="cc"
+short_data2$type="cc"
+check_dataset(short_data1)
+check_dataset(short_data2)
+plot_datasets(short_data1, short_data2)
+```
+
 
 ## What if I don't have sdY?
 

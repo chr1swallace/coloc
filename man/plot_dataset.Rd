@@ -17,20 +17,6 @@ plot_dataset(
     "yellow3", "darkorange4", "brown"),
   ...
 )
-
-plot_dataset(
-  d,
-  susie_obj = NULL,
-  highlight_list = NULL,
-  alty = NULL,
-  ylab = "-log10(p)",
-  show_legend = TRUE,
-  color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00", "gold1", "skyblue2",
-    "#FB9A99", "palegreen2", "#CAB2D6", "#FDBF6F", "gray70", "khaki2", "maroon",
-    "orchid1", "deeppink1", "blue1", "steelblue4", "darkturquoise", "green1", "yellow4",
-    "yellow3", "darkorange4", "brown"),
-  ...
-)
 }
 \arguments{
 \item{d}{a coloc dataset}

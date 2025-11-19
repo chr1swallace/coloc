@@ -85,11 +85,17 @@ approx.bf.p <- function(p,f,type, N, s, suffix=NULL) {
 
 ##' Internal function, approx.bf.estimates
 ##'
-##' Calculate approximate Bayes Factors using supplied variance of the regression coefficients
+##' Calculate approximate Bayes Factors using supplied variance of the
+##' regression coefficients
 ##' @title Internal function, approx.bf.estimates
-##' @param z normal deviate associated with regression coefficient and its variance
+##' @param z normal deviate associated with regression coefficient and
+##'     its variance
 ##' @param V its variance
-##' @param sdY standard deviation of the trait. If not supplied, will be estimated.
+##' @param sdY standard deviation of the trait. If not supplied, will
+##'     be estimated.
+##' @param effect_priors named vector with variance of prior effect
+##'     sizes for quantitative and case-control traits. don't change
+##'     unless you know what you are doing!
 ##' @inheritParams approx.bf.p
 ##' @return data.frame containing lABF and intermediate calculations
 ##' @author Vincent Plagnol, Chris Wallace
@@ -475,7 +481,7 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 ##' Get credible sets from finemapping results
 ##'
 ##' @title credible.sets
-##' @param datasets data.frame output of `finemap.abf()`
+##' @param dataset data.frame output of `finemap.abf()`
 ##' @param credible.size threshold of the credible set (Default: 0.95)
 ##' @return SNP ids of the credible set
 ##' @author Guillermo Reales, Chris Wallace

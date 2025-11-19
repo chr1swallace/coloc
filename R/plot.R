@@ -1,8 +1,8 @@
 #' @importFrom graphics points
 globalVariables(c("variable","pp","position","value"))
 
-                                        # ds1: dataset1
-# ds2: dataset2
+                                        # ds1: d1
+# ds2: d2
 # both ds1 and ds2 should contain the same snps in the same order
 
 # Pos: positions of all snps in ds1 or in ds2
@@ -12,57 +12,6 @@ globalVariables(c("variable","pp","position","value"))
 # trait1: name of trait 1
 # trait2: name of trait 2   
 ymin <- NULL
-##'
-##' @title plot a coloc dataset
-##' @param d a coloc dataset
-##' @param susie_obj optional, the output of a call to runsusie()
-##' @param highlight_list optional, a list of character vectors. any snp in the
-##'   character vector will be highlighted, using a different colour for each
-##'   list.
-##' @param alty default is to plot a standard manhattan. If you wish to plot a
-##'   different y value, pass it here. You may also want to change ylab to
-##'   describe what you are plotting.
-##' @param ylab label for y axis, default is -log10(p) and assumes you are
-##'   plotting a manhattan
-##' @param show_legend optional, show the legend or not. default is TRUE
-##' @param color optional, specify the colours to use for each credible set when
-##'   susie_obj is supplied. Default is shamelessly copied from
-##'   susieR::susie_plot() so that colours will match
-##' @param ... other arguments passed to the base graphics plot() function
-##' @author Chris Wallace
-##' @export
-plot_dataset <- function(d,
-                         susie_obj=NULL,
-                         highlight_list=NULL,
-                         alty=NULL,ylab="-log10(p)",
-                         show_legend=TRUE,
-                         color = c("dodgerblue2", "green4", "#6A3D9A", "#FF7F00",
-                                   "gold1", "skyblue2", "#FB9A99", "palegreen2", "#CAB2D6",
-                                   "#FDBF6F", "gray70", "khaki2", "maroon", "orchid1", "deeppink1",
-                                   "blue1", "steelblue4", "darkturquoise", "green1", "yellow4",
-                                   "yellow3", "darkorange4", "brown"),
-                         ...) {
-  if(!("position" %in% names(d)))
-    stop("no position element given")
-  if(is.null(alty)) {
-    y= - ( pnorm(-abs(d$beta)/sqrt(d$varbeta),log.p=TRUE) + log(2) ) / log(10)
-  } else {
-    y=alty
-  }
-  plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
-  if(!is.null(susie_obj))
-    highlight_list=lapply(susie_obj$sets$cs, names)
-  if(!is.null(highlight_list)) {
-    for(i in 1:length(highlight_list)) {
-      w=which(d$snp %in% highlight_[[i]])
-      points(d$position[w], y[w], col=color[i], cex=2)
-    }
-    if(show_legend)
-      legend("topright",col=color[1:length(highlight_list)],
-             pch=rep(1,length(highlight_list)),legend=1:length(highlight_list))
-  }
-}
-
 ymax <- NULL
 
 ##' Plot a coloc structured dataset
@@ -117,6 +66,36 @@ plot_dataset <- function(d,
   }
 }
 
+##' plot a pair of coloc datasets, highlighting the snps that are common between them
+##'
+##' @inheritParams plot_extended_datasets
+##' @param color optional, specify the colour to use for highlighting
+##' @return plots a base graphics figure with two panels
+##' @export 
+##' @author Chris Wallace
+plot_datasets=function(d1, d2,
+                       color = "dodgerblue2") {
+    if(!("position" %in% names(d1)))
+        stop("no position element given")
+    if(!("position" %in% names(d2)))
+        stop("no position element given")
+    xlim=c(min(c(d1$position, d2$position)),
+           max(c(d1$position, d2$position)))
+    intsnps=intersect(d1$snp, d2$snp)
+    par(mfrow=c(2,1))
+    plot_dataset(d1,
+                 highlight_list=list(intsnps),
+                 color=color[1],
+                 main="Dataset 1",
+                 xlim=xlim)
+    plot_dataset(d2,
+                 highlight_list=list(intsnps),
+                 color=color[1],
+                 main="Dataset 2",
+                 xlim=xlim)
+}
+
+
 ##' Plot a pair of coloc datasets in an extended format
 ##' 
 ##' @title Draw extended plot of summary statistics for two coloc datasets
@@ -132,7 +111,8 @@ plot_dataset <- function(d,
 ##'  specified by ens_db must be loaded prior to  use (see the example). EnsDb.Hsapiens.v86
 ##' is the default database (GRCh38/hg19); for GRCh37/hg19, use EnsDb.Hsapiens.v75.
 ##'
-##' @param d a coloc dataset
+##' @param d1 a coloc dataset
+##' @param d2 another coloc dataset
 ##' @param x object of class \code{coloc_abf} returned by \code{coloc.abf()}
 ##' @param first_highlight_list character vector of snps to highlight in the first dataset; 
 ##' \code{'index'} can be passed to highlight the most significant SNP
@@ -165,8 +145,8 @@ plot_dataset <- function(d,
 ##' second_highlight_list = c("rs789", "rs1011"), 
 ##' ens_db = "EnsDb.Hsapiens.v86"))
 ##' }
-plot_extended_dataset <- function(dataset1,
-                                  dataset2,
+plot_extended_datasets <- function(d1,
+                                  d2,
                                   x, 
                                   first_highlight_list = NULL, 
                                   second_highlight_list = NULL, 
@@ -191,33 +171,33 @@ plot_extended_dataset <- function(dataset1,
         stop("Ensembl database not loaded. Try: library(", ens_db, ")",
              call. = FALSE)
     }
-    check_dataset(dataset1)
-    check_dataset(dataset2)
+    check_dataset(d1)
+    check_dataset(d2)
     
     ## See https://cran.r-project.org/web/packages/data.table/vignettes/datatable-importing.html;
     ## tl;dr it stops the 'undefined global variables' warning in R CMD check
     p <- z.x <- z.y <- pretty_value <- NULL  
-    if(!("chromosome" %in% names(dataset1) & "chromosome" %in% names(dataset2)))
+    if(!("chromosome" %in% names(d1) & "chromosome" %in% names(d2)))
         stop("A \"chromosome\" vector is required in both datasets.")
-    if(!("position" %in% names(dataset1) & "position" %in% names(dataset2))) 
+    if(!("position" %in% names(d1) & "position" %in% names(d2))) 
         stop("A \"position\" vector is required in both datasets.")
 
-    if(length(unique(dataset1$chromosome)) != 1 || 
-       length(unique(dataset2$chromosome)) != 1 || 
-       unique(dataset1$chromosome) != unique(dataset2$chromosome)) {
-        print(unique(dataset1$chromosome))
-        print(unique(dataset2$chromosome))
+    if(length(unique(d1$chromosome)) != 1 || 
+       length(unique(d2$chromosome)) != 1 || 
+       unique(d1$chromosome) != unique(d2$chromosome)) {
+        print(unique(d1$chromosome))
+        print(unique(d2$chromosome))
         stop("Dataset should contain summary statistics for variants on only one chromosome, 
     which should be the same in both datasets.")
     } else {
-        chromosome <- unique(dataset1$chromosome)
+        chromosome <- unique(d1$chromosome)
     }
     
     if(show_ld & is.null(ld_label)) {
         stop("If show_ld is TRUE, ld_label must be specified.")
     }
 
-    first_dataset <- as.data.table(dataset1)
+    first_dataset <- as.data.table(d1)
     if("beta" %in% names(first_dataset) && "varbeta" %in% names(first_dataset)) {
         first_dataset[, z := beta/sqrt(varbeta)]
         first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
@@ -226,7 +206,7 @@ plot_extended_dataset <- function(dataset1,
         first_dataset[, z := -log10(pvalues)]
     }
     
-    second_dataset <- as.data.table(dataset2)
+    second_dataset <- as.data.table(d2)
     if("beta" %in% names(second_dataset) && "varbeta" %in% names(second_dataset)) {
         second_dataset[, z := beta/sqrt(varbeta)]
         second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]

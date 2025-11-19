@@ -7,9 +7,9 @@
 credible.sets(dataset, credible.size = 0.95)
 }
 \arguments{
-\item{credible.size}{threshold of the credible set (Default: 0.95)}
+\item{dataset}{data.frame output of \code{finemap.abf()}}
 
-\item{datasets}{data.frame output of \code{finemap.abf()}}
+\item{credible.size}{threshold of the credible set (Default: 0.95)}
 }
 \value{
 SNP ids of the credible set

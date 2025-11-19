@@ -109,8 +109,8 @@ check_dataset <- function(d,
                 print(shouldmatch)
             }
         }
-    ## N should be scalar
-    if(!is.numeric(d[["N"]]) || length(d[["N"]])!=1)
+    ## N should be scalar if present
+    if("N" %in% nd && (!is.numeric(d[["N"]]) || length(d[["N"]])!=1))
        stop("N should be a single numeric. coloc does not accomodate per-snp sample sizes.")
 
     ## type of data

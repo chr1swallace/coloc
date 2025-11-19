@@ -14,7 +14,8 @@ approx.bf.estimates(
 )
 }
 \arguments{
-\item{z}{normal deviate associated with regression coefficient and its variance}
+\item{z}{normal deviate associated with regression coefficient and
+its variance}
 
 \item{V}{its variance}
 
@@ -22,7 +23,12 @@ approx.bf.estimates(
 
 \item{suffix}{suffix to append to column names of returned data.frame}
 
-\item{sdY}{standard deviation of the trait. If not supplied, will be estimated.}
+\item{sdY}{standard deviation of the trait. If not supplied, will
+be estimated.}
+
+\item{effect_priors}{named vector with variance of prior effect
+sizes for quantitative and case-control traits. don't change
+unless you know what you are doing!}
 }
 \value{
 data.frame containing lABF and intermediate calculations
@@ -31,7 +37,8 @@ data.frame containing lABF and intermediate calculations
 Internal function, approx.bf.estimates
 }
 \details{
-Calculate approximate Bayes Factors using supplied variance of the regression coefficients
+Calculate approximate Bayes Factors using supplied variance of the
+regression coefficients
 }
 \author{
 Vincent Plagnol, Chris Wallace
