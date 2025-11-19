@@ -109,6 +109,9 @@ check_dataset <- function(d,
                 print(shouldmatch)
             }
         }
+    ## N should be scalar
+    if(!is.numeric(d[["N"]]) || length(d[["N"]])!=1)
+       stop("N should be a single numeric. coloc does not accomodate per-snp sample sizes.")
 
     ## type of data
     if (! ('type' %in% nd))
@@ -136,6 +139,11 @@ check_dataset <- function(d,
     # Infinite values.
     if (any(is.infinite(d$beta) | is.infinite(d$varbeta))) {
       stop("dataset ", suffix,": Infinite values in beta and/or varbeta")
+    }
+
+    # zero variance.
+    if (any(d$varbeta==0)) {
+      stop("dataset ", suffix,": Zero values in varbeta")
     }
 
     ## minp
