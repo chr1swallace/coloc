@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">coloc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">6.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">6.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
                         <h4 data-toc-skip class="author">Chris
 Wallace</h4>
             
-            <h4 data-toc-skip class="date">2025-11-19</h4>
+            <h4 data-toc-skip class="date">2025-12-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/HEAD/vignettes/a02_data.Rmd" class="external-link"><code>vignettes/a02_data.Rmd</code></a></small>
       <div class="d-none name"><code>a02_data.Rmd</code></div>
@@ -159,7 +159,7 @@ quantitative trait. Here we show the minimum dataset needed for a
 quantitative trait.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc" class="external-link">coloc</a></span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## This is coloc version 6.0.0</span></span></code></pre>
+<pre><code><span><span class="co">## This is coloc version 6.0.1</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span>
@@ -195,7 +195,7 @@ simply square it to get the variance.</p>
 </ul>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_dataset.html">plot_dataset</a></span><span class="op">(</span><span class="va">minimum_data</span><span class="op">)</span></span></code></pre></div>
-<p><img src="a02_data_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-2-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p>For a case control trait, you would need to give the
 <code>type</code> as “cc”:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -228,7 +228,7 @@ in both datasets will contribute to the analysis.</p>
 snps cover any peaks in either dataset.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_datasets.html">plot_datasets</a></span><span class="op">(</span><span class="va">minimum_data</span>, <span class="va">minimum_ccdata</span><span class="op">)</span></span></code></pre></div>
-<p><img src="a02_data_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-4-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p>Here they will all be shared because they are copies of the same
 dataset. But any snps not coloured blue would be unique to one dataset
 or the other.</p>
@@ -244,7 +244,7 @@ or the other.</p>
 <pre><code><span><span class="co">## NULL</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_datasets.html">plot_datasets</a></span><span class="op">(</span><span class="va">short_data1</span>, <span class="va">short_data2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="a02_data_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-5-1.png" width="90%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="what-if-i-dont-have-sdy">What if I don’t have sdY?<a class="anchor" aria-label="anchor" href="#what-if-i-dont-have-sdy"></a>
@@ -470,7 +470,7 @@ negative. Here I show a good (left) and bad (right) example.</p>
 <pre><code><span><span class="co">## [1] 0.4999569</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">200</span>,<span class="st">"bad"</span>,col<span class="op">=</span><span class="st">"red"</span>,cex<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span></code></pre></div>
-<p><img src="a02_data_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
+<p><img src="a02_data_files/figure-html/unnamed-chunk-10-1.png" width="90%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
