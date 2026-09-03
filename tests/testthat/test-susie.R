@@ -28,3 +28,10 @@ test_that("null_weight=0 and null_weight=NULL are equivalent", {
   # Confirm that upstream susieR behavior hasn't changed
   expect_equal(runsusie(D1,null_weight=NULL), runsusie(D1,null_weight=0))
 })
+
+test_that("coloc.bf_bf is order invariant",{
+    a <- rnorm(10)
+    b <- rnorm(10)
+    names(a) <- names(b) <- paste0("s",1:10)
+    expect_equal(coloc.bf_bf(a,b), coloc.bf_bf(a,rev(b)))
+})

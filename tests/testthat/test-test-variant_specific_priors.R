@@ -12,8 +12,7 @@ test_that("Prior weight lenght consistency is checked (finemap.abf())", {
 
 test_that("Prior weights are saved in output (coloc.abf())", {
 
-  coloc_out <- coloc.abf(D1, D2, prior_weights1 = rep(1, 500), prior_weights2 = rep(1, 500))
-
+  expect_warning(coloc_out <- coloc.abf(D1, D2, prior_weights1 = rep(1, 500), prior_weights2 = rep(1, 500)))
   expect_named(coloc_out, c("summary", "results", "priors", "weights"))
   expect_equal(coloc_out$weights$prior_weights1, rep(1, 500))
   expect_equal(coloc_out$weights$prior_weights2, rep(1, 500))

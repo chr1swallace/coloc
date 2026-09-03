@@ -198,9 +198,10 @@ plot_extended_datasets <- function(d1,
     }
 
     first_dataset <- as.data.table(d1)
+    logp <- NULL
     if("beta" %in% names(first_dataset) && "varbeta" %in% names(first_dataset)) {
         first_dataset[, z := beta/sqrt(varbeta)]
-        first_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+        first_dataset[, logp := -(pnorm(-abs(z),log.p=TRUE) + log(2))/log(10)]
     } else {
         first_dataset[, logp := -log10(pvalues)]
         first_dataset[, z := -log10(pvalues)]
@@ -209,7 +210,7 @@ plot_extended_datasets <- function(d1,
     second_dataset <- as.data.table(d2)
     if("beta" %in% names(second_dataset) && "varbeta" %in% names(second_dataset)) {
         second_dataset[, z := beta/sqrt(varbeta)]
-        second_dataset[, logp := -(pnorm(-abs(z),log=TRUE) + log(2))/log(10)]
+        second_dataset[, logp := -(pnorm(-abs(z),log.p=TRUE) + log(2))/log(10)]
     } else {
         second_dataset[, logp := -log10(pvalues)]
         second_dataset[, z := -log10(pvalues)]

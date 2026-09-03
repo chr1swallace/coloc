@@ -1,5 +1,5 @@
 ---
-title: "Coloc: using variant-specific priros in coloc"
+title: "Coloc: using variant-specific priors in coloc"
 author: "Jeffrey Pullin"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

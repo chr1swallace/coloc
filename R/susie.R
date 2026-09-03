@@ -269,6 +269,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
     bf2=bf2 - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
 
   ## check whether isnps covers the signal for each trait
+  ## pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
+  ## pp2=logbf_to_pp(bf2,p2, last_is_null="null" %in% colnames(bf2))
   pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
   pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
   ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
@@ -312,7 +314,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
     keep=match(isnps,colnames(bf2))
     prior_weights2 <- prior_weights2[keep]
     bf2=bf2[,keep,drop=FALSE]
-    if(length(p2)>2)
+    if(length(p2)>1)
       p2=p2[keep]
   }
   ## sort p12 if length(p1)>1 || length(p2)>1
@@ -328,7 +330,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   results <- PP <- vector("list",nrow(todo))
   ## results=lapply(1:nrow(todo), function(k) {
   for(k in 1:nrow(todo)) {
-    df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], ], bf2=bf2[todo$j[k], ])
+    df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], isnps], bf2=bf2[todo$j[k], isnps])
     df$internal.sum.lABF <- with(df, bf1 + bf2)
     my.denom.log.abf <- logsum(df$internal.sum.lABF)
     df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)

@@ -13,7 +13,7 @@ vignette: >
 
 We load some simulated data.
 
-```{r   }
+```{r load}
 library(coloc)
 data(coloc_test_data)
 attach(coloc_test_data) ## datasets D1, D2, D3 and D4
@@ -46,22 +46,24 @@ Even though the sensitivity analysis itself looks good, the Manhattan plots sugg
 coloc has adopted the [SuSiE](https://stephenslab.github.io/susie-paper/index.html) framework for fine mapping in the presence of multiple causal variants.  This framework requires the LD matrix is known, so first check our datasets hold an LD matrix of the right format.  =check_dataset= should return NULL if there are no problems, or print informative error messages if there are.
 
 
-```{r}
+```{r checks}
 check_dataset(D3,req="LD")
 check_dataset(D4,req="LD")
 ```
 
 SuSiE can take a while to run on larger datasets, so it is best to run once per dataset with the =runsusie= function, store the results and feed those into subsequent analyses.  =runsusie= is just a wrapper around the =susie_rss= function in the [susieR package](https://stephenslab.github.io/susieR/) that automates running until convergence and saves a little extra information about snp names to make subsequent coloc processing simpler.  Here, it does indeed find two signals for dataset  D3 (there are two rows in the credible sets summary) and one for dataset D4. 
 
-```{r}
+```{r runsusie}
+if(requireNamespace("susieR",quietly=TRUE)) {
   S3=runsusie(D3)
   summary(S3)
   S4=runsusie(D4)
   summary(S4)
+}
 ```
 
 With these susie output objects stored, we can colocalise every pair of signals.  This analysis says the first pair, tagged by s25.1 and s25 for datasets D3 and D4, do not colocalise (posterior for H3 is close to 1), whilst the second pair, tagged by the same SNP, s25, for both datasets, do (posterior for H4 is close to 1).
-```{r}
+```{r coloc.susie}
 if(requireNamespace("susieR",quietly=TRUE)) {
   susie.res=coloc.susie(S3,S4)
   print(susie.res$summary)
@@ -81,7 +83,7 @@ if(requireNamespace("susieR",quietly=TRUE)) {
 
 `susie_rss()` has many other options and you should look at them if `runsusie()` is not giving the output you expect.  They can be passed directly through `runsusie()`.
 
-``` r
+```{r help} 
 if(requireNamespace("susieR",quietly=TRUE)) {
   ?susieR::susie_rss
 }

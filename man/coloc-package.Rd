@@ -2,14 +2,36 @@
 % Please edit documentation in R/coloc-package.R
 \docType{package}
 \name{coloc-package}
-\alias{-package}
+\alias{coloc}
 \alias{coloc-package}
 \title{Colocalisation tests of two genetic traits}
 \description{
 Performs the colocalisation tests described in Plagnol et al (2009) and
 Wallace et al (2020) and draws some plots.
 }
-\author{
-Chris Wallace \href{mailto:cew54@cam.ac.uk}{cew54@cam.ac.uk}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/chr1swallace/coloc}
+  \item \url{https://chr1swallace.github.io/coloc/}
+  \item Report bugs at \url{https://github.com/chr1swallace/coloc/issues}
 }
-\keyword{package}
+
+}
+\author{
+\strong{Maintainer}: Chris Wallace \email{cew54@cam.ac.uk}
+
+Authors:
+\itemize{
+  \item Claudia Giambartolomei \email{claudia.giambartolomei.10@ucl.ac.uk}
+  \item Tom Willis \email{tom.willis@live.com}
+  \item Jeffrey Pullin \email{jp2045@cam.ac.uk}
+}
+
+Other contributors:
+\itemize{
+  \item Vincent Plagnol \email{v.plagnol@ucl.ac.uk} [contributor]
+}
+
+}
+\keyword{internal}
