@@ -493,10 +493,11 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 ##' @author Guillermo Reales, Chris Wallace
 ##' @export
 credible.sets <- function(dataset, credible.size = 0.95){
-    if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a SNP.PP column.")
+    if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a PP column.")
     t2 <- dataset[ order(dataset$SNP.PP, decreasing = TRUE),]
     t2$csum <- cumsum(t2$SNP.PP)
     w=which(cumsum(t2$SNP.PP)>=credible.size)[1]
-    t2[ 1:w ,c("snp","SNP.PP")]
+    names(t2) <- sub("SNP.PP","PP",names(t2))
+    t2[ 1:w ,c("snp","PP")]
 }
 
