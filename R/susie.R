@@ -167,10 +167,10 @@ finemap.bf=function(bf1, p1=1e-4) {
     return(data.table(nsnps=NA))
   ## scale bf in case needed
   if("null" %in% colnames(bf1))
-    bf1=bf1 - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
+    bf1=bf1[,c(isnps,"null")] - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
 
   ## check whether isnps covers the signal for each trait
-  pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
+  pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
   ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
   prop1=rowSums(pp1[,c(isnps),drop=FALSE]) / rowSums(pp1[,setdiff(colnames(pp1),"null"),drop=FALSE])
   bf1=bf1[,isnps,drop=FALSE]
@@ -262,17 +262,18 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
                 "null")
   if(!length(isnps))
     return(data.table(nsnps=NA))
-  ## scale bf in case needed
+    ## scale bf in case needed
+    nulllast <- function(m) m[,c(setdiff(colnames(m),"null"), "null"), drop=FALSE]
   if("null" %in% colnames(bf1))
-    bf1=bf1 - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
+    bf1=nulllast(bf1) - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
   if("null" %in% colnames(bf2))
-    bf2=bf2 - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
+    bf2=nulllast(bf2) - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
 
   ## check whether isnps covers the signal for each trait
-  ## pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
-  ## pp2=logbf_to_pp(bf2,p2, last_is_null="null" %in% colnames(bf2))
-  pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
-  pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
+  pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
+  pp2=logbf_to_pp(bf2,p2, last_is_null="null" %in% colnames(bf2))
+  ## pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
+  ## pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
   ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
   ph0.2=if("null" %in% colnames(pp2)) { pp2[,"null"] } else { 1 - rowSums(pp2) }
   prop1=rowSums(pp1[,c(isnps),drop=FALSE]) / rowSums(pp1[,setdiff(colnames(pp1),"null"),drop=FALSE])
