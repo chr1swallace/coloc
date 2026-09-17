@@ -1,5 +1,5 @@
 # coloc 6.0.3
-* fix issue #208
+* fix issue #208, #209
 # coloc 6.0.0
 * Add new ability to calculate varying prior probabilities based on distance to the gene in eQTL datasets
 * Add new plot_extended_data function to produce nice QC plots for coloc
