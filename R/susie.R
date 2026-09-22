@@ -139,7 +139,7 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
     return(data.table(nsnps=NA))
   idx1=cs1$cs_index
   ## alpha: an L by p matrix of posterior inclusion probabilites
-  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),"")]
+  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),""),drop=FALSE]
 
   ret=coloc.bf_bf(bf1,bf2, ...)
   ## renumber index to match
@@ -167,7 +167,7 @@ finemap.bf=function(bf1, p1=1e-4) {
     return(data.table(nsnps=NA))
   ## scale bf in case needed
   if("null" %in% colnames(bf1))
-    bf1=bf1[,c(isnps,"null")] - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
+    bf1=bf1[,c(isnps,"null"),drop=FALSE] - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
 
   ## check whether isnps covers the signal for each trait
   pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
