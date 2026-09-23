@@ -38,7 +38,6 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc, https://chr1swallace.github.io/coloc/
 BugReports: https://github.com/chr1swallace/coloc/issues
@@ -50,6 +49,8 @@ Collate:
     'result.R'
     'engine.R'
     'adapters.R'
+    'prior.R'
+    'coloc.R'
     'plot.R'
     'private.R'
     'sensitivity.R'
@@ -61,3 +62,4 @@ Depends:
     R (>= 3.5)
 LazyData: true
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0

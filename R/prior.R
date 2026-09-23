@@ -1,0 +1,69 @@
+## ---------------------------------------------------------------------------
+## The prior and control objects.
+##
+## This is where prior drift stops. In 6.0.3 the same three probabilities are
+## re-declared in every entry point signature and then diverge: coloc.abf()
+## defaults p12 to 1e-5, coloc.bf_bf() to 5e-6, and coloc.susie_bf() declares
+## p1/p2/p12 and never forwards them. The bounds check and the region-size
+## guard exist in only some of those places.
+##
+## One object, validated once, passed down.
+## ---------------------------------------------------------------------------
+
+new_coloc_prior <- function(p1, p2, p12, weights1, weights2) {
+    structure(list(p1 = p1, p2 = p2, p12 = p12,
+                   weights1 = weights1, weights2 = weights2),
+              class = "coloc_prior")
+}
+
+validate_coloc_prior <- function(x, nsnps = NULL) {
+    if (any(x$p12 < x$p1 * x$p2) || any(x$p12 > pmin(x$p1, x$p2)))
+        stop("p12 must lie in [p1*p2, min(p1, p2)]")
+    ## the region-size guard that only adjust_prior() applies in 6.0.3
+    if (!is.null(nsnps) && nsnps * max(x$p1, x$p2) >= 1)
+        stop("nsnps * p >= 1: implied region-level prior exceeds 1")
+    for (w in list(x$weights1, x$weights2))
+        if (!is.null(w) && any(is.na(w) | w <= 0))
+            stop("prior weights must be non-NA and positive")
+    if ((!is.null(x$weights1) || !is.null(x$weights2)) &&
+        (length(x$p1) != 1 || length(x$p2) != 1 || length(x$p12) != 1))
+        stop("prior weights can only be used with scalar p1, p2, p12")
+    x
+}
+
+##' Prior probabilities for a colocalisation analysis
+##'
+##' One object, validated once, in place of the same three probabilities being
+##' re-declared in every entry point.
+##'
+##' `p1`, `p2` and `p12` are PER SNP, not per region: for any one snp they are
+##' the probabilities that it is causal for trait 1 only, trait 2 only, or
+##' both. Weights are prior weights on individual snps, and can only be used
+##' with scalar probabilities.
+##'
+##' @param p1 prior probability a snp is associated with trait 1 only
+##' @param p2 prior probability a snp is associated with trait 2 only
+##' @param p12 prior probability a snp is associated with both traits
+##' @param weights1 optional per-snp prior weights for trait 1
+##' @param weights2 optional per-snp prior weights for trait 2
+##' @return an object of class coloc_prior
+##' @export
+coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
+                        weights1 = NULL, weights2 = NULL) {
+    validate_coloc_prior(new_coloc_prior(p1, p2, p12, weights1, weights2))
+}
+
+##' Control parameters for a colocalisation analysis
+##'
+##' @param overlap.min minimum proportion of a signal's posterior that must
+##'   fall on snps shared with the other trait before the pair is considered
+##' @param trim_by_posterior whether to drop signal pairs failing overlap.min
+##' @return an object of class coloc_control
+##' @export
+coloc_control <- function(overlap.min = 0.5, trim_by_posterior = TRUE) {
+    stopifnot(is.numeric(overlap.min), length(overlap.min) == 1,
+              overlap.min > 0, overlap.min <= 1,
+              is.logical(trim_by_posterior), length(trim_by_posterior) == 1)
+    structure(list(overlap.min = overlap.min, trim_by_posterior = trim_by_posterior),
+              class = "coloc_control")
+}
