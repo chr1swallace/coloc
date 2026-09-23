@@ -68,35 +68,13 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   values for causal association with one trait (p1, p2) or both (p12) and
 ##'   and prior weights.
 coloc.susie=function(dataset1, dataset2, back_calculate_lbf=FALSE, susie.args=list(), ...) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
-  if("susie" %in% class(dataset1))
-    s1=dataset1
-  else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
-  if("susie" %in% class(dataset2))
-    s2=dataset2
-  else
-    s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
-  cs1=s1$sets
-  cs2=s2$sets
-  if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 ) {
-	  warning("at least one dataset has no credible sets, nothing to colocalise")
-    return(data.table(nsnps=NA))
-	  }
-
-  idx1=cs1$cs_index
-  idx2=cs2$cs_index
-  bf1=s1$lbf_variable[idx1,,drop=FALSE]
-  bf2=s2$lbf_variable[idx2,,drop=FALSE]
-
-  ret=coloc.bf_bf(bf1,bf2, ...)
-  ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
-  ret$summary[,idx2:=cs2$cs_index[idx2]]
-  ret
+  ## One implementation from here: the susie fitting, the credible-set row
+  ## selection and the arithmetic all come from the adapters and the engine
+  ## by way of coloc(). What stays is the old return shape.
+  dots <- list(...)
+  .coloc_result_as_6_0_3(
+      coloc(dataset1, dataset2, method = "susie", susie.args = susie.args,
+            prior = .prior_from_dots(dots), control = .control_from_dots(dots)))
 }
 
 finemap.susie=function(dataset1, susie.args=list(),  ...) {
@@ -130,21 +108,19 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##' @export
 ##' @author Chris Wallace
 coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=list(), ...) {
-  if("susie" %in% class(dataset1))
-    s1=dataset1
-  else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
-  cs1=s1$sets
-  if(is.null(cs1$cs) || length(cs1$cs)==0 )
-    return(data.table(nsnps=NA))
-  idx1=cs1$cs_index
-  ## alpha: an L by p matrix of posterior inclusion probabilites
-  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),""),drop=FALSE]
+  dots <- list(...)
+  prior <- .prior_from_dots(dots)
+  ## AL02: 6.0.3 declared p1/p2/p12 here and forwarded none of them, so a
+  ## caller's values were silently discarded and the hardcoded defaults of
+  ## coloc.bf_bf() were used instead. They are forwarded now.
+  if (is.null(dots$p1))  prior$p1  <- p1
+  if (is.null(dots$p2))  prior$p2  <- p2
+  if (is.null(dots$p12)) prior$p12 <- p12
 
-  ret=coloc.bf_bf(bf1,bf2, ...)
-  ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
-  ret
+  .coloc_result_as_6_0_3(
+      .without_method_warning(
+          coloc(dataset1, bf2, method = "susie", susie.args = susie.args,
+                prior = prior, control = .control_from_dots(dots))))
 }
 
 ##' Finemap one dataset represented by Bayes factors
@@ -238,18 +214,9 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   ## whole regression grid can flow through the new engine by way of the old
   ## entry point, and it goes when coloc() takes over.
 
-  if ((length(p1) != 1 || length(p2) != 1 || length(p12) != 1) &&
-      (!is.null(prior_weights1) || !is.null(prior_weights2))) {
-      stop("Prior weights can only be used with single values of the prior parameters.")
-  }
-
-  if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 <= 0))) {
-    stop("prior_weights1 must contain non-NA/non-negative weights.")
-  }
-
-  if (!is.null(prior_weights2) && any(is.na(prior_weights2) | (prior_weights2 <= 0))) {
-    stop("prior_weights2 must contain non-NA/non-negative weights.")
-  }
+  prior <- list(p1 = p1, p2 = p2, p12 = p12,
+                weights1 = prior_weights1, weights2 = prior_weights2)
+  .check_prior_weights(prior)
 
   ## a named vector is one signal; from step 3 this is .adapt_bf()'s job
   if(is.vector(bf1))
@@ -257,10 +224,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   if(is.vector(bf2))
     bf2=matrix(bf2,nrow=1,dimnames=list(NULL,names(bf2)))
 
-  res <- .coloc_engine(bf1, bf2,
-                       prior = list(p1 = p1, p2 = p2, p12 = p12,
-                                    weights1 = prior_weights1,
-                                    weights2 = prior_weights2),
+  res <- .coloc_engine(bf1, bf2, prior = prior,
                        control = list(overlap.min = overlap.min,
                                       trim_by_posterior = trim_by_posterior))
   .coloc_result_as_6_0_3(res)

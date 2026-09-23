@@ -125,3 +125,54 @@ print.coloc_result <- function(x, ...) {
     for (m in x$messages) cat("  note:", m, "\n")
     invisible(x)
 }
+
+## ---- adapting the old entry points ----------------------------------------
+
+## The old doors take priors and control as loose arguments in `...`. Collect
+## them here so one place knows the defaults. Deliberately plain lists rather
+## than coloc_prior()/coloc_control(): those validate, and the old doors keep
+## the permissiveness they have always had. coloc() is the validating door.
+.prior_from_dots <- function(dots) {
+    pick <- function(nm, default) if (is.null(dots[[nm]])) default else dots[[nm]]
+    out <- list(p1 = pick("p1", 1e-4), p2 = pick("p2", 1e-4), p12 = pick("p12", 5e-6),
+                weights1 = dots$prior_weights1, weights2 = dots$prior_weights2)
+
+    .check_prior_weights(out)
+    out
+}
+
+## The BF-route weight rules, in one place. coloc.susie() and
+## coloc.susie_bf() used to inherit these by calling coloc.bf_bf(); they now
+## call coloc(), so without this a negative weight would reach log() and
+## produce NaN rather than a clean error.
+##
+## coloc.abf() deliberately does NOT use this: its own check permits a zero
+## weight, where the BF route rejects one. That asymmetry is 6.0.3's, not a
+## new one, and it disappears when the old doors do.
+.check_prior_weights <- function(prior) {
+    if ((length(prior$p1) != 1 || length(prior$p2) != 1 || length(prior$p12) != 1) &&
+        (!is.null(prior$weights1) || !is.null(prior$weights2)))
+        stop("Prior weights can only be used with single values of the prior parameters.")
+    if (!is.null(prior$weights1) && any(is.na(prior$weights1) | (prior$weights1 <= 0)))
+        stop("prior_weights1 must contain non-NA/non-negative weights.")
+    if (!is.null(prior$weights2) && any(is.na(prior$weights2) | (prior$weights2 <= 0)))
+        stop("prior_weights2 must contain non-NA/non-negative weights.")
+    invisible(prior)
+}
+
+.control_from_dots <- function(dots) {
+    pick <- function(nm, default) if (is.null(dots[[nm]])) default else dots[[nm]]
+    list(overlap.min = pick("overlap.min", 0.5),
+         trim_by_posterior = pick("trim_by_posterior", TRUE))
+}
+
+## coloc() warns that `method` is inapplicable to a precomputed BF input, which
+## is right for someone calling coloc() directly. coloc.susie_bf()'s entire
+## signature is "one dataset, one BF matrix", so there the warning is noise
+## about a choice the caller was never offered.
+.without_method_warning <- function(expr) {
+    withCallingHandlers(expr, warning = function(w) {
+        if (grepl("method is inapplicable", conditionMessage(w), fixed = TRUE))
+            invokeRestart("muffleWarning")
+    })
+}

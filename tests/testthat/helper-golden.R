@@ -47,6 +47,11 @@ capture_run <- function(expr) {
 ## classic false-positive generators. Strip them before anything is compared.
 .flatten_table <- function(x) {
     if (is.null(x)) return(NULL)
+    ## coloc.abf()'s $summary is a NAMED VECTOR, not a table. as.data.frame()
+    ## would move its names into rownames, which are stripped below, making a
+    ## renamed PP column invisible. sensitivity() requires those names to be
+    ## exact, so an atomic input is kept atomic.
+    if (is.atomic(x) && is.null(dim(x))) return(x)
     out <- as.data.frame(x, stringsAsFactors = FALSE)
     rownames(out) <- NULL
     attr(out, ".internal.selfref") <- NULL
@@ -56,18 +61,19 @@ capture_run <- function(expr) {
 canonicalise <- function(res) {
     if (inherits(res, "coloc_case_error")) return(res)
     if (!is.list(res)) return(res)
+    ## a table is sorted into a canonical row order; an atomic summary (what
+    ## coloc.abf() returns) has no rows to sort and is left exactly as it is
+    .tidy <- function(x, by) {
+        x <- .flatten_table(x)
+        if (is.null(x) || is.null(dim(x))) return(x)
+        if (nrow(x) && all(by %in% names(x)))
+            x <- x[do.call(order, unname(as.list(x[, by, drop = FALSE]))), , drop = FALSE]
+        rownames(x) <- NULL
+        x
+    }
     out <- list()
-    s <- .flatten_table(res$summary)
-    if (!is.null(s) && nrow(s) && all(c("idx1", "idx2") %in% names(s)))
-        s <- s[order(s$idx1, s$idx2), , drop = FALSE]
-    if (!is.null(s)) rownames(s) <- NULL
-    out$summary <- s
-
-    r <- .flatten_table(res$results)
-    if (!is.null(r) && nrow(r) && "snp" %in% names(r))
-        r <- r[order(r$snp), , drop = FALSE]
-    if (!is.null(r)) rownames(r) <- NULL
-    out$results <- r
+    out$summary <- .tidy(res$summary, c("idx1", "idx2"))
+    out$results <- .tidy(res$results, "snp")
 
     out$priors  <- res$priors
     out$weights <- res$weights
@@ -95,7 +101,15 @@ diff_fields <- function(new, old) {
     if (is.null(ns) != is.null(os)) {
         d <- c(d, "summary")
     } else if (!is.null(ns)) {
-        if (!identical(names(ns), names(os)) || nrow(ns) != nrow(os)) {
+        atomic <- is.atomic(os) && is.null(dim(os))
+        if (atomic != (is.atomic(ns) && is.null(dim(ns)))) {
+            d <- c(d, "summary")                 ## a table became a vector, or vice versa
+        } else if (atomic) {
+            ## names are part of the contract: prior.adjust() checks them with
+            ## identical() at R/sensitivity.R:5
+            if (!identical(names(os), names(ns))) d <- c(d, "summary$names")
+            if (!.same(unname(os), unname(ns)))   d <- c(d, "summary$values")
+        } else if (!identical(names(ns), names(os)) || nrow(ns) != nrow(os)) {
             d <- c(d, "summary")
         } else {
             for (nm in names(os)) if (!.same(os[[nm]], ns[[nm]]))

@@ -1,10 +1,11 @@
 ## ---------------------------------------------------------------------------
-## Step 1: the engine, private and with no caller yet.
+## Step 1: the engine. Private, and since steps 2 and 5 it has three callers:
+## coloc(), coloc.bf_bf() and coloc.abf().
 ##
-## The engine's own shape is new, so bit-identity through the old entry points
-## is step 2's gate. What is asserted here is that the contract holds, that
-## every status is reachable, and that the NUMBERS match 6.0.3 wherever 6.0.3
-## produced any.
+## The engine's own shape is new, so bit-identity THROUGH those callers is
+## step 2's gate and lives in test-regression.R. What is asserted here is that
+## the contract holds, that every status is reachable, and that the NUMBERS
+## match 6.0.3 wherever 6.0.3 produced any.
 ## ---------------------------------------------------------------------------
 
 ## 6.0.3's $summary, or NULL for the shapes that carry none
