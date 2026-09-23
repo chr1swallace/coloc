@@ -49,6 +49,7 @@ Collate:
     'claudia.R'
     'result.R'
     'engine.R'
+    'adapters.R'
     'plot.R'
     'private.R'
     'sensitivity.R'
