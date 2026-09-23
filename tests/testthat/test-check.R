@@ -12,8 +12,8 @@ test_that("missing or bad required elements throws error", {
   ## type="cc" and s
   expect_null(check_dataset(C1))
   expect_error(check_dataset(B1))
-  expect_that(check_dataset(list(), ""), throws_error())
-  expect_that(check_dataset(list(beta=1,p=2,type="blah"), ""), throws_error())
+  expect_error(check_dataset(list(), ""))
+  expect_error(check_dataset(list(beta=1,p=2,type="blah"), ""))
 })
 
 test_that("LD matrix must have dimnames", {

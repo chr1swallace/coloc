@@ -9,3 +9,4 @@ coloc_*.tar.gz
 .Rproj.user
 .Rhistory
 *.Rproj
+.oracle-lib/
