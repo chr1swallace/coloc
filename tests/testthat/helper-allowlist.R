@@ -22,15 +22,32 @@
 
 coloc_allowlist <- list(
 
-    ## Empty until a difference is observable through the public surface.
-    ##
-    ## Pending, lands at step 2 with the coloc.bf_bf() wrapper:
-    ##   AL10  per-snp p1/p2 with no prior weights. combine.abf() is scalar
-    ##         only, so 6.0.3 recycles them and reports 2*Q+3 hypotheses
-    ##         (PP.H0.abf..PP.H32.abf for Q=8) instead of five. The engine
-    ##         routes per-snp priors through combine_abf_weighted(), which
-    ##         collapses them with logsum(). R/claudia.R:123-131, reached
-    ##         from R/susie.R:340-346.
+    list(id = "AL10",
+         step = 2,
+         why = paste("per-snp p1/p2 with no prior weights: combine.abf() is",
+                     "scalar only, so 6.0.3 recycles them and reports 2*Q+3",
+                     "hypotheses (PP.H0.abf..PP.H32.abf for Q=8) instead of",
+                     "five, and $priors comes back as a 3*Q vector. The engine",
+                     "routes per-snp priors through combine_abf_weighted(),",
+                     "which collapses them with logsum()"),
+         ref = "R/claudia.R:123-131 combine.abf(), reached from R/susie.R:340-346",
+         fields = c("summary", "priors"),
+         applies_to = function(case_id, layer) case_id == "t0-vector-priors",
+         news = paste("coloc.bf_bf() with per-snp p1/p2 and no prior weights now",
+                      "returns five posteriors. Previously the per-snp priors",
+                      "were recycled and the result carried one PP.Hn.abf",
+                      "column per snp per hypothesis.")),
+
+    list(id = "AL11",
+         step = 2,
+         why = paste("an empty snp intersection now warns. 6.0.3 returned",
+                     "data.table(nsnps=NA) silently, which is hard to notice in",
+                     "a loop over thousands of gene-trait pairs"),
+         ref = "R/susie.R:263-264 in 6.0.3, the bare return with no condition",
+         fields = "conditions",
+         applies_to = function(case_id, layer) case_id == "t0-no-overlap",
+         news = paste("coloc.bf_bf() now warns when the two traits share no",
+                      "snps, instead of returning nsnps=NA silently."))
 
 
 )

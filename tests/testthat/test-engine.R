@@ -103,9 +103,9 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
         ## AL10, pending in helper-allowlist.R: 6.0.3 recycles a per-snp
         ## prior through combine.abf() and reports 33 hypotheses. The engine
         ## collapses it to five, so there is nothing to compare column-wise.
-        if (case$id == "t0-vector-priors") {
-            expect_equal(ncol(os), 38L)                 # 6.0.3: PP.H0..PP.H32
-            expect_equal(ncol(ns), 10L)                 # engine: the frozen shape
+        if (case$id == "t0-vector-priors") {          ## AL10
+            expect_equal(ncol(os), 38L)                 ## 6.0.3: PP.H0..PP.H32
+            expect_equal(ncol(ns), 10L)                 ## engine: the frozen shape
             next
         }
 
