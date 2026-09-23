@@ -22,8 +22,16 @@
 
 coloc_allowlist <- list(
 
-    ## Nothing yet. Entries are added by the build step that causes them, never
-    ## in advance, so that an empty allowlist is a meaningful gate.
+    ## Empty until a difference is observable through the public surface.
+    ##
+    ## Pending, lands at step 2 with the coloc.bf_bf() wrapper:
+    ##   AL10  per-snp p1/p2 with no prior weights. combine.abf() is scalar
+    ##         only, so 6.0.3 recycles them and reports 2*Q+3 hypotheses
+    ##         (PP.H0.abf..PP.H32.abf for Q=8) instead of five. The engine
+    ##         routes per-snp priors through combine_abf_weighted(), which
+    ##         collapses them with logsum(). R/claudia.R:123-131, reached
+    ##         from R/susie.R:340-346.
+
 
 )
 

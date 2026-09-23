@@ -46,10 +46,17 @@ test_that("layer A: the BF matrices fed to the engine are still reproducible", {
     }
 })
 
-test_that("the allowlist is empty until a build step earns an entry", {
-    ## Steps 0 to 3 must pass with nothing allowed. An empty allowlist is only
-    ## a meaningful gate if entries are added by the step that causes them.
+test_that("the allowlist holds exactly the entries the build has earned", {
+    ## Entries are added by the step that causes them, never in advance, so
+    ## that this list is a deliberate act rather than a rubber stamp. Every id
+    ## here is a behaviour change someone chose and can defend.
     expect_equal(nrow(allowlist_table()), 0L)
+    for (r in coloc_allowlist) {
+        expect_true(nzchar(r$why),  label = paste0(r$id, " has a reason"))
+        expect_true(nzchar(r$ref),  label = paste0(r$id, " names the 6.0.3 site"))
+        expect_true(nzchar(r$news), label = paste0(r$id, " has a NEWS bullet"))
+        expect_true(is.function(r$applies_to))
+    }
 })
 
 test_that("tripwire: no fixture reaches susieR's purity subsampling", {
