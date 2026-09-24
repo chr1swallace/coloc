@@ -140,11 +140,54 @@ test_that("the prior and control defaults are declared in exactly one place", {
     expect_equal(formals(coloc.bf_bf)$p12, 5e-6)
 })
 
+test_that("p1, p2 and p12 must be scalar; per-snp variation goes through weights", {
+    ## p1 is the prior that any ONE snp is causal for trait 1 only, so it is a
+    ## single number. Varying it across snps is what weights1/weights2 express,
+    ## and combine_abf_weighted() builds Q * p * w/sum(w) from them. A vector p1
+    ## is a second spelling of the same thing.
+    for (arg in c("p1", "p2", "p12")) {
+        a <- list(rep(1e-4, 8)); names(a) <- arg
+        expect_error(do.call(coloc_prior, a), "must each be a single value",
+                     label = paste0("vector ", arg))
+        expect_error(do.call(coloc_prior, a), "weights1/weights2",
+                     label = paste0(arg, " error names the alternative"))
+    }
+    ## the guard fires before the bounds check, so the message is the useful one
+    expect_error(coloc_prior(p1 = c(1e-4, 1e-4), weights1 = c(1, 1)),
+                 "must each be a single value")
+    ## and the supported way still works
+    expect_s3_class(coloc_prior(p1 = 1e-4, weights1 = c(1, 2, 3)), "coloc_prior")
+
+    ## the OLD doors are untouched: D6 freezes them until step 7
+    bf <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
+                 dimnames = list("sig1", paste0("s", 1:8)))
+    res <- suppressWarnings(coloc.bf_bf(bf, bf, p1 = rep(1e-4, 8), p2 = rep(1e-4, 8)))
+    expect_true(is.list(res$priors))
+    expect_named(res$priors, c("p1", "p2", "p12"))
+})
+
+test_that("$priors keeps three named entries even when a prior is non-scalar", {
+    ## c() flattens, which turned a length-8 p1 into p11..p28. coloc.bf_bf()
+    ## still hands the engine vectors until step 7, so the engine has to cope.
+    bf <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
+                 dimnames = list("sig1", paste0("s", 1:8)))
+    vec <- suppressWarnings(.coloc_engine(bf, bf,
+        prior = list(p1 = rep(1e-4, 8), p2 = rep(1e-4, 8), p12 = 5e-6,
+                     weights1 = NULL, weights2 = NULL)))
+    expect_named(vec$priors, c("p1", "p2", "p12"))
+    expect_true(is.list(vec$priors))
+    expect_length(vec$priors$p1, 8L)
+
+    ## the scalar case is unchanged: still a named numeric vector
+    sc <- .coloc_engine(bf, bf)
+    expect_true(is.numeric(sc$priors))
+    expect_named(sc$priors, c("p1", "p2", "p12"))
+})
+
 test_that("coloc_prior() and coloc_control() validate once, in one place", {
     expect_error(coloc_prior(p12 = 2e-4), "p12 must lie")
     expect_error(validate_coloc_prior(coloc_prior(), nsnps = 20000), "exceeds 1")
     expect_error(coloc_prior(weights1 = c(1, -1)), "non-NA and positive")
-    expect_error(coloc_prior(p1 = c(1e-4, 1e-4), weights1 = c(1, 1)), "scalar")
     expect_error(coloc_control(overlap.min = 2))
     expect_s3_class(coloc_prior(), "coloc_prior")
     expect_s3_class(coloc_control(), "coloc_control")

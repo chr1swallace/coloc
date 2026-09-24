@@ -17,6 +17,16 @@ new_coloc_prior <- function(p1, p2, p12, weights1, weights2) {
 }
 
 validate_coloc_prior <- function(x, nsnps = NULL) {
+    ## First, because the bounds check below is vector-tolerant (any()/pmin())
+    ## and would otherwise accept a vector silently. p1 is the prior that any
+    ## ONE snp is causal for trait 1 only: a single number applying to every
+    ## snp. Varying the prior across snps is what weights1/weights2 are for,
+    ## and combine_abf_weighted() builds Q * p * w/sum(w) from them. A vector
+    ## p1 is a second spelling of the same thing, and the confusing one.
+    for (nm in c("p1", "p2", "p12"))
+        if (length(x[[nm]]) != 1)
+            stop("p1, p2 and p12 are per-snp priors and must each be a single value; ",
+                 "use weights1/weights2 to vary the prior across snps")
     if (any(x$p12 < x$p1 * x$p2) || any(x$p12 > pmin(x$p1, x$p2)))
         stop("p12 must lie in [p1*p2, min(p1, p2)]")
     ## the region-size guard that only adjust_prior() applies in 6.0.3

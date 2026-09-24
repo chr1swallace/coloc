@@ -27,10 +27,13 @@ coloc_allowlist <- list(
          why = paste("per-snp p1/p2 with no prior weights: combine.abf() is",
                      "scalar only, so 6.0.3 recycles them and reports 2*Q+3",
                      "hypotheses (PP.H0.abf..PP.H32.abf for Q=8) instead of",
-                     "five, and $priors comes back as a 3*Q vector. The engine",
-                     "routes per-snp priors through combine_abf_weighted(),",
-                     "which collapses them with logsum()"),
-         ref = "R/claudia.R:123-131 combine.abf(), reached from R/susie.R:340-346",
+                     "five. The engine routes per-snp priors through",
+                     "combine_abf_weighted(), which collapses them with",
+                     "logsum(). $priors also differs, but note which way:",
+                     "6.0.3 returns list(p1, p2, p12) with p12 reconciled to a",
+                     "vector, while the engine reports the scalar p12 it was",
+                     "given. Both sides are lists; they are not the same list"),
+         ref = "R/claudia.R:123-131 combine.abf(), reached from R/susie.R:346",
          fields = c("summary", "priors"),
          applies_to = function(case_id, layer) case_id == "t0-vector-priors",
          news = paste("coloc.bf_bf() with per-snp p1/p2 and no prior weights now",
@@ -56,9 +59,11 @@ names(coloc_allowlist) <- vapply(coloc_allowlist, function(r) r$id, character(1)
 
 ## Fields this case is permitted to differ in, for this layer.
 allowlist_fields <- function(case_id, layer = "B") {
-    if (!length(coloc_allowlist)) return(character(0))
     hits <- Filter(function(r) isTRUE(r$applies_to(case_id, layer)), coloc_allowlist)
-    unique(unlist(lapply(hits, `[[`, "fields")))
+    ## always character(0), never NULL: unique(unlist(list())) is NULL, which
+    ## setdiff() happens to tolerate but anything comparing against this does
+    ## not
+    as.character(unique(unlist(lapply(hits, `[[`, "fields"))))
 }
 
 ## Used by the "allowlist is documented" test, and later to generate NEWS.
