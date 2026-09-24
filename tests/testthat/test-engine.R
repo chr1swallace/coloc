@@ -41,8 +41,6 @@ test_that("validate_coloc_result() rejects every breach of the frozen contract",
 })
 
 test_that("all five statuses are reachable and each one validates", {
-    m <- function(v, cols) matrix(v, nrow = 1,
-                                  dimnames = list("sig1", paste0("s", seq_along(cols))))
     a <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
                 dimnames = list("sig1", paste0("s", 1:8)))
     b <- matrix(c(0, 0, 7, 3, 0, 0, 0, 0), nrow = 1,

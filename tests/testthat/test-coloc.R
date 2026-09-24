@@ -114,7 +114,30 @@ test_that("the accessors answer without reaching into internals", {
     empty <- suppressWarnings(coloc(bf, dis))
     expect_false(is_ok(empty))
     expect_equal(n_signals(empty), 0L)
-    expect_true(all(is.na(pp(empty))))
+    ## nsnps is a count, so it agrees with n_signals() rather than saying
+    ## "unknown"; the posteriors stay NA because they could not be computed
+    expect_equal(unname(pp(empty)["nsnps"]), 0)
+    expect_true(all(is.na(pp(empty)[paste0("PP.H", 0:4, ".abf")])))
+})
+
+test_that("the prior and control defaults are declared in exactly one place", {
+    ## 6.0.3 has p12 = 1e-5 in coloc.abf() and 5e-6 in coloc.bf_bf() (AL01)
+    ## precisely because the same defaults were re-declared per entry point.
+    ## Every new path must derive from the constructors, so that changing a
+    ## default in R/prior.R changes it everywhere at once.
+    expect_equal(.default_prior(), unclass(coloc_prior()))
+    expect_equal(.default_control(), unclass(coloc_control()))
+    expect_equal(.prior_from_dots(list()), .default_prior())
+    expect_equal(.control_from_dots(list()), .default_control())
+
+    ## and a supplied value still wins over the default
+    expect_equal(.prior_from_dots(list(p12 = 1e-7))$p12, 1e-7)
+    expect_equal(.control_from_dots(list(overlap.min = 0.9))$overlap.min, 0.9)
+
+    ## the OLD doors keep their own literals on purpose: that is 6.0.3's
+    ## published API, frozen until the hard break
+    expect_equal(formals(coloc.abf)$p12, 1e-5)
+    expect_equal(formals(coloc.bf_bf)$p12, 5e-6)
 })
 
 test_that("coloc_prior() and coloc_control() validate once, in one place", {

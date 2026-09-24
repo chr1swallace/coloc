@@ -85,8 +85,12 @@ coloc <- function(x1, x2,
 ##' @export
 pp <- function(x, row = 1) {
     stopifnot(inherits(x, "coloc_result"))
-    if (!nrow(x$summary)) return(stats::setNames(rep(NA_real_, 6L),
-                                                 c("nsnps", paste0("PP.H", 0:4, ".abf"))))
+    ## No rows means no signal pair was summarised, so the count is 0 and
+    ## agrees with n_signals(). The posteriors stay NA under the governing
+    ## rule: they could not be computed.
+    if (!nrow(x$summary))
+        return(stats::setNames(c(0, rep(NA_real_, 5L)),
+                               c("nsnps", paste0("PP.H", 0:4, ".abf"))))
     unlist(x$summary[row, c("nsnps", paste0("PP.H", 0:4, ".abf")), with = FALSE])
 }
 
@@ -129,14 +133,19 @@ print.coloc_result <- function(x, ...) {
 ## ---- adapting the old entry points ----------------------------------------
 
 ## The old doors take priors and control as loose arguments in `...`. Collect
-## them here so one place knows the defaults. Deliberately plain lists rather
-## than coloc_prior()/coloc_control(): those validate, and the old doors keep
-## the permissiveness they have always had. coloc() is the validating door.
+## them here, starting from the canonical defaults so the numbers stay in one
+## place. The RESULT is an unclassed list, and values the caller supplied are
+## not put through validate_coloc_prior(): the old doors keep the
+## permissiveness they have always had, and coloc() is the validating door.
 .prior_from_dots <- function(dots) {
-    pick <- function(nm, default) if (is.null(dots[[nm]])) default else dots[[nm]]
-    out <- list(p1 = pick("p1", 1e-4), p2 = pick("p2", 1e-4), p12 = pick("p12", 5e-6),
-                weights1 = dots$prior_weights1, weights2 = dots$prior_weights2)
-
+    out <- .default_prior()
+    for (nm in c("p1", "p2", "p12"))
+        if (!is.null(dots[[nm]])) out[[nm]] <- dots[[nm]]
+    ## x[["nm"]] <- NULL DELETES the element; x["nm"] <- list(NULL) sets it.
+    ## The engine reads either as NULL, but keeping the shape identical to
+    ## .default_prior() is what stops the two drifting apart.
+    out["weights1"] <- list(dots$prior_weights1)
+    out["weights2"] <- list(dots$prior_weights2)
     .check_prior_weights(out)
     out
 }
@@ -161,9 +170,10 @@ print.coloc_result <- function(x, ...) {
 }
 
 .control_from_dots <- function(dots) {
-    pick <- function(nm, default) if (is.null(dots[[nm]])) default else dots[[nm]]
-    list(overlap.min = pick("overlap.min", 0.5),
-         trim_by_posterior = pick("trim_by_posterior", TRUE))
+    out <- .default_control()
+    for (nm in c("overlap.min", "trim_by_posterior"))
+        if (!is.null(dots[[nm]])) out[[nm]] <- dots[[nm]]
+    out
 }
 
 ## coloc() warns that `method` is inapplicable to a precomputed BF input, which

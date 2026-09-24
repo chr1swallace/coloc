@@ -18,9 +18,15 @@
 ## anyone inserts above it.
 ## ---------------------------------------------------------------------------
 
-.default_prior  <- function() list(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
-                                   weights1 = NULL, weights2 = NULL)
-.default_control <- function() list(overlap.min = 0.5, trim_by_posterior = TRUE)
+## The defaults live in ONE place: the constructors in R/prior.R. Re-declaring
+## them here is how 6.0.3 ended up with p12 = 1e-5 in coloc.abf() and 5e-6 in
+## coloc.bf_bf() (allowlist AL01), so the engine derives them instead.
+##
+## The OLD doors keep the literals in their own signatures on purpose: those
+## are 6.0.3's published API, frozen until the hard break, and they are always
+## passed down explicitly rather than falling through to these.
+.default_prior   <- function() unclass(coloc_prior())
+.default_control <- function() unclass(coloc_control())
 
 .coloc_engine <- function(bf1, bf2,
                           prior = .default_prior(),
