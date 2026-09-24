@@ -14,7 +14,18 @@ test_that("stage 1 classifies from class alone, and the order is load-bearing", 
     expect_equal(.classify_input(fit), "susie_fit")
     expect_equal(.classify_input(m), "bf")
     expect_equal(.classify_input(v), "bf")
-    expect_error(.classify_input(1:3), "not a susie fit")
+
+    ## Stage 1 answers KIND only. An unnamed vector is still a vector, so it
+    ## classifies and the adapter is what rejects it, with a message that says
+    ## what is actually wrong. Asking for names here would send an obviously
+    ## vector-shaped input to "not any of these".
+    expect_equal(.classify_input(1:3), "bf")
+    expect_equal(.classify_input(matrix(0, 2, 2)), "bf")
+    expect_error(.adapt_bf(1:3), "must be named by snp")
+    expect_error(.adapt_bf(matrix(0, 2, 2)), "colnames")
+
+    ## and the generic message still fires for something genuinely unclassifiable
+    expect_error(.classify_input(list(a = 1)), "not a susie fit")
 
     ## a susie fit is also a list: the class test has to come first
     fit_like_dataset <- structure(list(snp = "s1"), class = "susie")
@@ -107,14 +118,74 @@ test_that(".adapt_bf validates and takes every row", {
 
     expect_error(.adapt_bf(c(1, 2, 3)), "named by snp")
     expect_error(.adapt_bf(matrix(0, 2, 2)), "colnames")
+
+    ## is.matrix() is true of a character matrix, so without a type check it
+    ## reaches the engine and dies on arithmetic instead
+    chr <- matrix("a", 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    expect_error(.adapt_bf(chr), "must be numeric")
+    expect_error(.adapt_bf(setNames(letters[1:3], paste0("s", 1:3))), "must be numeric")
+    ## and the same via coloc(), so a character VECTOR gets the type message
+    ## rather than the generic one a character matrix already avoided
+    expect_equal(.classify_input(setNames(letters[1:3], paste0("s", 1:3))), "bf")
 })
 
-test_that("has_null is detected, never assumed", {
+test_that("coloc() reports what is wrong with a bad BF input, not just that it is bad", {
+    bf <- matrix(0, 1, 3, dimnames = list("sig1", paste0("s", 1:3)))
+    expect_error(coloc(c(1, 2, 3), bf), "must be named by snp")
+    expect_error(coloc(matrix(0, 2, 3), bf), "colnames")
+    expect_error(coloc(matrix("a", 1, 3, dimnames = list(NULL, paste0("s", 1:3))), bf),
+                 "must be numeric")
+})
+
+test_that("the old doors keep 6.0.3's behaviour on the same bad inputs", {
+    ## D6 freezes coloc.bf_bf(), which never calls .adapt_bf(): it does its own
+    ## is.vector promotion at R/susie.R:247-250. A character matrix must still
+    ## fail the way it always has, deep in the arithmetic. If this test starts
+    ## failing, the tightening above has leaked into a frozen door.
+    chr <- matrix("a", 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    num <- matrix(0,   2, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    expect_error(coloc.bf_bf(chr, num), "non-numeric argument")
+})
+
+test_that("meta$has_null never contradicts the matrix it describes", {
+    ## The zero-credible-set branch keeps the fit's colnames, so it can carry a
+    ## "null" column just like the normal branch. It used to hardcode FALSE,
+    ## which nothing noticed because the engine detects the null column itself
+    ## rather than trusting meta. That makes this a latent wrongness: it only
+    ## bites once something starts reading the field.
+    mk <- function(snps, empty) structure(list(
+        lbf_variable = matrix(0, 3, length(snps), dimnames = list(NULL, snps)),
+        sets = list(cs = if (empty) list() else list(1),
+                    cs_index = if (empty) integer(0) else 1L)), class = "susie")
+
+    for (snps in list(c("s1", "s2", "null"), c("s1", "s2", "s3")))
+        for (empty in c(TRUE, FALSE)) {
+            a <- .adapt_susie(mk(snps, empty))
+            expect_equal(a$meta$has_null, "null" %in% colnames(a$bf),
+                         label = paste0("snps=", paste(snps, collapse = ","),
+                                        " empty=", empty))
+        }
+
+    ## .adapt_bf() likewise describes what it was handed
+    for (cn in list(c("s1", "null"), c("s1", "s2"))) {
+        m <- matrix(0, 2, 2, dimnames = list(NULL, cn))
+        expect_equal(.adapt_bf(m)$meta$has_null, "null" %in% cn)
+    }
+})
+
+test_that("has_null is detected where it can be, and FALSE by construction where it cannot", {
     skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
     ## runsusie() only produces a "null" column when susie_rss() was given a
     ## null_weight (annotate_susie(), R/susie.R:502); on the default route it
     ## does not, so the engine's null handling stays inert
     fit <- suppressMessages(runsusie(coloc_test_data$D4))
     expect_false(.adapt_susie(fit)$meta$has_null)
-    expect_false(suppressWarnings(.adapt_single(coloc_test_data$D1))$meta$has_null)
+
+    ## .adapt_single() asserts FALSE rather than detecting, and that is correct:
+    ## process.dataset() never appends a null pseudo-snp. finemap.abf() does
+    ## (R/claudia.R:329-333), coloc.abf() does not, and this reproduces
+    ## coloc.abf(). So the claim is about construction, not inspection.
+    a <- suppressWarnings(.adapt_single(coloc_test_data$D1))
+    expect_false(a$meta$has_null)
+    expect_false("null" %in% colnames(a$bf))
 })

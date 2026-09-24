@@ -16,16 +16,22 @@
 
 ## ---- stage 1: what did the caller hand us? --------------------------------
 
+## Stage 1 answers what KIND of thing this is, and nothing else. Whether the
+## contents are usable, snp ids present, values numeric, is the adapter's job:
+## it is the layer that knows what a log BF has to look like, and it can say so
+## in a message that names the actual problem. Asking here instead means an
+## input that is obviously a vector gets rejected as "not any of these".
+##
 ## Order is load-bearing. A susie fit is also a list, and lbf_variable is also
 ## a matrix, so a later test would claim an input an earlier one should have
 ## caught. The package writes this check as "susie" %in% class(x)
 ## (R/susie.R:75); inherits() is the same test.
 .classify_input <- function(x) {
-    if (inherits(x, "susie"))                 return("susie_fit")
-    if (is.matrix(x))                         return("bf")
-    if (is.numeric(x) && !is.null(names(x)))  return("bf")
-    if (is.list(x) && !is.null(x$snp))        return("dataset")
-    stop("input is not a susie fit, a named log-BF vector or matrix, or a coloc dataset")
+    if (inherits(x, "susie"))          return("susie_fit")
+    if (is.matrix(x))                  return("bf")
+    if (is.atomic(x))                  return("bf")   ## type checked by .adapt_bf()
+    if (is.list(x) && !is.null(x$snp)) return("dataset")
+    stop("input is not a susie fit, a log-BF vector or matrix, or a coloc dataset")
 }
 
 ## ---- stage 2: which method, per trait -------------------------------------
@@ -62,6 +68,9 @@
     pd <- process.dataset(d = x, suffix = suffix)
     bf <- matrix(pd[[paste0("lABF.", suffix)]], nrow = 1L,
                  dimnames = list("sig1", pd$snp))
+    ## FALSE by construction, not by inspection: process.dataset() never
+    ## appends a null pseudo-snp. finemap.abf() does (R/claudia.R:329-333),
+    ## coloc.abf() does not, and it is coloc.abf() this reproduces.
     list(bf = bf, meta = list(method = "single", idx = 1L, has_null = FALSE))
 }
 
@@ -77,7 +86,10 @@
         snps <- colnames(fit$lbf_variable)
         return(list(bf = matrix(numeric(0), nrow = 0L, ncol = length(snps),
                                 dimnames = list(NULL, snps)),
-                    meta = list(method = "susie", idx = integer(0), has_null = FALSE)))
+                    meta = list(method = "susie", idx = integer(0),
+                                ## the fit's colnames are kept above, so this
+                                ## branch can carry a "null" column too
+                                has_null = "null" %in% snps)))
     }
     bf <- fit$lbf_variable[idx, , drop = FALSE]
     rownames(bf) <- paste0("sig", idx)           ## lbf_variable carries no rownames
@@ -87,6 +99,13 @@
 
 ## Validation only. Every row becomes a signal, because nothing says otherwise.
 .adapt_bf <- function(x, ...) {
+    ## First: is.matrix() is true of a character matrix too, and without this
+    ## one it passes every remaining guard and fails three layers down inside
+    ## logbf_to_pp() with "non-numeric argument to binary operator". That is
+    ## 6.0.3's behaviour through coloc.bf_bf(), which is untouched; coloc() can
+    ## do better.
+    if (!is.numeric(x))
+        stop("log Bayes factors must be numeric, not ", typeof(x))
     if (is.null(dim(x))) {
         if (is.null(names(x))) stop("a log-BF vector must be named by snp")
         x <- matrix(x, nrow = 1L, dimnames = list("sig1", names(x)))
