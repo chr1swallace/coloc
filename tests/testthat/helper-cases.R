@@ -114,6 +114,13 @@ coloc_cases <- list(
     list(id = "t0-all-trimmed", tier = 0, args = list(),
          build = function() list(bf1 = .bf_a[, 5:8, drop = FALSE], bf2 = .bf_b)),
 
+    ## the same trimmed pairing WITH a null column, where ph0 is 6.0.3's own
+    ## pp1[,"null"] and must not move. AL08 permits t0-all-trimmed to differ;
+    ## this case is what says the permission is that narrow
+    list(id = "t0-all-trimmed-null", tier = 0, args = list(),
+         build = function() list(bf1 = .with_null(.bf_a[, 5:8, drop = FALSE]),
+                                 bf2 = .with_null(.bf_b))),
+
     list(id = "t0-partial-overlap", tier = 0, args = list(),
          build = function() list(bf1 = .bf_a[, 1:6, drop = FALSE], bf2 = .bf_b)),
 
