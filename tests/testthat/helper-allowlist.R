@@ -8,16 +8,20 @@
 ## against the migration notes later.
 ##
 ## Each record carries:
-##   id          AL01..AL09, matching rewrite-design section 6
-##   why         one line, the behaviour change in user terms
-##   ref         where the 6.0.3 behaviour lives
+##   id          AL01..AL12, matching rewrite-design section 6
+##   why         the behaviour change in user terms, as long as it needs to be
+##   ref         where the 6.0.3 behaviour lives, cited by line at 8f20f0b
 ##   step        the build step at which this entry starts firing
 ##   applies_to  function(case_id, layer) -> logical
 ##   fields      the field names it is allowed to move (see diff_fields())
 ##   news        the NEWS.md bullet this becomes
 ##
-## Steps 0 to 3 must run with this registry EMPTY. The first entry fires at
-## step 4, when coloc() introduces a second default for p12.
+## Entries are added by the step that CAUSES them, never in advance, so that
+## this list is a deliberate act rather than a rubber stamp. Steps 0 and 1 ran
+## with the registry empty, which is what proved the harness before it had
+## anything to catch. Everything here so far fires at step 2, when coloc.bf_bf()
+## became a wrapper over the engine and the grid could finally see the two
+## implementations disagree.
 ## ---------------------------------------------------------------------------
 
 coloc_allowlist <- list(
@@ -50,8 +54,33 @@ coloc_allowlist <- list(
          fields = "conditions",
          applies_to = function(case_id, layer) case_id == "t0-no-overlap",
          news = paste("coloc.bf_bf() now warns when the two traits share no",
-                      "snps, instead of returning nsnps=NA silently."))
+                      "snps, instead of returning nsnps=NA silently.")),
 
+    list(id = "AL12",
+         step = 2,
+         why = paste("a signal row that is entirely NA used to come back as a",
+                     "CERTAINTY. 6.0.3 sets pp.abf[1:5] <- c(1,0,0,0,0), then",
+                     "overwrites it with pp.abf[c(1,3)] <- c(0,1), because",
+                     "which.max() on an all-NA row returns nothing. The pair",
+                     "therefore reports PP.H2 = 1 with hit1 = '-': certainty",
+                     "that only trait 2 is associated, from a trait 1 row that",
+                     "carried no information at all. The engine reports NA and",
+                     "sets status = degenerate. Only the degenerate PAIR moves;",
+                     "the ordinary row beside it and the whole results table",
+                     "stay bit-identical. Reachable only with",
+                     "trim_by_posterior = FALSE, which is why step 2 passed",
+                     "without it: under the default the NA trips 6.0.3's own",
+                     "drop guards and it errors before reaching this branch"),
+         ref = "R/susie.R:350-359",
+         ## named per column, not just "summary": hit2, nsnps, idx1, idx2 and
+         ## the whole $results table must NOT move, and listing the columns
+         ## individually is what makes the harness say so if they ever do
+         fields = c("summary$hit1", paste0("summary$PP.H", 0:4, ".abf")),
+         applies_to = function(case_id, layer) case_id == "t0-degenerate",
+         news = paste("coloc.bf_bf() with trim_by_posterior = FALSE now returns",
+                      "NA for a signal pair whose log Bayes factors are all NA.",
+                      "Previously such a pair was reported as PP.H2 = 1, an",
+                      "unearned certainty."))
 
 )
 

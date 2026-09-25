@@ -108,6 +108,23 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
             next
         }
 
+        ## AL12: 6.0.3 rewrites an all-NA pair to a certainty. Assert the
+        ## divergence rather than skipping past it, and assert that it is
+        ## CONFINED to that pair: the ordinary row beside it still matches to
+        ## the last bit, which is what makes this a targeted change and not a
+        ## shift in the arithmetic.
+        if (case$id == "t0-degenerate") {             ## AL12
+            hh <- paste0("PP.H", 0:4, ".abf")
+            expect_equal(os$hit1, c("-", "s6"))       ## 6.0.3 names a hit it did not find
+            expect_equal(as.numeric(unlist(os[1, hh])), c(0, 0, 1, 0, 0))
+            expect_true(all(is.na(unlist(ns[1, hh]))))
+            expect_true(is.na(ns$hit1[1]))
+            for (col in c("nsnps", "hit1", "hit2", hh))
+                expect_equal(ns[[col]][2], os[[col]][2], tolerance = 0,
+                             label = paste0("t0-degenerate row 2 $", col))
+            next
+        }
+
         expect_equal(nrow(ns), nrow(os), label = paste0(case$id, " n rows"))
         for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
             expect_equal(ns[[col]], os[[col]], tolerance = 0,

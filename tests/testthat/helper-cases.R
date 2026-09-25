@@ -61,6 +61,12 @@ reverse <- function(d) {
 .bf_b <- .mat(c(0, 0, 7, 3, 0, 0, 0, 0))                ## peak at s3
 .bf_v <- setNames(c(0, 0, 8, 2, 0, 0, 0, 0), .snps(8))  ## named vector
 
+## row 1 carries no information at all. Pairing it against .bf_b is the only
+## way to reach 6.0.3 R/susie.R:350-359, and it needs trim_by_posterior = FALSE
+## to get there: under the default, the NA reaches 6.0.3's own drop guards and
+## errors instead, so there is nothing to freeze.
+.bf_na <- .bf_a; .bf_na[1, ] <- NA_real_
+
 .with_null <- function(m, value = 0) {
     out <- cbind(m, null = value)
     rownames(out) <- rownames(m)
@@ -113,6 +119,13 @@ coloc_cases <- list(
 
     list(id = "t0-trim-off", tier = 0, args = list(trim_by_posterior = FALSE),
          build = function() list(bf1 = .bf_a[, 5:8, drop = FALSE], bf2 = .bf_b)),
+
+    ## An all-NA signal row, which 6.0.3 rewrites to a certainty and the engine
+    ## reports as NA. Two rows on purpose: pair (1,1) is the degenerate one and
+    ## pair (2,1) is ordinary, so the case pins that the change is per pair and
+    ## does not leak into the row beside it. Allowlist AL12.
+    list(id = "t0-degenerate", tier = 0, args = list(trim_by_posterior = FALSE),
+         build = function() list(bf1 = .bf_na, bf2 = .bf_b)),
 
     list(id = "t0-overlap-min", tier = 0, args = list(overlap.min = 0.1),
          build = function() list(bf1 = .bf_a[, 4:8, drop = FALSE], bf2 = .bf_b)),
