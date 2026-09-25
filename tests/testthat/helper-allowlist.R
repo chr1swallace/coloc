@@ -26,7 +26,25 @@
 ## AL08 is the first entry of the other kind. Steps 2 to 5 only MOVED 6.0.3's
 ## arithmetic, so the differences they caused were ones the grid found; AL08 is
 ## a difference we chose to introduce, and it exists from the moment the code
-## is written rather than from the moment a case covers it.
+## is written rather than from the moment a case covers it. AL13 is the second.
+##
+## AL08 and AL13 are also the first entries to OVERLAP: both name
+## summary$PP.H0.abf, and AL13 covers every case AL08 does. allowlist_fields()
+## unions, so neither can go stale on its own any more. Both directions were
+## measured rather than assumed:
+##
+##   drop AL13 from this list  -> only t0-all-trimmed-null reports an
+##                                unexpected difference. The other two stay
+##                                quiet, because AL08 still permits the column
+##   revert AL08 in the CODE,  -> the grid stays quiet on all three. PP.H0
+##   keeping both records         becomes 2.5e-32, noise squared, and nothing
+##                                in test-regression.R objects
+##
+## What catches that second one is test-engine.R, which fails in three tests
+## because it names the expected value from an independent closed form rather
+## than from the allowlist. Those assertions are load-bearing here, not belt
+## and braces. Staleness detection is this registry's whole advantage over
+## scattered expect_known_difference() calls, and this one field has lost it.
 ## ---------------------------------------------------------------------------
 
 coloc_allowlist <- list(
@@ -116,7 +134,32 @@ coloc_allowlist <- list(
          news = paste("coloc.bf_bf() with trim_by_posterior = FALSE now returns",
                       "NA for a signal pair whose log Bayes factors are all NA.",
                       "Previously such a pair was reported as PP.H2 = 1, an",
-                      "unearned certainty."))
+                      "unearned certainty.")),
+
+    list(id = "AL13",
+         step = 6,
+         why = paste("PP.H0 in the all-trimmed branch was pmin(ph0.1, ph0.2).",
+                     "H0 is no causal variant in EITHER trait, so under",
+                     "independence it is the product; pmin is an upper bound",
+                     "that reports whichever trait is more confidently",
+                     "associated and discards the other. On every case in the",
+                     "grid the two signal rows collapse to one number, hiding",
+                     "that the two signals differ in how likely they are to be",
+                     "nothing: t0-all-trimmed reports 0.898988 twice where the",
+                     "joint is 0.898629 and 0.809768. Unlike AL08 this moves",
+                     "every all-trimmed result, null column or not, which is",
+                     "why t0-all-trimmed-null is listed here and why its role",
+                     "as AL08's control now rests on an assertion about ph0.1",
+                     "and ph0.2 rather than about the output column"),
+         ref = "R/susie.R:292",
+         fields = "summary$PP.H0.abf",
+         applies_to = function(case_id, layer)
+             case_id %in% c("t0-all-trimmed", "t0-overlap-min",
+                            "t0-all-trimmed-null"),
+         news = paste("the all-trimmed result now reports PP.H0 as the joint",
+                      "probability that neither trait has a causal variant,",
+                      "ph0.1 * ph0.2. Previously it was pmin(ph0.1, ph0.2),",
+                      "which reports one trait's marginal for every pair."))
 
 )
 

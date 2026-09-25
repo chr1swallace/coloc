@@ -8,6 +8,19 @@
 ## match 6.0.3 wherever 6.0.3 produced any.
 ## ---------------------------------------------------------------------------
 
+## P(no causal variant) for each row of a bf matrix, from first principles:
+## with the null at log BF 0 and a scalar prior p per snp,
+##   P(null) = (1 - n*p) / ((1 - n*p) + p * sum(exp(bf)))
+## Written out rather than calling logbf_to_pp() so that the expectations below
+## are independent of the code they check. Handles both shapes: a "null" column
+## is excluded from the snp count and from the sum, being the 1 in the formula.
+.p0 <- function(bf, p) {
+    sn <- setdiff(colnames(bf), "null")
+    n  <- length(sn)
+    unname(apply(bf[, sn, drop = FALSE], 1, function(r)
+        (1 - n * p) / ((1 - n * p) + p * sum(exp(r)))))
+}
+
 ## 6.0.3's $summary, or NULL for the shapes that carry none
 .old_summary <- function(v) {
     if (inherits(v, "coloc_case_error") || !is.list(v)) return(NULL)
@@ -68,7 +81,9 @@ test_that("all five statuses are reachable and each one validates", {
     ## posteriors are NA iff they could not be computed. PP.H0 is the one
     ## the trimmed branch does compute, and since AL08 it is a real number
     ## rather than the 1 - 1 that 1 - rowSums() used to leave there.
-    expect_gt(got$all_trimmed$summary$PP.H0.abf, 0.5)
+    expect_equal(got$all_trimmed$summary$PP.H0.abf,
+                 .p0(a[, 5:8, drop = FALSE], 1e-4) * .p0(b, 1e-4),
+                 tolerance = 1e-10)
     expect_true(all(is.na(got$all_trimmed$summary$PP.H4.abf)))
     expect_true(all(is.na(got$degenerate$summary$PP.H4.abf)))
     expect_false(anyNA(got$ok$summary$PP.H4.abf))
@@ -102,20 +117,30 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
                                               prior = prior, control = control))
         ns <- as.data.frame(new$summary)
 
-        ## AL08: 6.0.3 has no null column here, so its ph0 is 1 - rowSums()
-        ## of a row that already sums to 1, and PP.H0 is left as noise. The
-        ## engine puts the null back at log BF 0. Assert the divergence and
-        ## assert it is CONFINED to that one column.
-        if (case$id %in% c("t0-all-trimmed", "t0-overlap-min")) {   ## AL08
-            expect_true(all(abs(os$PP.H0.abf) < 1e-15))
-            ## an independent closed form rather than a restatement of the
-            ## engine: with the null at log BF 0 and a scalar prior,
-            ## P(null) = (1 - n*p) / ((1 - n*p) + p * sum(exp(bf)))
-            p0 <- function(bf, p) unname(apply(bf, 1, function(r)
-                (1 - ncol(bf) * p) / ((1 - ncol(bf) * p) + p * sum(exp(r)))))
-            expect_equal(ns$PP.H0.abf,
-                         pmin(p0(g$layerA$bf1, 1e-4), p0(g$layerA$bf2, 1e-4)),
-                         tolerance = 1e-10)
+        ## The three cases that reach the all-trimmed branch, where PP.H0 has
+        ## moved twice: AL08 gave ph0 a null to be the probability of, and
+        ## AL13 combines the two traits' values as a joint rather than a
+        ## minimum. Assert the new value, and assert the change is CONFINED to
+        ## that one column.
+        if (case$id %in% c("t0-all-trimmed", "t0-overlap-min",
+                           "t0-all-trimmed-null")) {         ## AL08, AL13
+            a0 <- .p0(g$layerA$bf1, 1e-4); b0 <- .p0(g$layerA$bf2, 1e-4)
+            expect_equal(ns$PP.H0.abf, a0 * b0, tolerance = 1e-10)   ## AL13
+
+            if (case$id == "t0-all-trimmed-null") {
+                ## This case is AL08's control: 6.0.3 has a null column here,
+                ## so it computed ph0 properly and the engine's ph0 is its own
+                ## expression unchanged. AL13 moves the OUTPUT column, so the
+                ## control can no longer be "differs in nothing"; it is made
+                ## one level down instead, on the inputs AL13 combines.
+                expect_equal(pmin(a0, b0), as.numeric(os$PP.H0.abf),
+                             tolerance = 1e-10)
+            } else {
+                ## AL08: no null column, so 6.0.3's 1 - rowSums() of a row
+                ## that already sums to 1 left noise, of either sign
+                expect_true(all(abs(os$PP.H0.abf) < 1e-15))
+            }
+
             for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
                 expect_equal(ns[[col]], os[[col]], tolerance = 0,
                              label = paste0(case$id, " $", col))
@@ -213,7 +238,11 @@ test_that("a trimmed pair with no evidence reports the prior, not a certainty", 
     res <- suppressWarnings(.coloc_engine(a, b))
 
     expect_equal(res$status, "all_trimmed")
-    expect_equal(res$summary$PP.H0.abf, 1 - 8 * 1e-4, tolerance = 1e-12)
+    ## each trait's own marginal is the prior, 1 - n*p1; the reported column
+    ## is the JOINT, so it is the product. Under 6.0.3's pmin it would be one
+    ## trait's 0.9992 rather than 0.99840064. AL13.
+    expect_equal(res$summary$PP.H0.abf, (1 - 8 * 1e-4)^2, tolerance = 1e-12)
+    expect_equal(.p0(a, 1e-4), 1 - 8 * 1e-4, tolerance = 1e-12)
     ## and the expression it replaces, so the test says why, not just what:
     ## the row already sums to 1, so 1 - rowSums() has nothing left to report
     expect_lt(abs(1 - sum(logbf_to_pp(a, 1e-4, last_is_null = FALSE))), 1e-12)

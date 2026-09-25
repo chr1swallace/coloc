@@ -79,29 +79,8 @@
     ## ---- 4. posteriors and coverage, on the UNRESTRICTED matrices ---------
     pp1 <- logbf_to_pp(bf1, p1, last_is_null = "null" %in% colnames(bf1))
     pp2 <- logbf_to_pp(bf2, p2, last_is_null = "null" %in% colnames(bf2))
-    ## PP(no causal variant) per signal row. With a null column that is just
-    ## its posterior. Without one, logbf_to_pp() spreads the prior across the
-    ## snps alone, so the row sums to 1 and 1 - rowSums() is not a small
-    ## number, it is noise of either sign: the null is not improbable, it is
-    ## unrepresented. These bf rows are log BFs against that null, so its own
-    ## log BF is 0 and it can be put back. AL08.
-    ##
-    ## pp1 and pp2 are deliberately left alone. Appending the null to them
-    ## directly is tidier and leaves prop mathematically unchanged, since
-    ## numerator and denominator both exclude the null and rescale together,
-    ## but it moves denom and so is not bit-invariant, and prop feeds a
-    ## threshold comparison.
-    ph0 <- function(bf, pp, p) {
-        if ("null" %in% colnames(pp)) return(pp[, "null"])
-        ## logbf_to_pp() only synthesises the null's prior in its scalar
-        ## branch; a per-snp p needs it supplied, and its own any(pi == 0)
-        ## guard covers a p that leaves the null no room
-        pi <- if (length(p) == 1) p else c(p, max(1 - sum(p), 0))
-        logbf_to_pp(cbind(bf, null = 0), pi, last_is_null = TRUE)[, "null"]
-    }
     prop <- function(pp) rowSums(pp[, isnps, drop = FALSE]) /
                          rowSums(pp[, setdiff(colnames(pp), "null"), drop = FALSE])
-    ph0.1 <- ph0(bf1, pp1, p1); ph0.2 <- ph0(bf2, pp2, p2)
     prop1 <- prop(pp1); prop2 <- prop(pp2)
 
     ## ---- 5. the pair grid, and trimming -----------------------------------
@@ -130,15 +109,54 @@
         ## the overlap, which is exactly this situation. Preserved on purpose:
         ## unifying them would silently move a reported column.
         pk <- function(pp, ix) colnames(pp)[apply(pp, 1, which.max)][ix]
-        ## pmin() is 6.0.3's and is kept: H0 is "no causal variant in either
-        ## trait", so under independence it is the product, and pmin is an
-        ## upper bound that reports whichever trait is more confidently
-        ## associated, twice. AL13, catalogued but not yet fixed. AL08 is
-        ## what made it visible: until ph0 was a real number this column was
-        ## noise whatever combined it.
+
+        ## PP(no causal variant) per signal row, computed here because here is
+        ## the only place it is read. Everything it needs is still in scope:
+        ## section 6 has not restricted anything to isnps yet, so each trait
+        ## answers from its own full panel, which is what makes H0 answerable
+        ## in a branch where H1 to H4 are not. Telling those four apart needs
+        ## the intersection; "does this trait have a causal variant at all"
+        ## does not.
+        ##
+        ## With a null column this is just its posterior. Without one,
+        ## logbf_to_pp() spreads the prior across the snps alone, so the row
+        ## sums to 1 and 1 - rowSums() is not a small number, it is noise of
+        ## either sign: the null is not improbable, it is unrepresented. These
+        ## bf rows are log BFs against that null, so its own log BF is 0 and
+        ## it can be put back. AL08.
+        ##
+        ## pp1 and pp2 are deliberately left alone. Appending the null to them
+        ## directly is tidier and leaves prop mathematically unchanged, since
+        ## numerator and denominator both exclude the null and rescale
+        ## together, but it moves denom and so is not bit-invariant, and prop
+        ## feeds a threshold comparison.
+        ph0 <- function(bf, pp, p) {
+            if ("null" %in% colnames(pp)) return(pp[, "null"])
+            ## logbf_to_pp() only synthesises the null's prior in its scalar
+            ## branch; a per-snp p needs it supplied, and its own any(pi == 0)
+            ## guard covers a p that leaves the null no room
+            pi <- if (length(p) == 1) p else c(p, max(1 - sum(p), 0))
+            logbf_to_pp(cbind(bf, null = 0), pi, last_is_null = TRUE)[, "null"]
+        }
+        ph0.1 <- ph0(bf1, pp1, p1); ph0.2 <- ph0(bf2, pp2, p2)
+
+        ## H0 is "no causal variant in EITHER trait", so under independence it
+        ## is the product. 6.0.3 has pmin(), an upper bound that reports
+        ## whichever trait is more confidently associated and discards the
+        ## other, so both signal rows of every case in the grid collapse to
+        ## one number even where the two signals differ in how likely they are
+        ## to be nothing. AL13. AL08 is what made it visible: until ph0 was a
+        ## real number this column was noise whatever combined it.
+        ##
+        ## What this is NOT is combine.abf()'s PP.H0 from the ok path. That is
+        ## a posterior over five configurations normalised together, on the
+        ## shared snps, with p12 coupling the traits. This is a product of two
+        ## marginals over two different panels under an independence the coloc
+        ## prior does not quite make. The two are not comparable, and calling
+        ## them by the same column name is 6.0.3's choice, frozen by D6.
         skel <- data.table(nsnps = length(isnps),
                            hit1 = pk(pp1, todo$i), hit2 = pk(pp2, todo$j),
-                           PP.H0.abf = pmin(ph0.1[todo$i], ph0.2[todo$j]),
+                           PP.H0.abf = ph0.1[todo$i] * ph0.2[todo$j],
                            PP.H1.abf = NA_real_, PP.H2.abf = NA_real_,
                            PP.H3.abf = NA_real_, PP.H4.abf = NA_real_,
                            idx1 = todo$i, idx2 = todo$j)
