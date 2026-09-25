@@ -91,9 +91,16 @@
     drop <- if (isTRUE(control$trim_by_posterior))
                 prop1[todo$i] < control$overlap.min | prop2[todo$j] < control$overlap.min
             else rep(FALSE, n_in)
-    ## coverage unassessable: let the loop mark it degenerate. Without this,
-    ## if(all(drop)) errors on NA, which is why 6.0.3's own all-NA guard at
-    ## R/susie.R:349 is unreachable under the default trim_by_posterior=TRUE.
+    ## Coverage is unassessable when prop is NA, and that takes only ONE NA
+    ## anywhere in a bf row, because prop is a ratio of rowSums. Let the loop
+    ## mark such a pair degenerate rather than trying to trim on it.
+    ##
+    ## 6.0.3 has no such line and errors on ANY NA in drop, via whichever of
+    ## its two guards catches it: all() short-circuits on FALSE and any() on
+    ## TRUE, so a lone NA trips if(all(drop)) at R/susie.R:285 while
+    ## c(NA, FALSE) gets past that one and trips if(any(drop)) at :297.
+    ## Either way its own all-NA branch at :350 is unreachable under the
+    ## default trim_by_posterior = TRUE.
     drop[is.na(drop)] <- FALSE
 
     if (all(drop)) {

@@ -122,6 +122,42 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
     }
 })
 
+test_that("a mixed drop, part NA part FALSE, does not trim and marks only the bad pair", {
+    ## prop is a ratio of rowSums, so ONE NA anywhere in a row makes coverage
+    ## unassessable for every pair using that row. With two rows, one poisoned
+    ## and one clean, drop is c(NA, FALSE).
+    ##
+    ## This is the case the engine's drop[is.na(drop)] <- FALSE was written for
+    ## and, until this test, the case no test covered: the existing degenerate
+    ## case uses a single row, so drop is a lone NA and only exercises 6.0.3's
+    ## if(all(drop)) guard. all() short-circuits on FALSE and any() on TRUE, so
+    ## c(NA, FALSE) gets past if(all(drop)) at R/susie.R:285 and is caught by
+    ## if(any(drop)) at :297 instead.
+    sn  <- paste0("s", 1:8)
+    ok  <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1, dimnames = list("sigA", sn))
+    bad <- ok; bad[1, 2] <- NA_real_              ## a single NA is enough
+    mixed <- rbind(bad, ok); rownames(mixed) <- c("bad", "good")
+
+    res <- suppressWarnings(.coloc_engine(mixed, ok))
+    expect_equal(res$status, "degenerate")
+    expect_equal(nrow(res$summary), 2L)           ## nothing was trimmed
+    expect_silent(validate_coloc_result(res))
+
+    ## posteriors are NA iff they could not be computed, applied per row
+    expect_true(is.na(res$summary$PP.H4.abf[res$summary$idx1 == 1]))
+    expect_false(is.na(res$summary$PP.H4.abf[res$summary$idx1 == 2]))
+})
+
+test_that("6.0.3 errors on both NA shapes, which is what the guard replaces", {
+    ## Pinning the behaviour being departed from. all() and any() short-circuit
+    ## on opposite values, so between them 6.0.3 rejects every NA-bearing drop.
+    expect_true(is.na(all(NA)))                    ## lone NA  -> if(all(...)) errors
+    expect_false(all(c(NA, FALSE)))                ## mixed    -> all() is FALSE...
+    expect_true(is.na(any(c(NA, FALSE))))          ##          ...but any() is NA
+    expect_error(if (all(NA)) TRUE, "missing value")
+    expect_error(if (any(c(NA, FALSE))) TRUE, "missing value")
+})
+
 test_that("SNP.PP.H4 is the softmax of bf1 + bf2 over the shared snps", {
     a <- matrix(c(0, 4, 1), nrow = 1, dimnames = list("sig1", c("s1", "s2", "s3")))
     b <- matrix(c(0, 3, 2), nrow = 1, dimnames = list("sigA", c("s1", "s2", "s3")))
