@@ -65,7 +65,10 @@ test_that("all five statuses are reachable and each one validates", {
     expect_equal(nrow(got$no_overlap$summary), 0L)
     expect_gt(nrow(got$all_trimmed$summary), 0L)
 
-    ## posteriors are NA iff they could not be computed
+    ## posteriors are NA iff they could not be computed. PP.H0 is the one
+    ## the trimmed branch does compute, and since AL08 it is a real number
+    ## rather than the 1 - 1 that 1 - rowSums() used to leave there.
+    expect_gt(got$all_trimmed$summary$PP.H0.abf, 0.5)
     expect_true(all(is.na(got$all_trimmed$summary$PP.H4.abf)))
     expect_true(all(is.na(got$degenerate$summary$PP.H4.abf)))
     expect_false(anyNA(got$ok$summary$PP.H4.abf))
@@ -98,6 +101,28 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
                                               promote(g$layerA$bf2),
                                               prior = prior, control = control))
         ns <- as.data.frame(new$summary)
+
+        ## AL08: 6.0.3 has no null column here, so its ph0 is 1 - rowSums()
+        ## of a row that already sums to 1, and PP.H0 is left as noise. The
+        ## engine puts the null back at log BF 0. Assert the divergence and
+        ## assert it is CONFINED to that one column.
+        if (case$id %in% c("t0-all-trimmed", "t0-overlap-min")) {   ## AL08
+            expect_true(all(abs(os$PP.H0.abf) < 1e-15))
+            ## an independent closed form rather than a restatement of the
+            ## engine: with the null at log BF 0 and a scalar prior,
+            ## P(null) = (1 - n*p) / ((1 - n*p) + p * sum(exp(bf)))
+            p0 <- function(bf, p) unname(apply(bf, 1, function(r)
+                (1 - ncol(bf) * p) / ((1 - ncol(bf) * p) + p * sum(exp(r)))))
+            expect_equal(ns$PP.H0.abf,
+                         pmin(p0(g$layerA$bf1, 1e-4), p0(g$layerA$bf2, 1e-4)),
+                         tolerance = 1e-10)
+            for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
+                expect_equal(ns[[col]], os[[col]], tolerance = 0,
+                             label = paste0(case$id, " $", col))
+            for (col in paste0("PP.H", 1:4, ".abf"))
+                expect_true(all(is.na(ns[[col]])), label = paste0("ns$", col))
+            next
+        }
 
         ## AL10, pending in helper-allowlist.R: 6.0.3 recycles a per-snp
         ## prior through combine.abf() and reports 33 hypotheses. The engine
@@ -173,6 +198,25 @@ test_that("6.0.3 errors on both NA shapes, which is what the guard replaces", {
     expect_true(is.na(any(c(NA, FALSE))))          ##          ...but any() is NA
     expect_error(if (all(NA)) TRUE, "missing value")
     expect_error(if (any(c(NA, FALSE))) TRUE, "missing value")
+})
+
+test_that("a trimmed pair with no evidence reports the prior, not a certainty", {
+    ## Every log BF is 0, so the data say nothing and P(no causal variant) is
+    ## exactly the prior, 1 - n*p1. This is the case AL08 was written for: with
+    ## no null column 6.0.3 reports ~0 for it, a certainty that both traits are
+    ## associated, drawn from two traits that showed no evidence at all.
+    ##
+    ## Three snps in common out of eight makes prop 0.375 for both traits,
+    ## under the 0.5 default, so every pair trims and the branch is reached.
+    a <- matrix(0, 1, 8, dimnames = list("sig1", paste0("s", 1:8)))
+    b <- matrix(0, 1, 8, dimnames = list("sigA", paste0("s", 6:13)))
+    res <- suppressWarnings(.coloc_engine(a, b))
+
+    expect_equal(res$status, "all_trimmed")
+    expect_equal(res$summary$PP.H0.abf, 1 - 8 * 1e-4, tolerance = 1e-12)
+    ## and the expression it replaces, so the test says why, not just what:
+    ## the row already sums to 1, so 1 - rowSums() has nothing left to report
+    expect_lt(abs(1 - sum(logbf_to_pp(a, 1e-4, last_is_null = FALSE))), 1e-12)
 })
 
 test_that("SNP.PP.H4 is the softmax of bf1 + bf2 over the shared snps", {

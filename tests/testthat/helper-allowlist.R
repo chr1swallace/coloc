@@ -8,7 +8,7 @@
 ## against the migration notes later.
 ##
 ## Each record carries:
-##   id          AL01..AL12, matching rewrite-design section 6
+##   id          AL01..AL13, matching rewrite-design section 6
 ##   why         the behaviour change in user terms, as long as it needs to be
 ##   ref         where the 6.0.3 behaviour lives, cited by line at 8f20f0b
 ##   step        the build step at which this entry starts firing
@@ -19,12 +19,48 @@
 ## Entries are added by the step that CAUSES them, never in advance, so that
 ## this list is a deliberate act rather than a rubber stamp. Steps 0 and 1 ran
 ## with the registry empty, which is what proved the harness before it had
-## anything to catch. Everything here so far fires at step 2, when coloc.bf_bf()
-## became a wrapper over the engine and the grid could finally see the two
-## implementations disagree.
+## anything to catch. AL10, AL11 and AL12 all fire at step 2, when
+## coloc.bf_bf() became a wrapper over the engine and the grid could finally
+## see the two implementations disagree.
+##
+## AL08 is the first entry of the other kind. Steps 2 to 5 only MOVED 6.0.3's
+## arithmetic, so the differences they caused were ones the grid found; AL08 is
+## a difference we chose to introduce, and it exists from the moment the code
+## is written rather than from the moment a case covers it.
 ## ---------------------------------------------------------------------------
 
 coloc_allowlist <- list(
+
+    list(id = "AL08",
+         step = 6,
+         why = paste("PP.H0 in the all-trimmed branch was an unearned",
+                     "certainty. ph0 came from 1 - rowSums(pp), but",
+                     "logbf_to_pp() normalises each row over the columns it",
+                     "was given, so without a null column that is 1 - 1: not a",
+                     "small probability but noise, of either sign. A signal",
+                     "whose log BFs are all 0, carrying no evidence for any",
+                     "snp, was reported at PP.H0 = 2.2e-16 when its actual",
+                     "probability of no causal variant is the prior, 0.9996.",
+                     "The engine appends the null at log BF 0, which is what",
+                     "these BFs are already measured against. Only the",
+                     "no-null-column shape moves: where there is a null column",
+                     "the expression is 6.0.3's, unchanged, which is what",
+                     "t0-all-trimmed-null is in the grid to demonstrate"),
+         ref = "R/susie.R:277-278, reported at :292",
+         ## one column, named: nsnps, hit1, hit2, idx1 and idx2 must NOT move,
+         ## and PP.H1..H4 are NA on both sides. Naming the column is what makes
+         ## the harness say so if any of that changes
+         fields = "summary$PP.H0.abf",
+         ## every case that reaches the all-trimmed branch, which is these two
+         ## and no others: t0-overlap-min gets there by lowering overlap.min
+         ## to 0.1 against a trait 2 whose posterior sits almost entirely on
+         ## an snp outside the intersection
+         applies_to = function(case_id, layer)
+             case_id %in% c("t0-all-trimmed", "t0-overlap-min"),
+         news = paste("the all-trimmed result now reports a real PP.H0.",
+                      "Previously it was ~0 for any input without a null",
+                      "column, which is every SuSiE run without null_weight",
+                      "and every coloc.abf() route.")),
 
     list(id = "AL10",
          step = 2,
