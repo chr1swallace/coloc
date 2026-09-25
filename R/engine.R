@@ -126,6 +126,8 @@
         todo <- todo[!drop]
 
     ## ---- 6. restrict to the intersection, carrying per-snp priors ---------
+    ## Per-snp priors reach the engine only through the frozen doors; see the
+    ## note on the per_snp_prior branch below for who, why, and until when.
     if (length(p12) > 1 && (length(isnps) != ncol(bf1) || length(isnps) != ncol(bf2)))
         stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
     restrict <- function(bf, p, w) {
@@ -149,6 +151,26 @@
     per_snp_prior <- length(p1) > 1 || length(p2) > 1
     use_weighted  <- user_weighted || per_snp_prior
 
+    ## WHO REACHES THIS. Not coloc(): validate_coloc_prior() rejects a
+    ## non-scalar p1/p2/p12 outright, so no coloc_prior object can carry one.
+    ## But the engine has three callers and only coloc() passes a validated
+    ## object. coloc.bf_bf() and coloc.abf() each build a bare list() inline
+    ## at their own call site, so nothing checks those.
+    ##
+    ## coloc.bf_bf() then PERMITS a vector on purpose. Its whole validation is
+    ## .check_prior_weights(), which rejects a non-scalar prior only when
+    ## weights are also supplied; a vector p1 alone passes, because that is
+    ## 6.0.3's rule and D6 freezes it. t0-vector-priors exercises this branch
+    ## on every test run, and its five-hypothesis summary is AL10's fix.
+    ##
+    ## coloc.abf() cannot get here despite building the same bare list: a
+    ## vector p1 dies earlier in adjust_prior()'s if (nsnps * p >= 1), which
+    ## R 4.2 made an error on a length > 1 condition. That is an accident, not
+    ## a guard, so it is not something to rely on.
+    ##
+    ## This branch therefore dies at step 7, with the old doors. Once coloc()
+    ## is the only caller, the scalar guard is the only way in and per_snp_prior
+    ## becomes genuinely unreachable.
     if (per_snp_prior) {
         if (length(p12) > 1)
             stop("p12 must be a single value when p1 or p2 is per-snp")
