@@ -23,6 +23,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Chris Wallace \email{cew54@cam.ac.uk}
   \item Claudia Giambartolomei \email{claudia.giambartolomei.10@ucl.ac.uk}
   \item Tom Willis \email{tom.willis@live.com}
   \item Jeffrey Pullin \email{jp2045@cam.ac.uk}

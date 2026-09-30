@@ -17,7 +17,7 @@ clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_o
     pr_h4
 }
 
-##' An aPProximation to coloc using only information from fine-maPPed credible sets.
+##' An approximation to coloc using only information from fine-mapped credible sets.
 ##'
 ##' A credible set should be passed in the form of a list, data.frame,
 ##' or equivalent tabular object containing at least two equal-length
@@ -30,7 +30,7 @@ clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_o
 ##' @param cs1 credible set 1
 ##' @param cs2 credible set 2
 ##' @inheritParams coloc.abf
-##' @return a named vector containing the number of overlaPPing SNPs and the posterior probabilities of H3 and H4
+##' @return a named vector containing the number of overlapping SNPs and the posterior probabilities of H3 and H4
 ##' @export 
 ##' @author Jeffrey Pullin, Chris Wallace
 coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
@@ -40,8 +40,16 @@ coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
     alpha1 <- sum(cs1$PP)
     alpha2 <- sum(cs2$PP)
 
-    cs1 <- as.data.frame(cs1[c("snp","PP")])
-    cs2 <- as.data.frame(cs2[c("snp","PP")])
+    if(is.null(nrow(cs1))) { # it's a list
+        cs1 <- as.data.frame(cs1[c("snp","PP")])
+    } else {
+        cs1 <- as.data.frame(cs1[,c("snp","PP")])
+    }
+    if(is.null(nrow(cs2))) { 
+        cs2 <- as.data.frame(cs2[c("snp","PP")])
+    } else {
+        cs2 <- as.data.frame(cs2[,c("snp","PP")])
+    }
     
     m <- merge(cs1,cs2,by="snp")
     if (!nrow(m)) {

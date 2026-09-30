@@ -7,11 +7,14 @@ export(check.alignment)
 export(check.dataset)
 export(check_alignment)
 export(check_dataset)
+export(clPP_to_coloc)
 export(coloc.abf)
 export(coloc.bf_bf)
 export(coloc.signals)
 export(coloc.susie)
 export(coloc.susie_bf)
+export(coloc_pip)
+export(coloc_query)
 export(credible.sets)
 export(findends)
 export(finemap.abf)
@@ -21,63 +24,78 @@ export(plot_dataset)
 export(plot_datasets)
 export(plot_extended_datasets)
 export(process.dataset)
+export(query_ot)
 export(runsusie)
 export(sensitivity)
 export(subset_dataset)
 import(data.table)
 import(ggplot2)
 importFrom(data.table,data.table)
-importFrom(ggplot2,coord_fixed)
-importFrom(ggplot2,geom_hline)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_vline)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,xlim)
-importFrom(ggplot2,ylim)
-importFrom(grDevices,colorRampPalette)
-importFrom(grDevices,palette)
-importFrom(grDevices,rgb)
-importFrom(graphics,abline)
-importFrom(graphics,axis)
-importFrom(graphics,box)
-importFrom(graphics,hist)
-importFrom(graphics,layout)
-importFrom(graphics,legend)
-importFrom(graphics,matplot)
-importFrom(graphics,mtext)
-importFrom(graphics,par)
-importFrom(graphics,points)
-importFrom(graphics,rect)
-importFrom(graphics,text)
-importFrom(graphics,title)
+importFrom(ggplot2,
+  coord_fixed,
+  geom_hline,
+  geom_point,
+  geom_vline,
+  ggplot,
+  xlim,
+  ylim
+)
+importFrom(grDevices,
+  colorRampPalette,
+  palette,
+  rgb
+)
+importFrom(graphics,
+  abline,
+  axis,
+  box,
+  hist,
+  layout,
+  legend,
+  matplot,
+  mtext,
+  par,
+  points,
+  rect,
+  text,
+  title
+)
 importFrom(matrixStats,logSumExp)
-importFrom(methods,as)
-importFrom(methods,is)
-importFrom(methods,new)
-importFrom(methods,slot)
-importFrom(stats,as.dist)
-importFrom(stats,as.formula)
-importFrom(stats,coef)
-importFrom(stats,coefficients)
-importFrom(stats,complete.cases)
-importFrom(stats,cor)
-importFrom(stats,cutree)
-importFrom(stats,glm)
-importFrom(stats,hclust)
-importFrom(stats,integrate)
-importFrom(stats,lm)
-importFrom(stats,optimize)
-importFrom(stats,pchisq)
-importFrom(stats,pf)
-importFrom(stats,pnorm)
-importFrom(stats,prcomp)
-importFrom(stats,qnorm)
-importFrom(stats,sd)
-importFrom(stats,uniroot)
-importFrom(stats,var)
-importFrom(stats,vcov)
-importFrom(susieR,susie_get_cs)
-importFrom(susieR,susie_rss)
-importFrom(utils,combn)
-importFrom(utils,packageVersion)
+importFrom(methods,
+  as,
+  is,
+  new,
+  slot
+)
+importFrom(stats,
+  as.dist,
+  as.formula,
+  coef,
+  coefficients,
+  complete.cases,
+  cor,
+  cutree,
+  glm,
+  hclust,
+  integrate,
+  lm,
+  optimize,
+  pchisq,
+  pf,
+  pnorm,
+  prcomp,
+  qnorm,
+  sd,
+  uniroot,
+  var,
+  vcov
+)
+importFrom(susieR,
+  susie_get_cs,
+  susie_rss
+)
+importFrom(utils,
+  combn,
+  packageVersion
+)
 importFrom(viridis,viridis)

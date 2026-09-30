@@ -21,7 +21,7 @@ Suggests:
     locuszoomr,
     gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 6.0.2
+Version: 6.0.3
 Date: 2026-04-17
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"), email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut", email="claudia.giambartolomei.10@ucl.ac.uk"),
@@ -38,12 +38,13 @@ License: GPL
 LazyLoad: yes
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Encoding: UTF-8
 URL: https://github.com/chr1swallace/coloc, https://chr1swallace.github.io/coloc/
 BugReports: https://github.com/chr1swallace/coloc/issues
 Collate:
     'coloc-package.R'
+    'coloc-pip.R'
+    'coloc-query.R'
     'boundaries.R'
     'check.R'
     'claudia.R'
@@ -57,3 +58,4 @@ Collate:
 Depends: 
     R (>= 3.5)
 LazyData: true
+Config/roxygen2/version: 8.1.0
