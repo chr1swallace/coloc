@@ -8,7 +8,7 @@
   )
 }
 
-##' query OpenTargets credible sets
+##' query Open Targets credible sets
 ##' @param cs an index data.frame containing columns "chr" 
 ##'     "pos". NB chr should be a numeric: 1 for chromosome 1, not
 ##'     "chr1".
@@ -48,10 +48,10 @@ query_ot <- function(cs, window=1e+5) {
     chr <- unique(cs$chr)
   if (length(chr) != 1) stop("`chr` column must only have one value")
 
-  lower_pos <- min(cs$pos) - window
-  upper_pos <- max(cs$pos) + window
+  lower_pos <- as.integer(min(cs$pos) - window)
+  upper_pos <- as.integer(max(cs$pos) + window)
 
-  ds <- arrow::open_dataset("s3://open-targets-public-data-releases/platform/26.06/output/credible_set", format = "parquet")
+  ds <- arrow::open_dataset("s3://open-targets-public-data-releases/platform/26.06/output/credible_set/?region=eu-west-1", format = "parquet")
 
   ## Build the filter as an Arrow expression so it's pushed down to the parquet scan
   pos_ref <- arrow::Expression$field_ref("position")
@@ -98,7 +98,7 @@ query_ot <- function(cs, window=1e+5) {
 coloc_query <- function(cs, querylist) {
     stopifnot("cs must be a data.frame containing character column snp and numeric column PP"=
                   is.data.frame(cs) &&
-                  all(c("snp","PP" %in% colnames(cs))) &&
+                  all(c("snp","PP") %in% colnames(cs)) &&
                   is.character(cs$snp) &&
                   is.numeric(cs$PP))
     stopifnot("querylist must be an object returned by query_ot()"=
