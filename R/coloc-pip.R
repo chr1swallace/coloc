@@ -30,7 +30,7 @@ clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_o
 ##' @param cs1 credible set 1
 ##' @param cs2 credible set 2
 ##' @inheritParams coloc.abf
-##' @return a named vector containing the number of overlapping SNPs and the posterior probabilities of H3 and H4
+##' @return a named vector containing the number of intersecting SNPs and the posterior probabilities of H3 and H4
 ##' @export 
 ##' @author Jeffrey Pullin, Chris Wallace
 coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
@@ -58,7 +58,7 @@ coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
         clPP <- sum(m$PP.x * m$PP.y)
         pr_h4 <- clPP_to_coloc(clPP=clPP, p1=p1, p2=p2, p12=p12, alpha1=alpha1, alpha2=alpha2, h4_only=TRUE)
     }
-    c(nsnps=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
+    c(nsnps_int=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
 }
 
 
