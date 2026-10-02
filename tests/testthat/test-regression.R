@@ -147,7 +147,7 @@ test_that("the allowlist holds exactly the entries the build has earned", {
     ## that this list is a deliberate act rather than a rubber stamp. Every id
     ## here is a behaviour change someone chose and can defend.
     expect_setequal(allowlist_table()$id,
-                    c("AL08", "AL10", "AL11", "AL12", "AL13", "AL14"))
+                    c("AL08", "AL10", "AL11", "AL12", "AL13", "AL14", "AL15"))
     for (r in coloc_allowlist) {
         expect_true(nzchar(r$why),  label = paste0(r$id, " has a reason"))
         expect_true(nzchar(r$ref),  label = paste0(r$id, " names the 6.0.3 site"))

@@ -46,9 +46,14 @@
     method <- vapply(method, match.arg, character(1L),
                      choices = c("single", "susie"), USE.NAMES = FALSE)
     for (i in seq_len(2L)) {
-        if (kinds[i] == "susie_fit" && method[i] == "single")
-            stop("trait ", i, ': method = "single" on a susie fit; a fit carries no ',
-                 "beta/varbeta to run the Wakefield calculation on")
+        ## a fit implies "susie", so only a "single" the caller asked for is
+        ## an error; the unsupplied default must not reach it
+        if (kinds[i] == "susie_fit" && method[i] == "single") {
+            if (supplied)
+                stop("trait ", i, ': method = "single" on a susie fit; a fit carries no ',
+                     "beta/varbeta to run the Wakefield calculation on")
+            method[i] <- "susie"
+        }
         if (kinds[i] == "bf") {
             if (supplied)
                 warning("trait ", i, ": method is inapplicable to precomputed log BFs",

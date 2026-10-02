@@ -70,6 +70,15 @@ RESULTS <- suppressWarnings(list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
                                  pp = coloc.abf(dataset1=PQ,dataset2=PCC)))
 lapply(RESULTS,"[[","summary")
 
+## The same four runs through coloc(). Each (coloc()) twin translates only
+## what has to change: p12 = 1e-5, coloc.abf()'s default, where coloc_prior()
+## defaults to 5e-6, and $summary, a table read with pp().
+RESULTS.coloc <- suppressWarnings(list(dd = coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5)),
+                                       dp = coloc(DQ, PCC, prior = coloc_prior(p12 = 1e-5)),
+                                       pd = coloc(PQ, DCC, prior = coloc_prior(p12 = 1e-5)),
+                                       pp = coloc(PQ, PCC, prior = coloc_prior(p12 = 1e-5))))
+lapply(RESULTS.coloc, pp)
+
 test_that("process.dataset", {
   expect_error(process.dataset(DQ,suffix=".q"), NA)
   expect_error(process.dataset(DCC,suffix=".q"), NA)
@@ -89,6 +98,13 @@ test_that("coloc.abf", {
     expect_warning(result <- coloc.abf(dataset1=DQ,dataset2=DCC), "minimum p value")
     expect_true(which.max(result$summary[-1]) == 5)
     expect_true(result$summary[1] == ncol(X))
+})
+
+test_that("coloc.abf (coloc())", {
+    expect_error(suppressWarnings(coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5))), NA)
+    expect_warning(result <- coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5)), "minimum p value")
+    expect_true(which.max(pp(result)[-1]) == 5)
+    expect_true(pp(result)[1] == ncol(X))
 })
 
 

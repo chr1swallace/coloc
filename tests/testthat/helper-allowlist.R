@@ -8,7 +8,7 @@
 ## against the migration notes later.
 ##
 ## Each record carries:
-##   id          AL01..AL14, matching rewrite-design section 6
+##   id          AL01..AL15, matching rewrite-design section 6
 ##   why         the behaviour change in user terms, as long as it needs to be.
 ##               Its first sentence labels the check that it still differs
 ##   ref         where the 6.0.3 behaviour lives, cited by line at 8f20f0b
@@ -186,7 +186,25 @@ coloc_allowlist <- list(
          news = paste("coloc() warns when method is supplied for a trait given",
                       "as precomputed log Bayes factors, where it cannot apply.",
                       "That includes coloc(dataset, bf, method = \"susie\"), the",
-                      "replacement for coloc.susie_bf()."))
+                      "replacement for coloc.susie_bf().")),
+
+    list(id = "AL15",
+         step = 6,
+         why = paste("coloc_prior() warns when prior weights are given for both",
+                     "traits, as coloc.abf() always has. The two weight vectors",
+                     "should come from independent sources of information, and",
+                     "the advice would otherwise go with coloc.abf() at step 7.",
+                     "6.0.3's coloc.bf_bf() never warned, so the coloc() call",
+                     "replacing it with both weights warns where 6.0.3 did not.",
+                     "Only the conditions differ; the numbers are 6.0.3's"),
+         ref = paste("R/claudia.R:439-443, coloc.abf()'s warning;",
+                     "R/susie.R:231, coloc.bf_bf(), which has none"),
+         fields = "conditions",
+         applies_to = function(case_id, layer)
+             case_id == "t0-weights" && layer == "B",
+         news = paste("coloc_prior() warns when weights1 and weights2 are both",
+                      "given, as coloc.abf() did: the two weight vectors should",
+                      "be derived from independent sources of information."))
 
 )
 

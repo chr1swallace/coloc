@@ -42,6 +42,10 @@ test_that("stage 2 resolves each trait against its own input class", {
 
     ## a fit carries no beta/varbeta, so "single" is an error not a fallback
     expect_error(.resolve_method("single", c("susie_fit", "dataset")), "susie fit")
+    ## but only when asked for: unsupplied, the default "single" does not reach
+    ## a fit, which implies "susie"
+    expect_equal(.resolve_method("single", c("susie_fit", "dataset"), supplied = FALSE),
+                 c("susie", "single"))
 
     ## method is inapplicable to precomputed BFs
     expect_warning(m <- .resolve_method("single", c("bf", "dataset")), "inapplicable")
