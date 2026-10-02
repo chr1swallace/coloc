@@ -26,13 +26,19 @@ clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_o
 ##' - snp: a character vector of snp identifiers
 ##' - PP: a numeric vector of posterior probabilities
 ##'
-##' @title coloc using credible sets
 ##' @param cs1 credible set 1
 ##' @param cs2 credible set 2
 ##' @inheritParams coloc.abf
-##' @return a named vector containing the number of overlapping SNPs and the posterior probabilities of H3 and H4
-##' @export 
+##' @return a named vector containing the number of SNPs found in each
+##'     credible set (nsnps1, nsnps2), the number in both credible
+##'     sets (nsnps_int) and the posterior probabilities of H3 and H4
+##'     (PP.H3 and PP.H4)
+##' @export
 ##' @author Jeffrey Pullin, Chris Wallace
+##' @examples
+##' cs1 <- data.frame(snp=c("s1","s2"), PP=c(0.05,0.9))
+##' cs2 <- data.frame(snp=c("s1","s2","s3"), PP=c(0.1,0.8,0.05))
+##' coloc_pip(cs1,cs2)
 coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
     check_PP(cs1)
     check_PP(cs2)
@@ -58,7 +64,7 @@ coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
         clPP <- sum(m$PP.x * m$PP.y)
         pr_h4 <- clPP_to_coloc(clPP=clPP, p1=p1, p2=p2, p12=p12, alpha1=alpha1, alpha2=alpha2, h4_only=TRUE)
     }
-    c(nsnps=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
+    c(nsnps1=nrow(cs1), nsnps2=nrow(cs2), nsnps_int=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
 }
 
 
