@@ -1,10 +1,78 @@
 ## ---------------------------------------------------------------------------
-## The regression grid: every case compared against frozen 6.0.3 output.
+## The regression grid: coloc() against what 6.0.3 recorded, case by case.
 ##
-## D6 makes 6.0.3 the specification. Layer B replays the engine on the frozen
-## bf1/bf2 matrices, so it touches no susieR and no process.dataset() and runs
-## in milliseconds. Layer C goes end to end through the 6.0.3 entry points.
+## WHAT IS COMPARED. Each case in helper-cases.R holds a call 6.0.3 made, and
+## the coloc() call that should give the same answer. Each test below runs
+## the coloc() call, puts its result into the shape 6.0.3 returned, and
+## compares the two field by field: each $summary column, $results, $priors,
+## $weights, and the warnings and messages.
+##
+## WHERE THE EXPECTED VALUES LIVE. inst/testdata/golden/<case id>.rds, written
+## once by data-raw/make_golden.R from 6.0.3 at commit 8f20f0b. Read one with
+## get_match_6_0_3().
+##
+## TIERS AND LAYERS. A case's tier is how its inputs are built:
+##   tier 0  small literal log BF matrices, no datasets
+##   tier 1  coloc datasets, single-variant route  (6.0.3: coloc.abf())
+##   tier 2  coloc datasets, SuSiE route           (6.0.3: coloc.susie(),
+##                                                  coloc.susie_bf())
+## and a case is compared at up to three layers:
+##   layer A  the log BF matrices 6.0.3 fed its engine, rebuilt from the inputs
+##   layer B  those frozen matrices run again: 6.0.3's coloc.bf_bf() against
+##            coloc() on the same two matrices. Every case has one
+##   layer C  the datasets end to end. Tiers 1 and 2 only
+## Tier 2 refits SuSiE in layers A and C, so those tests also need the susieR
+## version the goldens were recorded with.
+##
+## TOLERANCE. testthat's default, about 1.5e-8, for machine arithmetic: see
+## the header of helper-golden.R.
+##
+## ALLOWED DIFFERENCES. A field an entry in helper-allowlist.R names is
+## checked the other way: it must still differ, so a change that quietly
+## undoes an entry fails too.
+##
+## DEBUGGING ONE CASE. From the package root, load the package and helpers:
+##   pkgload::load_all(); testthat::source_test_helpers("tests/testthat", env = globalenv())
+## then, for layer B:
+##   case     <- coloc_cases[["t2-d3d4"]]
+##   expected <- get_match_6_0_3("t2-d3d4", layer = "B")
+##   got      <- case$coloc_B(expected$bf1, expected$bf2)
+## and compare as_6_0_3(got) with expected$value. For layer C, build the
+## inputs with b <- case$build() and run case$coloc_C(b$d1, b$d2).
 ## ---------------------------------------------------------------------------
+
+## One expect_equal() per field of 6.0.3's shape. A field the allowlist names
+## for this case is checked the other way instead. diff_fields() and
+## diff_conditions() name fields the way the allowlist does.
+compare_with_6_0_3 <- function(got, expected, case_id, layer) {
+    allowed   <- allowlist_fields(case_id, layer)
+    differing <- c(diff_fields(got$value, expected$value),
+                   diff_conditions(got$conditions, expected$conditions))
+    for (field in allowed)
+        expect_true(field %in% differing,
+                    label = paste0(field, " still differs from 6.0.3 (",
+                                   allowlist_reason(case_id, layer, field), ")"))
+
+    new <- canonicalise(got$value)
+    old <- canonicalise(expected$value)
+    ## skipped when the allowlist names the field, or the whole of $summary
+    same <- function(field, a, b) {
+        if (field %in% allowed || (startsWith(field, "summary$") && "summary" %in% allowed))
+            return(invisible())
+        expect_equal(a, b, label = paste("coloc()", field),
+                     expected.label = paste("6.0.3", field),
+                     info = largest_differences(a, b))
+    }
+    same("shape", new$.fields, old$.fields)
+    same("class", new$.class,  old$.class)
+    same("summary$columns", names(new$summary), names(old$summary))
+    for (col in names(old$summary))
+        same(paste0("summary$", col), new$summary[[col]], old$summary[[col]])
+    same("results", new$results, old$results)
+    same("priors",  new$priors,  old$priors)
+    same("weights", new$weights, old$weights)
+    same("conditions", conditions_text(got$conditions), conditions_text(expected$conditions))
+}
 
 test_that("the goldens are present and pinned by commit, not version", {
     m <- read_manifest()
@@ -34,63 +102,52 @@ test_that("the goldens are present and pinned by commit, not version", {
     expect_equal(m$generator_md5, unname(tools::md5sum(lf)))
 })
 
-test_that("layer B: the engine reproduces 6.0.3 on frozen BF matrices", {
-    for (case in coloc_cases) {
-        g <- read_golden(case$id)
-        got <- capture_run(do.call(coloc.bf_bf,
-                                   c(list(g$layerA$bf1, g$layerA$bf2), case$args)))
-        expect_matches_6_0_3(got, case$id, layer = "B")
-    }
+for (case in coloc_cases) test_that(paste0("layer A, ", case$id), {
+    if (case$tier == 2) skip_if_susieR_differs()
+    ## the two log BF matrices 6.0.3 fed its engine
+    expected <- get_match_6_0_3(case$id, layer = "A")
+    ## the same, rebuilt from the case's inputs: process.dataset() for tier
+    ## 1, a SuSiE fit for tier 2, the literal matrices for tier 0
+    got <- suppressWarnings(suppressMessages(case_layerA(case)))
+    expect_bf_equal(got$bf1, expected$bf1, "bf1")
+    expect_bf_equal(got$bf2, expected$bf2, "bf2")
 })
 
-## Layers A and C refit SuSiE for tier 2, so those cases are checked apart,
-## under skip_if_susieR_differs().
+for (case in coloc_cases) test_that(paste0("layer B, ", case$id), {
+    ## what 6.0.3's coloc.bf_bf(bf1, bf2, <case$args>) returned
+    expected <- get_match_6_0_3(case$id, layer = "B")
+    ## the same two matrices through coloc(), in coloc.bf_bf()'s shape
+    got <- capture_run(as_6_0_3(case$coloc_B(expected$bf1, expected$bf2)))
+    compare_with_6_0_3(got, expected, case$id, layer = "B")
+})
 
-test_that("layer C: the old entry points reproduce 6.0.3 end to end", {
-    for (case in coloc_cases) {
-        if (is.null(case$entry) || case$tier == 2) next
+for (case in coloc_cases) {
+    if (is.null(case$coloc_C)) next
+    test_that(paste0("layer C, ", case$id), {
+        if (case$tier == 2) skip_if_susieR_differs()
+        ## what 6.0.3's case$entry(d1, d2) returned
+        expected <- get_match_6_0_3(case$id, layer = "C")
         b <- case$build()
-        got <- capture_run(case$entry(b$d1, b$d2))
-        expect_matches_6_0_3(got, case$id, layer = "C")
-    }
-})
-
-test_that("layer C, SuSiE route: the old entry points reproduce 6.0.3 end to end", {
-    skip_if_susieR_differs()
-    for (case in coloc_cases) {
-        if (case$tier != 2) next
-        b <- case$build()
-        got <- capture_run(case$entry(b$d1, b$d2))
-        expect_matches_6_0_3(got, case$id, layer = "C")
-    }
-})
-
-test_that("layer A: the BF matrices fed to the engine are still reproducible", {
-    for (case in coloc_cases) {
-        if (case$tier == 2) next
-        g <- read_golden(case$id)
-        a <- suppressWarnings(suppressMessages(case_layerA(case)))
-        expect_equal(a$bf1, g$layerA$bf1, label = paste0(case$id, " bf1"))
-        expect_equal(a$bf2, g$layerA$bf2, label = paste0(case$id, " bf2"))
-    }
-})
-
-test_that("layer A, SuSiE route: the BF matrices fed to the engine are still reproducible", {
-    skip_if_susieR_differs()
-    for (case in coloc_cases) {
-        if (case$tier != 2) next
-        g <- read_golden(case$id)
-        a <- suppressWarnings(suppressMessages(case_layerA(case)))
-        expect_equal(a$bf1, g$layerA$bf1, label = paste0(case$id, " bf1"))
-        expect_equal(a$bf2, g$layerA$bf2, label = paste0(case$id, " bf2"))
-    }
-})
+        if (case$tier == 1) {
+            ## 6.0.3 called coloc.abf(), whose $results also carried each
+            ## dataset's per-snp working; coloc() does not produce those
+            got <- capture_run(as_6_0_3(case$coloc_C(b$d1, b$d2), like = "coloc.abf"))
+            keep <- setdiff(names(expected$value$results), abf_only_results)
+            expected$value$results <- expected$value$results[, keep]
+        } else {
+            ## 6.0.3 called coloc.susie(), or coloc.susie_bf() for t2-susie-bf
+            got <- capture_run(as_6_0_3(case$coloc_C(b$d1, b$d2)))
+        }
+        compare_with_6_0_3(got, expected, case$id, layer = "C")
+    })
+}
 
 test_that("the allowlist holds exactly the entries the build has earned", {
     ## Entries are added by the step that causes them, never in advance, so
     ## that this list is a deliberate act rather than a rubber stamp. Every id
     ## here is a behaviour change someone chose and can defend.
-    expect_setequal(allowlist_table()$id, c("AL08", "AL10", "AL11", "AL12", "AL13"))
+    expect_setequal(allowlist_table()$id,
+                    c("AL08", "AL10", "AL11", "AL12", "AL13", "AL14"))
     for (r in coloc_allowlist) {
         expect_true(nzchar(r$why),  label = paste0(r$id, " has a reason"))
         expect_true(nzchar(r$ref),  label = paste0(r$id, " names the 6.0.3 site"))

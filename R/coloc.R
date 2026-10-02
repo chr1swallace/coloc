@@ -42,6 +42,9 @@ coloc <- function(x1, x2,
     supplied <- !missing(method)
     if (!supplied) method <- "single"
 
+    ## a coloc_prior has been checked already, but a plain list has not
+    .check_scalar_prior(prior)
+
     kinds  <- c(.classify_input(x1), .classify_input(x2))
     method <- .resolve_method(method, kinds, supplied = supplied)
 

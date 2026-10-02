@@ -23,10 +23,7 @@ validate_coloc_prior <- function(x, nsnps = NULL) {
     ## snp. Varying the prior across snps is what weights1/weights2 are for,
     ## and combine_abf_weighted() builds Q * p * w/sum(w) from them. A vector
     ## p1 is a second spelling of the same thing, and the confusing one.
-    for (nm in c("p1", "p2", "p12"))
-        if (length(x[[nm]]) != 1)
-            stop("p1, p2 and p12 are per-snp priors and must each be a single value; ",
-                 "use weights1/weights2 to vary the prior across snps")
+    .check_scalar_prior(x)
     if (any(x$p12 < x$p1 * x$p2) || any(x$p12 > pmin(x$p1, x$p2)))
         stop("p12 must lie in [p1*p2, min(p1, p2)]")
     ## the region-size guard that only adjust_prior() applies in 6.0.3
@@ -39,6 +36,18 @@ validate_coloc_prior <- function(x, nsnps = NULL) {
         (length(x$p1) != 1 || length(x$p2) != 1 || length(x$p12) != 1))
         stop("prior weights can only be used with scalar p1, p2, p12")
     x
+}
+
+## The engine takes scalar priors only. coloc_prior() checks that through
+## validate_coloc_prior(), but coloc() can also be handed a plain list, which
+## is what the old entry points pass it, and coloc.bf_bf() calls the engine
+## directly. Both check here, so the message is the same everywhere.
+.check_scalar_prior <- function(x) {
+    for (nm in c("p1", "p2", "p12"))
+        if (length(x[[nm]]) != 1)
+            stop("p1, p2 and p12 are per-snp priors and must each be a single value; ",
+                 "use weights1/weights2 to vary the prior across snps")
+    invisible(x)
 }
 
 ##' Prior probabilities for a colocalisation analysis

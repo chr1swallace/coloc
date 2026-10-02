@@ -8,8 +8,9 @@
 ## against the migration notes later.
 ##
 ## Each record carries:
-##   id          AL01..AL13, matching rewrite-design section 6
-##   why         the behaviour change in user terms, as long as it needs to be
+##   id          AL01..AL14, matching rewrite-design section 6
+##   why         the behaviour change in user terms, as long as it needs to be.
+##               Its first sentence labels the check that it still differs
 ##   ref         where the 6.0.3 behaviour lives, cited by line at 8f20f0b
 ##   step        the build step at which this entry starts firing
 ##   applies_to  function(case_id, layer) -> logical
@@ -30,21 +31,26 @@
 ##
 ## AL08 and AL13 are also the first entries to OVERLAP: both name
 ## summary$PP.H0.abf, and AL13 covers every case AL08 does. allowlist_fields()
-## unions, so neither can go stale on its own any more. Both directions were
-## measured rather than assumed:
+## unions them. Both directions were measured rather than assumed, and the
+## second changed when the golden comparisons moved from exact to testthat's
+## default tolerance:
 ##
 ##   drop AL13 from this list  -> only t0-all-trimmed-null reports an
 ##                                unexpected difference. The other two stay
 ##                                quiet, because AL08 still permits the column
-##   revert AL08 in the CODE,  -> the grid stays quiet on all three. PP.H0
-##   keeping both records         becomes 2.5e-32, noise squared, and nothing
-##                                in test-regression.R objects
+##   revert AL08 in the CODE,  -> t0-all-trimmed and t0-overlap-min fail their
+##   keeping both records         "still differs" check. PP.H0 becomes 2.5e-32,
+##                                noise squared, against 6.0.3's noise of about
+##                                1e-16. Both are below the tolerance, where the
+##                                comparison is absolute, so they count as
+##                                equal. Compared exactly, the grid stayed
+##                                quiet on all three
 ##
-## What catches that second one is test-engine.R, which fails in three tests
-## because it names the expected value from an independent closed form rather
-## than from the allowlist. Those assertions are load-bearing here, not belt
-## and braces. Staleness detection is this registry's whole advantage over
-## scattered expect_known_difference() calls, and this one field has lost it.
+## That second catch rests on the tolerance calling two kinds of noise equal,
+## which is not something to lean on. test-engine.R catches it on purpose: it
+## fails in three tests, because it names the expected value from an
+## independent closed form rather than from the allowlist. Those assertions
+## are load-bearing here, not belt and braces.
 ## ---------------------------------------------------------------------------
 
 coloc_allowlist <- list(
@@ -82,22 +88,24 @@ coloc_allowlist <- list(
 
     list(id = "AL10",
          step = 2,
-         why = paste("per-snp p1/p2 with no prior weights: combine.abf() is",
-                     "scalar only, so 6.0.3 recycles them and reports 2*Q+3",
-                     "hypotheses (PP.H0.abf..PP.H32.abf for Q=8) instead of",
-                     "five. The engine routes per-snp priors through",
-                     "combine_abf_weighted(), which collapses them with",
-                     "logsum(). $priors also differs, but note which way:",
-                     "6.0.3 returns list(p1, p2, p12) with p12 reconciled to a",
-                     "vector, while the engine reports the scalar p12 it was",
-                     "given. Both sides are lists; they are not the same list"),
+         why = paste("a vector p1/p2 is rejected. p1, p2 and p12 are the prior",
+                     "for any one snp, so each is a single number, and prior",
+                     "weights are what vary it across snps. 6.0.3's",
+                     "coloc.bf_bf() accepted a vector p1/p2 with no weights and",
+                     "passed it to combine.abf(), which is scalar only, so it",
+                     "was recycled and the result reported 2*Q+3 hypotheses",
+                     "(PP.H0.abf..PP.H32.abf for Q=8) instead of five. coloc()",
+                     "now stops in coloc_prior(), and coloc.bf_bf() with the",
+                     "same message, so there is no result to compare: every",
+                     "field differs"),
          ref = "R/claudia.R:123-131 combine.abf(), reached from R/susie.R:346",
-         fields = c("summary", "priors"),
+         fields = c("shape", "class", "summary", "results", "priors", "conditions"),
          applies_to = function(case_id, layer) case_id == "t0-vector-priors",
-         news = paste("coloc.bf_bf() with per-snp p1/p2 and no prior weights now",
-                      "returns five posteriors. Previously the per-snp priors",
-                      "were recycled and the result carried one PP.Hn.abf",
-                      "column per snp per hypothesis.")),
+         news = paste("coloc.bf_bf(), coloc.susie() and coloc.susie_bf() now",
+                      "reject a vector p1 or p2, as coloc_prior() does; use",
+                      "prior weights to vary the prior across snps. Previously",
+                      "coloc.bf_bf() recycled the vector and the result carried",
+                      "one PP.Hn.abf column per snp per hypothesis.")),
 
     list(id = "AL11",
          step = 2,
@@ -159,7 +167,26 @@ coloc_allowlist <- list(
          news = paste("the all-trimmed result now reports PP.H0 as the joint",
                       "probability that neither trait has a causal variant,",
                       "ph0.1 * ph0.2. Previously it was pmin(ph0.1, ph0.2),",
-                      "which reports one trait's marginal for every pair."))
+                      "which reports one trait's marginal for every pair.")),
+
+    list(id = "AL14",
+         step = 6,
+         why = paste("coloc() warns that method cannot apply to a trait given as",
+                     "precomputed log BFs. 6.0.3's coloc.susie_bf() took a",
+                     "dataset and a BF matrix and had no method argument, so",
+                     "there was nothing to warn about. The coloc() call that",
+                     "replaces it has to name \"susie\" for the dataset, and a",
+                     "length-1 method applies to both traits, so it warns",
+                     "'trait 2: method is inapplicable to precomputed log BFs'.",
+                     "Only the conditions differ; the numbers are 6.0.3's"),
+         ref = "R/susie.R:132, coloc.susie_bf(), which takes no method",
+         fields = "conditions",
+         applies_to = function(case_id, layer)
+             case_id == "t2-susie-bf" && layer == "C",
+         news = paste("coloc() warns when method is supplied for a trait given",
+                      "as precomputed log Bayes factors, where it cannot apply.",
+                      "That includes coloc(dataset, bf, method = \"susie\"), the",
+                      "replacement for coloc.susie_bf()."))
 
 )
 
@@ -172,6 +199,16 @@ allowlist_fields <- function(case_id, layer = "B") {
     ## setdiff() happens to tolerate but anything comparing against this does
     ## not
     as.character(unique(unlist(lapply(hits, `[[`, "fields"))))
+}
+
+## The entries that permit this field to differ for this case and layer, each
+## as its id and the first sentence of its reason: the label of the check that
+## the field still differs.
+allowlist_reason <- function(case_id, layer, field) {
+    hits <- Filter(function(r) isTRUE(r$applies_to(case_id, layer)) && field %in% r$fields,
+                   coloc_allowlist)
+    paste(vapply(hits, function(r) paste0(r$id, ", ", sub("\\. .*$", ".", r$why)),
+                 character(1)), collapse = " ")
 }
 
 ## Used by the "allowlist is documented" test, and later to generate NEWS.

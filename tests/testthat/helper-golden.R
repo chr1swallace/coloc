@@ -3,8 +3,8 @@
 ##
 ## D6 makes 6.0.3 the specification: anything that differs and is not on the
 ## allowlist is a regression, and anything on the allowlist that has STOPPED
-## differing means the allowlist has gone stale. expect_matches_6_0_3() fails
-## in both directions, which is the check every harness forgets.
+## differing means the allowlist has gone stale. test-regression.R fails in
+## both directions, which is the check every harness forgets.
 ##
 ## Deliberately not a tolerance map. A tolerance says "this number may wobble",
 ## which is the wrong statement for every allowlist entry: p12 5e-6 to 1e-5 is
@@ -132,10 +132,14 @@ diff_fields <- function(new, old) {
     unique(d)
 }
 
+## A run's warnings and messages as sorted "class: message" lines, so two
+## runs can be compared and a difference read.
+conditions_text <- function(cs)
+    sort(vapply(cs, function(c) paste0(c[["class"]], ": ", c[["message"]]), character(1)))
+
 diff_conditions <- function(new_conds, old_conds) {
-    norm <- function(cs) sort(vapply(cs, function(c) paste(c[["class"]], c[["message"]]),
-                                     character(1)))
-    if (.same(norm(old_conds), norm(new_conds))) character(0) else "conditions"
+    if (.same(conditions_text(old_conds), conditions_text(new_conds))) character(0)
+    else "conditions"
 }
 
 ## ---- locating the goldens --------------------------------------------------
@@ -168,29 +172,101 @@ skip_if_susieR_differs <- function() {
                       paste0("goldens recorded with susieR ", want, ", you have ", have))
 }
 
-## ---- the assertion ---------------------------------------------------------
+## ---- what 6.0.3 recorded, and coloc()'s answer in the same shape ----------
 
-## layer is "B" (engine output) or "C" (end to end through an old entry point).
-expect_matches_6_0_3 <- function(new, case_id, layer = "B") {
+## What 6.0.3 produced for one case: the two log BF matrices it fed its engine
+## (bf1, bf2), and for layers B and C the object its call returned (value)
+## and the warnings and messages it emitted (conditions).
+get_match_6_0_3 <- function(case_id, layer = "B") {
+    layer <- match.arg(layer, c("A", "B", "C"))
     g <- read_golden(case_id)
-    old <- g[[paste0("layer", layer)]]
-    testthat::expect_false(is.null(old),
-                           label = paste0("golden layer ", layer, " for ", case_id))
+    out <- list(bf1 = g$layerA$bf1, bf2 = g$layerA$bf2)
+    if (layer == "A") return(out)
+    run <- g[[paste0("layer", layer)]]
+    if (is.null(run)) stop("case '", case_id, "' has no layer ", layer, " golden")
+    c(out, list(value = run$value, conditions = run$conditions))
+}
 
-    differing <- c(diff_fields(new$value, old$value),
-                   diff_conditions(new$conditions, old$conditions))
-    allowed <- allowlist_fields(case_id, layer)
+## coloc() returns a coloc_result, and a golden holds whatever 6.0.3's call
+## returned, so the first is put into the second's shape before they are
+## compared. coloc.bf_bf(), coloc.susie() and coloc.susie_bf() returned one
+## shape, which .coloc_result_as_6_0_3() builds; the old entry points use it
+## too, and it moves here when step 7 deletes them. coloc.abf() returned
+## another, built here.
+as_6_0_3 <- function(res, like = c("coloc.bf_bf", "coloc.abf")) {
+    like <- match.arg(like)
+    if (like == "coloc.bf_bf") return(.coloc_result_as_6_0_3(res))
+    s <- res$summary
+    out <- list(summary = c(nsnps = s$nsnps,
+                            unlist(s[, paste0("PP.H", 0:4, ".abf"), with = FALSE])),
+                results = data.frame(snp = res$results$snp,
+                                     SNP.PP.H4 = res$results$SNP.PP.H4.abf),
+                priors  = res$priors)
+    if (!is.null(res$weights))
+        out$weights <- list(prior_weights1 = res$weights$w1,
+                            prior_weights2 = res$weights$w2)
+    structure(out, class = c("coloc_abf", "list"))
+}
 
-    unexpected <- setdiff(differing, allowed)
-    stale      <- setdiff(allowed, differing)
+## coloc.abf()'s $results columns that coloc() does not produce: each
+## dataset's per-snp working from process.dataset(), the snp position, and
+## the sum of the two lABFs. They are dropped from the golden before it is
+## compared, which leaves snp and SNP.PP.H4.
+abf_only_results <- c("position", "internal.sum.lABF",
+                      paste0(rep(c("pvalues", "MAF", "N", "V", "z", "r", "lABF"),
+                                 each = 2), ".df", 1:2))
 
-    testthat::expect(
-        length(unexpected) == 0,
-        sprintf("%s [layer %s]: unexpected difference from 6.0.3 in %s",
-                case_id, layer, paste(unexpected, collapse = ", ")))
-    testthat::expect(
-        length(stale) == 0,
-        sprintf("%s [layer %s]: allowlist is stale, no longer differs in %s",
-                case_id, layer, paste(stale, collapse = ", ")))
-    invisible(differing)
+## testthat prints numbers to 7 significant digits, so two values that differ
+## beyond that fail with "actual != expected but don't know how to show the
+## difference". This lists the largest differences at 17 digits, each with the
+## snp (or row) and column it belongs to, for expect_equal()'s info argument.
+## NULL when there is nothing numeric to compare element by element.
+largest_differences <- function(got, expected, n = 5) {
+    if (is.data.frame(expected) && is.data.frame(got) &&
+        identical(dim(got), dim(expected)) && identical(names(got), names(expected))) {
+        at <- if ("snp" %in% names(expected)) expected$snp
+              else paste("row", seq_len(nrow(expected)))
+        cols <- Filter(function(cl) is.numeric(expected[[cl]]) && is.numeric(got[[cl]]),
+                       names(expected))
+        d <- do.call(rbind, lapply(cols, function(cl)
+            data.frame(where = paste(at, cl), expected = expected[[cl]], got = got[[cl]])))
+    } else if (is.numeric(expected) && is.numeric(got) &&
+               identical(length(got), length(expected))) {
+        where <- if (is.matrix(expected)) {
+                     r <- rownames(expected)
+                     if (is.null(r)) r <- paste("row", seq_len(nrow(expected)))
+                     cl <- colnames(expected)
+                     if (is.null(cl)) cl <- paste("column", seq_len(ncol(expected)))
+                     paste(r[row(expected)], cl[col(expected)])
+                 } else if (!is.null(names(expected))) names(expected)
+                 else paste("row", seq_along(expected))
+        d <- data.frame(where = where, expected = as.vector(expected), got = as.vector(got))
+    } else return(NULL)
+    if (is.null(d) || !nrow(d)) return(NULL)
+
+    ## a number against NA ranks first; NA against NA is no difference
+    na_g <- is.na(d$got); na_e <- is.na(d$expected)
+    d$diff <- ifelse(na_g | na_e, ifelse(na_g & na_e, 0, Inf), abs(d$got - d$expected))
+    d <- d[d$diff > 0, , drop = FALSE]
+    if (!nrow(d)) return(NULL)
+    d <- d[order(-d$diff), , drop = FALSE][seq_len(min(n, nrow(d))), , drop = FALSE]
+    paste0("largest differences, to 17 significant digits:\n",
+           paste0("  ", d$where, ": expected ", sprintf("%.17g", d$expected),
+                  ", got ", sprintf("%.17g", d$got), collapse = "\n"))
+}
+
+## A log BF matrix compared row by row, each row a vector named by snp, so a
+## difference prints with the snps around it rather than as the whole matrix.
+expect_bf_equal <- function(got, expected, what) {
+    if (is.null(dim(expected)) || !identical(dim(got), dim(expected)))
+        return(testthat::expect_equal(got, expected, label = what,
+                                      expected.label = paste("6.0.3", what),
+                                      info = largest_differences(got, expected)))
+    testthat::expect_equal(dimnames(got), dimnames(expected),
+                           label = paste("dimnames of", what),
+                           expected.label = paste("6.0.3 dimnames of", what))
+    for (i in seq_len(nrow(expected)))
+        testthat::expect_equal(got[i, ], expected[i, ], label = paste(what, "row", i),
+                               expected.label = paste("6.0.3", what, "row", i),
+                               info = largest_differences(got[i, ], expected[i, ]))
 }

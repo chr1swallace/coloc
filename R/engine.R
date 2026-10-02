@@ -132,11 +132,7 @@
         ## feeds a threshold comparison.
         ph0 <- function(bf, pp, p) {
             if ("null" %in% colnames(pp)) return(pp[, "null"])
-            ## logbf_to_pp() only synthesises the null's prior in its scalar
-            ## branch; a per-snp p needs it supplied, and its own any(pi == 0)
-            ## guard covers a p that leaves the null no room
-            pi <- if (length(p) == 1) p else c(p, max(1 - sum(p), 0))
-            logbf_to_pp(cbind(bf, null = 0), pi, last_is_null = TRUE)[, "null"]
+            logbf_to_pp(cbind(bf, null = 0), p, last_is_null = TRUE)[, "null"]
         }
         ph0.1 <- ph0(bf1, pp1, p1); ph0.2 <- ph0(bf2, pp2, p2)
 
@@ -168,64 +164,26 @@
     if (any(drop))
         todo <- todo[!drop]
 
-    ## ---- 6. restrict to the intersection, carrying per-snp priors ---------
-    ## Per-snp priors reach the engine only through the frozen doors; see the
-    ## note on the per_snp_prior branch below for who, why, and until when.
-    if (length(p12) > 1 && (length(isnps) != ncol(bf1) || length(isnps) != ncol(bf2)))
-        stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
-    restrict <- function(bf, p, w) {
-        if (length(isnps) == ncol(bf)) return(list(bf = bf, p = p, w = w))
+    ## ---- 6. restrict to the intersection, carrying the weights ------------
+    restrict <- function(bf, w) {
+        if (length(isnps) == ncol(bf)) return(list(bf = bf, w = w))
         keep <- match(isnps, colnames(bf))
-        list(bf = bf[, keep, drop = FALSE],
-             p = if (length(p) > 1) p[keep] else p,
-             w = w[keep])
+        list(bf = bf[, keep, drop = FALSE], w = w[keep])
     }
-    r1 <- restrict(bf1, p1, w1); bf1 <- r1$bf; p1 <- r1$p; w1 <- r1$w
-    r2 <- restrict(bf2, p2, w2); bf2 <- r2$bf; p2 <- r2$p; w2 <- r2$w
+    r1 <- restrict(bf1, w1); bf1 <- r1$bf; w1 <- r1$w
+    r2 <- restrict(bf2, w2); bf2 <- r2$bf; w2 <- r2$w
 
-    ## Which combining function. combine.abf() is scalar-only: given a per-snp
-    ## p1 it recycles rather than collapses, which is how 6.0.3 turned length-8
-    ## priors into a 33-hypothesis summary (allowlist AL10).
-    ## combine_abf_weighted() collapses correctly with logsum(), but it
-    ## reassociates the H3 term, so it is NOT bit-identical to combine.abf()
-    ## on the scalar path even though it is algebraically equal. D6 says the
-    ## scalar path keeps the function it has always used.
+    ## Which combining function. combine_abf_weighted() reassociates the H3
+    ## term, so it is NOT bit-identical to combine.abf() on the unweighted
+    ## path even though it is algebraically equal. D6 says that path keeps
+    ## the function it has always used.
+    ##
+    ## p1, p2 and p12 are single numbers here: coloc() and coloc.bf_bf()
+    ## reject a vector, and since R 4.2 coloc.abf() stops on one in
+    ## adjust_prior()'s if (). 6.0.3's coloc.bf_bf() passed a vector p1 to
+    ## combine.abf(), which is scalar only, and reported 33 hypotheses for 8
+    ## snps (allowlist AL10).
     user_weighted <- !is.null(w1) || !is.null(w2)
-    per_snp_prior <- length(p1) > 1 || length(p2) > 1
-    use_weighted  <- user_weighted || per_snp_prior
-
-    ## WHO REACHES THIS. Not coloc(): validate_coloc_prior() rejects a
-    ## non-scalar p1/p2/p12 outright, so no coloc_prior object can carry one.
-    ## But the engine has three callers and only coloc() passes a validated
-    ## object. coloc.bf_bf() and coloc.abf() each build a bare list() inline
-    ## at their own call site, so nothing checks those.
-    ##
-    ## coloc.bf_bf() then PERMITS a vector on purpose. Its whole validation is
-    ## .check_prior_weights(), which rejects a non-scalar prior only when
-    ## weights are also supplied; a vector p1 alone passes, because that is
-    ## 6.0.3's rule and D6 freezes it. t0-vector-priors exercises this branch
-    ## on every test run, and its five-hypothesis summary is AL10's fix.
-    ##
-    ## coloc.abf() cannot get here despite building the same bare list: a
-    ## vector p1 dies earlier in adjust_prior()'s if (nsnps * p >= 1), which
-    ## R 4.2 made an error on a length > 1 condition. That is an accident, not
-    ## a guard, so it is not something to rely on.
-    ##
-    ## This branch therefore dies at step 7, with the old doors. Once coloc()
-    ## is the only caller, the scalar guard is the only way in and per_snp_prior
-    ## becomes genuinely unreachable.
-    if (per_snp_prior) {
-        if (length(p12) > 1)
-            stop("p12 must be a single value when p1 or p2 is per-snp")
-        ## re-express a per-snp prior as (scalar, weights), which is exact:
-        ## combine_abf_weighted() builds Q * p * w/sum(w), and with w = p and
-        ## scalar mean(p) that is p itself
-        as_weights <- function(p, w) {
-            if (length(p) > 1) list(p = mean(p), w = p) else list(p = p, w = w)
-        }
-        c1 <- as_weights(p1, w1); p1 <- c1$p; w1 <- c1$w
-        c2 <- as_weights(p2, w2); p2 <- c2$p; w2 <- c2$w
-    }
 
     ## ---- 7. one signal pair at a time -------------------------------------
     hit_of <- function(bf, i) {
@@ -242,7 +200,7 @@
         l2 <- bf2[todo$j[k], isnps]
         lsum <- l1 + l2
         sp <- exp(lsum - logsum(lsum))
-        pp <- if (use_weighted)
+        pp <- if (user_weighted)
                   combine_abf_weighted(l1, l2, p1, p2, p12, w1, w2, quiet = TRUE)
               else
                   combine.abf(l1, l2, p1, p2, p12, quiet = TRUE)

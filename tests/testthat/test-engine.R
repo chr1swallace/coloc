@@ -5,7 +5,8 @@
 ## The engine's own shape is new, so bit-identity THROUGH those callers is
 ## step 2's gate and lives in test-regression.R. What is asserted here is that
 ## the contract holds, that every status is reachable, and that the NUMBERS
-## match 6.0.3 wherever 6.0.3 produced any.
+## match 6.0.3 wherever 6.0.3 produced any. 6.0.3's numbers are the goldens
+## in inst/testdata/golden/; get_match_6_0_3() in helper-golden.R reads one.
 ## ---------------------------------------------------------------------------
 
 ## P(no causal variant) for each row of a bf matrix, from first principles:
@@ -97,6 +98,9 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
         g <- read_golden(case$id)
         os <- .old_summary(g$layerB$value)
         if (is.null(os)) next                       ## 6.0.3 produced no summary
+        ## AL10: coloc() and coloc.bf_bf() reject this case's vector prior, so
+        ## it never reaches the engine
+        if (case$id == "t0-vector-priors") next
 
         prior <- modifyList(.default_prior(),
                             case$args[intersect(names(case$args),
@@ -145,15 +149,6 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
                              label = paste0(case$id, " $", col))
             for (col in paste0("PP.H", 1:4, ".abf"))
                 expect_true(all(is.na(ns[[col]])), label = paste0("ns$", col))
-            next
-        }
-
-        ## AL10, pending in helper-allowlist.R: 6.0.3 recycles a per-snp
-        ## prior through combine.abf() and reports 33 hypotheses. The engine
-        ## collapses it to five, so there is nothing to compare column-wise.
-        if (case$id == "t0-vector-priors") {          ## AL10
-            expect_equal(ncol(os), 38L)                 ## 6.0.3: PP.H0..PP.H32
-            expect_equal(ncol(ns), 10L)                 ## engine: the frozen shape
             next
         }
 

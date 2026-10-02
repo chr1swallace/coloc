@@ -217,6 +217,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   prior <- list(p1 = p1, p2 = p2, p12 = p12,
                 weights1 = prior_weights1, weights2 = prior_weights2)
   .check_prior_weights(prior)
+  ## 6.0.3 accepted a vector p1/p2 here (allowlist AL10); the engine does not
+  .check_scalar_prior(prior)
 
   ## a named vector is one signal; from step 3 this is .adapt_bf()'s job
   if(is.vector(bf1))
@@ -247,10 +249,9 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
     return(list(summary = s))
   }
 
-  p <- res$priors
   list(summary = s,
        results = res$results,
-       priors  = if (length(p) == 3L) p else as.list(p))
+       priors  = res$priors)
 }
 
 

@@ -157,76 +157,56 @@ test_that("p1, p2 and p12 must be scalar; per-snp variation goes through weights
                  "must each be a single value")
     ## and the supported way still works
     expect_s3_class(coloc_prior(p1 = 1e-4, weights1 = c(1, 2, 3)), "coloc_prior")
-
-    ## the OLD doors are untouched: D6 freezes them until step 7
-    bf <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
-                 dimnames = list("sig1", paste0("s", 1:8)))
-    res <- suppressWarnings(coloc.bf_bf(bf, bf, p1 = rep(1e-4, 8), p2 = rep(1e-4, 8)))
-    expect_true(is.list(res$priors))
-    expect_named(res$priors, c("p1", "p2", "p12"))
 })
 
-test_that("a per-snp prior reaches the engine through the old door only", {
-    ## .coloc_engine()'s per_snp_prior branch reads as dead code once you have
-    ## seen the guard above, and it is not. The engine has three callers and
-    ## only ONE of them passes a validated coloc_prior. This pins which door is
-    ## which, so the asymmetry reads as deliberate rather than as an oversight.
+test_that("no door hands the engine a vector prior", {
+    ## The engine takes p1, p2 and p12 as single numbers. 6.0.3's
+    ## coloc.bf_bf() accepted a vector and recycled it into 33 hypotheses
+    ## (AL10), and until now the engine re-expressed one as prior weights.
+    ## Every door that can reach the engine without coloc_prior() refuses with
+    ## coloc_prior()'s message; this pins which door checks where.
     bf  <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
                   dimnames = list("sig1", paste0("s", 1:8)))
     vec <- rep(1e-4, 8)
+    msg <- tryCatch(coloc_prior(p1 = vec), error = conditionMessage)
+    expect_match(msg, "must each be a single value")
 
-    ## coloc(), which passes a validated coloc_prior: refused by design, before
-    ## the engine is reached at all
-    expect_error(coloc_prior(p1 = vec), "must each be a single value")
+    ## coloc(): a coloc_prior refuses when it is made, and a plain list, which
+    ## never went through coloc_prior(), is refused by coloc() itself
+    expect_error(coloc(bf, bf, prior = list(p1 = vec, p2 = 1e-4, p12 = 5e-6)),
+                 msg, fixed = TRUE)
 
-    ## coloc.bf_bf(), which builds its own bare prior list: PERMITTED on purpose.
-    ## Its whole validation is .check_prior_weights(), which refuses a non-scalar
-    ## prior only when weights are ALSO supplied. A vector p1 alone passes,
-    ## because that is 6.0.3's rule and D6 freezes it.
-    res <- suppressWarnings(coloc.bf_bf(bf, bf, p1 = vec, p2 = vec))
-    ## ten columns is the branch RUNNING: it flips use_weighted, so
-    ## combine_abf_weighted() collapses to five hypotheses. Without it
-    ## combine.abf() recycles and returns 2*Q+3, the 38-column shape of AL10.
-    expect_equal(ncol(as.data.frame(res$summary)), 10L)
-    expect_length(res$priors$p1, 8L)
-    ## the one combination that door does refuse
+    ## coloc.bf_bf() calls the engine directly, so it checks for itself. With
+    ## weights as well, 6.0.3's own message still comes first.
+    expect_error(coloc.bf_bf(bf, bf, p1 = vec), msg, fixed = TRUE)
+    expect_error(coloc.bf_bf(bf, bf, p2 = vec), msg, fixed = TRUE)
     expect_error(coloc.bf_bf(bf, bf, p1 = vec, prior_weights1 = rep(1, 8)),
                  "only be used with single values")
 
-    ## coloc.abf(), which builds the same kind of unvalidated bare list, but
-    ## never arrives, because a vector p1 dies earlier in adjust_prior()'s
-    ## if (nsnps * p >= 1), which R 4.2 made an error on a length > 1 condition.
-    ## That is an accident, not a guard, so assert only that it fails and that
-    ## it is NOT the deliberate message; the base R wording is not ours to pin.
-    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
-    msg <- tryCatch(coloc.abf(D1, D2, p1 = rep(1e-4, length(D1$snp))),
-                    error = conditionMessage)
-    expect_type(msg, "character")
-    expect_false(grepl("must each be a single value", msg))
+    ## coloc.susie() and coloc.susie_bf() go through coloc(), which refuses
+    fit <- structure(list(lbf_variable = bf, sets = list(cs = list(3L), cs_index = 1L)),
+                     class = "susie")
+    expect_error(coloc.susie(fit, fit, p1 = vec), msg, fixed = TRUE)
+    expect_error(coloc.susie_bf(fit, bf, p2 = vec), msg, fixed = TRUE)
 
-    ## STEP 7 SENTINEL. When the old doors go, coloc() is the only caller, the
-    ## scalar guard is the only way in, and the per_snp_prior branch becomes
-    ## genuinely dead. This line fails then, on purpose: delete the branch, the
-    ## t0-vector-priors case and AL10 along with it.
-    expect_true(exists("coloc.bf_bf"))
+    ## coloc.abf() builds a plain list too, but a vector p1 dies earlier in
+    ## adjust_prior()'s if (nsnps * p >= 1), which R 4.2 made an error on a
+    ## length > 1 condition. That is an accident, not a guard, so assert only
+    ## that it fails and that it is NOT the deliberate message; the base R
+    ## wording is not ours to pin.
+    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+    abf <- tryCatch(coloc.abf(D1, D2, p1 = rep(1e-4, length(D1$snp))),
+                    error = conditionMessage)
+    expect_type(abf, "character")
+    expect_false(grepl("must each be a single value", abf))
 })
 
-test_that("$priors keeps three named entries even when a prior is non-scalar", {
-    ## c() flattens, which turned a length-8 p1 into p11..p28. coloc.bf_bf()
-    ## still hands the engine vectors until step 7, so the engine has to cope.
+test_that("$priors is three named numbers", {
     bf <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
                  dimnames = list("sig1", paste0("s", 1:8)))
-    vec <- suppressWarnings(.coloc_engine(bf, bf,
-        prior = list(p1 = rep(1e-4, 8), p2 = rep(1e-4, 8), p12 = 5e-6,
-                     weights1 = NULL, weights2 = NULL)))
-    expect_named(vec$priors, c("p1", "p2", "p12"))
-    expect_true(is.list(vec$priors))
-    expect_length(vec$priors$p1, 8L)
-
-    ## the scalar case is unchanged: still a named numeric vector
-    sc <- .coloc_engine(bf, bf)
-    expect_true(is.numeric(sc$priors))
-    expect_named(sc$priors, c("p1", "p2", "p12"))
+    res <- .coloc_engine(bf, bf)
+    expect_true(is.numeric(res$priors))
+    expect_named(res$priors, c("p1", "p2", "p12"))
 })
 
 test_that("coloc_prior() and coloc_control() validate once, in one place", {

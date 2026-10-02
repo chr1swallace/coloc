@@ -64,16 +64,9 @@ validate_coloc_result <- function(x) {
                               prior, weights = NULL, status = "ok",
                               messages = character(0), meta = list()) {
     meta$schema <- 1L
-    ## c() flattens, so a non-scalar prior would come back as p11..p28 rather
-    ## than three named entries. coloc_prior() now rejects vectors, but
-    ## coloc.bf_bf() builds a plain list and still hands the engine vectors
-    ## until step 7 deletes it, so this has to cope.
-    scalar_prior <- all(lengths(list(prior$p1, prior$p2, prior$p12)) == 1L)
     out <- list(summary = summary,
                 results = results,
-                priors  = if (scalar_prior)
-                              c(p1 = prior$p1, p2 = prior$p2, p12 = prior$p12)
-                          else list(p1 = prior$p1, p2 = prior$p2, p12 = prior$p12),
+                priors  = c(p1 = prior$p1, p2 = prior$p2, p12 = prior$p12),
                 status  = status,
                 messages = messages,
                 meta    = meta)

@@ -6,12 +6,21 @@
 ## same table drives data-raw/make_golden.R and the tests that read its output.
 ##
 ## Each case is a list with:
-##   id     unique key; names the golden file and keys the allowlist
-##   tier   0 literal BF matrices | 1 single-variant route | 2 susie route
-##   args   extra arguments passed to coloc.bf_bf() for layer B
-##   build  function() returning list(bf1=, bf2=) for tier 0,
-##          or list(d1=, d2=) for tiers 1 and 2
-##   entry  NULL, or a function(d1, d2) snapshotted end to end as layer C
+##   id       unique key; names the golden file and keys the allowlist
+##   tier     0 literal BF matrices | 1 single-variant route | 2 susie route
+##   build    function() returning list(bf1=, bf2=) for tier 0,
+##            or list(d1=, d2=) for tiers 1 and 2
+##
+## and, for each layer, the call 6.0.3 made and recorded next to the coloc()
+## call that test-regression.R compares with it:
+##   args     layer B, 6.0.3: coloc.bf_bf(bf1, bf2, <args>)
+##   coloc_B  layer B, now:   function(bf1, bf2), the same through coloc()
+##   entry    layer C, 6.0.3: function(d1, d2), run end to end; tiers 1, 2 only
+##   coloc_C  layer C, now:   function(d1, d2), the same through coloc()
+##
+## data-raw/make_golden.R runs args and entry against 6.0.3, which is why they
+## stay exactly as recorded, and why every coloc() call sits inside a function
+## body: 6.0.3 has no coloc() to call when the table is read.
 ## ---------------------------------------------------------------------------
 
 ## ---- dataset transforms, all deterministic --------------------------------
@@ -60,6 +69,7 @@ reverse <- function(d) {
               c(0, 0, 0, 0, 0, 7, 1, 0))                ## peak at s6
 .bf_b <- .mat(c(0, 0, 7, 3, 0, 0, 0, 0))                ## peak at s3
 .bf_v <- setNames(c(0, 0, 8, 2, 0, 0, 0, 0), .snps(8))  ## named vector
+.w8   <- c(1, 1, 1, 1, 1, 1, 1, 100)                    ## prior weights, s8 favoured
 
 ## row 1 carries no information at all. Pairing it against .bf_b is the only
 ## way to reach 6.0.3 R/susie.R:350-359, and it needs trim_by_posterior = FALSE
@@ -85,46 +95,58 @@ coloc_cases <- list(
     ## ---- tier 0: literal BF matrices, no dataset machinery at all ----------
 
     list(id = "t0-basic", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .bf_a, bf2 = .bf_b)),
 
     list(id = "t0-vector", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .bf_v, bf2 = .bf_v)),
 
     list(id = "t0-null-both", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .with_null(.bf_a), bf2 = .with_null(.bf_b))),
 
     list(id = "t0-null-one", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .with_null(.bf_a), bf2 = .bf_b)),
 
     ## one row carrying a "null" column: the shape that broke in #210
     list(id = "t0-onerow-null", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .with_null(.bf_b), bf2 = .with_null(.bf_b))),
 
     ## a "null" column that is NOT last, so nulllast() has to move it
     list(id = "t0-null-notlast", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() {
              m <- .with_null(.bf_a)
              list(bf1 = m[, c("null", .snps(8)), drop = FALSE], bf2 = .bf_b)
          }),
 
     list(id = "t0-no-overlap", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .bf_a, bf2 = .rename(.bf_b, "x"))),
 
     ## bf1 offers only SNPs far from bf2's peak: every pair trimmed
     list(id = "t0-all-trimmed", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .bf_a[, 5:8, drop = FALSE], bf2 = .bf_b)),
 
     ## the same trimmed pairing WITH a null column, where ph0 is 6.0.3's own
     ## pp1[,"null"] and must not move. AL08 permits t0-all-trimmed to differ;
     ## this case is what says the permission is that narrow
     list(id = "t0-all-trimmed-null", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .with_null(.bf_a[, 5:8, drop = FALSE]),
                                  bf2 = .with_null(.bf_b))),
 
     list(id = "t0-partial-overlap", tier = 0, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(bf1 = .bf_a[, 1:6, drop = FALSE], bf2 = .bf_b)),
 
     list(id = "t0-trim-off", tier = 0, args = list(trim_by_posterior = FALSE),
+         coloc_B = function(bf1, bf2)
+             coloc(bf1, bf2, control = coloc_control(trim_by_posterior = FALSE)),
          build = function() list(bf1 = .bf_a[, 5:8, drop = FALSE], bf2 = .bf_b)),
 
     ## An all-NA signal row, which 6.0.3 rewrites to a certainty and the engine
@@ -132,82 +154,130 @@ coloc_cases <- list(
     ## pair (2,1) is ordinary, so the case pins that the change is per pair and
     ## does not leak into the row beside it. Allowlist AL12.
     list(id = "t0-degenerate", tier = 0, args = list(trim_by_posterior = FALSE),
+         coloc_B = function(bf1, bf2)
+             coloc(bf1, bf2, control = coloc_control(trim_by_posterior = FALSE)),
          build = function() list(bf1 = .bf_na, bf2 = .bf_b)),
 
     list(id = "t0-overlap-min", tier = 0, args = list(overlap.min = 0.1),
+         coloc_B = function(bf1, bf2)
+             coloc(bf1, bf2, control = coloc_control(overlap.min = 0.1)),
          build = function() list(bf1 = .bf_a[, 4:8, drop = FALSE], bf2 = .bf_b)),
 
+    ## coloc_prior() rejects a vector prior, so coloc() never runs: AL10
     list(id = "t0-vector-priors", tier = 0,
          args = list(p1 = rep(1e-4, 8), p2 = rep(1e-4, 8)),
+         coloc_B = function(bf1, bf2)
+             coloc(bf1, bf2, prior = coloc_prior(p1 = rep(1e-4, 8), p2 = rep(1e-4, 8))),
          build = function() list(bf1 = .bf_a, bf2 = .bf_b)),
 
     list(id = "t0-weights", tier = 0,
-         args = list(prior_weights1 = c(1, 1, 1, 1, 1, 1, 1, 100),
-                     prior_weights2 = c(1, 1, 1, 1, 1, 1, 1, 100)),
+         args = list(prior_weights1 = .w8, prior_weights2 = .w8),
+         coloc_B = function(bf1, bf2)
+             coloc(bf1, bf2, prior = coloc_prior(weights1 = .w8, weights2 = .w8)),
          build = function() list(bf1 = .bf_a, bf2 = .bf_b)),
 
     list(id = "t0-p12", tier = 0, args = list(p12 = 1e-5),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2, prior = coloc_prior(p12 = 1e-5)),
          build = function() list(bf1 = .bf_a, bf2 = .bf_b)),
 
     ## ---- tier 1: the single-variant route ----------------------------------
+    ##
+    ## coloc.abf() defaults p12 to 1e-5 and coloc_prior() to 5e-6 (AL01), so
+    ## each coloc_C states it. Layer B was recorded through coloc.bf_bf(),
+    ## whose default is 5e-6, so coloc_B needs no prior.
 
     list(id = "t1-quant-beta", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D1, d2 = coloc_test_data$D2),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     list(id = "t1-cc", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = as_cc(coloc_test_data$D1),
                                  d2 = as_cc(coloc_test_data$D2)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     list(id = "t1-pvalues", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = to_pvalues(coloc_test_data$D1),
                                  d2 = to_pvalues(coloc_test_data$D2)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     list(id = "t1-no-sdY", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = drop_sdY(coloc_test_data$D1),
                                  d2 = drop_sdY(coloc_test_data$D2)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     ## partial SNP overlap between the two traits
     list(id = "t1-subset", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = subset_dataset(coloc_test_data$D1, 1:400),
                                  d2 = subset_dataset(coloc_test_data$D2, 101:500)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     ## the order-invariance case that b63917a fixed
     list(id = "t1-reversed", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D1,
                                  d2 = reverse(coloc_test_data$D2)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     list(id = "t1-mixed-type", tier = 1, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D1,
                                  d2 = as_cc(coloc_test_data$D2)),
-         entry = function(d1, d2) coloc.abf(d1, d2)),
+         entry = function(d1, d2) coloc.abf(d1, d2),
+         coloc_C = function(d1, d2)
+             coloc(d1, d2, method = "single", prior = coloc_prior(p12 = 1e-5))),
 
     ## ---- tier 2: the susie route -------------------------------------------
 
     list(id = "t2-d3d4", tier = 2, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D3, d2 = coloc_test_data$D4),
-         entry = function(d1, d2) coloc.susie(d1, d2)),
+         entry = function(d1, d2) coloc.susie(d1, d2),
+         coloc_C = function(d1, d2) coloc(d1, d2, method = "susie")),
 
     ## D4 has exactly one credible set: the dimension-collapse shape from #210
     list(id = "t2-single-cs-first", tier = 2, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D4, d2 = coloc_test_data$D3),
-         entry = function(d1, d2) coloc.susie(d1, d2)),
+         entry = function(d1, d2) coloc.susie(d1, d2),
+         coloc_C = function(d1, d2) coloc(d1, d2, method = "susie")),
 
     list(id = "t2-d3d3", tier = 2, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D3, d2 = coloc_test_data$D3),
-         entry = function(d1, d2) coloc.susie(d1, d2)),
+         entry = function(d1, d2) coloc.susie(d1, d2),
+         coloc_C = function(d1, d2) coloc(d1, d2, method = "susie")),
 
     ## susie against a raw BF matrix, the existing asymmetric entry point
     list(id = "t2-susie-bf", tier = 2, args = list(),
+         coloc_B = function(bf1, bf2) coloc(bf1, bf2),
          build = function() list(d1 = coloc_test_data$D3, d2 = coloc_test_data$D4),
          entry = function(d1, d2) {
              s2 <- runsusie(d2)
              coloc.susie_bf(d1, s2$lbf_variable[s2$sets$cs_index, , drop = FALSE])
+         },
+         ## method names one for the dataset, and warns that it cannot apply
+         ## to the BF matrix, which coloc.susie_bf() never did: AL14
+         coloc_C = function(d1, d2) {
+             s2 <- runsusie(d2)
+             coloc(d1, s2$lbf_variable[s2$sets$cs_index, , drop = FALSE],
+                   method = "susie")
          })
 )
 

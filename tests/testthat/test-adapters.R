@@ -2,6 +2,8 @@
 ## Step 3: the adapters, tested one at a time against the frozen layer A
 ## matrices. Layer A is what 6.0.3 would have fed the engine, so an adapter
 ## that reproduces it is a faithful replacement for the code path it lifts.
+## The frozen matrices are in inst/testdata/golden/; get_match_6_0_3() in
+## helper-golden.R reads one.
 ## ---------------------------------------------------------------------------
 
 test_that("stage 1 classifies from class alone, and the order is load-bearing", {
@@ -58,8 +60,8 @@ test_that(".adapt_single reproduces the matrices coloc.abf() feeds the engine", 
         b <- case$build()
         a1 <- suppressWarnings(.adapt_single(b$d1))
         a2 <- suppressWarnings(.adapt_single(b$d2))
-        expect_equal(a1$bf, g$layerA$bf1, label = paste0(case$id, " bf1"))
-        expect_equal(a2$bf, g$layerA$bf2, label = paste0(case$id, " bf2"))
+        expect_bf_equal(a1$bf, g$layerA$bf1, paste0(case$id, " bf1"))
+        expect_bf_equal(a2$bf, g$layerA$bf2, paste0(case$id, " bf2"))
         expect_equal(a1$meta$method, "single")
         expect_equal(nrow(a1$bf), 1L)
         expect_false(a1$meta$has_null)
@@ -77,7 +79,7 @@ test_that(".adapt_susie reproduces the credible-set rows", {
         ## addition, since the adapter contract is
         ## dimnames = list(signal_id, snp) and lbf_variable carries none
         got <- a1$bf; rownames(got) <- NULL
-        expect_equal(got, g$layerA$bf1, label = paste0(case$id, " bf1"))
+        expect_bf_equal(got, g$layerA$bf1, paste0(case$id, " bf1"))
         expect_equal(rownames(a1$bf), paste0("sig", a1$meta$idx))
         expect_equal(a1$meta$method, "susie")
     }
