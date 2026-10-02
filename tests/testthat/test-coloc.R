@@ -216,3 +216,66 @@ test_that("coloc_prior() and coloc_control() validate once, in one place", {
     expect_s3_class(coloc_prior(), "coloc_prior")
     expect_s3_class(coloc_control(), "coloc_control")
 })
+
+test_that("log_bf() returns each trait's log BFs as the adapter handed them over", {
+    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
+    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+    D3 <- coloc_test_data$D3; D4 <- coloc_test_data$D4
+    fit3 <- suppressMessages(runsusie(D3)); fit4 <- suppressMessages(runsusie(D4))
+    bf3 <- fit3$lbf_variable[fit3$sets$cs_index, , drop = FALSE]
+    bf4 <- fit4$lbf_variable[fit4$sets$cs_index, , drop = FALSE]
+
+    ## each input kind, through coloc() and through its adapter on its own
+    runs <- list(
+        single = list(res = coloc(D1, D2, method = "single"),
+                      a1 = .adapt_single(D1, 1), a2 = .adapt_single(D2, 2)),
+        susie  = list(res = suppressMessages(coloc(D3, D4, method = "susie")),
+                      a1 = suppressMessages(.adapt_susie(D3, 1)),
+                      a2 = suppressMessages(.adapt_susie(D4, 2))),
+        fit    = list(res = coloc(fit3, fit4),
+                      a1 = .adapt_susie(fit3, 1), a2 = .adapt_susie(fit4, 2)),
+        matrix = list(res = coloc(bf3, bf4), a1 = .adapt_bf(bf3, 1), a2 = .adapt_bf(bf4, 2)),
+        vector = list(res = coloc(bf3[1, ], bf4[1, ]),
+                      a1 = .adapt_bf(bf3[1, ], 1), a2 = .adapt_bf(bf4[1, ], 2)))
+    for (kind in names(runs)) {
+        r <- runs[[kind]]
+        expect_equal(log_bf(r$res, 1), r$a1$bf, label = paste(kind, "trait 1"))
+        expect_equal(log_bf(r$res, 2), r$a2$bf, label = paste(kind, "trait 2"))
+        ## rows line up with the indices the result reports
+        expect_equal(rownames(log_bf(r$res, 1)), paste0("sig", r$res$meta$idx1))
+        expect_equal(rownames(log_bf(r$res, 2)), paste0("sig", r$res$meta$idx2))
+    }
+    ## the trait's own snps, not the intersection: D1 against a subset of D2
+    sub <- coloc(D1, subset_dataset(D2, 1:300), method = "single")
+    expect_equal(ncol(log_bf(sub, 1)), length(D1$snp))
+    expect_equal(ncol(log_bf(sub, 2)), 300L)
+})
+
+test_that("a result with no rows still keeps its log BFs", {
+    a <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
+    b <- a; colnames(b) <- paste0("x", 1:4)
+    none <- suppressWarnings(coloc(a, b))
+    expect_equal(none$status, "no_overlap")
+    expect_equal(log_bf(none, 1), a)
+    expect_equal(colnames(log_bf(none, 2)), colnames(b))
+
+    empty_fit <- structure(list(lbf_variable = matrix(0, 3, 4,
+                                                      dimnames = list(NULL, paste0("s", 1:4))),
+                                sets = list(cs = list(), cs_index = integer(0))),
+                           class = "susie")
+    nosig <- suppressWarnings(coloc(empty_fit, a))
+    expect_equal(nosig$status, "no_signal")
+    expect_equal(nrow(log_bf(nosig, 1)), 0L)
+    expect_equal(log_bf(nosig, 2), a)
+})
+
+test_that("log_bf() on a result saved before it existed says to rerun coloc()", {
+    a <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
+    old <- coloc(a, a)
+    old$bf <- NULL; old$meta$schema <- 1L
+    expect_error(log_bf(old, 1), "rerun coloc()", fixed = TRUE)
+    expect_error(log_bf(coloc(a, a), 3), "trait must be 1 or 2")
+    ## and print() leaves it out
+    out <- utils::capture.output(print(coloc(a, a)))
+    expect_false(any(grepl("bf1|sig1", out)))
+})

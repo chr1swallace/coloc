@@ -85,6 +85,11 @@ coloc <- function(x1, x2,
     res$meta$method <- c(a1$meta$method, a2$meta$method)
     res$meta$idx1 <- a1$meta$idx
     res$meta$idx2 <- a2$meta$idx
+    ## Each trait's log BFs as the adapter handed them to the engine, before
+    ## the snps were intersected or any pair trimmed, so they can be taken on
+    ## to fine-mapping without being computed again. Set here rather than in
+    ## the engine, which has five exits and would need it at each.
+    res$bf <- list(bf1 = a1$bf, bf2 = a2$bf)
     validate_coloc_result(res)
 }
 
@@ -131,6 +136,32 @@ is_ok <- function(x) {
 n_signals <- function(x) {
     stopifnot(inherits(x, "coloc_result"))
     nrow(x$summary)
+}
+
+##' Log Bayes factors a coloc_result was computed from
+##'
+##' Each trait's log Bayes factors, as they went into the colocalisation:
+##' signals in rows, snps in columns, covering the trait's own snps before
+##' the two traits were intersected or any signal pair trimmed. Rows are named
+##' as in `x$meta$idx1` and `x$meta$idx2`, unless log Bayes factors given to
+##' [coloc()] had row names of their own. Use them to fine-map a trait from
+##' the same numbers [coloc()] used.
+##'
+##' @param x a coloc_result
+##' @param trait 1 or 2
+##' @return numeric matrix, signals x snps
+##' @export
+log_bf <- function(x, trait = 1) {
+    stopifnot(inherits(x, "coloc_result"))
+    if (length(trait) != 1 || !trait %in% 1:2)
+        stop("trait must be 1 or 2")
+    if (is.null(x$bf)) {
+        if (isTRUE(x$meta$schema < 2))
+            stop("this coloc_result was made before coloc() kept the log Bayes ",
+                 "factors; rerun coloc() to get them")
+        stop("this coloc_result carries no log Bayes factors")
+    }
+    x$bf[[paste0("bf", trait)]]
 }
 
 ##' @export

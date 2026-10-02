@@ -52,6 +52,13 @@ test_that("validate_coloc_result() rejects every breach of the frozen contract",
 
     bad <- ok; bad$meta$schema <- NULL
     expect_error(validate_coloc_result(bad), "schema")
+
+    ## $bf is optional, but when present it is two numeric matrices named by snp
+    bad <- ok; bad$bf <- list(bf1 = "x", bf2 = "y")
+    expect_error(validate_coloc_result(bad), "\\$bf must be")
+    good <- ok; m <- matrix(0, 1, 2, dimnames = list("sig1", c("s1", "s2")))
+    good$bf <- list(bf1 = m, bf2 = m)
+    expect_silent(validate_coloc_result(good))
 })
 
 test_that("all five statuses are reachable and each one validates", {
@@ -275,7 +282,7 @@ test_that("$meta records what the engine knows, and not what it cannot", {
     res <- .coloc_engine(a, b)
     expect_equal(res$meta$n_pairs_in, 2L)
     expect_equal(res$meta$n_pairs_kept, 2L)
-    expect_equal(res$meta$schema, 1L)
+    expect_equal(res$meta$schema, 2L)
     ## the engine cannot know which adapter ran: coloc() fills that in later
     expect_null(res$meta$method)
 })

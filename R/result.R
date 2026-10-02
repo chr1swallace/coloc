@@ -55,6 +55,16 @@ validate_coloc_result <- function(x) {
         stop("coloc_result: status 'all_trimmed' keeps its rows")
     if (x$status == "ok" && anyNA(x$summary$PP.H4.abf))
         stop("coloc_result: status 'ok' with NA posteriors")
+
+    ## optional, because the results the engine builds for the old entry
+    ## points do not carry it; coloc() always sets it
+    if (!is.null(x$bf)) {
+        is_bf <- function(m) is.matrix(m) && is.numeric(m) && !is.null(colnames(m))
+        if (!is.list(x$bf) || !identical(names(x$bf), c("bf1", "bf2")) ||
+            !all(vapply(x$bf, is_bf, logical(1))))
+            stop("coloc_result: $bf must be list(bf1, bf2) of numeric matrices ",
+                 "with snp ids as colnames")
+    }
     invisible(x)
 }
 
@@ -63,7 +73,9 @@ validate_coloc_result <- function(x) {
                               results = data.table(snp = character(0)),
                               prior, weights = NULL, status = "ok",
                               messages = character(0), meta = list()) {
-    meta$schema <- 1L
+    ## 2 from when coloc() kept each trait's log BFs in $bf; a result saved
+    ## at schema 1 has none
+    meta$schema <- 2L
     out <- list(summary = summary,
                 results = results,
                 priors  = c(p1 = prior$p1, p2 = prior$p2, p12 = prior$p12),

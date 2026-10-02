@@ -28,7 +28,7 @@ test_that("Prior weights are saved in output (coloc.abf()) (coloc())", {
   expect_warning(coloc_out <- coloc(D1, D2, prior = coloc_prior(weights1 = rep(1, 500),
                                                                 weights2 = rep(1, 500))))
   expect_named(coloc_out, c("summary", "results", "priors", "status", "messages", "meta",
-                            "weights"))
+                            "weights", "bf"))
   expect_equal(coloc_out$weights$w1, rep(1, 500))
   expect_equal(coloc_out$weights$w2, rep(1, 500))
 
