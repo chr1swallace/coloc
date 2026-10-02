@@ -1,0 +1,302 @@
+---
+title: "One entry point: coloc()"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{One entry point: coloc()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`coloc()` asks whether two traits share a causal variant in a region. It
+takes the two traits in whatever form you have them, as coloc datasets, SuSiE
+fits or log Bayes factors, in any combination, and it returns the same kind of
+object whatever happened. This vignette covers:
+
+* the three kinds of input, and what each looks like
+* choosing `method`, for each trait
+* reading the result, including every `status`, and taking each trait's log
+  Bayes factors on to fine-mapping
+* how `coloc.abf()`, `coloc.susie()`, `coloc.susie_bf()` and `coloc.bf_bf()`
+  map onto `coloc()`
+
+The examples use `coloc_test_data`, four small simulated datasets of 500 SNPs
+each.
+
+```{r data}
+library(coloc)
+data(coloc_test_data)
+D1 <- coloc_test_data$D1
+D2 <- coloc_test_data$D2
+D3 <- coloc_test_data$D3
+D4 <- coloc_test_data$D4
+```
+
+## What coloc() reports
+
+For each pair of signals, one from each trait, `coloc()` gives the posterior
+probability of five hypotheses about the region:
+
+| hypothesis | meaning |
+|---|---|
+| H0 | neither trait has a causal variant |
+| H1 | only trait 1 has a causal variant |
+| H2 | only trait 2 has a causal variant |
+| H3 | both traits have a causal variant, and they are different variants |
+| H4 | both traits share one causal variant |
+
+A high `PP.H4.abf` is evidence of colocalisation. A high `PP.H3.abf` says both
+traits are associated, but through different variants.
+
+## The inputs
+
+### A coloc dataset
+
+A coloc dataset is a list holding one trait's summary statistics for the
+region. Some elements have one value per SNP, and some are single values that
+describe the study.
+
+```{r dataset}
+str(D1[setdiff(names(D1), "LD")])
+dim(D1$LD)
+```
+
+* One value per SNP: `snp`, the SNP ids, which is how the two traits are
+  matched; `beta` and `varbeta`, the effect estimates and their variances
+  (or, if you have no effect estimates, `pvalues` and `MAF`); and optionally
+  `position`, for plotting.
+* Single values: `type`, which is `"quant"` for a quantitative trait or `"cc"`
+  for a case-control one; `N`, the sample size; and `sdY`, the standard
+  deviation of a quantitative trait, or `s`, the proportion of cases in a
+  case-control one.
+* For fine-mapping with SuSiE: `LD`, the correlation matrix of the SNPs, with
+  the SNP ids as its row and column names.
+
+`check_dataset()` checks a dataset, and returns `NULL` when it finds nothing
+wrong. Its help page, `?check_dataset`, lists every element and which
+combinations are needed. `coloc()` runs the same check on every dataset it is
+given, and says which trait a problem is in.
+
+```{r check}
+check_dataset(D1)
+bad <- D2
+bad$beta[1] <- NA
+try(coloc(D1, bad))
+```
+
+### A SuSiE fit
+
+`runsusie()` fine-maps a dataset with SuSiE. A fit can have several signals,
+one per credible set, and `coloc()` uses the log Bayes factors of those
+credible sets.
+
+```{r fit, message = FALSE}
+fit3 <- runsusie(D3)
+fit3$sets$cs_index        # the SuSiE components that formed credible sets
+dim(fit3$lbf_variable)    # one row per component, one column per SNP
+```
+
+If you ran `susieR::susie_rss()` yourself, pass the fit through
+`annotate_susie()`, so that its columns carry the SNP ids `coloc()` matches
+on.
+
+### Log Bayes factors
+
+If you already have log Bayes factors, from another fine-mapping tool or from
+a resource such as the eQTL Catalogue's SuSiE output, give them directly:
+either a numeric vector with one value per SNP, named by SNP id, for a single
+signal, or a matrix with one row per signal and one column per SNP, with the
+SNP ids as its column names. A column named `"null"`, if there is one, holds
+the log Bayes factor for no association.
+
+```{r bf}
+bf3 <- fit3$lbf_variable[fit3$sets$cs_index, , drop = FALSE]
+bf3[, 1:4]
+```
+
+## Choosing `method`
+
+`method` says how a dataset is turned into log Bayes factors, and so how many
+signals a trait can have.
+
+* `"single"`, the default, assumes the trait has at most one causal variant
+  in the region, and computes one Bayes factor per SNP from `beta` and
+  `varbeta` (or `pvalues` and `MAF`). This is what `coloc.abf()` did.
+* `"susie"` fine-maps the dataset with SuSiE, which needs `LD` and `N`, and
+  gives one signal per credible set, so a trait can have several.
+
+```{r methods, message = FALSE}
+res_single <- coloc(D1, D2)                      # "single" for both traits
+res_susie  <- coloc(D3, D4, method = "susie")    # "susie" for both traits
+res_susie$summary
+```
+
+With SuSiE, trait 1 has two signals here, so `$summary` has a row for each
+pair. The first pair shares a causal variant (`PP.H4.abf` above 0.99); the
+second is two different variants (`PP.H3.abf` of 0.96).
+
+One value of `method` applies to both traits. Two values apply to trait 1 and
+trait 2 in turn, so each trait can be treated in the way its data allow. A
+common reason is that only one trait has an LD matrix: SuSiE cannot run
+without one, so a single `"susie"` fails, but the other trait can still be
+fine-mapped.
+
+```{r per-trait, message = FALSE}
+D1_noLD <- D1
+D1_noLD$LD <- NULL
+try(coloc(D1_noLD, D3, method = "susie"))
+res_mixed <- coloc(D1_noLD, D3, method = c("single", "susie"))
+res_mixed$summary
+```
+
+`method` applies only to datasets. A SuSiE fit is already fine-mapped and log
+Bayes factors are already computed, so for those it is not needed:
+
+```{r no-method, message = FALSE}
+fit4 <- runsusie(D4)
+res_fits <- coloc(fit3, fit4)      # two fits
+res_bf   <- coloc(bf3, D4)         # log Bayes factors against a dataset
+```
+
+Naming a method for a trait given as log Bayes factors gives a warning that it
+does not apply there.
+
+## Reading the result
+
+`coloc()` returns a `coloc_result`, a list with the same fields every time.
+`?coloc_result` describes each of them.
+
+```{r result}
+names(res_single)
+res_single
+```
+
+* `$summary` has one row per pair of signals compared, with the number of
+  shared SNPs, each signal's top SNP (`hit1`, `hit2`), the five posterior
+  probabilities, and which signal of each trait the row compares (`idx1`,
+  `idx2`).
+* `$results` has one row per shared SNP, with the posterior probability that
+  this SNP is the shared causal variant if H4 is true.
+* `$priors` holds the prior probabilities used, and `$meta` how the result
+  was made.
+
+Four small functions answer the common questions without reaching into the
+fields:
+
+```{r accessors}
+is_ok(res_single)        # were the posteriors computed?
+n_signals(res_single)    # how many pairs of signals were compared
+pp(res_single)           # the number of SNPs and the posteriors of the first pair
+pp(res_susie, row = 2)   # ... and of another pair
+```
+
+### Every status
+
+`$status` says what happened, so a loop over many regions can sort its results
+without parsing warnings. Whatever the status, `$summary` has the same
+columns.
+
+| status | when | `$summary` |
+|---|---|---|
+| `"ok"` | the signal pairs were compared | a row per pair compared |
+| `"no_signal"` | a trait had no signal, for example SuSiE found no credible set | no rows |
+| `"no_overlap"` | the two traits share no SNPs | no rows |
+| `"all_trimmed"` | every pair was left out, because too little of a signal's posterior falls on SNPs the other trait has (`overlap.min` in `coloc_control()`) | a row per pair, with `PP.H1.abf` to `PP.H4.abf` `NA` |
+| `"degenerate"` | some pair's posteriors could not be computed, for example from a SuSiE fit whose log Bayes factors are `NA` | that pair's posteriors `NA` |
+
+Here are the first four, from small changes to the test data. Each warns as it
+happens, and the warning is kept in `$messages` too.
+
+```{r statuses, message = FALSE, warning = FALSE}
+## a trait with no signal: D3 weakened until SuSiE finds no credible set
+weak <- D3
+weak$beta <- D3$beta / 20
+no_signal <- coloc(weak, D4, method = "susie")
+
+## no shared SNPs: the first 50 SNPs of D1 against the last 50 of D2
+no_overlap <- coloc(subset_dataset(D1, 1:50), subset_dataset(D2, 451:500))
+
+## D1's signal, at s105, against the part of D2 that does not include it
+all_trimmed <- coloc(D1, subset_dataset(D2, 300:500))
+
+sapply(list(ok = res_single, no_signal = no_signal, no_overlap = no_overlap,
+            all_trimmed = all_trimmed), `[[`, "status")
+all_trimmed$messages
+all_trimmed$summary
+```
+
+In the trimmed case, `PP.H0.abf` is still reported: it is the probability
+that neither trait has a causal variant, which each trait answers from its own
+SNPs. Telling H1 to H4 apart needs the SNPs the traits share, and here they
+do not share enough.
+
+In a loop, check `is_ok()` before reading the posteriors:
+
+```{r loop}
+for (res in list(res_single, no_overlap))
+    if (is_ok(res)) print(pp(res)["PP.H4.abf"]) else message("skipped: ", res$status)
+```
+
+### From coloc() to fine-mapping
+
+The result keeps each trait's log Bayes factors as they went into the
+analysis, before the two traits' SNPs were matched. `log_bf()` returns them,
+so a trait can be fine-mapped from the same numbers `coloc()` used.
+
+```{r log-bf}
+bf1 <- log_bf(res_single, 1)
+dim(bf1)                                  # one signal, 500 SNPs
+fm <- finemap.bf(bf1)
+head(fm$results[order(fm$results$SNP.PP.abf, decreasing = TRUE), ])
+```
+
+For a trait fine-mapped with SuSiE, `log_bf()` gives one row per credible
+set, named after the SuSiE component, as in `$meta$idx1` and `$meta$idx2`.
+
+```{r log-bf-susie}
+rownames(log_bf(res_susie, 1))
+res_susie$meta$idx1
+```
+
+## From the older functions
+
+`coloc()` replaces four functions. Each maps onto it as follows.
+
+| before | with `coloc()` |
+|---|---|
+| `coloc.abf(d1, d2)` | `coloc(d1, d2, prior = coloc_prior(p12 = 1e-5))` |
+| `coloc.susie(d1, d2)` | `coloc(d1, d2, method = "susie")` |
+| `coloc.susie(fit1, fit2)` | `coloc(fit1, fit2)` |
+| `coloc.susie_bf(d1, bf2)` | `coloc(d1, bf2, method = "susie")` |
+| `coloc.bf_bf(bf1, bf2)` | `coloc(bf1, bf2)` |
+| `p1 =`, `p2 =`, `p12 =` | `prior = coloc_prior(p1 =, p2 =, p12 =)` |
+| `prior_weights1 =`, `prior_weights2 =` | `prior = coloc_prior(weights1 =, weights2 =)` |
+| `overlap.min =`, `trim_by_posterior =` | `control = coloc_control(overlap.min =, trim_by_posterior =)` |
+| `res$summary["PP.H4.abf"]`, from `coloc.abf()` | `pp(res)["PP.H4.abf"]`, or `res$summary$PP.H4.abf` |
+
+Three things are worth knowing when moving over.
+
+**The default `p12`.** `coloc.abf()` defaults `p12` to `1e-5`, while
+`coloc.susie()` and `coloc.bf_bf()` default it to `5e-6`. `coloc_prior()`
+takes `5e-6`, so to reproduce a `coloc.abf()` analysis, give `p12 = 1e-5`.
+The numbers are then the same:
+
+```{r migrate}
+invisible(capture.output(old <- coloc.abf(D1, D2)))   # coloc.abf() prints its result
+new <- coloc(D1, D2, prior = coloc_prior(p12 = 1e-5))
+rbind(coloc.abf = old$summary, coloc = pp(new))
+```
+
+**Per-SNP working.** `coloc.abf()`'s `$results` also carried each dataset's
+per-SNP working (`z`, `V`, `r` and `lABF` for each dataset). `coloc()`'s
+`$results` holds the shared posterior only; each trait's log Bayes factors
+are in `log_bf()`.
+
+**`coloc.susie_bf()`.** Its replacement names `method = "susie"` for the
+dataset, and `coloc()` warns that the method does not apply to the log Bayes
+factors given for the other trait. The warning is expected there.
