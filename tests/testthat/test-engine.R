@@ -133,8 +133,7 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
                 ## expression unchanged. AL13 moves the OUTPUT column, so the
                 ## control can no longer be "differs in nothing"; it is made
                 ## one level down instead, on the inputs AL13 combines.
-                expect_equal(pmin(a0, b0), as.numeric(os$PP.H0.abf),
-                             tolerance = 1e-10)
+                expect_equal(pmin(a0, b0), as.numeric(os$PP.H0.abf))
             } else {
                 ## AL08: no null column, so 6.0.3's 1 - rowSums() of a row
                 ## that already sums to 1 left noise, of either sign
@@ -142,7 +141,7 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
             }
 
             for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
-                expect_equal(ns[[col]], os[[col]], tolerance = 0,
+                expect_equal(ns[[col]], os[[col]],
                              label = paste0(case$id, " $", col))
             for (col in paste0("PP.H", 1:4, ".abf"))
                 expect_true(all(is.na(ns[[col]])), label = paste0("ns$", col))
@@ -160,9 +159,9 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
 
         ## AL12: 6.0.3 rewrites an all-NA pair to a certainty. Assert the
         ## divergence rather than skipping past it, and assert that it is
-        ## CONFINED to that pair: the ordinary row beside it still matches to
-        ## the last bit, which is what makes this a targeted change and not a
-        ## shift in the arithmetic.
+        ## CONFINED to that pair: the ordinary row beside it still matches
+        ## 6.0.3, which is what makes this a targeted change and not a shift
+        ## in the arithmetic.
         if (case$id == "t0-degenerate") {             ## AL12
             hh <- paste0("PP.H", 0:4, ".abf")
             expect_equal(os$hit1, c("-", "s6"))       ## 6.0.3 names a hit it did not find
@@ -170,21 +169,21 @@ test_that("the engine reproduces 6.0.3's numbers on every golden case", {
             expect_true(all(is.na(unlist(ns[1, hh]))))
             expect_true(is.na(ns$hit1[1]))
             for (col in c("nsnps", "hit1", "hit2", hh))
-                expect_equal(ns[[col]][2], os[[col]][2], tolerance = 0,
+                expect_equal(ns[[col]][2], os[[col]][2],
                              label = paste0("t0-degenerate row 2 $", col))
             next
         }
 
         expect_equal(nrow(ns), nrow(os), label = paste0(case$id, " n rows"))
         for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
-            expect_equal(ns[[col]], os[[col]], tolerance = 0,
+            expect_equal(ns[[col]], os[[col]],
                          label = paste0(case$id, " $summary$", col))
         ## 6.0.3 writes a bare NA into the all-trimmed branch, which makes the
         ## PP columns logical there while the frozen contract says numeric.
         ## Compare the values; coloc.bf_bf()'s wrapper restores the old type
         ## at step 2.
         for (col in paste0("PP.H", 0:4, ".abf"))
-            expect_equal(as.numeric(ns[[col]]), as.numeric(os[[col]]), tolerance = 0,
+            expect_equal(as.numeric(ns[[col]]), as.numeric(os[[col]]),
                          label = paste0(case$id, " $summary$", col))
     }
 })

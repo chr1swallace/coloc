@@ -58,30 +58,33 @@ test_that(".adapt_single reproduces the matrices coloc.abf() feeds the engine", 
         b <- case$build()
         a1 <- suppressWarnings(.adapt_single(b$d1))
         a2 <- suppressWarnings(.adapt_single(b$d2))
-        expect_equal(a1$bf, g$layerA$bf1, tolerance = 0, label = paste0(case$id, " bf1"))
-        expect_equal(a2$bf, g$layerA$bf2, tolerance = 0, label = paste0(case$id, " bf2"))
+        expect_equal(a1$bf, g$layerA$bf1, label = paste0(case$id, " bf1"))
+        expect_equal(a2$bf, g$layerA$bf2, label = paste0(case$id, " bf2"))
         expect_equal(a1$meta$method, "single")
         expect_equal(nrow(a1$bf), 1L)
         expect_false(a1$meta$has_null)
     }
 })
 
-test_that(".adapt_susie reproduces the credible-set rows, and selects them", {
-    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
+test_that(".adapt_susie reproduces the credible-set rows", {
+    skip_if_susieR_differs()
     for (case in coloc_cases) {
         if (case$tier != 2) next
         g <- read_golden(case$id)
         b <- case$build()
         a1 <- suppressMessages(.adapt_susie(b$d1))
-        ## values and snps must match 6.0.3 exactly; the row NAMES are a
-        ## deliberate addition, since the adapter contract is
+        ## values and snps must match 6.0.3; the row NAMES are a deliberate
+        ## addition, since the adapter contract is
         ## dimnames = list(signal_id, snp) and lbf_variable carries none
         got <- a1$bf; rownames(got) <- NULL
-        expect_equal(got, g$layerA$bf1, tolerance = 0, label = paste0(case$id, " bf1"))
+        expect_equal(got, g$layerA$bf1, label = paste0(case$id, " bf1"))
         expect_equal(rownames(a1$bf), paste0("sig", a1$meta$idx))
         expect_equal(a1$meta$method, "susie")
     }
+})
 
+test_that(".adapt_susie selects the credible-set rows", {
+    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
     ## the row-selection policy, made visible: ten components, two sets
     fit <- suppressMessages(runsusie(coloc_test_data$D3))
     sel <- .adapt_susie(fit)

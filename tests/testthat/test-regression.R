@@ -25,7 +25,13 @@ test_that("the goldens are present and pinned by commit, not version", {
                     file.path(dirname(dirname(dirname(golden_dir()))),
                               "data-raw", "make_golden.R")))
     skip_if(!length(gen), "data-raw/ is not shipped with an install")
-    expect_equal(m$generator_md5, unname(tools::md5sum(gen[[1]])))
+    ## the md5 was taken with LF line endings, so strip the \r a Windows
+    ## checkout with CRLF endings adds before taking it here
+    bytes <- readBin(gen[[1]], "raw", file.size(gen[[1]]))
+    lf <- tempfile()
+    on.exit(unlink(lf), add = TRUE)
+    writeBin(bytes[bytes != as.raw(13L)], lf)
+    expect_equal(m$generator_md5, unname(tools::md5sum(lf)))
 })
 
 test_that("layer B: the engine reproduces 6.0.3 on frozen BF matrices", {
@@ -37,10 +43,22 @@ test_that("layer B: the engine reproduces 6.0.3 on frozen BF matrices", {
     }
 })
 
+## Layers A and C refit SuSiE for tier 2, so those cases are checked apart,
+## under skip_if_susieR_differs().
+
 test_that("layer C: the old entry points reproduce 6.0.3 end to end", {
-    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
     for (case in coloc_cases) {
-        if (is.null(case$entry)) next
+        if (is.null(case$entry) || case$tier == 2) next
+        b <- case$build()
+        got <- capture_run(case$entry(b$d1, b$d2))
+        expect_matches_6_0_3(got, case$id, layer = "C")
+    }
+})
+
+test_that("layer C, SuSiE route: the old entry points reproduce 6.0.3 end to end", {
+    skip_if_susieR_differs()
+    for (case in coloc_cases) {
+        if (case$tier != 2) next
         b <- case$build()
         got <- capture_run(case$entry(b$d1, b$d2))
         expect_matches_6_0_3(got, case$id, layer = "C")
@@ -48,14 +66,23 @@ test_that("layer C: the old entry points reproduce 6.0.3 end to end", {
 })
 
 test_that("layer A: the BF matrices fed to the engine are still reproducible", {
-    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
     for (case in coloc_cases) {
+        if (case$tier == 2) next
         g <- read_golden(case$id)
         a <- suppressWarnings(suppressMessages(case_layerA(case)))
-        expect_equal(a$bf1, g$layerA$bf1, tolerance = golden_tolerance,
-                     label = paste0(case$id, " bf1"))
-        expect_equal(a$bf2, g$layerA$bf2, tolerance = golden_tolerance,
-                     label = paste0(case$id, " bf2"))
+        expect_equal(a$bf1, g$layerA$bf1, label = paste0(case$id, " bf1"))
+        expect_equal(a$bf2, g$layerA$bf2, label = paste0(case$id, " bf2"))
+    }
+})
+
+test_that("layer A, SuSiE route: the BF matrices fed to the engine are still reproducible", {
+    skip_if_susieR_differs()
+    for (case in coloc_cases) {
+        if (case$tier != 2) next
+        g <- read_golden(case$id)
+        a <- suppressWarnings(suppressMessages(case_layerA(case)))
+        expect_equal(a$bf1, g$layerA$bf1, label = paste0(case$id, " bf1"))
+        expect_equal(a$bf2, g$layerA$bf2, label = paste0(case$id, " bf2"))
     }
 })
 

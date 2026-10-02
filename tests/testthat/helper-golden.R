@@ -9,14 +9,24 @@
 ## Deliberately not a tolerance map. A tolerance says "this number may wobble",
 ## which is the wrong statement for every allowlist entry: p12 5e-6 to 1e-5 is
 ## a different model, not a rounding difference, and a tolerance wide enough to
-## absorb it absorbs real regressions too. One global knob, defaulting to zero.
+## absorb it absorbs real regressions too. The smallest allowlisted difference
+## is 9.9e-2, millions of times above the tolerance below.
+##
+## Comparisons use all.equal()'s default tolerance, about 1.5e-8 in mean
+## relative difference, as any numeric test does. That allows for machine
+## arithmetic and nothing else. The goldens were recorded on one machine
+## (Ubuntu 24.04, glibc 2.39, reference BLAS). A Rocky Linux 8 machine with
+## glibc 2.28 and OpenBLAS differs in the last bit, and SuSiE's prior-variance
+## optimiser magnifies that to about 1e-8 in the log BFs.
+##
+## A different susieR version can move a fit by more than any tolerance, so
+## the golden checks that refit SuSiE also need the version the goldens were
+## recorded with: see skip_if_susieR_differs().
 ##
 ## CITATIONS. A file:line reference in the harness always means 6.0.3, at the
 ## pinned commit 8f20f0b. That commit never moves, so the line is stable
 ## forever; live code in this tree is named by symbol instead, never by line.
 ## ---------------------------------------------------------------------------
-
-golden_tolerance <- 0
 
 ## ---- running things and recording what they emitted -----------------------
 
@@ -85,7 +95,7 @@ canonicalise <- function(res) {
 
 ## ---- field-level differences ----------------------------------------------
 
-.same <- function(a, b) isTRUE(all.equal(a, b, tolerance = golden_tolerance))
+.same <- function(a, b) isTRUE(all.equal(a, b))
 
 ## Returns the names of the fields that differ. Column-level granularity on
 ## $summary, because that is what the allowlist needs to name.
@@ -146,6 +156,17 @@ read_golden <- function(id) {
 }
 
 read_manifest <- function() readRDS(file.path(golden_dir(), "MANIFEST.rds"))
+
+## Skips the calling test unless the installed susieR is the one the goldens
+## were recorded with. Only the checks that refit SuSiE need it: layer B
+## replays frozen matrices and touches no susieR.
+skip_if_susieR_differs <- function() {
+    want <- read_manifest()$susieR
+    have <- if (requireNamespace("susieR", quietly = TRUE))
+                as.character(utils::packageVersion("susieR")) else "none"
+    testthat::skip_if(!identical(have, want),
+                      paste0("goldens recorded with susieR ", want, ", you have ", have))
+}
 
 ## ---- the assertion ---------------------------------------------------------
 
