@@ -2,7 +2,7 @@
 % Please edit documentation in R/coloc-query.R
 \name{query_ot}
 \alias{query_ot}
-\title{query OpenTargets credible sets}
+\title{query Open Targets credible sets}
 \usage{
 query_ot(cs, window = 1e+05, type = c("all", "gwas", "qtl"), dir = NULL)
 }
@@ -17,11 +17,22 @@ set this particularly large. The default, 1e+5, has been
 adequate in all our tests.}
 
 \item{type}{all, gwas or qtl. Depending on your use call, you may
-wish to colocalise against all study types in the OpenTargets
+wish to colocalise against all study types in the Open Targets
 dataset, just gwas datasets (you want to colocalise with human
 level traits eg to look for pleiotropy) or qtl datasets (you
 want to colocalise with molecular datasets eg to nominate
 causal genes).}
+
+\item{dir}{The manifest for Open Target files is downloaded from
+https://ftp.ebi.ac.uk/pub/databases/opentargets/platform/26.06/output/study/part-00000-1c0a4198-4d65-425e-82a1-d9d8b54d8549-c000.snappy.parquet and saved in a cache dir. If dir is NULL,
+a temporary directory will be used. It is strongly recommended
+to use dir to supply a local directory where files will
+persist between R sessions. This will save time and prevent
+downloading the same files in each R session.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{You can also set this variable persistently using
+`options(coloc.cache_dir="path/to/my/directory")`
+}\if{html}{\out{</div>}}}
 }
 \value{
 a list of credible sets with an attribute "annot"
@@ -31,14 +42,14 @@ studyId).
 }
 \description{
 This function takes an input credible set, uses that to define a
-region of interest, and searches for OpenTargets credible sets
+region of interest, and searches for Open Targets credible sets
 that may overlap - ie contain at least one snp within the region
 +/- window. The resulting list of Open Targets credible sets may
 then be colocalised with the index credible set using the
 coloc_query() function.
 }
 \details{
-The OpenTargets dataset is on an s3 connection. To make query_ot()
+The Open Targets dataset is on an s3 connection. To make query_ot()
 time efficient, we open that dataset on the first use, and cache
 it. Subsequent calls should be quicker because they reuse this
 cached arrow::open_dataset() call. However, this may fail if used
@@ -59,7 +70,6 @@ out <- coloc_query(q, ot)
 
 out[out$PP.H4 > 0 & out$studyType != "gwas",]
 }
-TODO: citations
 }
 \seealso{
 \code{\link[=coloc_query]{coloc_query()}}

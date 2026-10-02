@@ -83,8 +83,8 @@ check_PP <- function(cs) {
 
 is_prob <- function(x,strict=TRUE) {
     if(strict) {
-        is.numeric(x) && x > 0 && x < 1 && length(x)==1
+        length(x)==1 && !is.na(x) && is.numeric(x) && x > 0 && x < 1 
     } else {
-        is.numeric(x) && x >= 0 && x <= 1 && length(x)==1
+        length(x)==1 && !is.na(x) && is.numeric(x) && x >= 0 && x <= 1 
     }
 }

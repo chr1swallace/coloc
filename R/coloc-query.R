@@ -1,3 +1,6 @@
+##' @import arrow
+NULL
+
 ## Shared helpers
 
 .check_q <- function(cs) {
@@ -122,6 +125,16 @@
 ##'     level traits eg to look for pleiotropy) or qtl datasets (you
 ##'     want to colocalise with molecular datasets eg to nominate
 ##'     causal genes).
+##' @param dir The manifest for Open Target files is downloaded from
+##'     `r .ot_manifest_url` and saved in a cache dir. If dir is NULL,
+##'     a temporary directory will be used. It is strongly recommended
+##'     to use dir to supply a local directory where files will
+##'     persist between R sessions. This will save time and prevent
+##'     downloading the same files in each R session.
+##'
+##'     You can also set this variable persistently using
+##'     `options(coloc.cache_dir="path/to/my/directory")`
+##' @param extra extra columns from the Open Targets manifest
 ##' @return a list of credible sets with an attribute "annot"
 ##'     containing a data.frame where one row per element in the list
 ##'     describes the annotation of the list (most importantly,
@@ -142,8 +155,8 @@
 ##' 
 ##' out[out$PP.H4 > 0 & out$studyType != "gwas",]
 ##' }
-##' TODO: citations
-query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"), dir = NULL) {
+query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"), dir = NULL,
+    extra=c("traitFromSource","pubmedID")) {
   .check_q(cs)
   .check_window(window, ot = TRUE)
   type <- match.arg(type)
@@ -170,11 +183,12 @@ query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"), dir = NU
                       position = tbl$position$as_vector(),
                       studyType = tbl$studyType$as_vector())
 
-  if (nrow(annot)) {
-    manifest <- .ot_manifest(dir) |> as.data.frame() |> as.data.frame() # need to do this twice to avoid tibbles
-    extra <- setdiff(names(manifest), names(annot))
-    annot <- cbind(annot, manifest[match(annot$studyId, manifest$studyId), extra, drop = FALSE])
-    rownames(annot) <- NULL
+  if (nrow(annot) & length(extra)) {
+      manifest <- .ot_manifest(dir) |> as.data.frame() |> as.data.frame() # need to do this twice to avoid tibbles
+      extra <- intersect(extra, names(manifest))
+      if(length(extra))
+          annot <- cbind(annot, manifest[match(annot$studyId, manifest$studyId), extra, drop = FALSE])
+      rownames(annot) <- NULL
   }
 
   names(credsets) <- annot$studyLocusId
@@ -266,8 +280,8 @@ query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5) {
   lower_pos <- min(cs$pos) - window
   upper_pos <- max(cs$pos) + window
   paths <- eqtl_cat_fetch(quant_method, dir) # last path is for the manifest
-  path_manifest <- tail(paths,1)
-  paths <- head(paths,-1)
+  path_manifest <- paths[ length(paths) ]
+  paths <- paths[ -length(paths) ]
   ds <- arrow::open_dataset(paths, format = "parquet")
 
   pos_ref <- arrow::Expression$field_ref("position")

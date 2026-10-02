@@ -1,0 +1,85 @@
+---
+title: "coloc_pip and using coloc_query to query against eQTL Catalogue and Open Targets"
+author: "Chris Wallace"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using coloc_query to query against eQTL Catalogue and Open Targets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Using credible sets to approximate full coloc
+
+As GWAS and QTL datasets continue to grow in number, it is becoming harder to store complete summary statistics. Organisations like eQTL Catalogue and Open Targets are instead moving to store/make publicly available just the credible   sets at significant loci.
+
+A credible set is defined for coloc as a data.frame() containing at minimum character column snp and a numeric PP column containing the posterior probabilities under a fine mapping. Here we will generate a couple of credible sets from our example data:
+```{r load}
+library(coloc)
+data(coloc_test_data)
+attach(coloc_test_data) ## datasets D1, D2, D3 and D4
+cs1 <- finemap.abf(D1) |> credible.sets()
+cs2 <- finemap.abf(D2) |> credible.sets()
+cs1
+cs2
+```
+
+Now we can compare performing colocalisation using the full data using the usual `coloc.abf()` function or just the credible sets using the new `coloc_pip()` function.
+
+```{r compare}
+coloc.abf(D1,D2)
+coloc_pip(cs1,cs2)
+```
+
+Being able to work with credible sets opens up the chance to rapidly run colocalisation with the large public resources like eQTL Catalogue and Open Targets.
+
+We first generate our own credible set.  Here I'm using one created earlier:
+
+```{r q}
+q <- data.frame(chr = 6,
+   pos = c(90279406, 90280331, 90281412, 90276601, 90288603, 90286261),
+   snp = c("6_90279406_G_C", "6_90280331_G_A", "6_90281412_A_T",
+           "6_90276601_A_G", "6_90288603_A_G", "6_90286261_C_G"),
+   PP = c(0.675, 0.0747, 0.0702, 0.0505, 0.0422, 0.0412))
+```
+
+You will see this credible set has additional chr and pos columns. We will need these to define the lookup region in the public data resources.  The SNP identifiers also have a particular format: chr\_pos\_ref\_alt. This is how snp identifiers are formatted in the public resources, so yours will need to be too in order to match identifiers.
+
+## Query Open Targets
+
+Open Targets make their data available using S3.  We will connect to that using arrow. The first connection may be slow because arrow has to read the structure of the files, but future runs should be faster.  We also download to a temporary directory a manifest file so we can add information about what each study in Open Targets relate to.  It is good practice to provide a local directory where this will be stored, and then files can persist between R sessions. If you fail to do this, the files will be held in temporary space and will need to be downloaded again each R session.
+
+```{r ot}
+ot <- query_ot(q, dir="/tmp/mycache")
+out <- coloc_query(q, ot)
+head(out) 
+out[out$PP.H4 > 0 & out$studyType != "gwas",]
+```
+
+In this case, we are only interested in seeing what evidence there is for a causal gene, so we exclude studyType="gwas".  We could have done this directly using the type argument:
+
+
+```{r ot2}
+ot <- query_ot(q, dir="/tmp/mycache", type="qtl")
+out <- coloc_query(q, ot)
+out[out$PP.H4 > 0,]
+```
+
+## Query eQTL Catalogue
+
+Querying the eQTL Catalogue works similarly, except here the data is stored at Zenodo in files that need to be downloaded locally to work with. Again, it is sensible to supply the dir argument so that these can persist between sessions.
+
+These files are divided by the method used to quantify gene expression. "ge" - the default - is total gene expression, but it's also the largest file. We will use "exon" for this vignette because it's among the smallest. You can see the full set of files at <https://zenodo.org/records/22846842>.  In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
+
+
+```{r ecat}
+ecat <- query_eqtl_cat(q, dir="/tmp/mycache", quant_method="exon")
+out <- coloc_query(q, ecat)
+out
+```
+
+Because ecat is a small object, we can examine its structure. It is a list of credible sets, with an attribute "annot". annot is a data.frame containing one row per credible set giving information about the analysis it refers to.
+
+```{r obj}
+ecat
+```

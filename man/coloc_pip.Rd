@@ -2,7 +2,7 @@
 % Please edit documentation in R/coloc-pip.R
 \name{coloc_pip}
 \alias{coloc_pip}
-\title{coloc using credible sets}
+\title{An approximation to coloc using only information from fine-mapped credible sets.}
 \usage{
 coloc_pip(cs1, cs2, p1 = 1e-04, p2 = 1e-04, p12 = 5e-06)
 }
@@ -21,19 +21,26 @@ default 1e-4}
 default 1e-5}
 }
 \value{
-a named vector containing the number of overlapping SNPs and the posterior probabilities of H3 and H4
+a named vector containing the number of SNPs found in each
+credible set (nsnps1, nsnps2), the number in both credible
+sets (nsnps_int) and the posterior probabilities of H3 and H4
+(PP.H3 and PP.H4)
 }
 \description{
-An approximation to coloc using only information from fine-mapped credible sets.
-}
-\details{
 A credible set should be passed in the form of a list, data.frame,
 or equivalent tabular object containing at least two equal-length
 vectors.  The object should contain at a minimim
+}
+\details{
 \itemize{
 \item snp: a character vector of snp identifiers
 \item PP: a numeric vector of posterior probabilities
 }
+}
+\examples{
+cs1 <- data.frame(snp=c("s1","s2"), PP=c(0.05,0.9))
+cs2 <- data.frame(snp=c("s1","s2","s3"), PP=c(0.1,0.8,0.05))
+coloc_pip(cs1,cs2)
 }
 \author{
 Jeffrey Pullin, Chris Wallace

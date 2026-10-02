@@ -1,6 +1,7 @@
 Package: coloc
 Type: Package
 Imports:
+    arrow,
     data.table,
     ggplot2,
     methods,
