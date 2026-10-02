@@ -22,3 +22,11 @@ as in \code{x$meta$idx1} and \code{x$meta$idx2}, unless log Bayes factors given 
 \code{\link[=coloc]{coloc()}} had row names of their own. Use them to fine-map a trait from
 the same numbers \code{\link[=coloc]{coloc()}} used.
 }
+\examples{
+data(coloc_test_data)
+res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+bf1 <- log_bf(res, 1)
+dim(bf1)                         # one signal, 500 SNPs
+## fine-map trait 1 from the same numbers coloc() used
+finemap.bf(bf1)$summary
+}

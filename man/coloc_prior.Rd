@@ -39,3 +39,9 @@ it is causal for trait 1 only, trait 2 only, or both. Each is a single
 number. To let the prior vary across SNPs, give weights, which scale it
 SNP by SNP.
 }
+\examples{
+coloc_prior()                    # the defaults
+coloc_prior(p12 = 1e-5)          # coloc.abf()'s default p12
+## favour SNP 3 of 5 for trait 1, ten to one
+coloc_prior(weights1 = c(1, 1, 10, 1, 1))
+}

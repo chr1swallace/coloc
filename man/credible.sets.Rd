@@ -17,6 +17,11 @@ SNP ids of the credible set
 \description{
 Get credible sets from finemapping results
 }
+\examples{
+data(coloc_test_data)
+fm <- finemap.abf(coloc_test_data$D1)
+credible.sets(fm)
+}
 \author{
 Guillermo Reales, Chris Wallace
 }

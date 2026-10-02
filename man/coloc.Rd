@@ -14,34 +14,121 @@ coloc(
 )
 }
 \arguments{
-\item{x1}{trait 1: a coloc dataset, a runsusie() fit, or log Bayes factors}
+\item{x1}{trait 1: a coloc dataset, a SuSiE fit or log Bayes factors (see
+Inputs)}
 
-\item{x2}{trait 2, same options}
+\item{x2}{trait 2, with the same choices}
 
-\item{method}{\code{"single"} (one causal variant assumed, no fine-mapping) or
-\code{"susie"}; length 1 for both traits, length 2 for per-trait}
+\item{method}{\code{"single"} or \code{"susie"}: one value for both traits, or one
+for each trait (see Choosing \code{method})}
 
-\item{prior}{a \code{\link[=coloc_prior]{coloc_prior()}} object}
+\item{prior}{the prior probabilities, made with \code{\link[=coloc_prior]{coloc_prior()}}}
 
-\item{control}{a \code{\link[=coloc_control]{coloc_control()}} object}
+\item{control}{when to leave a pair of signals out, made with
+\code{\link[=coloc_control]{coloc_control()}}}
 
-\item{susie.args}{passed to \code{\link[=runsusie]{runsusie()}} for traits fine-mapped here}
+\item{susie.args}{other arguments for \code{\link[=runsusie]{runsusie()}}, for datasets
+fine-mapped here}
 }
 \value{
-an object of class coloc_result
+A \code{coloc_result}. Its \verb{$summary} has one row per pair of signals
+compared, with the posterior probabilities of the five hypotheses,
+\code{PP.H0.abf} to \code{PP.H4.abf}; \verb{$results} gives, for each SNP, the
+posterior probability that it is the shared causal variant; and
+\verb{$status} says what happened. \link{coloc_result} describes every field.
 }
 \description{
-One entry point for every combination of input coloc accepts. \code{x1} and
-\code{x2} may each be a coloc dataset, a \code{\link[=runsusie]{runsusie()}} fit, or a named vector or
-matrix of log Bayes factors, in any combination.
+Asks whether two traits share a causal variant in a region. \code{coloc()} is
+the one entry point: \code{x1} and \code{x2} may each be a coloc dataset, a SuSiE
+fit, or log Bayes factors, in any combination.
 }
-\details{
-\code{method} applies PER TRAIT, and only to traits supplied as datasets. Give
-it length 2 to fine-map one trait and not the other, which is the common
-case when colocalising your own fine-mapped GWAS against eQTL Catalogue
-SuSiE output, or whenever one trait has no LD panel: SuSiE cannot run
-without LD, and a single global method would force the other trait onto
-\code{"single"} as well, collapsing its credible sets into one assumed causal
-variant. For a trait already supplied as log Bayes factors, \code{method} is
-inapplicable and supplying it warns.
+\section{Inputs}{
+
+Each of \code{x1} and \code{x2} is one of three things.
+\itemize{
+\item \strong{A coloc dataset}: a list holding one trait's summary statistics for
+the region. It has vectors with one value per SNP (\code{snp}, and \code{beta}
+with \code{varbeta}, or \code{pvalues} with \code{MAF}) and single values that describe
+the study (\code{type}, which is \code{"quant"} or \code{"cc"}; \code{N}; and \code{sdY} or \code{s}).
+Fine-mapping with SuSiE also needs \code{LD}, the correlation matrix of the
+SNPs. \code{\link[=check_dataset]{check_dataset()}} lists every element and which combinations are
+needed, and checks a dataset for you. \link{coloc_test_data} holds four
+examples.
+\item \strong{A SuSiE fit}: the result of \code{\link[=runsusie]{runsusie()}} on a coloc dataset, or of
+\code{susieR::susie_rss()} passed through \code{\link[=annotate_susie]{annotate_susie()}}. \code{coloc()} uses
+the log Bayes factors of the credible sets the fit found, one signal per
+credible set.
+\item \strong{Log Bayes factors}: a numeric vector with one value per SNP, named by
+SNP id, for a single signal; or a matrix with one row per signal and one
+column per SNP, with SNP ids as its column names. A column named
+\code{"null"}, if there is one, holds the log Bayes factor for no
+association.
+}
+
+The two traits are matched by SNP id, and only the SNPs both have are
+compared.
+}
+
+\section{Choosing \code{method}}{
+
+\code{method} says how a dataset is turned into log Bayes factors, and so how
+many signals a trait can have.
+\itemize{
+\item \code{"single"} assumes the trait has at most one causal variant in the
+region, and computes one Bayes factor per SNP from \code{beta} and \code{varbeta}
+(or \code{pvalues} and \code{MAF}), as \code{\link[=coloc.abf]{coloc.abf()}} did. This is the default.
+\item \code{"susie"} fine-maps the dataset with SuSiE through \code{\link[=runsusie]{runsusie()}}, which
+needs \code{LD} and \code{N}, and gives one signal per credible set, so a trait
+can have several.
+}
+
+One value applies to both traits. Two values apply to trait 1 and trait 2
+in turn, so the traits can be treated differently: \code{method = c("single", "susie")} fine-maps trait 2 only, for example when only trait 2 has an LD
+matrix. \code{method} applies only to datasets, because a SuSiE fit is already
+fine-mapped and log Bayes factors are already computed. Asking for
+\code{"single"} for a SuSiE fit is an error, and naming a method for a trait
+given as log Bayes factors gives a warning.
+}
+
+\examples{
+data(coloc_test_data)
+D1 <- coloc_test_data$D1
+D2 <- coloc_test_data$D2
+
+## two datasets, with at most one causal variant assumed in each trait
+res <- coloc(D1, D2)
+res
+
+## reading the result
+is_ok(res)              # the posteriors were computed
+n_signals(res)          # pairs of signals compared
+pp(res)                 # number of snps, and PP.H0 to PP.H4 for the first pair
+bf1 <- log_bf(res, 1)   # trait 1's log Bayes factors, to fine-map
+finemap.bf(bf1)$summary
+
+if (requireNamespace("susieR", quietly = TRUE)) {
+    D3 <- coloc_test_data$D3
+    D4 <- coloc_test_data$D4
+
+    ## fine-map both traits with SuSiE: one row per pair of credible sets
+    res2 <- coloc(D3, D4, method = "susie")
+    res2$summary
+
+    ## fine-map trait 2 only: D1 stays one signal, D3 gives two
+    res3 <- coloc(D1, D3, method = c("single", "susie"))
+    res3$summary
+
+    ## two matrices of log Bayes factors, one row per signal: here, the
+    ## credible sets of two SuSiE fits
+    fit3 <- runsusie(D3)
+    fit4 <- runsusie(D4)
+    bf3 <- fit3$lbf_variable[fit3$sets$cs_index, , drop = FALSE]
+    bf4 <- fit4$lbf_variable[fit4$sets$cs_index, , drop = FALSE]
+    res4 <- coloc(bf3, bf4)
+    res4$summary
+}
+}
+\seealso{
+\code{\link[=coloc_prior]{coloc_prior()}}, \code{\link[=coloc_control]{coloc_control()}}, \code{\link[=pp]{pp()}}, \code{\link[=is_ok]{is_ok()}},
+\code{\link[=n_signals]{n_signals()}}, \code{\link[=log_bf]{log_bf()}}, \link{coloc_result}
 }

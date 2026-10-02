@@ -20,6 +20,14 @@ Finemap one dataset represented by Bayes factors
 \details{
 This is the workhorse behind many finemap functions
 }
+\examples{
+data(coloc_test_data)
+## one signal's log Bayes factors, as kept by coloc()
+res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+fm <- finemap.bf(log_bf(res, 1))
+fm$summary
+head(fm$results[order(fm$results$SNP.PP.abf, decreasing = TRUE), ])
+}
 \author{
 Chris Wallace
 }

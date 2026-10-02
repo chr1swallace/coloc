@@ -82,6 +82,13 @@ you can use it directly to check the format of a dataset to be
 supplied to coloc.abf(), coloc.signals(), finemap.abf(), or
 finemap.signals().
 }
+\examples{
+data(coloc_test_data)
+check_dataset(coloc_test_data$D1)     # NULL: no problems found
+bad <- coloc_test_data$D1
+bad$beta[1] <- NA
+try(check_dataset(bad, 1))
+}
 \author{
 Chris Wallace
 }

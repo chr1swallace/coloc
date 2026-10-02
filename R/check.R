@@ -62,6 +62,12 @@
 ##' @return NULL if no errors found
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' check_dataset(coloc_test_data$D1)     # NULL: no problems found
+##' bad <- coloc_test_data$D1
+##' bad$beta[1] <- NA
+##' try(check_dataset(bad, 1))
 check_dataset <- function(d,
                           suffix="",
                           req=c("type","snp"),
@@ -204,6 +210,10 @@ check_ld <- function(D,LD) {
 ##' @export
 ##' @return proportion of pairs that are positive
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' ## close to 1 when beta and LD are aligned to the same alleles
+##' check_alignment(coloc_test_data$D3, do_plot = FALSE)
 check_alignment <- function(D,thr=0.2,do_plot=TRUE) {
   check_dataset(D)
   bprod=outer(D$beta/sqrt(D$varbeta),D$beta/sqrt(D$varbeta),"*")

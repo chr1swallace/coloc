@@ -23,6 +23,13 @@ logical vector of length d$position indicating which snps to keep
 \description{
 tries to be smart about detecting the interesting subregion to finemap/coloc.
 }
+\examples{
+data(coloc_test_data)
+D3 <- coloc_test_data$D3
+D3$z <- D3$beta / sqrt(D3$varbeta)   # findends() reads z scores
+keep <- findends(D3, maxz = 6)
+table(keep)
+}
 \seealso{
 findpeaks
 }

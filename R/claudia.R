@@ -225,6 +225,9 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @return data.frame with log(abf) or log(bf)
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' head(process.dataset(coloc_test_data$D1, suffix = "df1"))
 process.dataset <- function(d, suffix, ...) {
                                         #message('Processing dataset')
 
@@ -313,6 +316,10 @@ process.dataset <- function(d, suffix, ...) {
 ##' }
 ##' @author Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' fm <- finemap.abf(coloc_test_data$D1)
+##' head(fm[order(fm$SNP.PP, decreasing = TRUE), ])
 finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
 
   check_dataset(dataset,"")
@@ -511,6 +518,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 ##' @return SNP ids of the credible set
 ##' @author Guillermo Reales, Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' fm <- finemap.abf(coloc_test_data$D1)
+##' credible.sets(fm)
 credible.sets <- function(dataset, credible.size = 0.95){
     if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a SNP.PP column.")
     t2 <- dataset[ order(dataset$SNP.PP, decreasing = TRUE),]

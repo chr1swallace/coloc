@@ -15,3 +15,8 @@ integer(1)
 \description{
 How many signal pairs a coloc_result carries
 }
+\examples{
+data(coloc_test_data)
+res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+n_signals(res)
+}

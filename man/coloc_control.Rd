@@ -18,3 +18,9 @@ an object of class coloc_control
 \description{
 Control parameters for a colocalisation analysis
 }
+\examples{
+coloc_control()
+## compare pairs of signals even when only 10\% of a signal's posterior
+## falls on SNPs the other trait has
+coloc_control(overlap.min = 0.1)
+}

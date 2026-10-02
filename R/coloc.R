@@ -7,28 +7,108 @@
 
 ##' Colocalisation of two genetic traits
 ##'
-##' One entry point for every combination of input coloc accepts. `x1` and
-##' `x2` may each be a coloc dataset, a [runsusie()] fit, or a named vector or
-##' matrix of log Bayes factors, in any combination.
+##' Asks whether two traits share a causal variant in a region. `coloc()` is
+##' the one entry point: `x1` and `x2` may each be a coloc dataset, a SuSiE
+##' fit, or log Bayes factors, in any combination.
 ##'
-##' `method` applies PER TRAIT, and only to traits supplied as datasets. Give
-##' it length 2 to fine-map one trait and not the other, which is the common
-##' case when colocalising your own fine-mapped GWAS against eQTL Catalogue
-##' SuSiE output, or whenever one trait has no LD panel: SuSiE cannot run
-##' without LD, and a single global method would force the other trait onto
-##' `"single"` as well, collapsing its credible sets into one assumed causal
-##' variant. For a trait already supplied as log Bayes factors, `method` is
-##' inapplicable and supplying it warns.
+##' @section Inputs:
+##' Each of `x1` and `x2` is one of three things.
 ##'
-##' @param x1 trait 1: a coloc dataset, a runsusie() fit, or log Bayes factors
-##' @param x2 trait 2, same options
-##' @param method `"single"` (one causal variant assumed, no fine-mapping) or
-##'   `"susie"`; length 1 for both traits, length 2 for per-trait
-##' @param prior a [coloc_prior()] object
-##' @param control a [coloc_control()] object
-##' @param susie.args passed to [runsusie()] for traits fine-mapped here
-##' @return an object of class coloc_result
+##' * **A coloc dataset**: a list holding one trait's summary statistics for
+##'   the region. It has vectors with one value per SNP (`snp`, and `beta`
+##'   with `varbeta`, or `pvalues` with `MAF`) and single values that describe
+##'   the study (`type`, which is `"quant"` or `"cc"`; `N`; and `sdY` or `s`).
+##'   Fine-mapping with SuSiE also needs `LD`, the correlation matrix of the
+##'   SNPs. [check_dataset()] lists every element and which combinations are
+##'   needed, and checks a dataset for you. [coloc_test_data] holds four
+##'   examples.
+##' * **A SuSiE fit**: the result of [runsusie()] on a coloc dataset, or of
+##'   `susieR::susie_rss()` passed through [annotate_susie()]. `coloc()` uses
+##'   the log Bayes factors of the credible sets the fit found, one signal per
+##'   credible set.
+##' * **Log Bayes factors**: a numeric vector with one value per SNP, named by
+##'   SNP id, for a single signal; or a matrix with one row per signal and one
+##'   column per SNP, with SNP ids as its column names. A column named
+##'   `"null"`, if there is one, holds the log Bayes factor for no
+##'   association.
+##'
+##' The two traits are matched by SNP id, and only the SNPs both have are
+##' compared.
+##'
+##' @section Choosing `method`:
+##' `method` says how a dataset is turned into log Bayes factors, and so how
+##' many signals a trait can have.
+##'
+##' * `"single"` assumes the trait has at most one causal variant in the
+##'   region, and computes one Bayes factor per SNP from `beta` and `varbeta`
+##'   (or `pvalues` and `MAF`), as [coloc.abf()] did. This is the default.
+##' * `"susie"` fine-maps the dataset with SuSiE through [runsusie()], which
+##'   needs `LD` and `N`, and gives one signal per credible set, so a trait
+##'   can have several.
+##'
+##' One value applies to both traits. Two values apply to trait 1 and trait 2
+##' in turn, so the traits can be treated differently: `method = c("single",
+##' "susie")` fine-maps trait 2 only, for example when only trait 2 has an LD
+##' matrix. `method` applies only to datasets, because a SuSiE fit is already
+##' fine-mapped and log Bayes factors are already computed. Asking for
+##' `"single"` for a SuSiE fit is an error, and naming a method for a trait
+##' given as log Bayes factors gives a warning.
+##'
+##' @param x1 trait 1: a coloc dataset, a SuSiE fit or log Bayes factors (see
+##'   Inputs)
+##' @param x2 trait 2, with the same choices
+##' @param method `"single"` or `"susie"`: one value for both traits, or one
+##'   for each trait (see Choosing `method`)
+##' @param prior the prior probabilities, made with [coloc_prior()]
+##' @param control when to leave a pair of signals out, made with
+##'   [coloc_control()]
+##' @param susie.args other arguments for [runsusie()], for datasets
+##'   fine-mapped here
+##' @return A `coloc_result`. Its `$summary` has one row per pair of signals
+##'   compared, with the posterior probabilities of the five hypotheses,
+##'   `PP.H0.abf` to `PP.H4.abf`; `$results` gives, for each SNP, the
+##'   posterior probability that it is the shared causal variant; and
+##'   `$status` says what happened. [coloc_result] describes every field.
+##' @seealso [coloc_prior()], [coloc_control()], [pp()], [is_ok()],
+##'   [n_signals()], [log_bf()], [coloc_result]
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' D1 <- coloc_test_data$D1
+##' D2 <- coloc_test_data$D2
+##'
+##' ## two datasets, with at most one causal variant assumed in each trait
+##' res <- coloc(D1, D2)
+##' res
+##'
+##' ## reading the result
+##' is_ok(res)              # the posteriors were computed
+##' n_signals(res)          # pairs of signals compared
+##' pp(res)                 # number of snps, and PP.H0 to PP.H4 for the first pair
+##' bf1 <- log_bf(res, 1)   # trait 1's log Bayes factors, to fine-map
+##' finemap.bf(bf1)$summary
+##'
+##' if (requireNamespace("susieR", quietly = TRUE)) {
+##'     D3 <- coloc_test_data$D3
+##'     D4 <- coloc_test_data$D4
+##'
+##'     ## fine-map both traits with SuSiE: one row per pair of credible sets
+##'     res2 <- coloc(D3, D4, method = "susie")
+##'     res2$summary
+##'
+##'     ## fine-map trait 2 only: D1 stays one signal, D3 gives two
+##'     res3 <- coloc(D1, D3, method = c("single", "susie"))
+##'     res3$summary
+##'
+##'     ## two matrices of log Bayes factors, one row per signal: here, the
+##'     ## credible sets of two SuSiE fits
+##'     fit3 <- runsusie(D3)
+##'     fit4 <- runsusie(D4)
+##'     bf3 <- fit3$lbf_variable[fit3$sets$cs_index, , drop = FALSE]
+##'     bf4 <- fit4$lbf_variable[fit4$sets$cs_index, , drop = FALSE]
+##'     res4 <- coloc(bf3, bf4)
+##'     res4$summary
+##' }
 coloc <- function(x1, x2,
                   method = c("single", "susie"),
                   prior = coloc_prior(),
@@ -105,6 +185,10 @@ coloc <- function(x1, x2,
 ##' @param row which signal pair
 ##' @return named numeric, length 6
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' pp(res)
 pp <- function(x, row = 1) {
     stopifnot(inherits(x, "coloc_result"))
     ## No rows means no signal pair was summarised, so the count is 0 and
@@ -124,6 +208,11 @@ pp <- function(x, row = 1) {
 ##' @param x a coloc_result
 ##' @return logical(1)
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' if (is_ok(res) && pp(res)["PP.H4.abf"] > 0.8)
+##'     message("the traits share a causal variant")
 is_ok <- function(x) {
     stopifnot(inherits(x, "coloc_result"))
     identical(x$status, "ok")
@@ -134,6 +223,10 @@ is_ok <- function(x) {
 ##' @param x a coloc_result
 ##' @return integer(1)
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' n_signals(res)
 n_signals <- function(x) {
     stopifnot(inherits(x, "coloc_result"))
     nrow(x$summary)
@@ -152,6 +245,13 @@ n_signals <- function(x) {
 ##' @param trait 1 or 2
 ##' @return numeric matrix, signals x snps
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' bf1 <- log_bf(res, 1)
+##' dim(bf1)                         # one signal, 500 SNPs
+##' ## fine-map trait 1 from the same numbers coloc() used
+##' finemap.bf(bf1)$summary
 log_bf <- function(x, trait = 1) {
     stopifnot(inherits(x, "coloc_result"))
     if (length(trait) != 1 || !trait %in% 1:2)

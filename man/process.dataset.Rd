@@ -23,6 +23,10 @@ Internal function, process each dataset list for coloc.abf.
 \details{
 Made public for another package to use, but not intended for users to use.
 }
+\examples{
+data(coloc_test_data)
+head(process.dataset(coloc_test_data$D1, suffix = "df1"))
+}
 \author{
 Chris Wallace
 }

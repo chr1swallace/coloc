@@ -16,3 +16,9 @@ logical(1)
 \code{res$summary$PP.H4.abf > 0.9} yields \code{logical(0)} on an empty result, so
 an \verb{if()} around it errors. Ask this instead.
 }
+\examples{
+data(coloc_test_data)
+res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+if (is_ok(res) && pp(res)["PP.H4.abf"] > 0.8)
+    message("the traits share a causal variant")
+}

@@ -18,3 +18,8 @@ named numeric, length 6
 Returns the named vector that \code{coloc.abf()}'s \verb{$summary} used to be, for
 one row of the result.
 }
+\examples{
+data(coloc_test_data)
+res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+pp(res)
+}

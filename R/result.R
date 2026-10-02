@@ -16,6 +16,96 @@
 ## comment drifts, a contract that is asserted on every return cannot.
 ## ---------------------------------------------------------------------------
 
+##' The result of coloc()
+##'
+##' [coloc()] returns an object of class `coloc_result`: a list with the
+##' fields below. Every result has them, apart from `weights`, and the same
+##' `$summary` columns, whatever the inputs were and whatever happened;
+##' `$status` says what happened.
+##'
+##' The posterior probabilities are for five hypotheses about the region:
+##' H0, neither trait has a causal variant; H1, only trait 1 does; H2, only
+##' trait 2 does; H3, both do, but different variants; H4, both do, and share
+##' one causal variant.
+##'
+##' @section Fields:
+##' \describe{
+##'   \item{`summary`}{a data.table with one row per pair of signals
+##'     compared, one signal from each trait. Its columns are `nsnps`, the
+##'     number of SNPs the two traits share; `hit1` and `hit2`, each signal's
+##'     top SNP; `PP.H0.abf` to `PP.H4.abf`, the posterior probabilities of
+##'     the five hypotheses; and `idx1` and `idx2`, which signal of each trait
+##'     the row compares, as listed in `meta$idx1` and `meta$idx2`.}
+##'   \item{`results`}{a data.table with one row per shared SNP: `snp`, and
+##'     for each row of `summary` the posterior probability that this SNP is
+##'     the shared causal variant, if H4 is true. The column is
+##'     `SNP.PP.H4.abf` when there is one row, and `SNP.PP.H4.row1`,
+##'     `SNP.PP.H4.row2` and so on when there are several.}
+##'   \item{`priors`}{the prior probabilities used, `c(p1 =, p2 =, p12 =)`.
+##'     For a large region these may be smaller than those given to
+##'     [coloc_prior()], and [coloc()] warns when they are.}
+##'   \item{`weights`}{present only if prior weights were given:
+##'     `list(w1 =, w2 =)`, restricted to the shared SNPs.}
+##'   \item{`status`}{what happened; see Status.}
+##'   \item{`messages`}{the warnings about the comparison itself (a trait
+##'     with no signal, no shared SNPs, pairs left out), as text, so that a
+##'     loop over many regions can check them afterwards.}
+##'   \item{`meta`}{details of how the result was made: `method`, how each
+##'     trait's log Bayes factors were made (`"single"`, `"susie"`, or `NA`
+##'     for log Bayes factors given directly); `idx1` and `idx2`, the ids of
+##'     each trait's signals (for a SuSiE fit, the SuSiE component behind
+##'     each credible set);
+##'     `n_pairs_in` and `n_pairs_kept`, the pairs of signals before and after
+##'     trimming, and `dropped`, why pairs were left out, when there were any
+##'     pairs; and `schema`, the version of this structure.}
+##'   \item{`bf`}{each trait's log Bayes factors, `list(bf1 =, bf2 =)`, as
+##'     they went into the analysis; see [log_bf()].}
+##' }
+##'
+##' @section Status:
+##' \describe{
+##'   \item{`"ok"`}{the signal pairs were compared. Pairs left out because
+##'     too little of a signal's posterior falls on SNPs the other trait has
+##'     (`overlap.min` in [coloc_control()]) have no row; `meta` counts
+##'     them.}
+##'   \item{`"no_signal"`}{a trait had no signal to compare, for example
+##'     because SuSiE found no credible set. `summary` has no rows.}
+##'   \item{`"no_overlap"`}{the two traits share no SNPs. `summary` has no
+##'     rows.}
+##'   \item{`"all_trimmed"`}{every pair was left out under `overlap.min`.
+##'     `summary` keeps a row for each, with `PP.H1.abf` to `PP.H4.abf` `NA`,
+##'     because telling those apart needs the shared SNPs; `PP.H0.abf` is the
+##'     probability that neither trait has a causal variant, from each
+##'     trait's own SNPs.}
+##'   \item{`"degenerate"`}{the posteriors of some pair could not be
+##'     computed, for example from a SuSiE fit whose log Bayes factors are
+##'     `NA`. That pair's posteriors are `NA`.}
+##' }
+##'
+##' Two rules hold for every result: `summary` has no rows only when no pair
+##' of signals could be formed (`"no_signal"` and `"no_overlap"`), and a
+##' posterior probability is `NA` only when it could not be computed.
+##'
+##' @section What you can do with it:
+##' [pp()] gives one row's posterior probabilities as a named vector,
+##' [is_ok()] says whether the posteriors were computed, [n_signals()]
+##' counts the pairs compared, and [log_bf()] returns a trait's log Bayes
+##' factors, to fine-map from the same numbers. `print()` shows a summary.
+##' The fields can also be read directly: `summary` and `results` are
+##' data.tables.
+##'
+##' @seealso [coloc()], [pp()], [is_ok()], [n_signals()], [log_bf()]
+##' @examples
+##' data(coloc_test_data)
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' names(res)
+##' res$status
+##' res$summary
+##' pp(res)
+##' head(res$results)
+##' @name coloc_result
+NULL
+
 ## The one summary shape. Zero rows is legal; a different column set is not.
 .empty_summary <- function() {
     data.table(nsnps = integer(0), hit1 = character(0), hit2 = character(0),

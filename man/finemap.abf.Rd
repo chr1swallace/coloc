@@ -33,6 +33,11 @@ values are available, it uses an approximation that depends on the
 SNP's MAF and ignores any uncertainty in imputation.  Regression
 coefficients should be used if available.
 }
+\examples{
+data(coloc_test_data)
+fm <- finemap.abf(coloc_test_data$D1)
+head(fm[order(fm$SNP.PP, decreasing = TRUE), ])
+}
 \author{
 Chris Wallace
 }

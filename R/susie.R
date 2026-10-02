@@ -133,6 +133,13 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
 ##' @return finemap.signals style result
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' ## one signal's log Bayes factors, as kept by coloc()
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' fm <- finemap.bf(log_bf(res, 1))
+##' fm$summary
+##' head(fm$results[order(fm$results$SNP.PP.abf, decreasing = TRUE), ])
 finemap.bf=function(bf1, p1=1e-4) {
   if(is.vector(bf1))
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
@@ -367,6 +374,14 @@ runsusie=function(d,suffix=1,
 ##' @return res with column names added to some components
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' if (requireNamespace("susieR", quietly = TRUE)) {
+##'     data(coloc_test_data)
+##'     D3 <- coloc_test_data$D3
+##'     fit <- susieR::susie_rss(z = D3$beta / sqrt(D3$varbeta), R = D3$LD, n = D3$N)
+##'     fit <- annotate_susie(fit, D3$snp, D3$LD)
+##'     colnames(fit$lbf_variable)[1:5]   # now SNP ids, which coloc() matches on
+##' }
 annotate_susie=function(res,snp, LD) {
     ## if(ncol(res$lbf_variable) != length(snp)+1)
     ##     stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")

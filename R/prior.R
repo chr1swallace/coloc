@@ -69,6 +69,11 @@ validate_coloc_prior <- function(x) {
 ##' @param weights2 optional: one weight per SNP of trait 2, positive, no `NA`
 ##' @return an object of class coloc_prior
 ##' @export
+##' @examples
+##' coloc_prior()                    # the defaults
+##' coloc_prior(p12 = 1e-5)          # coloc.abf()'s default p12
+##' ## favour SNP 3 of 5 for trait 1, ten to one
+##' coloc_prior(weights1 = c(1, 1, 10, 1, 1))
 coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
                         weights1 = NULL, weights2 = NULL) {
     prior <- validate_coloc_prior(new_coloc_prior(p1, p2, p12, weights1, weights2))
@@ -88,6 +93,11 @@ coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
 ##' @param trim_by_posterior whether to drop signal pairs failing overlap.min
 ##' @return an object of class coloc_control
 ##' @export
+##' @examples
+##' coloc_control()
+##' ## compare pairs of signals even when only 10% of a signal's posterior
+##' ## falls on SNPs the other trait has
+##' coloc_control(overlap.min = 0.1)
 coloc_control <- function(overlap.min = 0.5, trim_by_posterior = TRUE) {
     stopifnot(is.numeric(overlap.min), length(overlap.min) == 1,
               overlap.min > 0, overlap.min <= 1,

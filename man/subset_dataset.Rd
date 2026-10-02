@@ -17,6 +17,11 @@ a copy of dataset, with only the data relating to snps in index remaining
 \description{
 Subset a coloc dataset
 }
+\examples{
+data(coloc_test_data)
+D1 <- subset_dataset(coloc_test_data$D1, 1:100)
+length(D1$snp)
+}
 \author{
 Chris Wallace
 }

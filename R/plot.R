@@ -34,6 +34,9 @@ ymax <- NULL
 ##' @param ... other arguments passed to the base graphics plot() function
 ##' @author Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' plot_dataset(coloc_test_data$D1)
 plot_dataset <- function(d,
                          susie_obj=NULL,
                          highlight_list=NULL,
@@ -73,6 +76,9 @@ plot_dataset <- function(d,
 ##' @return plots a base graphics figure with two panels
 ##' @export 
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' plot_datasets(coloc_test_data$D1, coloc_test_data$D2)
 plot_datasets=function(d1, d2,
                        color = "dodgerblue2") {
     if(!("position" %in% names(d1)))
