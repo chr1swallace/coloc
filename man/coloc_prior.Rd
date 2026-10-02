@@ -13,15 +13,18 @@ coloc_prior(
 )
 }
 \arguments{
-\item{p1}{prior probability a snp is associated with trait 1 only}
+\item{p1}{the prior probability for any one SNP that it is associated with
+trait 1 only}
 
-\item{p2}{prior probability a snp is associated with trait 2 only}
+\item{p2}{the prior probability for any one SNP that it is associated with
+trait 2 only}
 
-\item{p12}{prior probability a snp is associated with both traits}
+\item{p12}{the prior probability for any one SNP that it is associated with
+both traits}
 
-\item{weights1}{optional per-snp prior weights for trait 1}
+\item{weights1}{optional: one weight per SNP of trait 1, positive, no \code{NA}}
 
-\item{weights2}{optional per-snp prior weights for trait 2}
+\item{weights2}{optional: one weight per SNP of trait 2, positive, no \code{NA}}
 }
 \value{
 an object of class coloc_prior
@@ -31,8 +34,8 @@ One object, validated once, in place of the same three probabilities being
 re-declared in every entry point.
 }
 \details{
-\code{p1}, \code{p2} and \code{p12} are PER SNP, not per region: for any one snp they are
-the probabilities that it is causal for trait 1 only, trait 2 only, or
-both. Weights are prior weights on individual snps, and can only be used
-with scalar probabilities.
+\code{p1}, \code{p2} and \code{p12} are each the prior probability for any one SNP: that
+it is causal for trait 1 only, trait 2 only, or both. Each is a single
+number. To let the prior vary across SNPs, give weights, which scale it
+SNP by SNP.
 }

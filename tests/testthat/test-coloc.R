@@ -147,14 +147,14 @@ test_that("p1, p2 and p12 must be scalar; per-snp variation goes through weights
     ## is a second spelling of the same thing.
     for (arg in c("p1", "p2", "p12")) {
         a <- list(rep(1e-4, 8)); names(a) <- arg
-        expect_error(do.call(coloc_prior, a), "must each be a single value",
+        expect_error(do.call(coloc_prior, a), "must each be a single number",
                      label = paste0("vector ", arg))
         expect_error(do.call(coloc_prior, a), "weights1/weights2",
                      label = paste0(arg, " error names the alternative"))
     }
     ## the guard fires before the bounds check, so the message is the useful one
     expect_error(coloc_prior(p1 = c(1e-4, 1e-4), weights1 = c(1, 1)),
-                 "must each be a single value")
+                 "must each be a single number")
     ## and the supported way still works
     expect_s3_class(coloc_prior(p1 = 1e-4, weights1 = c(1, 2, 3)), "coloc_prior")
 })
@@ -169,7 +169,7 @@ test_that("no door hands the engine a vector prior", {
                   dimnames = list("sig1", paste0("s", 1:8)))
     vec <- rep(1e-4, 8)
     msg <- tryCatch(coloc_prior(p1 = vec), error = conditionMessage)
-    expect_match(msg, "must each be a single value")
+    expect_match(msg, "must each be a single number")
 
     ## coloc(): a coloc_prior refuses when it is made, and a plain list, which
     ## never went through coloc_prior(), is refused by coloc() itself
@@ -198,7 +198,7 @@ test_that("no door hands the engine a vector prior", {
     abf <- tryCatch(coloc.abf(D1, D2, p1 = rep(1e-4, length(D1$snp))),
                     error = conditionMessage)
     expect_type(abf, "character")
-    expect_false(grepl("must each be a single value", abf))
+    expect_false(grepl("must each be a single number", abf))
 })
 
 test_that("$priors is three named numbers", {

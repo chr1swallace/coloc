@@ -27,43 +27,66 @@
 
 .coloc_result_statuses <- c("ok", "no_overlap", "all_trimmed", "no_signal", "degenerate")
 
-##' Validate a coloc_result against its frozen contract
+##' Check a coloc_result has the shape every result must have
 ##'
 ##' Called on every return from the engine and asserted across the whole
-##' regression grid. Not exported: this is an internal invariant, not an API.
+##' regression grid. A failure is a bug in coloc, not in the caller's input,
+##' and the message says so.
 ##'
 ##' @param x a coloc_result
-##' @return x invisibly, or an error naming the breach
+##' @return x invisibly, or an error saying what is wrong
+##' @noRd
 validate_coloc_result <- function(x) {
     stopifnot(inherits(x, "coloc_result"))
-    required <- c("summary", "results", "priors", "status", "messages", "meta")
-    missing_fields <- setdiff(required, names(x))
-    if (length(missing_fields))
-        stop("coloc_result: missing required field(s) ",
-             paste(missing_fields, collapse = ", "))
-    if (!identical(names(x$summary), names(.empty_summary())))
-        stop("coloc_result: $summary columns have drifted from the frozen contract")
-    if (!x$status %in% .coloc_result_statuses)
-        stop("coloc_result: unknown status '", x$status, "'")
-    if (!is.numeric(x$meta$schema))
-        stop("coloc_result: $meta$schema must be present, for migrating saved objects")
+    ## every message says what is wrong, what it should be, and whose fault it is
+    bug <- function(...)
+        stop("internal error in coloc: ", ..., ". This is a bug in coloc; please report it",
+             call. = FALSE)
+    shown <- function(v) paste0("[", paste(v, collapse = ", "), "]")
 
-    ## the governing rule, as assertions
+    required <- c("summary", "results", "priors", "status", "messages", "meta")
+    if (length(setdiff(required, names(x))))
+        bug("the result has fields ", shown(names(x)), " but should have at least ",
+            shown(required))
+    if (!identical(names(x$summary), names(.empty_summary())))
+        bug("result $summary has columns ", shown(names(x$summary)),
+            " but should have ", shown(names(.empty_summary())))
+    if (!x$status %in% .coloc_result_statuses)
+        bug("result $status is '", x$status, "' but should be one of ",
+            shown(.coloc_result_statuses))
+    if (!is.numeric(x$meta$schema))
+        bug("result $meta$schema is ",
+            if (is.null(x$meta$schema)) "missing" else class(x$meta$schema)[1],
+            " but should be a number, the version of the result's shape")
+
+    ## rows exist iff a signal pair was considered; posteriors are NA iff they
+    ## could not be computed
     if (x$status %in% c("no_overlap", "no_signal") && nrow(x$summary))
-        stop("coloc_result: status '", x$status, "' must carry zero rows")
+        bug("a result with status '", x$status, "' has ", nrow(x$summary),
+            " row(s) in $summary but should have none, as no signal pair was considered")
     if (x$status == "all_trimmed" && !nrow(x$summary))
-        stop("coloc_result: status 'all_trimmed' keeps its rows")
+        bug("a result with status 'all_trimmed' has no rows in $summary but should ",
+            "keep one for each signal pair it trimmed")
     if (x$status == "ok" && anyNA(x$summary$PP.H4.abf))
-        stop("coloc_result: status 'ok' with NA posteriors")
+        bug("a result with status 'ok' has NA in $summary$PP.H4.abf, row(s) ",
+            shown(which(is.na(x$summary$PP.H4.abf))), ", but should have none")
 
     ## optional, because the results the engine builds for the old entry
     ## points do not carry it; coloc() always sets it
     if (!is.null(x$bf)) {
-        is_bf <- function(m) is.matrix(m) && is.numeric(m) && !is.null(colnames(m))
+        what <- function(m) if (!is.matrix(m)) class(m)[1]
+                            else if (!is.numeric(m)) paste(typeof(m), "matrix")
+                            else if (is.null(colnames(m))) "matrix without snp ids"
+                            else "numeric matrix"
+        is_bf <- function(m) identical(what(m), "numeric matrix")
         if (!is.list(x$bf) || !identical(names(x$bf), c("bf1", "bf2")) ||
             !all(vapply(x$bf, is_bf, logical(1))))
-            stop("coloc_result: $bf must be list(bf1, bf2) of numeric matrices ",
-                 "with snp ids as colnames")
+            bug("result $bf is ",
+                if (is.list(x$bf)) paste0("list(", paste0(names(x$bf), " = ",
+                                          vapply(x$bf, what, ""), collapse = ", "), ")")
+                else class(x$bf)[1],
+                " but should be list(bf1, bf2) of numeric matrices with snp ids as ",
+                "column names")
     }
     invisible(x)
 }

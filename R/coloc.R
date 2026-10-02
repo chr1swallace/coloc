@@ -59,10 +59,11 @@ coloc <- function(x1, x2,
     a2 <- adapt(x2, kinds[2], method[2], 2L)
 
     ## The region-size guard, coloc.abf()'s own, applied once the snp counts
-    ## are known. A per-snp prior times the number of snps must stay below 1,
-    ## or nothing is left for "no causal variant". adjust_prior() warns and
-    ## caps it at 1/(nsnps + 1), so coloc() gives coloc.abf()'s numbers on a
-    ## large region. p12 counts the snps the traits share, as coloc.abf() does.
+    ## are known. The prior for any one snp times the number of snps must stay
+    ## below 1, or nothing is left for "no causal variant". adjust_prior()
+    ## warns and caps it at 1/(nsnps + 1), so coloc() gives coloc.abf()'s
+    ## numbers on a large region. p12 counts the snps the traits share, as
+    ## coloc.abf() does.
     snps1 <- setdiff(colnames(a1$bf), "null")
     snps2 <- setdiff(colnames(a2$bf), "null")
     prior$p1  <- adjust_prior(prior$p1,  length(snps1), "1")

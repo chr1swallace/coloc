@@ -44,8 +44,8 @@ validate_coloc_prior <- function(x) {
 .check_scalar_prior <- function(x) {
     for (nm in c("p1", "p2", "p12"))
         if (length(x[[nm]]) != 1)
-            stop("p1, p2 and p12 are per-snp priors and must each be a single value; ",
-                 "use weights1/weights2 to vary the prior across snps")
+            stop("p1, p2 and p12 must each be a single number; ",
+                 "to vary the prior across SNPs, use weights1/weights2")
     invisible(x)
 }
 
@@ -54,16 +54,19 @@ validate_coloc_prior <- function(x) {
 ##' One object, validated once, in place of the same three probabilities being
 ##' re-declared in every entry point.
 ##'
-##' `p1`, `p2` and `p12` are PER SNP, not per region: for any one snp they are
-##' the probabilities that it is causal for trait 1 only, trait 2 only, or
-##' both. Weights are prior weights on individual snps, and can only be used
-##' with scalar probabilities.
+##' `p1`, `p2` and `p12` are each the prior probability for any one SNP: that
+##' it is causal for trait 1 only, trait 2 only, or both. Each is a single
+##' number. To let the prior vary across SNPs, give weights, which scale it
+##' SNP by SNP.
 ##'
-##' @param p1 prior probability a snp is associated with trait 1 only
-##' @param p2 prior probability a snp is associated with trait 2 only
-##' @param p12 prior probability a snp is associated with both traits
-##' @param weights1 optional per-snp prior weights for trait 1
-##' @param weights2 optional per-snp prior weights for trait 2
+##' @param p1 the prior probability for any one SNP that it is associated with
+##'   trait 1 only
+##' @param p2 the prior probability for any one SNP that it is associated with
+##'   trait 2 only
+##' @param p12 the prior probability for any one SNP that it is associated with
+##'   both traits
+##' @param weights1 optional: one weight per SNP of trait 1, positive, no `NA`
+##' @param weights2 optional: one weight per SNP of trait 2, positive, no `NA`
 ##' @return an object of class coloc_prior
 ##' @export
 coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,

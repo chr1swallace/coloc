@@ -29,33 +29,44 @@
     as.data.frame(v$summary)
 }
 
-test_that("validate_coloc_result() rejects every breach of the frozen contract", {
+test_that("validate_coloc_result() rejects every breach, and says it is a bug", {
     ok <- .new_coloc_result(prior = .default_prior(), status = "no_signal")
     expect_s3_class(ok, "coloc_result")
     expect_silent(validate_coloc_result(ok))
 
-    ## a drifted column set
+    ## each message shows what it found against what it should be, and says
+    ## whose fault it is
+    expect_bug <- function(x, found, should) {
+        msg <- tryCatch({ validate_coloc_result(x); "" }, error = conditionMessage)
+        expect_match(msg, "^internal error in coloc: ")
+        expect_match(msg, found, fixed = TRUE)
+        expect_match(msg, should, fixed = TRUE)
+        expect_match(msg, "This is a bug in coloc; please report it$")
+    }
+
+    ## an extra $summary column
     bad <- ok; bad$summary$extra <- integer(0)
-    expect_error(validate_coloc_result(bad), "drifted")
+    expect_bug(bad, "idx2, extra]", "but should have [nsnps, hit1")
 
     ## a missing field
     bad <- ok; bad$priors <- NULL
-    expect_error(validate_coloc_result(bad), "missing required field")
+    expect_bug(bad, "has fields [summary, results, status", "should have at least [summary")
 
     ## an unknown status
     bad <- ok; bad$status <- "fine"
-    expect_error(validate_coloc_result(bad), "unknown status")
+    expect_bug(bad, "$status is 'fine'", "should be one of [ok, no_overlap")
 
-    ## the governing rule, both halves
+    ## rows exist iff a pair was considered: a trimmed result keeps them
     bad <- ok; bad$status <- "all_trimmed"
-    expect_error(validate_coloc_result(bad), "keeps its rows")
+    expect_bug(bad, "has no rows in $summary", "should keep one for each signal pair")
 
     bad <- ok; bad$meta$schema <- NULL
-    expect_error(validate_coloc_result(bad), "schema")
+    expect_bug(bad, "$meta$schema is missing", "should be a number")
 
     ## $bf is optional, but when present it is two numeric matrices named by snp
     bad <- ok; bad$bf <- list(bf1 = "x", bf2 = "y")
-    expect_error(validate_coloc_result(bad), "\\$bf must be")
+    expect_bug(bad, "$bf is list(bf1 = character, bf2 = character)",
+               "should be list(bf1, bf2) of numeric matrices")
     good <- ok; m <- matrix(0, 1, 2, dimnames = list("sig1", c("s1", "s2")))
     good$bf <- list(bf1 = m, bf2 = m)
     expect_silent(validate_coloc_result(good))
