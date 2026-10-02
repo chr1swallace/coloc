@@ -83,7 +83,10 @@ check_dataset <- function(d,
             stop("dataset ",suffix,": ",v," contains missing values")
     }
 
-    if (!(d$type %in% c("quant", "cc")))
+    ## guarded, so a dataset with no type reaches "variable type not set"
+    ## below rather than failing here on a zero-length condition: runsusie()
+    ## leaves type out of req
+    if ("type" %in% nd && !(d$type %in% c("quant", "cc")))
         stop("dataset ", suffix, ": ", "type must be quant or cc")
 
     ## snps should be unique

@@ -211,7 +211,6 @@ test_that("$priors is three named numbers", {
 
 test_that("coloc_prior() and coloc_control() validate once, in one place", {
     expect_error(coloc_prior(p12 = 2e-4), "p12 must lie")
-    expect_error(validate_coloc_prior(coloc_prior(), nsnps = 20000), "exceeds 1")
     expect_error(coloc_prior(weights1 = c(1, -1)), "non-NA and positive")
     expect_error(coloc_control(overlap.min = 2))
     expect_s3_class(coloc_prior(), "coloc_prior")

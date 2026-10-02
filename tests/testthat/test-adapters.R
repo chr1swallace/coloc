@@ -58,8 +58,8 @@ test_that(".adapt_single reproduces the matrices coloc.abf() feeds the engine", 
         if (case$tier != 1) next
         g <- read_golden(case$id)
         b <- case$build()
-        a1 <- suppressWarnings(.adapt_single(b$d1))
-        a2 <- suppressWarnings(.adapt_single(b$d2))
+        a1 <- suppressWarnings(.adapt_single(b$d1, trait = 1))
+        a2 <- suppressWarnings(.adapt_single(b$d2, trait = 2))
         expect_bf_equal(a1$bf, g$layerA$bf1, paste0(case$id, " bf1"))
         expect_bf_equal(a2$bf, g$layerA$bf2, paste0(case$id, " bf2"))
         expect_equal(a1$meta$method, "single")
@@ -193,4 +193,118 @@ test_that("has_null is detected where it can be, and FALSE by construction where
     a <- suppressWarnings(.adapt_single(coloc_test_data$D1))
     expect_false(a$meta$has_null)
     expect_false("null" %in% colnames(a$bf))
+})
+
+## ---- coloc() checks its inputs ---------------------------------------------
+
+## One mistake each, made to a copy of a good dataset, so the message is
+## about this mistake and no other.
+.mistakes <- list(
+    "no type"            = function(d) { d$type <- NULL; d },
+    "a wrong type"       = function(d) { d$type <- "quantitative"; d },
+    "an NA beta"         = function(d) { d$beta[5] <- NA; d },
+    "a duplicated snp"   = function(d) { d$snp[2] <- d$snp[1]; d },
+    "mismatched lengths" = function(d) { d$beta <- d$beta[-1]; d },
+    "a zero varbeta"     = function(d) { d$varbeta[5] <- 0; d })
+
+test_that("coloc() stops on a bad dataset with coloc.abf()'s message, for either trait", {
+    ## .adapt_single() runs check_dataset() before process.dataset(), as
+    ## coloc.abf() does. Without it, one NA in beta came back as NA posteriors
+    ## with a named hit, where coloc.abf() stops.
+    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+    for (what in names(.mistakes)) for (trait in 1:2) {
+        args <- list(D1, D2)
+        args[[trait]] <- .mistakes[[what]](args[[trait]])
+        expected <- tryCatch(do.call(coloc.abf, args), error = conditionMessage)
+        expect_match(expected, paste0("dataset ", trait), fixed = TRUE,
+                     label = paste0("coloc.abf()'s message for ", what, " in trait ", trait))
+        expect_error(do.call(coloc, c(args, method = "single")), expected, fixed = TRUE,
+                     label = paste0("coloc() on ", what, " in trait ", trait))
+    }
+})
+
+test_that("on the SuSiE route a bad dataset is reported with its own trait number", {
+    ## runsusie() checks the dataset, and coloc() now tells it which trait it
+    ## is: it used to report a bad trait 2 as dataset 1. A dataset with no type
+    ## used to fail on a zero-length condition, because runsusie() leaves type
+    ## out of check_dataset()'s req.
+    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
+    D3 <- coloc_test_data$D3; D4 <- coloc_test_data$D4
+    fit3 <- suppressMessages(runsusie(D3)); fit4 <- suppressMessages(runsusie(D4))
+    problem <- c("no type"            = "variable type not set",
+                 "a wrong type"       = "type must be quant or cc",
+                 "an NA beta"         = "beta contains missing values",
+                 "a duplicated snp"   = "duplicated snps found",
+                 "mismatched lengths" = "lengths of inputs don't match",
+                 "a zero varbeta"     = "Zero values in varbeta")
+    for (what in names(.mistakes)) {
+        expect_error(suppressMessages(coloc(.mistakes[[what]](D3), fit4, method = "susie")),
+                     paste0("dataset 1: ", problem[[what]]), fixed = TRUE,
+                     label = paste0(what, " in trait 1"))
+        expect_error(suppressMessages(coloc(fit3, .mistakes[[what]](D4), method = "susie")),
+                     paste0("dataset 2: ", problem[[what]]), fixed = TRUE,
+                     label = paste0(what, " in trait 2"))
+    }
+})
+
+test_that("susie.args cannot set suffix, which coloc() sets per trait", {
+    D3 <- coloc_test_data$D3; D4 <- coloc_test_data$D4
+    expect_error(coloc(D3, D4, method = "susie", susie.args = list(suffix = 3)),
+                 "susie.args cannot set suffix")
+})
+
+test_that("coloc() stops on bad log BFs and a bad susie fit, naming the trait", {
+    good <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
+    na  <- good; na[1, 2]  <- NA
+    inf <- good; inf[1, 2] <- Inf
+    dup <- good; colnames(dup)[2] <- "s1"
+    for (trait in 1:2) {
+        pair <- function(bad) if (trait == 1) list(bad, good) else list(good, bad)
+        lead <- paste0("trait ", trait, ": ")
+        expect_error(do.call(coloc, pair(na)),
+                     paste0(lead, "log Bayes factors contain missing"), fixed = TRUE)
+        expect_error(do.call(coloc, pair(inf)),
+                     paste0(lead, "log Bayes factors contain missing or infinite"), fixed = TRUE)
+        expect_error(do.call(coloc, pair(dup)),
+                     paste0(lead, "duplicated snps found"), fixed = TRUE)
+    }
+
+    no_lbf   <- structure(list(sets = list(cs_index = 1L)), class = "susie")
+    no_names <- structure(list(lbf_variable = matrix(0, 2, 4), sets = list(cs_index = 1L)),
+                          class = "susie")
+    ## a fit needs method = "susie", which then warns that it cannot apply to
+    ## the log BFs beside it (AL14); that warning is not what is tested here
+    expect_error(.without_method_warning(coloc(no_lbf, good, method = "susie")),
+                 "trait 1: the susie fit has no lbf_variable", fixed = TRUE)
+    expect_error(.without_method_warning(coloc(good, no_names, method = "susie")),
+                 "trait 2: the susie fit's lbf_variable needs snp ids", fixed = TRUE)
+})
+
+test_that("the region-size guard caps a prior as coloc.abf() does", {
+    ## 500 snps at p1 = p2 = 0.01 imply five causal variants per trait, which
+    ## leaves nothing for "no causal variant". coloc.abf() warns and caps each
+    ## at 1/(nsnps + 1), and coloc() now does the same, once the snps are known
+    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+    warnings_of <- function(expr) {
+        w <- character(0)
+        withCallingHandlers(expr, warning = function(c) {
+            w <<- c(w, conditionMessage(c)); invokeRestart("muffleWarning") })
+        w
+    }
+    new_w <- warnings_of(new <- coloc(D1, D2, method = "single",
+                                      prior = coloc_prior(p1 = 0.01, p2 = 0.01, p12 = 1e-4)))
+    invisible(utils::capture.output(
+        old_w <- warnings_of(old <- coloc.abf(D1, D2, p1 = 0.01, p2 = 0.01, p12 = 1e-4))))
+    expect_equal(new_w, old_w)
+    expect_match(new_w, "^p[12] \\* nsnps >= 1")
+    expect_equal(new$priors, old$priors)
+    expect_equal(new$priors[["p1"]], 1 / 501)
+    expect_equal(pp(new), old$summary)
+
+    ## and on log BFs, where coloc.bf_bf() never applied it (allowlist AL03)
+    big <- matrix(0, 1, 20000, dimnames = list("sig1", paste0("s", 1:20000)))
+    w <- warnings_of(res <- coloc(big, big))
+    expect_true(any(grepl("p1 * nsnps >= 1", w, fixed = TRUE)))
+    expect_true(any(grepl("p2 * nsnps >= 1", w, fixed = TRUE)))
+    expect_equal(res$priors[["p1"]], 1 / 20001)
 })

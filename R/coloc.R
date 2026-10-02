@@ -48,13 +48,26 @@ coloc <- function(x1, x2,
     kinds  <- c(.classify_input(x1), .classify_input(x2))
     method <- .resolve_method(method, kinds, supplied = supplied)
 
-    adapt <- function(x, kind, m) switch(kind,
-        susie_fit = .adapt_susie(x, susie.args = susie.args),
-        bf        = .adapt_bf(x),
-        dataset   = if (identical(m, "susie")) .adapt_susie(x, susie.args = susie.args)
-                    else .adapt_single(x))
-    a1 <- adapt(x1, kinds[1], method[1])
-    a2 <- adapt(x2, kinds[2], method[2])
+    ## each adapter checks its own input, and labels its messages with the
+    ## trait's number
+    adapt <- function(x, kind, m, trait) switch(kind,
+        susie_fit = .adapt_susie(x, trait, susie.args = susie.args),
+        bf        = .adapt_bf(x, trait),
+        dataset   = if (identical(m, "susie")) .adapt_susie(x, trait, susie.args = susie.args)
+                    else .adapt_single(x, trait))
+    a1 <- adapt(x1, kinds[1], method[1], 1L)
+    a2 <- adapt(x2, kinds[2], method[2], 2L)
+
+    ## The region-size guard, coloc.abf()'s own, applied once the snp counts
+    ## are known. A per-snp prior times the number of snps must stay below 1,
+    ## or nothing is left for "no causal variant". adjust_prior() warns and
+    ## caps it at 1/(nsnps + 1), so coloc() gives coloc.abf()'s numbers on a
+    ## large region. p12 counts the snps the traits share, as coloc.abf() does.
+    snps1 <- setdiff(colnames(a1$bf), "null")
+    snps2 <- setdiff(colnames(a2$bf), "null")
+    prior$p1  <- adjust_prior(prior$p1,  length(snps1), "1")
+    prior$p2  <- adjust_prior(prior$p2,  length(snps2), "2")
+    prior$p12 <- adjust_prior(prior$p12, length(intersect(snps1, snps2)), "12")
 
     res <- .coloc_engine(a1$bf, a2$bf, prior = prior, control = control)
 

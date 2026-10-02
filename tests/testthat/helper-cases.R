@@ -149,10 +149,11 @@ coloc_cases <- list(
              coloc(bf1, bf2, control = coloc_control(trim_by_posterior = FALSE)),
          build = function() list(bf1 = .bf_a[, 5:8, drop = FALSE], bf2 = .bf_b)),
 
-    ## An all-NA signal row, which 6.0.3 rewrites to a certainty and the engine
-    ## reports as NA. Two rows on purpose: pair (1,1) is the degenerate one and
-    ## pair (2,1) is ordinary, so the case pins that the change is per pair and
-    ## does not leak into the row beside it. Allowlist AL12.
+    ## An all-NA signal row, which 6.0.3 rewrites to a certainty, the engine
+    ## reports as NA, and coloc() rejects. Two rows on purpose: pair (1,1) is
+    ## the degenerate one and pair (2,1) is ordinary, so test-engine.R can pin
+    ## that the engine's change is per pair and does not leak into the row
+    ## beside it. Allowlist AL12.
     list(id = "t0-degenerate", tier = 0, args = list(trim_by_posterior = FALSE),
          coloc_B = function(bf1, bf2)
              coloc(bf1, bf2, control = coloc_control(trim_by_posterior = FALSE)),

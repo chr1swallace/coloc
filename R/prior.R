@@ -16,7 +16,7 @@ new_coloc_prior <- function(p1, p2, p12, weights1, weights2) {
               class = "coloc_prior")
 }
 
-validate_coloc_prior <- function(x, nsnps = NULL) {
+validate_coloc_prior <- function(x) {
     ## First, because the bounds check below is vector-tolerant (any()/pmin())
     ## and would otherwise accept a vector silently. p1 is the prior that any
     ## ONE snp is causal for trait 1 only: a single number applying to every
@@ -26,9 +26,8 @@ validate_coloc_prior <- function(x, nsnps = NULL) {
     .check_scalar_prior(x)
     if (any(x$p12 < x$p1 * x$p2) || any(x$p12 > pmin(x$p1, x$p2)))
         stop("p12 must lie in [p1*p2, min(p1, p2)]")
-    ## the region-size guard that only adjust_prior() applies in 6.0.3
-    if (!is.null(nsnps) && nsnps * max(x$p1, x$p2) >= 1)
-        stop("nsnps * p >= 1: implied region-level prior exceeds 1")
+    ## The region-size guard needs the snp counts, which only exist once the
+    ## inputs are adapted, so coloc() applies it then, as coloc.abf() does.
     for (w in list(x$weights1, x$weights2))
         if (!is.null(w) && any(is.na(w) | w <= 0))
             stop("prior weights must be non-NA and positive")

@@ -61,10 +61,19 @@
 
 ## ---- the three adapters ----------------------------------------------------
 
-## coloc.abf()'s first step, lifted out. One row: the single causal variant
-## assumed for the whole trait. No null column, because coloc.abf() appends
-## none; only finemap.abf() does (R/claudia.R:329-333).
-.adapt_single <- function(x, suffix = "df1", ...) {
+## coloc.abf()'s first step, lifted out whole: check_dataset() and then
+## process.dataset(), as coloc.abf() runs them (R/claudia.R:418-422).
+## process.dataset() checks almost nothing itself, so without the check one NA
+## in beta reaches the engine and comes back as NA posteriors with a named hit.
+## Validation is the adapter's job because the adapter is what knows what its
+## input has to look like; runsusie() does the same for .adapt_susie().
+##
+## One row: the single causal variant assumed for the whole trait. No null
+## column, because coloc.abf() appends none; only finemap.abf() does
+## (R/claudia.R:329-333).
+.adapt_single <- function(x, trait = 1L, ...) {
+    check_dataset(x, trait)
+    suffix <- paste0("df", trait)
     pd <- process.dataset(d = x, suffix = suffix)
     bf <- matrix(pd[[paste0("lABF.", suffix)]], nrow = 1L,
                  dimnames = list("sig1", pd$snp))
@@ -78,9 +87,20 @@
 ## fit carries $sets$cs_index naming which of the L components resolved into a
 ## credible set; a bare matrix carries no such information. That is the whole
 ## reason .adapt_susie() and .adapt_bf() cannot be collapsed into one.
-.adapt_susie <- function(x, susie.args = list(), ...) {
-    fit <- if (inherits(x, "susie")) x
-           else do.call(runsusie, c(list(d = x), susie.args))
+.adapt_susie <- function(x, trait = 1L, susie.args = list(), ...) {
+    if (inherits(x, "susie")) {
+        fit <- x
+    } else {
+        ## runsusie() checks the dataset and labels its messages with suffix
+        if ("suffix" %in% names(susie.args))
+            stop("susie.args cannot set suffix: coloc() sets it to each trait's number")
+        fit <- do.call(runsusie, c(list(d = x, suffix = trait), susie.args))
+    }
+    if (is.null(fit$lbf_variable))
+        stop("trait ", trait, ": the susie fit has no lbf_variable")
+    if (is.null(colnames(fit$lbf_variable)))
+        stop("trait ", trait, ": the susie fit's lbf_variable needs snp ids as ",
+             "colnames, which runsusie() adds")
     idx <- fit$sets$cs_index
     if (is.null(idx) || !length(idx)) {          ## -> engine status "no_signal"
         snps <- colnames(fit$lbf_variable)
@@ -98,19 +118,30 @@
 }
 
 ## Validation only. Every row becomes a signal, because nothing says otherwise.
-.adapt_bf <- function(x, ...) {
+.adapt_bf <- function(x, trait = 1L, ...) {
     ## First: is.matrix() is true of a character matrix too, and without this
     ## one it passes every remaining guard and fails three layers down inside
     ## logbf_to_pp() with "non-numeric argument to binary operator". That is
     ## 6.0.3's behaviour through coloc.bf_bf(), which is untouched; coloc() can
     ## do better.
     if (!is.numeric(x))
-        stop("log Bayes factors must be numeric, not ", typeof(x))
+        stop("trait ", trait, ": log Bayes factors must be numeric, not ", typeof(x))
     if (is.null(dim(x))) {
-        if (is.null(names(x))) stop("a log-BF vector must be named by snp")
+        if (is.null(names(x)))
+            stop("trait ", trait, ": a log-BF vector must be named by snp")
         x <- matrix(x, nrow = 1L, dimnames = list("sig1", names(x)))
     }
-    if (is.null(colnames(x))) stop("a log-BF matrix needs snp ids as colnames")
+    if (is.null(colnames(x)))
+        stop("trait ", trait, ": a log-BF matrix needs snp ids as colnames")
+    ## check_dataset()'s rule for a dataset, applied to log BFs: no missing
+    ## values, so the caller cleans their own data. One NA makes every pair
+    ## using its row NA, and 6.0.3's coloc.bf_bf() reported an all-NA row as a
+    ## certainty (allowlist AL12).
+    if (any(!is.finite(x)))
+        stop("trait ", trait, ": log Bayes factors contain missing or infinite values")
+    ## the engine matches snps by name, and match() would take the first of two
+    if (anyDuplicated(colnames(x)))
+        stop("trait ", trait, ": duplicated snps found in the log Bayes factors")
     if (is.null(rownames(x))) rownames(x) <- paste0("sig", seq_len(nrow(x)))
     list(bf = x, meta = list(method = NA_character_, idx = seq_len(nrow(x)),
                              has_null = "null" %in% colnames(x)))
