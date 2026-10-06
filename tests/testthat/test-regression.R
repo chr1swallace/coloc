@@ -9,7 +9,7 @@
 ##
 ## WHERE THE EXPECTED VALUES LIVE. inst/testdata/golden/<case id>.rds, written
 ## once by data-raw/make_golden.R from 6.0.3 at commit 8f20f0b. Read one with
-## get_match_6_0_3().
+## golden_6_0_3().
 ##
 ## TIERS AND LAYERS. A case's tier is how its inputs are built:
 ##   tier 0  small literal log BF matrices, no datasets
@@ -35,7 +35,7 @@
 ##   pkgload::load_all(); testthat::source_test_helpers("tests/testthat", env = globalenv())
 ## then, for layer B:
 ##   case     <- coloc_cases[["t2-d3d4"]]
-##   expected <- get_match_6_0_3("t2-d3d4", layer = "B")
+##   expected <- golden_6_0_3("t2-d3d4", layer = "B")
 ##   got      <- case$coloc_B(expected$bf1, expected$bf2)
 ## and compare as_6_0_3(got) with expected$value. For layer C, build the
 ## inputs with b <- case$build() and run case$coloc_C(b$d1, b$d2).
@@ -105,7 +105,7 @@ test_that("the goldens are present and pinned by commit, not version", {
 for (case in coloc_cases) test_that(paste0("layer A, ", case$id), {
     if (case$tier == 2) skip_if_susieR_differs()
     ## the two log BF matrices 6.0.3 fed its engine
-    expected <- get_match_6_0_3(case$id, layer = "A")
+    expected <- golden_6_0_3(case$id, layer = "A")
     ## the same, rebuilt from the case's inputs: process.dataset() for tier
     ## 1, a SuSiE fit for tier 2, the literal matrices for tier 0
     got <- suppressWarnings(suppressMessages(case_layerA(case)))
@@ -115,7 +115,7 @@ for (case in coloc_cases) test_that(paste0("layer A, ", case$id), {
 
 for (case in coloc_cases) test_that(paste0("layer B, ", case$id), {
     ## what 6.0.3's coloc.bf_bf(bf1, bf2, <case$args>) returned
-    expected <- get_match_6_0_3(case$id, layer = "B")
+    expected <- golden_6_0_3(case$id, layer = "B")
     ## the same two matrices through coloc(), in coloc.bf_bf()'s shape
     got <- capture_run(as_6_0_3(case$coloc_B(expected$bf1, expected$bf2)))
     compare_with_6_0_3(got, expected, case$id, layer = "B")
@@ -126,7 +126,7 @@ for (case in coloc_cases) {
     test_that(paste0("layer C, ", case$id), {
         if (case$tier == 2) skip_if_susieR_differs()
         ## what 6.0.3's case$entry(d1, d2) returned
-        expected <- get_match_6_0_3(case$id, layer = "C")
+        expected <- golden_6_0_3(case$id, layer = "C")
         b <- case$build()
         if (case$tier == 1) {
             ## 6.0.3 called coloc.abf(), whose $results also carried each

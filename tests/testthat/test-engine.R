@@ -6,7 +6,7 @@
 ## step 2's gate and lives in test-regression.R. What is asserted here is that
 ## the contract holds, that every status is reachable, and that the NUMBERS
 ## match 6.0.3 wherever 6.0.3 produced any. 6.0.3's numbers are the goldens
-## in inst/testdata/golden/; get_match_6_0_3() in helper-golden.R reads one.
+## in inst/testdata/golden/; golden_6_0_3() in helper-golden.R reads one.
 ## ---------------------------------------------------------------------------
 
 ## P(no causal variant) for each row of a bf matrix, from first principles:

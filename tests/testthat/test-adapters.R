@@ -2,7 +2,7 @@
 ## Step 3: the adapters, tested one at a time against the frozen layer A
 ## matrices. Layer A is what 6.0.3 would have fed the engine, so an adapter
 ## that reproduces it is a faithful replacement for the code path it lifts.
-## The frozen matrices are in inst/testdata/golden/; get_match_6_0_3() in
+## The frozen matrices are in inst/testdata/golden/; golden_6_0_3() in
 ## helper-golden.R reads one.
 ## ---------------------------------------------------------------------------
 

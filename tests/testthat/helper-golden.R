@@ -177,7 +177,7 @@ skip_if_susieR_differs <- function() {
 ## What 6.0.3 produced for one case: the two log BF matrices it fed its engine
 ## (bf1, bf2), and for layers B and C the object its call returned (value)
 ## and the warnings and messages it emitted (conditions).
-get_match_6_0_3 <- function(case_id, layer = "B") {
+golden_6_0_3 <- function(case_id, layer = "B") {
     layer <- match.arg(layer, c("A", "B", "C"))
     g <- read_golden(case_id)
     out <- list(bf1 = g$layerA$bf1, bf2 = g$layerA$bf2)
