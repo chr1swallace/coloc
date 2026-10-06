@@ -130,6 +130,14 @@ test_that(".adapt_bf validates and takes every row", {
     expect_equal(.classify_input(setNames(letters[1:3], paste0("s", 1:3))), "bf")
 })
 
+test_that(".adapt_bf takes a matrix with no rows, which coloc() reports as no signal", {
+    none <- matrix(0, 0, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    expect_equal(dim(.adapt_bf(none)$bf), c(0L, 3L))
+    bf <- matrix(c(0, 8, 0), nrow = 1, dimnames = list("sig1", paste0("s", 1:3)))
+    expect_warning(res <- coloc(none, bf), "no signals")
+    expect_equal(res$status, "no_signal")
+})
+
 test_that("coloc() reports what is wrong with a bad BF input, not just that it is bad", {
     bf <- matrix(0, 1, 3, dimnames = list("sig1", paste0("s", 1:3)))
     expect_error(coloc(c(1, 2, 3), bf), "must be named by snp")

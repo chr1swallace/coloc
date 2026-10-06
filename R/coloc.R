@@ -182,7 +182,7 @@ coloc <- function(x1, x2,
 ##' one row of the result.
 ##'
 ##' @param x a coloc_result
-##' @param row which signal pair
+##' @param row which signal pair, from 1 to `n_signals(x)`
 ##' @return named numeric, length 6
 ##' @export
 ##' @examples
@@ -197,6 +197,10 @@ pp <- function(x, row = 1) {
     if (!nrow(x$summary))
         return(stats::setNames(c(0, rep(NA_real_, 5L)),
                                c("nsnps", paste0("PP.H", 0:4, ".abf"))))
+    ## data.table would return a row of NA for a row past the end, and nothing
+    ## for row 0
+    if (length(row) != 1 || !row %in% seq_len(nrow(x$summary)))
+        stop("row must be between 1 and ", nrow(x$summary), ", the number of signal pairs")
     unlist(x$summary[row, c("nsnps", paste0("PP.H", 0:4, ".abf")), with = FALSE])
 }
 

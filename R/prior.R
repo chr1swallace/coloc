@@ -24,7 +24,10 @@ validate_coloc_prior <- function(x) {
     ## and combine_abf_weighted() builds Q * p * w/sum(w) from them. A vector
     ## p1 is a second spelling of the same thing, and the confusing one.
     .check_scalar_prior(x)
-    if (any(x$p12 < x$p1 * x$p2) || any(x$p12 > pmin(x$p1, x$p2)))
+    ## The bounds are inclusive, and a product can round past one: 0.2 * 0.2 is
+    ## 0.04000000000000001, so p12 = 0.04 would fail without the allowance
+    eps <- sqrt(.Machine$double.eps)
+    if (any(x$p12 < x$p1 * x$p2 * (1 - eps)) || any(x$p12 > pmin(x$p1, x$p2) * (1 + eps)))
         stop("p12 must lie in [p1*p2, min(p1, p2)]")
     ## The region-size guard needs the snp counts, which only exist once the
     ## inputs are adapted, so coloc() applies it then, as coloc.abf() does.
@@ -101,7 +104,8 @@ coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
 coloc_control <- function(overlap.min = 0.5, trim_by_posterior = TRUE) {
     stopifnot(is.numeric(overlap.min), length(overlap.min) == 1,
               overlap.min > 0, overlap.min <= 1,
-              is.logical(trim_by_posterior), length(trim_by_posterior) == 1)
+              is.logical(trim_by_posterior), length(trim_by_posterior) == 1,
+              !is.na(trim_by_posterior))
     structure(list(overlap.min = overlap.min, trim_by_posterior = trim_by_posterior),
               class = "coloc_control")
 }

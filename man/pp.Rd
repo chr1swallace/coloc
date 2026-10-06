@@ -9,7 +9,7 @@ pp(x, row = 1)
 \arguments{
 \item{x}{a coloc_result}
 
-\item{row}{which signal pair}
+\item{row}{which signal pair, from 1 to \code{n_signals(x)}}
 }
 \value{
 named numeric, length 6

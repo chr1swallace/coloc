@@ -147,7 +147,8 @@
     ## the engine matches snps by name, and match() would take the first of two
     if (anyDuplicated(colnames(x)))
         stop("trait ", trait, ": duplicated snps found in the log Bayes factors")
-    if (is.null(rownames(x))) rownames(x) <- paste0("sig", seq_len(nrow(x)))
+    ## a matrix with no rows gets no names: assigning character(0) is an error
+    if (is.null(rownames(x)) && nrow(x)) rownames(x) <- paste0("sig", seq_len(nrow(x)))
     list(bf = x, meta = list(method = NA_character_, idx = seq_len(nrow(x)),
                              has_null = "null" %in% colnames(x)))
 }
