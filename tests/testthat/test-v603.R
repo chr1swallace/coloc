@@ -301,3 +301,38 @@ test_that("AL15: coloc_prior() warns when both traits have weights, as coloc.abf
     expect_warning(prior <- coloc_prior(weights1 = w, weights2 = w), "both traits")
     expect_equal(coloc(bf_a, bf_b, prior = prior)$summary, expected$summary)
 })
+
+## ---- what both sides share ---------------------------------------------------
+## The 6.0.3 copies and coloc() both use process.dataset(), sdY.est(),
+## runsusie() and the log-space helpers, unchanged since 6.0.3, so an edit to
+## one of them would move both sides together, unseen above. These values,
+## worked out with them as they are, pin them.
+
+test_that("the shared code still gives 6.0.3's log ABFs", {
+    at_s105 <- function(d, suffix) {
+        pd <- process.dataset(d, suffix = suffix)
+        pd[[paste0("lABF.", suffix)]][pd$snp == "s105"]
+    }
+    ## each value is written to 12 digits, so compared to 10
+    expect_equal(at_s105(D1, "df1"), 28.343423232, tolerance = 1e-10)
+    expect_equal(at_s105(to_pvalues(D1), "df1"), 29.9818369694, tolerance = 1e-10)
+    expect_equal(at_s105(as_cc(D2), "df2"), 25.698511433, tolerance = 1e-10)
+    expect_equal(suppressWarnings(sdY.est(D1$varbeta, D1$MAF, D1$N)), 1.28815854798,
+                 tolerance = 1e-10)
+})
+
+test_that("the shared code still finds D3's credible sets", {
+    rows <- fit3$lbf_variable[fit3$sets$cs_index, ]
+    expect_equal(fit3$sets$cs_index, c(1, 2))
+    expect_equal(unname(lengths(fit3$sets$cs)), c(3L, 13L))
+    expect_equal(colnames(rows)[apply(rows, 1, which.max)], c("s105", "s89"))
+    ## a SuSiE fit can differ across machines by about 1e-8, so 6 digits
+    expect_equal(apply(rows, 1, max), c(25.82456833, 13.32711173), tolerance = 1e-6)
+})
+
+test_that("the log-space helpers add and subtract on the probability scale", {
+    expect_equal(logsum(log(c(2, 3))), log(5))
+    expect_equal(logdiff(log(5), log(2)), log(3))
+    ## four equal log BFs and no null column: four equal posteriors
+    expect_equal(logbf_to_pp(matrix(0, 1, 4), 0.1, last_is_null = FALSE), matrix(0.25, 1, 4))
+})

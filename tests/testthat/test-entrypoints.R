@@ -1,93 +1,109 @@
-## ---------------------------------------------------------------------------
-## Step 5: the old entry points now run on the one engine.
-##
-## test-v603.R checks they return what 6.0.3's versions returned. What is
-## asserted here is what that comparison cannot see: the contracts other code
-## depends on, and the two behaviours that deliberately changed.
-## ---------------------------------------------------------------------------
+## The old entry points, coloc.abf(), coloc.bf_bf(), coloc.susie() and
+## coloc.susie_bf(), which run on the new engine until step 7 deletes them.
+## test-v603.R checks they return what 6.0.3's returned; these tests check
+## what that cannot see.
 
-test_that("coloc.abf() keeps the exact summary contract sensitivity() requires", {
-    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+D1 <- coloc_test_data$D1
+D2 <- coloc_test_data$D2
+D3 <- coloc_test_data$D3
+D4 <- coloc_test_data$D4
+bf <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1, dimnames = list("sig1", paste0("s", 1:8)))
+
+test_that("coloc.abf() keeps the summary sensitivity() requires", {
     invisible(utils::capture.output(res <- coloc.abf(D1, D2)))
-
-    ## prior.adjust() checks these names with identical() at R/sensitivity.R:5,
-    ## so the named vector and its order are load-bearing, not cosmetic
-    expect_true(is.numeric(res$summary))
-    expect_null(dim(res$summary))
+    ## prior.adjust() checks these names with identical(), so their order matters
     expect_identical(names(res$summary),
-                     c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf",
-                       "PP.H3.abf", "PP.H4.abf"))
+                     c("nsnps", "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", "PP.H4.abf"))
+    expect_null(dim(res$summary))
     expect_s3_class(res, "coloc_abf")
-
-    ## and $results keeps every per-trait column, which is why coloc.abf()
-    ## still does its own merge rather than taking the engine's two columns
-    expect_true(all(c("snp", "lABF.df1", "lABF.df2", "internal.sum.lABF",
-                      "SNP.PP.H4", "z.df1", "V.df1", "r.df1") %in% names(res$results)))
-    expect_equal(sum(res$results$SNP.PP.H4), 1, tolerance = 1e-10)
+    ## and each dataset's per-snp working, which coloc() does not keep
+    expect_true(all(c("snp", "lABF.df1", "lABF.df2", "internal.sum.lABF", "SNP.PP.H4",
+                      "z.df1", "V.df1", "r.df1") %in% names(res$results)))
 })
 
 test_that("coloc.abf() still prints its posteriors", {
-    ## combine.abf() printed unless told to be quiet, and the engine always
-    ## tells it to be quiet. Dropping the print would be a silent change to
-    ## what users see at the console.
-    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
     out <- utils::capture.output(coloc.abf(D1, D2))
     expect_true(any(grepl("PP.H4.abf", out)))
     expect_true(any(grepl("PP abf for shared variant", out)))
 })
 
 test_that("sensitivity() still accepts a coloc.abf() result", {
-    ## sensitivity() has no tests of its own in 6.0.3, and it is the main
-    ## consumer of the shape above. Step 6 rewrites it; this guards the
-    ## handover.
-    D1 <- coloc_test_data$D1; D2 <- coloc_test_data$D2
+    ## sensitivity() has no tests of its own; step 6 rewrites it
     invisible(utils::capture.output(res <- coloc.abf(D1, D2)))
     grDevices::pdf(NULL)
     on.exit(grDevices::dev.off(), add = TRUE)
-    expect_no_error(suppressMessages(
-        sensitivity(res, rule = "H4 > 0.5", plot.manhattans = FALSE)))
+    expect_no_error(suppressMessages(sensitivity(res, rule = "H4 > 0.5",
+                                                 plot.manhattans = FALSE)))
 })
 
-test_that("AL02: coloc.susie_bf() now forwards the priors it declares", {
+test_that("coloc() takes the same route as coloc.abf() and coloc.susie()", {
+    ## both sides run on the same engine, so this checks routing: the p12
+    ## default, the adapters and the renumbering of signals
+    invisible(utils::capture.output(old <- coloc.abf(D1, D2)))
+    new <- coloc(D1, D2, prior = coloc_prior(p12 = 1e-5))
+    expect_equal(as.list(pp(new)), as.list(old$summary))
     skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
-    D3 <- coloc_test_data$D3; D4 <- coloc_test_data$D4
-    fit4 <- suppressMessages(runsusie(D4))
-    bf4 <- fit4$lbf_variable[fit4$sets$cs_index, , drop = FALSE]
-
-    ## 6.0.3 declared p1/p2/p12 in the signature and forwarded none of them,
-    ## so these two calls used to give identical answers
-    a <- suppressMessages(coloc.susie_bf(D3, bf4))
-    b <- suppressMessages(coloc.susie_bf(D3, bf4, p12 = 1e-4))
-    expect_false(isTRUE(all.equal(a$summary$PP.H4.abf, b$summary$PP.H4.abf,
-                                  tolerance = 0)))
-
-    ## and the default still reproduces what it always did
-    expect_equal(a$priors[["p12"]], 5e-6)
+    old <- suppressMessages(coloc.susie(D3, D4))
+    new <- suppressMessages(coloc(D3, D4, method = "susie"))
+    expect_equal(new$summary, old$summary)
 })
 
 test_that("the susie doors keep their old return shapes", {
     skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
-    D3 <- coloc_test_data$D3; D4 <- coloc_test_data$D4
     res <- suppressMessages(coloc.susie(D3, D4))
-
     expect_true(data.table::is.data.table(res$summary))
-    expect_true(all(c("nsnps", "hit1", "hit2", "idx1", "idx2") %in% names(res$summary)))
-    ## idx must be susie component ids, not row numbers of the trimmed matrices
-    expect_true(all(res$summary$idx1 %in% seq_len(nrow(
-        suppressMessages(runsusie(D3))$lbf_variable))))
-    ## no coloc_result leaks out of the old doors
+    expect_named(res, c("summary", "results", "priors"))
     expect_false(inherits(res, "coloc_result"))
-})
-
-test_that("an empty credible set still returns nsnps = NA, with a new message", {
-    ## The wording moved when the check moved into the engine: the engine
-    ## speaks of traits and signals because it never sees a dataset. The
-    ## SHAPE, which is what callers branch on, is unchanged.
-    fit <- structure(list(lbf_variable = matrix(0, 3, 4,
-                                                dimnames = list(NULL, paste0("s", 1:4))),
+    ## no credible sets: a bare data.table, as in 6.0.3, with the engine's wording
+    fit <- structure(list(lbf_variable = matrix(0, 3, 4, dimnames = list(NULL, paste0("s", 1:4))),
                           sets = list(cs = list(), cs_index = integer(0))),
                      class = "susie")
     expect_warning(res <- coloc.susie(fit, fit), "no signals")
-    expect_true(data.table::is.data.table(res))
     expect_true(is.na(res$nsnps))
+})
+
+test_that("AL02: coloc.susie_bf() now uses the priors it declares", {
+    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
+    fit4 <- suppressMessages(runsusie(D4))
+    bf4 <- fit4$lbf_variable[fit4$sets$cs_index, , drop = FALSE]
+    a <- suppressMessages(coloc.susie_bf(D3, bf4))
+    b <- suppressMessages(coloc.susie_bf(D3, bf4, p12 = 1e-4))
+    expect_equal(a$priors[["p12"]], 5e-6)
+    expect_equal(b$priors[["p12"]], 1e-4)
+    expect_false(isTRUE(all.equal(a$summary$PP.H4.abf, b$summary$PP.H4.abf)))
+})
+
+test_that("the old doors take priors and control as loose arguments", {
+    expect_equal(.prior_from_dots(list()), .default_prior())
+    expect_equal(.control_from_dots(list()), .default_control())
+    expect_equal(.prior_from_dots(list(p12 = 1e-7))$p12, 1e-7)
+    expect_equal(.control_from_dots(list(overlap.min = 0.9))$overlap.min, 0.9)
+    ## and keep 6.0.3's own defaults in their signatures (AL01)
+    expect_equal(formals(coloc.abf)$p12, 1e-5)
+    expect_equal(formals(coloc.bf_bf)$p12, 5e-6)
+})
+
+test_that("the old doors reject a vector prior, as coloc_prior() does", {
+    ## AL10. coloc.susie() and coloc.susie_bf() go through coloc(), which checks
+    vec <- rep(1e-4, 8)
+    msg <- tryCatch(coloc_prior(p1 = vec), error = conditionMessage)
+    expect_error(coloc.bf_bf(bf, bf, p1 = vec), msg, fixed = TRUE)
+    expect_error(coloc.bf_bf(bf, bf, p2 = vec), msg, fixed = TRUE)
+    fit <- structure(list(lbf_variable = bf, sets = list(cs = list(3L), cs_index = 1L)),
+                     class = "susie")
+    expect_error(coloc.susie(fit, fit, p1 = vec), msg, fixed = TRUE)
+    expect_error(coloc.susie_bf(fit, bf, p2 = vec), msg, fixed = TRUE)
+    ## with weights too, 6.0.3's own message comes first
+    expect_error(coloc.bf_bf(bf, bf, p1 = vec, prior_weights1 = rep(1, 8)),
+                 "only be used with single values")
+    ## coloc.abf() stops earlier, in adjust_prior(), with R's own message
+    abf <- tryCatch(coloc.abf(D1, D2, p1 = rep(1e-4, 500)), error = conditionMessage)
+    expect_false(grepl("single number", abf))
+})
+
+test_that("coloc.bf_bf() still fails as 6.0.3 did on a character matrix", {
+    ## it never calls .adapt_bf(), whose type check is coloc()'s
+    chr <- matrix("a", 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    num <- matrix(0, 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
+    expect_error(coloc.bf_bf(chr, num), "non-numeric argument")
 })

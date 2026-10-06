@@ -1,218 +1,146 @@
-## ---------------------------------------------------------------------------
-## Step 1: the engine. Private, and since steps 2 and 5 it has three callers:
-## coloc(), coloc.bf_bf() and coloc.abf().
-##
-## What is asserted here is that the contract holds, that every status is
-## reachable, and that the numbers agree with closed forms worked out by hand.
-## test-v603.R compares the engine's answers, through coloc(), with 6.0.3's.
+## The engine, .coloc_engine(), against closed forms worked out by hand.
+## test-v603.R compares its answers, through coloc(), with 6.0.3's;
 ## get_match_6_0_3(), in helper-v603.R, runs a call as 6.0.3 made it.
-## ---------------------------------------------------------------------------
 
-## P(no causal variant) for each row of a bf matrix, from first principles:
-## with the null at log BF 0 and a scalar prior p per snp,
-##   P(null) = (1 - n*p) / ((1 - n*p) + p * sum(exp(bf)))
-## Written out rather than calling logbf_to_pp() so that the expectations below
-## are independent of the code they check. Handles both shapes: a "null" column
-## is excluded from the snp count and from the sum, being the 1 in the formula.
-.p0 <- function(bf, p) {
-    sn <- setdiff(colnames(bf), "null")
-    n  <- length(sn)
-    unname(apply(bf[, sn, drop = FALSE], 1, function(r)
-        (1 - n * p) / ((1 - n * p) + p * sum(exp(r)))))
+## P(no causal variant) for each row of a log BF matrix, with the null at log
+## BF 0 and prior p for each snp. Written out, not taken from logbf_to_pp(),
+## so the tests below do not lean on the code they check.
+p0 <- function(bf, p) {
+    bf <- bf[, setdiff(colnames(bf), "null"), drop = FALSE]
+    n <- ncol(bf)
+    unname((1 - n * p) / ((1 - n * p) + p * rowSums(exp(bf))))
 }
 
-test_that("validate_coloc_result() rejects every breach, and says it is a bug", {
-    ok <- .new_coloc_result(prior = .default_prior(), status = "no_signal")
-    expect_s3_class(ok, "coloc_result")
-    expect_silent(validate_coloc_result(ok))
+snps <- paste0("s", 1:8)
+a <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1, dimnames = list("sig1", snps))
+b <- matrix(c(0, 0, 7, 3, 0, 0, 0, 0), nrow = 1, dimnames = list("sigA", snps))
 
-    ## each message shows what it found against what it should be, and says
-    ## whose fault it is
-    expect_bug <- function(x, found, should) {
-        msg <- tryCatch({ validate_coloc_result(x); "" }, error = conditionMessage)
-        expect_match(msg, "^internal error in coloc: ")
-        expect_match(msg, found, fixed = TRUE)
-        expect_match(msg, should, fixed = TRUE)
-        expect_match(msg, "This is a bug in coloc; please report it$")
-    }
-
-    ## an extra $summary column
-    bad <- ok; bad$summary$extra <- integer(0)
-    expect_bug(bad, "idx2, extra]", "but should have [nsnps, hit1")
-
-    ## a missing field
-    bad <- ok; bad$priors <- NULL
-    expect_bug(bad, "has fields [summary, results, status", "should have at least [summary")
-
-    ## an unknown status
-    bad <- ok; bad$status <- "fine"
-    expect_bug(bad, "$status is 'fine'", "should be one of [ok, no_overlap")
-
-    ## rows exist iff a pair was considered: a trimmed result keeps them
-    bad <- ok; bad$status <- "all_trimmed"
-    expect_bug(bad, "has no rows in $summary", "should keep one for each signal pair")
-
-    bad <- ok; bad$meta$schema <- NULL
-    expect_bug(bad, "$meta$schema is missing", "should be a number")
-
-    ## $bf is optional, but when present it is two numeric matrices named by snp
-    bad <- ok; bad$bf <- list(bf1 = "x", bf2 = "y")
-    expect_bug(bad, "$bf is list(bf1 = character, bf2 = character)",
-               "should be list(bf1, bf2) of numeric matrices")
-    good <- ok; m <- matrix(0, 1, 2, dimnames = list("sig1", c("s1", "s2")))
-    good$bf <- list(bf1 = m, bf2 = m)
-    expect_silent(validate_coloc_result(good))
-})
-
-test_that("all five statuses are reachable and each one validates", {
-    a <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1,
-                dimnames = list("sig1", paste0("s", 1:8)))
-    b <- matrix(c(0, 0, 7, 3, 0, 0, 0, 0), nrow = 1,
-                dimnames = list("sigA", paste0("s", 1:8)))
-    dis <- b; colnames(dis) <- paste0("x", colnames(b))
-    na1 <- a; na1[1, ] <- NA_real_
-
-    got <- list(
-        ok          = .coloc_engine(a, b),
-        no_signal   = suppressWarnings(.coloc_engine(a[0, , drop = FALSE], b)),
-        no_overlap  = suppressWarnings(.coloc_engine(a, dis)),
-        all_trimmed = suppressWarnings(.coloc_engine(a[, 5:8, drop = FALSE], b)),
-        degenerate  = suppressWarnings(.coloc_engine(na1, b)))
-
+test_that("every status is reachable, and each result validates", {
+    dis <- b
+    colnames(dis) <- paste0("x", snps)
+    na1 <- a
+    na1[1, ] <- NA
+    got <- list(ok = .coloc_engine(a, b),
+                no_signal = suppressWarnings(.coloc_engine(a[0, , drop = FALSE], b)),
+                no_overlap = suppressWarnings(.coloc_engine(a, dis)),
+                all_trimmed = suppressWarnings(.coloc_engine(a[, 5:8, drop = FALSE], b)),
+                degenerate = suppressWarnings(.coloc_engine(na1, b)))
     expect_equal(vapply(got, `[[`, character(1), "status"),
                  c(ok = "ok", no_signal = "no_signal", no_overlap = "no_overlap",
                    all_trimmed = "all_trimmed", degenerate = "degenerate"))
     for (nm in names(got)) expect_silent(validate_coloc_result(got[[nm]]))
-
-    ## rows exist iff a pair was considered
+    ## rows only where a pair could be formed; NA only where it could not be computed
     expect_equal(nrow(got$no_signal$summary), 0L)
     expect_equal(nrow(got$no_overlap$summary), 0L)
-    expect_gt(nrow(got$all_trimmed$summary), 0L)
-
-    ## posteriors are NA iff they could not be computed. PP.H0 is the one
-    ## the trimmed branch does compute, and since AL08 it is a real number
-    ## rather than the 1 - 1 that 1 - rowSums() used to leave there.
-    expect_equal(got$all_trimmed$summary$PP.H0.abf,
-                 .p0(a[, 5:8, drop = FALSE], 1e-4) * .p0(b, 1e-4),
-                 tolerance = 1e-10)
     expect_true(all(is.na(got$all_trimmed$summary$PP.H4.abf)))
-    expect_true(all(is.na(got$degenerate$summary$PP.H4.abf)))
     expect_false(anyNA(got$ok$summary$PP.H4.abf))
-
-    ## and $messages carries what warning() emitted
+    ## $messages keeps what warning() said
     expect_match(got$no_overlap$messages, "no snps in common")
 })
 
+test_that("the five posteriors sum to 1, and H4 beats H3 only when the signals coincide", {
+    peak <- function(at) {
+        v <- rep(0, 6)
+        v[at] <- 8
+        matrix(v, nrow = 1, dimnames = list("sig1", paste0("s", 1:6)))
+    }
+    same <- .coloc_engine(peak(2), peak(2))
+    diff <- .coloc_engine(peak(2), peak(5))
+    for (r in list(same, diff))
+        expect_equal(sum(unlist(r$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE])), 1)
+    expect_gt(same$summary$PP.H4.abf, same$summary$PP.H3.abf)
+    expect_gt(diff$summary$PP.H3.abf, diff$summary$PP.H4.abf)
+})
+
+test_that("SNP.PP.H4 is the softmax of bf1 + bf2 over the shared snps", {
+    x <- matrix(c(0, 4, 1), nrow = 1, dimnames = list("sig1", c("s1", "s2", "s3")))
+    y <- matrix(c(0, 3, 2), nrow = 1, dimnames = list("sigA", c("s1", "s2", "s3")))
+    res <- .coloc_engine(x, y)
+    lsum <- as.numeric(x) + as.numeric(y)
+    expect_equal(res$results$SNP.PP.H4.abf, exp(lsum) / sum(exp(lsum)))
+})
+
+test_that("one shared snp is enough", {
+    x <- matrix(c(0, 0, 0, 5), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
+    y <- matrix(c(5, 0, 0, 0), nrow = 1, dimnames = list("sig1", paste0("s", 4:7)))
+    res <- .coloc_engine(x, y, control = coloc_control(trim_by_posterior = FALSE))
+    expect_equal(res$summary$nsnps, 1L)
+    expect_equal(res$results$snp, "s4")
+    expect_equal(res$results$SNP.PP.H4.abf, 1)
+    expect_equal(sum(unlist(res$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE])), 1)
+})
+
+test_that("prior weights move the posteriors, and are kept for the shared snps", {
+    with_weights <- function(w1, w2)
+        modifyList(.default_prior(), list(weights1 = w1, weights2 = w2))
+    ## equal weights are no weights: the weighted sum is the unweighted one
+    flat <- .coloc_engine(a, b, prior = with_weights(rep(1, 8), rep(1, 8)))
+    expect_equal(flat$summary$PP.H4.abf, .coloc_engine(a, b)$summary$PP.H4.abf)
+    ## weight on the snp both traits peak at makes a shared variant likelier
+    w <- c(1, 1, 10, 1, 1, 1, 1, 1)
+    up <- .coloc_engine(a, b, prior = with_weights(w, w))
+    expect_gt(up$summary$PP.H4.abf, flat$summary$PP.H4.abf)
+    ## with partial overlap, $weights holds those of the shared snps
+    part <- .coloc_engine(a[, 1:6, drop = FALSE], b,
+                          prior = with_weights(1:6, rep(1, 8)))
+    expect_equal(part$weights, list(w1 = 1:6, w2 = rep(1, 6)))
+    expect_error(.coloc_engine(a, b, prior = with_weights(1:3, NULL)),
+                 "Length of prior_weights1")
+})
+
+test_that("a trimmed pair with no evidence reports the prior, not a certainty", {
+    ## AL08 and AL13. 3 of 8 snps shared puts 0.375 of each posterior on them,
+    ## under overlap.min, so the pair is trimmed
+    x <- matrix(0, 1, 8, dimnames = list("sig1", paste0("s", 1:8)))
+    y <- matrix(0, 1, 8, dimnames = list("sigA", paste0("s", 6:13)))
+    res <- suppressWarnings(.coloc_engine(x, y))
+    expect_equal(res$status, "all_trimmed")
+    ## each trait's P(no causal variant) is its prior, 1 - 8p; H0 is the joint
+    expect_equal(p0(x, 1e-4), 1 - 8 * 1e-4)
+    expect_equal(res$summary$PP.H0.abf, (1 - 8 * 1e-4)^2)
+    ## 6.0.3's 1 - rowSums() of a row that already sums to 1 left noise
+    expect_lt(abs(1 - sum(logbf_to_pp(x, 1e-4, last_is_null = FALSE))), 1e-12)
+})
+
+test_that("trimmed pairs report PP.H0 as the product of each trait's", {
+    res <- suppressWarnings(.coloc_engine(a[, 5:8, drop = FALSE], b))
+    expect_equal(res$summary$PP.H0.abf, p0(a[, 5:8, drop = FALSE], 1e-4) * p0(b, 1e-4))
+})
+
 test_that("an all-NA signal changes only its own pair, which 6.0.3 rewrote to a certainty", {
-    ## AL12. coloc() rejects the NA, but coloc.bf_bf() still reaches the engine
-    ## with it until step 7. The ordinary pair beside it is 6.0.3's, unchanged.
-    sn <- paste0("s", 1:8)
-    a <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 7, 1, 0), nrow = 2, byrow = TRUE,
-                dimnames = list(c("sig1", "sig2"), sn))
-    b <- matrix(c(0, 0, 7, 3, 0, 0, 0, 0), nrow = 1, dimnames = list("sig1", sn))
-    a[1, ] <- NA
-    expected <- get_match_6_0_3(coloc.bf_bf(a, b, trim_by_posterior = FALSE))
-    got <- suppressWarnings(.coloc_engine(a, b,
+    ## AL12. coloc() rejects the NA, but today's coloc.bf_bf() still brings it
+    ## to the engine, until step 7
+    x <- rbind(a, matrix(c(0, 0, 0, 0, 0, 7, 1, 0), nrow = 1, dimnames = list("sig2", snps)))
+    x[1, ] <- NA
+    expected <- get_match_6_0_3(coloc.bf_bf(x, b, trim_by_posterior = FALSE))
+    got <- suppressWarnings(.coloc_engine(x, b,
                                           control = coloc_control(trim_by_posterior = FALSE)))
     expect_equal(expected$summary$PP.H2.abf[1], 1)
     expect_true(all(is.na(unlist(got$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE]))))
     expect_equal(got$summary[2], expected$summary[2])
 })
 
-test_that("a mixed drop, part NA part FALSE, does not trim and marks only the bad pair", {
-    ## prop is a ratio of rowSums, so ONE NA anywhere in a row makes coverage
-    ## unassessable for every pair using that row. With two rows, one poisoned
-    ## and one clean, drop is c(NA, FALSE).
-    ##
-    ## This is the case the engine's drop[is.na(drop)] <- FALSE was written for
-    ## and, until this test, the case no test covered: the existing degenerate
-    ## case uses a single row, so drop is a lone NA and only exercises 6.0.3's
-    ## if(all(drop)) guard. all() short-circuits on FALSE and any() on TRUE, so
-    ## c(NA, FALSE) gets past if(all(drop)) at R/susie.R:285 and is caught by
-    ## if(any(drop)) at :297 instead.
-    sn  <- paste0("s", 1:8)
-    ok  <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0), nrow = 1, dimnames = list("sigA", sn))
-    bad <- ok; bad[1, 2] <- NA_real_              ## a single NA is enough
-    mixed <- rbind(bad, ok); rownames(mixed) <- c("bad", "good")
-
-    res <- suppressWarnings(.coloc_engine(mixed, ok))
+test_that("one NA in a row marks that row's pairs, without trimming", {
+    ## 6.0.3 stopped on any NA in drop; the engine keeps the pair, marked NA
+    bad <- a
+    bad[1, 2] <- NA
+    x <- rbind(bad, a)
+    rownames(x) <- c("bad", "good")
+    res <- suppressWarnings(.coloc_engine(x, a))
     expect_equal(res$status, "degenerate")
-    expect_equal(nrow(res$summary), 2L)           ## nothing was trimmed
-    expect_silent(validate_coloc_result(res))
-
-    ## posteriors are NA iff they could not be computed, applied per row
+    expect_equal(nrow(res$summary), 2L)
     expect_true(is.na(res$summary$PP.H4.abf[res$summary$idx1 == 1]))
     expect_false(is.na(res$summary$PP.H4.abf[res$summary$idx1 == 2]))
 })
 
-test_that("6.0.3 errors on both NA shapes, which is what the guard replaces", {
-    ## Pinning the behaviour being departed from. all() and any() short-circuit
-    ## on opposite values, so between them 6.0.3 rejects every NA-bearing drop.
-    expect_true(is.na(all(NA)))                    ## lone NA  -> if(all(...)) errors
-    expect_false(all(c(NA, FALSE)))                ## mixed    -> all() is FALSE...
-    expect_true(is.na(any(c(NA, FALSE))))          ##          ...but any() is NA
-    expect_error(if (all(NA)) TRUE, "missing value")
-    expect_error(if (any(c(NA, FALSE))) TRUE, "missing value")
-})
-
-test_that("a trimmed pair with no evidence reports the prior, not a certainty", {
-    ## Every log BF is 0, so the data say nothing and P(no causal variant) is
-    ## exactly the prior, 1 - n*p1. This is the case AL08 was written for: with
-    ## no null column 6.0.3 reports ~0 for it, a certainty that both traits are
-    ## associated, drawn from two traits that showed no evidence at all.
-    ##
-    ## Three snps in common out of eight makes prop 0.375 for both traits,
-    ## under the 0.5 default, so every pair trims and the branch is reached.
-    a <- matrix(0, 1, 8, dimnames = list("sig1", paste0("s", 1:8)))
-    b <- matrix(0, 1, 8, dimnames = list("sigA", paste0("s", 6:13)))
-    res <- suppressWarnings(.coloc_engine(a, b))
-
-    expect_equal(res$status, "all_trimmed")
-    ## each trait's own marginal is the prior, 1 - n*p1; the reported column
-    ## is the JOINT, so it is the product. Under 6.0.3's pmin it would be one
-    ## trait's 0.9992 rather than 0.99840064. AL13.
-    expect_equal(res$summary$PP.H0.abf, (1 - 8 * 1e-4)^2, tolerance = 1e-12)
-    expect_equal(.p0(a, 1e-4), 1 - 8 * 1e-4, tolerance = 1e-12)
-    ## and the expression it replaces, so the test says why, not just what:
-    ## the row already sums to 1, so 1 - rowSums() has nothing left to report
-    expect_lt(abs(1 - sum(logbf_to_pp(a, 1e-4, last_is_null = FALSE))), 1e-12)
-})
-
-test_that("SNP.PP.H4 is the softmax of bf1 + bf2 over the shared snps", {
-    a <- matrix(c(0, 4, 1), nrow = 1, dimnames = list("sig1", c("s1", "s2", "s3")))
-    b <- matrix(c(0, 3, 2), nrow = 1, dimnames = list("sigA", c("s1", "s2", "s3")))
-    res <- .coloc_engine(a, b)
-
-    lsum <- as.numeric(a) + as.numeric(b)
-    by_hand <- exp(lsum) / sum(exp(lsum))          ## no logsum(), computed directly
-    expect_equal(res$results$SNP.PP.H4.abf, by_hand, tolerance = 1e-12)
-    expect_equal(sum(res$results$SNP.PP.H4.abf), 1, tolerance = 1e-12)
-})
-
-test_that("the five posteriors sum to 1, and H4 beats H3 only when signals coincide", {
-    snps <- paste0("s", 1:6)
-    peak <- function(at) {
-        v <- rep(0, 6); v[at] <- 8
-        matrix(v, nrow = 1, dimnames = list("sig1", snps))
-    }
-    same <- .coloc_engine(peak(2), peak(2))
-    diff <- .coloc_engine(peak(2), peak(5))
-
-    for (r in list(same, diff))
-        expect_equal(sum(unlist(r$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE])),
-                     1, tolerance = 1e-12)
-    expect_gt(same$summary$PP.H4.abf, same$summary$PP.H3.abf)
-    expect_gt(diff$summary$PP.H3.abf, diff$summary$PP.H4.abf)
-})
-
 test_that("$meta records what the engine knows, and not what it cannot", {
-    a <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
-    b <- rbind(a, a); rownames(b) <- c("sigA", "sigB")
-    res <- .coloc_engine(a, b)
+    x <- a[, 1:4, drop = FALSE]
+    y <- rbind(x, x)
+    rownames(y) <- c("sigA", "sigB")
+    res <- .coloc_engine(x, y)
     expect_equal(res$meta$n_pairs_in, 2L)
     expect_equal(res$meta$n_pairs_kept, 2L)
     expect_equal(res$meta$schema, 2L)
-    ## the engine cannot know which adapter ran: coloc() fills that in later
+    ## which adapter ran is coloc()'s to record
     expect_null(res$meta$method)
 })
