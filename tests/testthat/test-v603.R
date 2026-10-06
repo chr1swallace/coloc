@@ -151,6 +151,17 @@ test_that("coloc() stops on a bad dataset with 6.0.3's coloc.abf() message", {
     expect_error(coloc(D1, bad), expected, fixed = TRUE)
 })
 
+test_that("no fixture reaches susieR's random subsampling", {
+    ## the SuSiE comparisons fit each dataset once for each side, and agree only
+    ## if fitting is deterministic. Its one random step, in susie_get_cs(),
+    ## samples only from credible sets of more than n_purity snps
+    threshold <- eval(formals(susieR::susie_get_cs)$n_purity)
+    for (nm in c("D1", "D2", "D3", "D4")) {
+        fit <- suppressMessages(runsusie(coloc_test_data[[nm]]))
+        expect_lt(max(lengths(fit$sets$cs)), threshold, label = paste(nm, "largest credible set"))
+    }
+})
+
 test_that("coloc() matches 6.0.3's coloc.susie(): two datasets", {
     expected <- suppressMessages(get_match_6_0_3(coloc.susie(D3, D4)))
     got <- suppressMessages(coloc(D3, D4, method = "susie"))
@@ -235,6 +246,9 @@ test_that("AL08: PP.H0 in a trimmed result is a probability, where 6.0.3 left ro
     expect_warning(got <- coloc(far, bf_b), "overlap too small")
     expect_true(all(abs(expected$summary$PP.H0.abf) < 1e-15))
     expect_equal(got$summary$PP.H0.abf, p0(far) * p0(bf_b))
+    ## and nothing else moves
+    cols <- c("nsnps", "hit1", "hit2", "idx1", "idx2")
+    expect_equal(got$summary[, cols, with = FALSE], expected$summary[, cols, with = FALSE])
 })
 
 test_that("AL10: a vector p1 or p2 is rejected, where 6.0.3 reported 33 hypotheses", {
@@ -269,6 +283,8 @@ test_that("AL13: trimmed PP.H0 is the joint of the traits, where 6.0.3 took the 
     expect_warning(got <- coloc(far, b), "overlap too small")
     expect_equal(expected$summary$PP.H0.abf, pmin(p0(far), p0(b)))
     expect_equal(got$summary$PP.H0.abf, p0(far) * p0(b))
+    cols <- c("nsnps", "hit1", "hit2", "idx1", "idx2")
+    expect_equal(got$summary[, cols, with = FALSE], expected$summary[, cols, with = FALSE])
 })
 
 test_that("AL14: a dataset with a BF matrix warns that method cannot apply to the matrix", {

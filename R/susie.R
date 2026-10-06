@@ -217,9 +217,9 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   ## A thin wrapper over .coloc_engine(). The arithmetic moved to R/engine.R;
   ## what stays here is 6.0.3's user-facing validation, its vector promotion
   ## and the translation of coloc_result back into the five return shapes
-  ## callers still expect. That translation is temporary: it exists so the
-  ## whole regression grid can flow through the new engine by way of the old
-  ## entry point, and it goes when coloc() takes over.
+  ## callers still expect. That translation is temporary: it keeps the old
+  ## entry points' 6.0.3 return shapes, which test-v603.R compares, and it goes
+  ## when coloc() takes over.
 
   prior <- list(p1 = p1, p2 = p2, p12 = p12,
                 weights1 = prior_weights1, weights2 = prior_weights2)

@@ -119,9 +119,9 @@ NULL
 
 ##' Check a coloc_result has the shape every result must have
 ##'
-##' Called on every return from the engine and asserted across the whole
-##' regression grid. A failure is a bug in coloc, not in the caller's input,
-##' and the message says so.
+##' Called on every return from the engine, so every test that makes a result
+##' asserts it. A failure is a bug in coloc, not in the caller's input, and the
+##' message says so.
 ##'
 ##' @param x a coloc_result
 ##' @return x invisibly, or an error saying what is wrong

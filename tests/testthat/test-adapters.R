@@ -1,9 +1,7 @@
 ## ---------------------------------------------------------------------------
-## Step 3: the adapters, tested one at a time against the frozen layer A
-## matrices. Layer A is what 6.0.3 would have fed the engine, so an adapter
-## that reproduces it is a faithful replacement for the code path it lifts.
-## The frozen matrices are in inst/testdata/golden/; golden_6_0_3() in
-## helper-golden.R reads one.
+## Step 3: the adapters, tested one at a time. Each must hand the engine the
+## same log BFs that 6.0.3 computed on the code path it lifts: process.dataset()
+## for .adapt_single(), the credible-set rows of a SuSiE fit for .adapt_susie().
 ## ---------------------------------------------------------------------------
 
 test_that("stage 1 classifies from class alone, and the order is load-bearing", {
@@ -58,34 +56,28 @@ test_that("stage 2 resolves each trait against its own input class", {
 })
 
 test_that(".adapt_single reproduces the matrices coloc.abf() feeds the engine", {
-    for (case in coloc_cases) {
-        if (case$tier != 1) next
-        g <- read_golden(case$id)
-        b <- case$build()
-        a1 <- suppressWarnings(.adapt_single(b$d1, trait = 1))
-        a2 <- suppressWarnings(.adapt_single(b$d2, trait = 2))
-        expect_bf_equal(a1$bf, g$layerA$bf1, paste0(case$id, " bf1"))
-        expect_bf_equal(a2$bf, g$layerA$bf2, paste0(case$id, " bf2"))
-        expect_equal(a1$meta$method, "single")
-        expect_equal(nrow(a1$bf), 1L)
-        expect_false(a1$meta$has_null)
+    for (trait in 1:2) {
+        d <- coloc_test_data[[trait]]                 # D1, D2
+        pd <- process.dataset(d, suffix = paste0("df", trait))
+        a <- .adapt_single(d, trait)
+        expect_equal(a$bf, matrix(pd[[paste0("lABF.df", trait)]], nrow = 1,
+                                  dimnames = list("sig1", pd$snp)))
+        expect_equal(a$meta$method, "single")
+        expect_false(a$meta$has_null)
     }
 })
 
 test_that(".adapt_susie reproduces the credible-set rows", {
-    skip_if_susieR_differs()
-    for (case in coloc_cases) {
-        if (case$tier != 2) next
-        g <- read_golden(case$id)
-        b <- case$build()
-        a1 <- suppressMessages(.adapt_susie(b$d1))
-        ## values and snps must match 6.0.3; the row NAMES are a deliberate
-        ## addition, since the adapter contract is
-        ## dimnames = list(signal_id, snp) and lbf_variable carries none
-        got <- a1$bf; rownames(got) <- NULL
-        expect_bf_equal(got, g$layerA$bf1, paste0(case$id, " bf1"))
-        expect_equal(rownames(a1$bf), paste0("sig", a1$meta$idx))
-        expect_equal(a1$meta$method, "susie")
+    skip_if_not(requireNamespace("susieR", quietly = TRUE), "susieR not installed")
+    for (d in coloc_test_data[c("D3", "D4")]) {
+        fit <- suppressMessages(runsusie(d))
+        a <- suppressMessages(.adapt_susie(d))
+        ## the row names are the adapter's addition: lbf_variable has none
+        got <- a$bf
+        rownames(got) <- NULL
+        expect_equal(got, fit$lbf_variable[fit$sets$cs_index, , drop = FALSE])
+        expect_equal(rownames(a$bf), paste0("sig", a$meta$idx))
+        expect_equal(a$meta$method, "susie")
     }
 })
 

@@ -1,9 +1,9 @@
 ## ---------------------------------------------------------------------------
 ## Step 5: the old entry points now run on the one engine.
 ##
-## The regression grid already proves they return what they always returned.
-## What is asserted here is the part the grid cannot see: the contracts other
-## code depends on, and the two behaviours that deliberately changed.
+## test-v603.R checks they return what 6.0.3's versions returned. What is
+## asserted here is what that comparison cannot see: the contracts other code
+## depends on, and the two behaviours that deliberately changed.
 ## ---------------------------------------------------------------------------
 
 test_that("coloc.abf() keeps the exact summary contract sensitivity() requires", {

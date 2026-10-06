@@ -2,11 +2,10 @@
 ## Step 1: the engine. Private, and since steps 2 and 5 it has three callers:
 ## coloc(), coloc.bf_bf() and coloc.abf().
 ##
-## The engine's own shape is new, so bit-identity THROUGH those callers is
-## step 2's gate and lives in test-regression.R. What is asserted here is that
-## the contract holds, that every status is reachable, and that the NUMBERS
-## match 6.0.3 wherever 6.0.3 produced any. 6.0.3's numbers are the goldens
-## in inst/testdata/golden/; golden_6_0_3() in helper-golden.R reads one.
+## What is asserted here is that the contract holds, that every status is
+## reachable, and that the numbers agree with closed forms worked out by hand.
+## test-v603.R compares the engine's answers, through coloc(), with 6.0.3's.
+## get_match_6_0_3(), in helper-v603.R, runs a call as 6.0.3 made it.
 ## ---------------------------------------------------------------------------
 
 ## P(no causal variant) for each row of a bf matrix, from first principles:
@@ -20,13 +19,6 @@
     n  <- length(sn)
     unname(apply(bf[, sn, drop = FALSE], 1, function(r)
         (1 - n * p) / ((1 - n * p) + p * sum(exp(r)))))
-}
-
-## 6.0.3's $summary, or NULL for the shapes that carry none
-.old_summary <- function(v) {
-    if (inherits(v, "coloc_case_error") || !is.list(v)) return(NULL)
-    if (!"summary" %in% names(v)) return(NULL)          ## bare data.table(nsnps=NA)
-    as.data.frame(v$summary)
 }
 
 test_that("validate_coloc_result() rejects every breach, and says it is a bug", {
@@ -111,94 +103,21 @@ test_that("all five statuses are reachable and each one validates", {
     expect_match(got$no_overlap$messages, "no snps in common")
 })
 
-test_that("the engine reproduces 6.0.3's numbers on every golden case", {
-    for (case in coloc_cases) {
-        g <- read_golden(case$id)
-        os <- .old_summary(g$layerB$value)
-        if (is.null(os)) next                       ## 6.0.3 produced no summary
-        ## AL10: coloc() and coloc.bf_bf() reject this case's vector prior, so
-        ## it never reaches the engine
-        if (case$id == "t0-vector-priors") next
-
-        prior <- modifyList(.default_prior(),
-                            case$args[intersect(names(case$args),
-                                                c("p1", "p2", "p12"))])
-        if (!is.null(case$args$prior_weights1)) prior$weights1 <- case$args$prior_weights1
-        if (!is.null(case$args$prior_weights2)) prior$weights2 <- case$args$prior_weights2
-        control <- modifyList(.default_control(),
-                              case$args[intersect(names(case$args),
-                                                  c("overlap.min", "trim_by_posterior"))])
-
-        ## the engine takes matrices; promoting a named vector is .adapt_bf()'s
-        ## job from step 3, and coloc.bf_bf()'s until then
-        promote <- function(x) if (is.null(dim(x)))
-            matrix(x, nrow = 1L, dimnames = list("sig1", names(x))) else x
-
-        new <- suppressWarnings(.coloc_engine(promote(g$layerA$bf1),
-                                              promote(g$layerA$bf2),
-                                              prior = prior, control = control))
-        ns <- as.data.frame(new$summary)
-
-        ## The three cases that reach the all-trimmed branch, where PP.H0 has
-        ## moved twice: AL08 gave ph0 a null to be the probability of, and
-        ## AL13 combines the two traits' values as a joint rather than a
-        ## minimum. Assert the new value, and assert the change is CONFINED to
-        ## that one column.
-        if (case$id %in% c("t0-all-trimmed", "t0-overlap-min",
-                           "t0-all-trimmed-null")) {         ## AL08, AL13
-            a0 <- .p0(g$layerA$bf1, 1e-4); b0 <- .p0(g$layerA$bf2, 1e-4)
-            expect_equal(ns$PP.H0.abf, a0 * b0, tolerance = 1e-10)   ## AL13
-
-            if (case$id == "t0-all-trimmed-null") {
-                ## This case is AL08's control: 6.0.3 has a null column here,
-                ## so it computed ph0 properly and the engine's ph0 is its own
-                ## expression unchanged. AL13 moves the OUTPUT column, so the
-                ## control can no longer be "differs in nothing"; it is made
-                ## one level down instead, on the inputs AL13 combines.
-                expect_equal(pmin(a0, b0), as.numeric(os$PP.H0.abf))
-            } else {
-                ## AL08: no null column, so 6.0.3's 1 - rowSums() of a row
-                ## that already sums to 1 left noise, of either sign
-                expect_true(all(abs(os$PP.H0.abf) < 1e-15))
-            }
-
-            for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
-                expect_equal(ns[[col]], os[[col]],
-                             label = paste0(case$id, " $", col))
-            for (col in paste0("PP.H", 1:4, ".abf"))
-                expect_true(all(is.na(ns[[col]])), label = paste0("ns$", col))
-            next
-        }
-
-        ## AL12: 6.0.3 rewrites an all-NA pair to a certainty. Assert the
-        ## divergence rather than skipping past it, and assert that it is
-        ## CONFINED to that pair: the ordinary row beside it still matches
-        ## 6.0.3, which is what makes this a targeted change and not a shift
-        ## in the arithmetic.
-        if (case$id == "t0-degenerate") {             ## AL12
-            hh <- paste0("PP.H", 0:4, ".abf")
-            expect_equal(os$hit1, c("-", "s6"))       ## 6.0.3 names a hit it did not find
-            expect_equal(as.numeric(unlist(os[1, hh])), c(0, 0, 1, 0, 0))
-            expect_true(all(is.na(unlist(ns[1, hh]))))
-            expect_true(is.na(ns$hit1[1]))
-            for (col in c("nsnps", "hit1", "hit2", hh))
-                expect_equal(ns[[col]][2], os[[col]][2],
-                             label = paste0("t0-degenerate row 2 $", col))
-            next
-        }
-
-        expect_equal(nrow(ns), nrow(os), label = paste0(case$id, " n rows"))
-        for (col in c("nsnps", "hit1", "hit2", "idx1", "idx2"))
-            expect_equal(ns[[col]], os[[col]],
-                         label = paste0(case$id, " $summary$", col))
-        ## 6.0.3 writes a bare NA into the all-trimmed branch, which makes the
-        ## PP columns logical there while the frozen contract says numeric.
-        ## Compare the values; coloc.bf_bf()'s wrapper restores the old type
-        ## at step 2.
-        for (col in paste0("PP.H", 0:4, ".abf"))
-            expect_equal(as.numeric(ns[[col]]), as.numeric(os[[col]]),
-                         label = paste0(case$id, " $summary$", col))
-    }
+test_that("an all-NA signal changes only its own pair, which 6.0.3 rewrote to a certainty", {
+    ## AL12. coloc() rejects the NA, but coloc.bf_bf() still reaches the engine
+    ## with it until step 7. The ordinary pair beside it is 6.0.3's, unchanged.
+    sn <- paste0("s", 1:8)
+    a <- matrix(c(0, 0, 8, 2, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0, 7, 1, 0), nrow = 2, byrow = TRUE,
+                dimnames = list(c("sig1", "sig2"), sn))
+    b <- matrix(c(0, 0, 7, 3, 0, 0, 0, 0), nrow = 1, dimnames = list("sig1", sn))
+    a[1, ] <- NA
+    expected <- get_match_6_0_3(coloc.bf_bf(a, b, trim_by_posterior = FALSE))
+    got <- suppressWarnings(.coloc_engine(a, b,
+                                          control = coloc_control(trim_by_posterior = FALSE)))
+    expect_equal(expected$summary$PP.H2.abf[1], 1)
+    expect_true(all(is.na(unlist(got$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE]))))
+    expect_equal(got$summary[2], expected$summary[2])
 })
 
 test_that("a mixed drop, part NA part FALSE, does not trim and marks only the bad pair", {
