@@ -81,7 +81,7 @@ test_that("coloc_pip returns correct structure", {
   cs1 <- data.frame(snp = c("rs1", "rs2", "rs3"), PP = c(0.5, 0.3, 0.2))
   cs2 <- data.frame(snp = c("rs1", "rs2", "rs4"), PP = c(0.6, 0.3, 0.1))
   res <- coloc_pip(cs1, cs2, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5)
-  expect_named(res, c("nsnps1","nsnps2","nsnps_int", "PP.H3", "PP.H4"))
+  expect_true(all(c("nsnps1","nsnps2","nsnps_int", "PP.H3", "PP.H4") %in% names(res)))
 })
 
 test_that("coloc_pip with no overlap gives PP.H4=0", {

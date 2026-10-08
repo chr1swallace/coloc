@@ -16,9 +16,13 @@ test_that("coloc_query", {
     expect_error(coloc_query(q, ql))
 })    
 
-test_that("query_ot", {
+test_that("query_ot (slow)", {
     skip_on_cran()
-    expect_warning(ot <- query_ot(q))
+    if(is.null(getOption("coloc.cache_dir"))) {
+        expect_warning(ot <- query_ot(q))
+    } else { 
+        (ot <- query_ot(q))
+    }
     out <- coloc_query(q, ot)
     expect_equal(length(ot), 484)
     expect_equal(nrow(out), 484)
@@ -27,7 +31,11 @@ test_that("query_ot", {
 
 test_that("query_eqtl_cat (slow)", {
     skip_on_cran()
-    expect_warning(ecat <- query_eqtl_cat(q, quant_method="exon"))
+    if(is.null(getOption("coloc.cache_dir"))) {
+        expect_warning(ecat <- query_eqtl_cat(q, quant_method="exon"))
+    } else {
+        (ecat <- query_eqtl_cat(q, quant_method="exon"))
+    }
     out <- coloc_query(q, ecat)
     expect_equal(length(ecat), 1)
     expect_equal(length(ecat), nrow(out))

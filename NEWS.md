@@ -1,4 +1,4 @@
-# coloc 6.0.3
+# coloc 7.0.0
 * adds colocalisation from credible sets, function coloc_pip()
 * adds ability to query Open Targets credible sets, function coloc_query() and query_ot()
 

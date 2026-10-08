@@ -9,8 +9,8 @@
 ##' @author Jeffrey Pullin, Chris Wallace
 clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_only=FALSE) {
     stopifnot("p1, p2, p12 must be probabilities"=is_prob(p1) && is_prob(p2) && is_prob(p12))
-    stopifnot("clPP must be in [0,1]"=is_prob(clPP,strict=FALSE))
-    stopifnot("alpha1, alpha2 must be in [0,1]"=is_prob(clPP,strict=FALSE))
+    stopifnot("clPP must be in [0,1]"=is_prob(clPP))
+    stopifnot("alpha1, alpha2 must be in [0,1]"=is_prob(clPP))
     pr_h4 <- p12 * clPP / ((p12 - p1*p2) * clPP + p1*p2 * (alpha1 * alpha2))
     if(!h4_only)
         return(c(PP.H3=1-pr_h4, PP.H4=pr_h4))
@@ -25,6 +25,19 @@ clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_o
 ##'
 ##' - snp: a character vector of snp identifiers
 ##' - PP: a numeric vector of posterior probabilities
+##'
+##' Each cs may additionally contain a column
+##'
+##' - beta: the estimated per all snp effect on the trait
+##'
+##' If they both do, then the returned object will also include
+##' "freq_sign_agree", which is the proportion of snps in both
+##' credible sets for which the difrection of effects (sign of beta)
+##' agrees. This is a useful quantity to be able to say
+##' "higher gene expression associates with higher (lower) disease risk"
+##' when freq_sign_agree=1 (0). If 0 < freq_sign_agree < 1 then there
+##' is some disagreement between SNPs and users are invited to
+##' investigate potential causes of this further.
 ##'
 ##' @param cs1 credible set 1
 ##' @param cs2 credible set 2
@@ -46,15 +59,12 @@ coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
     alpha1 <- sum(cs1$PP)
     alpha2 <- sum(cs2$PP)
 
-    if(is.null(nrow(cs1))) { # it's a list
-        cs1 <- as.data.frame(cs1[c("snp","PP")])
+    if("beta" %in% names(cs1) && "beta" %in% names(cs2)) {
+        cs1 <- as.data.frame(cs1)[c("snp","PP","beta")]
+        cs2 <- as.data.frame(cs2)[c("snp","PP","beta")]
     } else {
-        cs1 <- as.data.frame(cs1[,c("snp","PP")])
-    }
-    if(is.null(nrow(cs2))) { 
-        cs2 <- as.data.frame(cs2[c("snp","PP")])
-    } else {
-        cs2 <- as.data.frame(cs2[,c("snp","PP")])
+        cs1 <- as.data.frame(cs1)[c("snp","PP")]
+        cs2 <- as.data.frame(cs2)[c("snp","PP")]
     }
     
     m <- merge(cs1,cs2,by="snp")
@@ -64,7 +74,13 @@ coloc_pip <- function(cs1, cs2, p1=1e-4, p2=1e-4, p12=5e-6) {
         clPP <- sum(m$PP.x * m$PP.y)
         pr_h4 <- clPP_to_coloc(clPP=clPP, p1=p1, p2=p2, p12=p12, alpha1=alpha1, alpha2=alpha2, h4_only=TRUE)
     }
-    c(nsnps1=nrow(cs1), nsnps2=nrow(cs2), nsnps_int=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
+    ret <- c(nsnps1=nrow(cs1), nsnps2=nrow(cs2), nsnps_int=nrow(m), PP.H3=1-pr_h4, PP.H4=pr_h4)
+    ret["freq_sign_agree"] <-    if(all(c("beta.x","beta.y") %in% names(m)) && nrow(m)) {
+                                     mean(sign(m$beta.x)==sign(m$beta.y))
+                                 } else {
+                                     NA
+                                 }
+    ret
 }
 
 
@@ -74,17 +90,19 @@ check_PP <- function(cs) {
         stop("credible set must include snp and PP")
     if(!is.character(cs$snp))
         stop("snp must be a character vector")
+    if(any(duplicated(cs$snp)))
+        stop("duplicated snps")
     if(!is.numeric(cs$PP))
         stop("PP must be a numeric vector")
     if(length(cs$PP) != length(cs$snp))
         stop("PP and snp should be equal length")
+    if(!is_prob(sum(cs$PP)))
+        stop("sum of cs$PP not in [0,1]")
     NULL
 }
 
-is_prob <- function(x,strict=TRUE) {
-    if(strict) {
-        length(x)==1 && !is.na(x) && is.numeric(x) && x > 0 && x < 1 
-    } else {
-        length(x)==1 && !is.na(x) && is.numeric(x) && x >= 0 && x <= 1 
-    }
+is_prob <- function(x) {
+    length(x)==1 && !is.na(x) && is.numeric(x) &&
+        (x >= 0 || all.equal(x, 0)) && # allows for numerical rounding errors
+        (x <= 1 || all.equal(x, 1))
 }

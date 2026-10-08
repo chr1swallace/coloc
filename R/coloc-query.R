@@ -52,6 +52,7 @@ NULL
 .ot_release <- "26.06"
 .ot_credset_url <- sprintf("s3://open-targets-public-data-releases/platform/%s/output/credible_set", .ot_release)
 .ot_manifest_url <- sprintf("https://ftp.ebi.ac.uk/pub/databases/opentargets/platform/%s/output/study/part-00000-1c0a4198-4d65-425e-82a1-d9d8b54d8549-c000.snappy.parquet", .ot_release)
+.ot_s3_region <- "eu-west-1" # bucket region; check with: curl -sI https://open-targets-public-data-releases.s3.amazonaws.com | grep -i x-amz-bucket-region
 
 ## Study columns added to the query_ot() annotation, where present in the study file
 ## See https://platform.opentargets.org/downloads/study/schema
@@ -62,9 +63,26 @@ NULL
 
 .ot_dir <- function(dir = NULL) .cache_dir(dir, "opentargets")
 
+## Scan the Open Targets dataset, reopening once if the connection has gone stale (eg SIGPIPE after idle)
+.ot_scan <- function(...) {
+  tryCatch(arrow::Scanner$create(.ot_dataset(), ...)$ToTable(), error = function(e) {
+    message("Open Targets query failed (", conditionMessage(e), "); reconnecting and retrying once")
+    ot_reset()
+    arrow::Scanner$create(.ot_dataset(), ...)$ToTable()
+  })
+}
 ## Remote credible set dataset, opened once per session
+## .ot_dataset <- function() {
+##   if (is.null(.ot_env$ds)) .ot_env$ds <- arrow::open_dataset(.ot_credset_url, format = "parquet")
+##   .ot_env$ds
+## }
+## Remote credible set dataset, opened once per session
+## Region is set explicitly: automatic region lookup fails on some HPC systems
 .ot_dataset <- function() {
-  if (is.null(.ot_env$ds)) .ot_env$ds <- arrow::open_dataset(.ot_credset_url, format = "parquet")
+  if (is.null(.ot_env$ds)) {
+    fs <- arrow::S3FileSystem$create(anonymous = TRUE, region = .ot_s3_region)
+    .ot_env$ds <- arrow::open_dataset(fs$path(sub("^s3://", "", .ot_credset_url)), format = "parquet")
+  }
   .ot_env$ds
 }
 
@@ -89,10 +107,12 @@ NULL
 .otlocus_to_cs <- function(locus, ...) {
   parts <- strsplit(locus$variantId, "_", fixed = TRUE) # split once, reuse
   data.table(...,
-             chr = as.integer(vapply(parts, `[[`, character(1), 1)),
+             ## chr = as.integer(vapply(parts, `[[`, character(1), 1)),
+             chr = vapply(parts, `[[`, character(1), 1),
              pos = as.integer(vapply(parts, `[[`, character(1), 2)),
              snp = locus$variantId,
-             PP = locus$posteriorProbability)
+             PP = locus$posteriorProbability,
+             beta = locus$beta)
 }
 
 ##' query Open Targets credible sets
@@ -162,27 +182,37 @@ query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"), dir = NU
   type <- match.arg(type)
   chr <- unique(cs$chr)
   if (length(chr) != 1) stop("`chr` column must only have one value")
-  lower_pos <- min(cs$pos) - window
-  upper_pos <- max(cs$pos) + window
+  lower_pos <- as.integer(min(cs$pos) - window)
+  upper_pos <- as.integer(max(cs$pos) + window)
 
   ## Build the filter as an Arrow expression so it's pushed down to the parquet scan
   pos_ref <- arrow::Expression$field_ref("position")
   type_ref <- arrow::Expression$field_ref("studyType")
+  ## next 3 lines needed in query_eqtl_cat, but break query_ot:
+  ## pos_type <- .ot_dataset()$schema$position$type
+  ## lower <- arrow::Scalar$create(lower_pos, type = pos_type)
+  ## upper <- arrow::Scalar$create(upper_pos, type = pos_type)
   filt <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower_pos & pos_ref <= upper_pos
   if (type == "gwas") filt <- filt & type_ref == "gwas"
   if (type == "qtl") filt <- filt & type_ref != "gwas"
-  cols <- c("studyLocusId", "chromosome", "studyId", "variantId", "position", "region", "studyType", "locus")
+  cols <- c("studyLocusId", "chromosome", "studyId", "variantId", "position", "region", "studyType", "locus","beta")
 
-  tbl <- arrow::Scanner$create(.ot_dataset(), projection = cols, filter = filt)$ToTable()
+  tbl <- .ot_scan(projection = cols, filter = filt)
+  ## tbl <- arrow::Scanner$create(.ot_dataset(), projection = cols, filter = filt)$ToTable()
 
   credsets <- lapply(tbl$locus$as_vector(), .otlocus_to_cs)
+  ok <- sapply(credsets, function(x) is_prob(sum(x$PP)))
+  if(any(!ok)) {
+      warning(sum(!ok), " / ", length(ok), " credsets have sum(PP) not in [0,1]. Removing")
+      print(names(credsets)[!ok])
+      credsets <- credsets[ok]
+  }
   annot <- data.frame(leadVariant = tbl$variantId$as_vector(),
                       studyLocusId = tbl$studyLocusId$as_vector(),
                       studyId = tbl$studyId$as_vector(),
                       chromosome = tbl$chromosome$as_vector(),
                       position = tbl$position$as_vector(),
-                      studyType = tbl$studyType$as_vector())
-
+                      studyType = tbl$studyType$as_vector())[ok, ]
   if (nrow(annot) & length(extra)) {
       manifest <- .ot_manifest(dir) |> as.data.frame() |> as.data.frame() # need to do this twice to avoid tibbles
       extra <- intersect(extra, names(manifest))
@@ -277,22 +307,32 @@ query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5) {
   .check_window(window)
   chr <- unique(cs$chr)
   if (length(chr) != 1) stop("`chr` column must only have one value")
-  lower_pos <- min(cs$pos) - window
-  upper_pos <- max(cs$pos) + window
+  lower_pos <- as.integer(min(cs$pos) - window)
+  upper_pos <- as.integer(max(cs$pos) + window)
   paths <- eqtl_cat_fetch(quant_method, dir) # last path is for the manifest
   path_manifest <- paths[ length(paths) ]
   paths <- paths[ -length(paths) ]
   ds <- arrow::open_dataset(paths, format = "parquet")
 
   pos_ref <- arrow::Expression$field_ref("position")
-  filt <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower_pos & pos_ref <= upper_pos
-  cols <- c("dataset_id", "molecular_trait_id", "molecular_trait_object_id", "cs_id", "region", "variant", "pip")
-
+  ## pos_type <- ds$schema$position$type
+  ## lower <- arrow::Scalar$create(lower_pos, type = pos_type)
+  ## upper <- arrow::Scalar$create(upper_pos, type = pos_type)
+  filt <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower_pos & pos_ref <= upper_pos 
+  cols <- c("dataset_id", "molecular_trait_id", "molecular_trait_object_id", "cs_id", "region", "variant", "pip","beta")
+  ## Create bounds with the column's own type, so arrow doesn't convert positions for the comparison
+  
   tbl <- arrow::Scanner$create(ds, projection = cols, filter = filt)$ToTable()  |> as.data.frame()
   names(tbl)[names(tbl) == "variant"] <- "snp"
   names(tbl)[names(tbl) == "pip"] <- "PP"
   tbl$snp <- sub("^chr", "", tbl$snp) # match snp format eg 6_90279406_G_C
-  credsets <- split(tbl[, c("snp", "PP")], tbl$cs_id)
+  credsets <- split(tbl[, c("snp", "PP", "beta")], tbl$cs_id)
+  ok <- sapply(credsets, function(x) is_prob(sum(x$PP)))
+  if(any(!ok)) {
+      warning(sum(!ok), " / ", length(ok), " credsets have sum(PP) not in [0,1]. Removing")
+      print(names(credsets)[!ok])
+      credsets <- credsets[ok]
+  }
   annot <- unique(tbl[, setdiff(names(tbl), c("snp", "PP"))])
   manifest <- data.table::fread(path_manifest, data.table = FALSE)
   annot <- merge(annot, manifest, by = "dataset_id", all.x = TRUE)
@@ -304,6 +344,10 @@ query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5) {
 
 ################################################################################
 ## colocalise
+.check_snp_ids <- function(snps) {
+  bad <- !grepl("^([1-9]|1[0-9]|2[0-2]|X|Y|MT)_[0-9]+_[ACGT]+_[ACGT]+$", snps)
+  if (any(bad)) stop(sum(bad), " snp identifiers are not in the format chrom_position_ref_alt (eg \"6_90279406_G_C\"). First few: ", paste(head(snps[bad], 3), collapse = ", "))
+}
 
 ##' Colocalisation of an index credible set and a list of credible
 ##' sets generated by query_ot() or query_eqtl_cat()
@@ -348,16 +392,50 @@ coloc_query <- function(cs, querylist) {
                   all(c("snp","PP") %in% colnames(cs)) &&
                   is.character(cs$snp) &&
                   is.numeric(cs$PP))
-    stopifnot("querylist must be an object returned by query_ot()"=
-                  is.list(querylist) &&
-                  is.data.frame(querylist[[1]]) &&
-                  "annot" %in% names(attributes(querylist)))
+    ## check expected pattern for SNP identifier - this is a common gotcha
+    .check_snp_ids(cs$snp)
     if(!length(querylist)) {
         warning("querylist contains no credible sets.")
         return(NULL)
     }
+    stopifnot("querylist must be an object returned by query_ot()"=
+                  is.list(querylist) &&
+                  is.data.frame(querylist[[1]]) &&
+                  "annot" %in% names(attributes(querylist)))
     coloc_res <- lapply(querylist, function(x) coloc_pip(cs, x)) |>
         do.call("rbind", args=_) |>
         as.data.frame()
     cbind(attr(querylist, "annot"), coloc_res)
+}
+
+################################################################################
+
+## ensembl to symbol
+.hgnc_url <- "https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt"
+.gene_env <- new.env(parent = emptyenv())
+
+## Ensembl id -> symbol table from HGNC, downloaded once and read once per session
+.hgnc_genes <- function(dir = NULL) {
+  if (is.null(.gene_env$hgnc)) {
+    path <- .download_once(.hgnc_url, eqtl_cat_dir(dir))
+    g <- data.table::fread(path, select = c("symbol", "ensembl_gene_id"), data.table = FALSE)
+    .gene_env$hgnc <- g[g$ensembl_gene_id != "", ]
+  }
+  .gene_env$hgnc
+}
+
+##' Translate Ensembl gene ids to HGNC gene symbols
+##'
+##' Uses the HGNC complete gene set, downloaded on first use to the same
+##' directory as the eQTL Catalogue files. Version suffixes (eg
+##' ENSG00000160712.13) are ignored.
+##'
+##' @param ids character vector of Ensembl gene ids
+##' @inheritParams query_eqtl_cat
+##' @return character vector of gene symbols, the same length as ids, with NA where no symbol is found
+##' @export
+ensembl_to_symbol <- function(ids, dir = NULL) {
+    g <- .hgnc_genes(dir)
+    ids <- sub("\\..*","",ids)
+  g$symbol[match(sub("\\.[0-9]+$", "", ids), g$ensembl_gene_id)]
 }
