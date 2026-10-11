@@ -312,6 +312,26 @@ test_that("AL15: coloc_prior() warns when both traits have weights, as coloc.abf
     expect_equal(coloc(bf_a, bf_b, prior = prior)$summary, expected$summary)
 })
 
+test_that("AL16: a p-value above 1 is refused, which 6.0.3 accepted", {
+    msg <- "dataset 1: pvalues must be above 0 and at most 1"
+    above <- to_pvalues(D1)
+    above$pvalues[5] <- 1.5
+    expect_null(get_match_6_0_3(check_dataset(above, 1)))
+    expect_error(check_dataset(above, 1), msg, fixed = TRUE)
+    expect_error(coloc(above, D2), msg, fixed = TRUE)
+    expect_error(finemap.abf(above), "pvalues must be above 0 and at most 1", fixed = TRUE)
+    ## 0 and below were refused already; only the message moved
+    zero <- to_pvalues(D1)
+    zero$pvalues[5] <- 0
+    expect_error(get_match_6_0_3(check_dataset(zero, 1)),
+                 "pvalues should not be negative or exactly 0")
+    expect_error(check_dataset(zero, 1), msg, fixed = TRUE)
+    ## exactly 1 is a p-value
+    one <- to_pvalues(D1)
+    one$pvalues[5] <- 1
+    expect_null(check_dataset(one, 1))
+})
+
 ## ---- what both sides share ---------------------------------------------------
 ## The 6.0.3 copies and coloc() both use process.dataset(), sdY.est(),
 ## runsusie() and the log-space helpers, unchanged since 6.0.3, so an edit to
