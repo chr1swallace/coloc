@@ -26,6 +26,7 @@ beta.cc <- m[1,]
 vbeta.cc <- m[2,]
 p.cc <- pchisq(beta.cc^2/vbeta.cc,df=1,lower.tail=FALSE)
 
+## quant, from beta and varbeta, with sdY
 DQ <- list(beta=beta.q,
            varbeta=vbeta.q,
            type="quant",
@@ -33,6 +34,7 @@ DQ <- list(beta=beta.q,
            sdY=sd.est,
            N=nrow(X))
 
+## case-control, from beta and varbeta
 DCC <- list(beta=beta.cc,
             varbeta=vbeta.cc,
             type="cc",
@@ -40,18 +42,21 @@ DCC <- list(beta=beta.cc,
             MAF=maf,
             s=mean(cc),
             N=nrow(X))
+## quant, from p-values, MAF and N
 PQ <- list(pvalues=p.q,
            type="quant",
            MAF=maf,
            snp=colnames(X),
            sdY=sd.est,
            N=nrow(X))
+## case-control, from p-values, MAF and N, and s, the proportion of cases
 PCC <- list(pvalues=p.cc,
             type="cc",
             MAF=maf,
             snp=colnames(X),
             s=mean(cc),
             N=nrow(X))
+## PCC, but with s the number of cases rather than their proportion
 PCC.bad <- list(pvalues=p.cc,
             type="cc",
             MAF=maf,
@@ -64,15 +69,17 @@ test_that("sdY.est", {
   expect_true(abs(sd.est - sd(Y)) < 0.1)
 })
 
+## d: from beta and varbeta (DQ, DCC); p: from p-values (PQ, PCC)
 RESULTS <- suppressWarnings(list(dd = coloc.abf(dataset1=DQ,dataset2=DCC),
                                  dp = coloc.abf(dataset1=DQ,dataset2=PCC),
                                  pd = coloc.abf(dataset1=PQ,dataset2=DCC),
                                  pp = coloc.abf(dataset1=PQ,dataset2=PCC)))
 lapply(RESULTS,"[[","summary")
 
-## The same four runs through coloc(). Each (coloc()) twin translates only
-## what has to change: p12 = 1e-5, coloc.abf()'s default, where coloc_prior()
-## defaults to 5e-6, and $summary, a table read with pp().
+## The same four runs through coloc(). These, and the coloc() version of the
+## coloc.abf test below, change only what has to change: p12 = 1e-5, which is
+## coloc.abf()'s default where coloc_prior() defaults to 5e-6, and the
+## posteriors, read with pp() from coloc()'s $summary table.
 RESULTS.coloc <- suppressWarnings(list(dd = coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5)),
                                        dp = coloc(DQ, PCC, prior = coloc_prior(p12 = 1e-5)),
                                        pd = coloc(PQ, DCC, prior = coloc_prior(p12 = 1e-5)),

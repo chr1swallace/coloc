@@ -1,8 +1,10 @@
 ## ---------------------------------------------------------------------------
-## Collate: is hand-ordered with no @include tags, so every file added to R/
-## must be entered there by hand or the package will not build. That is the
-## kind of small thing that makes a rename commit fail CI and get reverted,
-## so it gets a test rather than a code comment.
+## DESCRIPTION's Collate: field lists every file in R/, in the order R loads
+## them when it installs the package, and is kept by hand (no @include tags).
+## If a file in R/ is missing from it, or listed but gone, R CMD INSTALL stops;
+## but devtools::load_all(), which devtools::test() uses, loads the files
+## anyway, so the mistake would only show once the package is installed or
+## checked. This test makes it show in devtools::test().
 ## ---------------------------------------------------------------------------
 
 test_that("Collate: covers exactly the files in R/", {

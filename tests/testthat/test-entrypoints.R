@@ -1,7 +1,18 @@
 ## The old entry points, coloc.abf(), coloc.bf_bf(), coloc.susie() and
-## coloc.susie_bf(), which run on the new engine until step 7 deletes them.
-## test-v603.R checks they return what 6.0.3's returned; these tests check
-## what that cannot see.
+## coloc.susie_bf(), which now run on the new engine until step 7 (the hard
+## break, in a later stage) deletes them. test-v603.R checks they return the
+## same values as 6.0.3's. These tests check what comparing values cannot:
+## - that other code can still use their results: coloc.abf()'s $summary keeps
+##   the names and order sensitivity() needs, and sensitivity() still accepts
+##   it; the susie functions keep their old shapes;
+## - that coloc.abf() still prints its posteriors;
+## - that coloc() takes the same route as coloc.abf() and coloc.susie();
+## - how they take their arguments: priors and control as loose arguments,
+##   with 6.0.3's defaults kept;
+## - the errors they give: a vector prior is refused, and a character matrix
+##   still fails coloc.bf_bf() as it did in 6.0.3;
+## - one deliberate change: coloc.susie_bf() now uses the priors it is given
+##   (AL02 in test-v603.R).
 
 D1 <- coloc_test_data$D1
 D2 <- coloc_test_data$D2
@@ -84,7 +95,8 @@ test_that("the old doors take priors and control as loose arguments", {
 })
 
 test_that("the old doors reject a vector prior, as coloc_prior() does", {
-    ## AL10. coloc.susie() and coloc.susie_bf() go through coloc(), which checks
+    ## 6.0.3 accepted a vector p1 or p2 (AL10 in test-v603.R).
+    ## coloc.susie() and coloc.susie_bf() go through coloc(), which checks
     vec <- rep(1e-4, 8)
     msg <- tryCatch(coloc_prior(p1 = vec), error = conditionMessage)
     expect_error(coloc.bf_bf(bf, bf, p1 = vec), msg, fixed = TRUE)

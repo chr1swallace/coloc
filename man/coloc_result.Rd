@@ -45,7 +45,10 @@ each trait's signals (for a SuSiE fit, the SuSiE component behind
 each credible set);
 \code{n_pairs_in} and \code{n_pairs_kept}, the pairs of signals before and after
 trimming, and \code{dropped}, why pairs were left out, when there were any
-pairs; and \code{schema}, the version of this structure.}
+pairs; and \code{schema}, the version of this structure, which goes up
+when a field is added or changed, so that code reading a saved
+result can tell which fields it has. It is 2; a result saved from a
+development version before \code{bf} was added has 1.}
 \item{\code{bf}}{each trait's log Bayes factors, \code{list(bf1 =, bf2 =)}, as
 they went into the analysis; see \code{\link[=log_bf]{log_bf()}}.}
 }
@@ -68,8 +71,8 @@ because telling those apart needs the shared SNPs; \code{PP.H0.abf} is the
 probability that neither trait has a causal variant, from each
 trait's own SNPs.}
 \item{\code{"degenerate"}}{the posteriors of some pair could not be
-computed, for example from a SuSiE fit whose log Bayes factors are
-\code{NA}. That pair's posteriors are \code{NA}.}
+computed. That pair's posteriors are \code{NA}. \code{\link[=coloc]{coloc()}} checks its
+inputs to prevent this, so it should not be seen.}
 }
 
 Two rules hold for every result: \code{summary} has no rows only when no pair

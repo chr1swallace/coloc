@@ -1,4 +1,7 @@
-## The engine, .coloc_engine(), against closed forms worked out by hand.
+## The engine, .coloc_engine(), tested on its own, with small log BF matrices
+## written into each test: each status it can return, what every result must
+## satisfy (the five posteriors sum to 1), and values the test works out from
+## a formula itself, such as the softmax over the shared snps.
 ## test-v603.R compares its answers, through coloc(), with 6.0.3's;
 ## get_match_6_0_3(), in helper-v603.R, runs a call as 6.0.3 made it.
 
@@ -89,8 +92,10 @@ test_that("prior weights move the posteriors, and are kept for the shared snps",
 })
 
 test_that("a trimmed pair with no evidence reports the prior, not a certainty", {
-    ## AL08 and AL13. 3 of 8 snps shared puts 0.375 of each posterior on them,
-    ## under overlap.min, so the pair is trimmed
+    ## Neither trait has any evidence (every log BF 0). 3 of 8 snps shared puts
+    ## 0.375 of each posterior on them, under overlap.min, so the pair is
+    ## trimmed. 6.0.3 then reported PP.H0 as rounding noise (AL08) and took the
+    ## smaller of the traits' values (AL13); both are in test-v603.R
     x <- matrix(0, 1, 8, dimnames = list("sig1", paste0("s", 1:8)))
     y <- matrix(0, 1, 8, dimnames = list("sigA", paste0("s", 6:13)))
     res <- suppressWarnings(.coloc_engine(x, y))
@@ -108,8 +113,9 @@ test_that("trimmed pairs report PP.H0 as the product of each trait's", {
 })
 
 test_that("an all-NA signal changes only its own pair, which 6.0.3 rewrote to a certainty", {
-    ## AL12. coloc() rejects the NA, but today's coloc.bf_bf() still brings it
-    ## to the engine, until step 7
+    ## 6.0.3 reported an all-NA signal as PP.H2 = 1 (AL12 in test-v603.R).
+    ## coloc() rejects the NA, but today's coloc.bf_bf() still brings it to the
+    ## engine, until step 7 (the hard break, in a later stage)
     x <- rbind(a, matrix(c(0, 0, 0, 0, 0, 7, 1, 0), nrow = 1, dimnames = list("sig2", snps)))
     x[1, ] <- NA
     expected <- get_match_6_0_3(coloc.bf_bf(x, b, trim_by_posterior = FALSE))
@@ -133,7 +139,7 @@ test_that("one NA in a row marks that row's pairs, without trimming", {
     expect_false(is.na(res$summary$PP.H4.abf[res$summary$idx1 == 2]))
 })
 
-test_that("$meta records what the engine knows, and not what it cannot", {
+test_that("the engine counts the signal pairs in $meta, and leaves the method to coloc()", {
     x <- a[, 1:4, drop = FALSE]
     y <- rbind(x, x)
     rownames(y) <- c("sigA", "sigB")
@@ -141,6 +147,7 @@ test_that("$meta records what the engine knows, and not what it cannot", {
     expect_equal(res$meta$n_pairs_in, 2L)
     expect_equal(res$meta$n_pairs_kept, 2L)
     expect_equal(res$meta$schema, 2L)
-    ## which adapter ran is coloc()'s to record
+    ## the engine sees only log BF matrices, not which adapter made them, so
+    ## coloc() records the method after it returns (R/coloc.R:171)
     expect_null(res$meta$method)
 })

@@ -2,7 +2,7 @@
 % Please edit documentation in R/coloc.R
 \name{is_ok}
 \alias{is_ok}
-\title{Did a colocalisation analysis produce usable posteriors?}
+\title{Did a colocalisation analysis produce posteriors for every pair?}
 \usage{
 is_ok(x)
 }
@@ -10,11 +10,22 @@ is_ok(x)
 \item{x}{a coloc_result}
 }
 \value{
-logical(1)
+\code{TRUE} or \code{FALSE}
 }
 \description{
-\code{res$summary$PP.H4.abf > 0.9} yields \code{logical(0)} on an empty result, so
-an \verb{if()} around it errors. Ask this instead.
+\code{is_ok()} is \code{TRUE} when the status is \code{"ok"}: at least one pair of
+signals was compared, and every pair in \verb{$summary} has its posterior
+probabilities. Pairs left out under \code{overlap.min}, while others were kept,
+have no row and do not count against it. It answers for the whole result,
+so with status \code{"degenerate"} it is \code{FALSE} even if some pairs have
+posteriors. It says nothing about whether the traits colocalise: read
+the posteriors for that.
+}
+\details{
+\verb{if (res$summary$PP.H4.abf > 0.9)} fails when the posteriors were not
+computed: with no rows (no shared SNPs, or no signal in a trait) the test
+is \code{logical(0)}, and with posteriors that are \code{NA} (every pair trimmed, or
+a pair that could not be computed) it is \code{NA}. Ask \code{is_ok()} first.
 }
 \examples{
 data(coloc_test_data)

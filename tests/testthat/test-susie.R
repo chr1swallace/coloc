@@ -38,7 +38,7 @@ test_that("coloc.bf_bf is order invariant",{
     expect_equal(coloc.bf_bf(a,b), coloc.bf_bf(a,rev(b)))
 })
 
-test_that("coloc.bf_bf is order invariant (coloc())",{
+test_that("order invariance, with coloc() in place of coloc.bf_bf()",{
     a <- rnorm(10)
     b <- rnorm(10)
     names(a) <- names(b) <- paste0("s",1:10)

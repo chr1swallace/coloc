@@ -19,11 +19,11 @@ test_that("Prior weights are saved in output (coloc.abf())", {
 
 })
 
-## The (coloc()) twins give the weights through coloc_prior(), and read them
-## back from $weights$w1 and $w2. coloc_prior() gives coloc.abf()'s warning
-## when both are given, once it has checked them.
+## Each coloc() version below gives the weights through coloc_prior(), which
+## warns as coloc.abf() did when both traits have weights, once it has
+## checked them. The first reads them back from $weights$w1 and $w2.
 
-test_that("Prior weights are saved in output (coloc.abf()) (coloc())", {
+test_that("Prior weights are saved in output, with coloc() in place of coloc.abf()", {
 
   expect_warning(coloc_out <- coloc(D1, D2, prior = coloc_prior(weights1 = rep(1, 500),
                                                                 weights2 = rep(1, 500))))
@@ -45,7 +45,7 @@ test_that("Prior weight length consistency is checked (coloc.abf())", {
 
 })
 
-test_that("Prior weight length consistency is checked (coloc.abf()) (coloc())", {
+test_that("Prior weight length consistency is checked, with coloc() in place of coloc.abf()", {
 
   ## the length is checked once the snps are known, after coloc_prior() warns
   expect_warning(prior <- coloc_prior(weights1 = 1, weights2 = rep(1, 500)), "both traits")
@@ -70,7 +70,7 @@ test_that("Negative prior weights cause errors (coloc.abf())", {
 
 })
 
-test_that("Negative prior weights cause errors (coloc.abf()) (coloc())", {
+test_that("Negative prior weights cause errors, with coloc() in place of coloc.abf()", {
 
   expect_error(
     coloc(D1, D2, prior = coloc_prior(weights1 = c(-1, rep(1, 499)), weights2 = rep(1, 500)))
@@ -87,7 +87,7 @@ test_that("NA prior weights cause errors (coloc.abf())", {
   )
 })
 
-test_that("NA prior weights cause errors (coloc.abf()) (coloc())", {
+test_that("NA prior weights cause errors, with coloc() in place of coloc.abf()", {
   expect_error(
     coloc(D1, D2, prior = coloc_prior(weights1 = rep(NA, 500)))
   )
@@ -109,7 +109,7 @@ test_that("Prior weight length consistency is checked (coloc.susie())", {
 
 })
 
-test_that("Prior weight length consistency is checked (coloc.susie()) (coloc())", {
+test_that("Prior weight length consistency is checked, with coloc() in place of coloc.susie()", {
 
   expect_warning(prior <- coloc_prior(weights1 = 1, weights2 = rep(1, 500)), "both traits")
   expect_error(
@@ -128,7 +128,7 @@ test_that("NA prior weights cause errors (coloc.susie())", {
   )
 })
 
-test_that("NA prior weights cause errors (coloc.susie()) (coloc())", {
+test_that("NA prior weights cause errors, with coloc() in place of coloc.susie()", {
   expect_error(
     coloc(susie_D1, susie_D2, prior = coloc_prior(weights1 = rep(NA, 500)))
   )
@@ -142,7 +142,7 @@ test_that("Negative prior weights cause errors (coloc.susie())", {
 
 })
 
-test_that("Negative prior weights cause errors (coloc.susie()) (coloc())", {
+test_that("Negative prior weights cause errors, with coloc() in place of coloc.susie()", {
 
   expect_error(
     coloc(susie_D1, susie_D2, prior = coloc_prior(weights1 = c(-1, rep(1, 499))))

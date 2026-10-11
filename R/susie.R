@@ -219,7 +219,7 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   ## and the translation of coloc_result back into the five return shapes
   ## callers still expect. That translation is temporary: it keeps the old
   ## entry points' 6.0.3 return shapes, which test-v603.R compares, and it goes
-  ## when coloc() takes over.
+  ## at step 7 (the hard break, in a later stage), with these functions.
 
   prior <- list(p1 = p1, p2 = p2, p12 = p12,
                 weights1 = prior_weights1, weights2 = prior_weights2)
@@ -227,7 +227,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   ## 6.0.3 accepted a vector p1/p2 here (allowlist AL10); the engine does not
   .check_scalar_prior(prior)
 
-  ## a named vector is one signal; from step 3 this is .adapt_bf()'s job
+  ## a named vector is one signal: make it a one-row matrix here, as
+  ## coloc() does in .adapt_bf(), which coloc.bf_bf() does not call
   if(is.vector(bf1))
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
   if(is.vector(bf2))
@@ -239,9 +240,10 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   .coloc_result_as_6_0_3(res)
 }
 
-## Map the one frozen shape back onto the five 6.0.3 returned. Deliberately
-## lossy: $status, $messages and $meta have nowhere to go in the old shapes,
-## which is the whole argument for replacing them.
+## Turn a coloc_result, the one shape coloc() returns, back into the five
+## shapes the old functions returned in 6.0.3. Deliberately lossy: $status,
+## $messages and $meta have nowhere to go in the old shapes, which is the
+## whole argument for replacing them.
 .coloc_result_as_6_0_3 <- function(res) {
   if (res$status %in% c("no_overlap", "no_signal"))
     return(data.table(nsnps = NA))
@@ -249,8 +251,8 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
   s <- data.table::copy(res$summary)
   if (res$status == "all_trimmed") {
     ## 6.0.3 writes a bare NA into this branch, which makes the columns
-    ## logical rather than numeric. The frozen contract says numeric, so the
-    ## old type is restored here rather than in the engine.
+    ## logical rather than numeric. A coloc_result's $summary columns are
+    ## always numeric, so the old type is restored here, not in the engine.
     for (col in paste0("PP.H", 1:4, ".abf"))
       data.table::set(s, j = col, value = as.logical(s[[col]]))
     return(list(summary = s))

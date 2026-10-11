@@ -20,7 +20,8 @@ Inputs)}
 \item{x2}{trait 2, with the same choices}
 
 \item{method}{\code{"single"} or \code{"susie"}: one value for both traits, or one
-for each trait (see Choosing \code{method})}
+for each trait (see Choosing \code{method}). The default, \code{c("single", "susie")}, lists the choices: if \code{method} is not given, both traits use
+\code{"single"}}
 
 \item{prior}{the prior probabilities, made with \code{\link[=coloc_prior]{coloc_prior()}}}
 
@@ -51,7 +52,8 @@ the region. It has vectors with one value per SNP (\code{snp}, and \code{beta}
 with \code{varbeta}, or \code{pvalues} with \code{MAF}) and single values that describe
 the study (\code{type}, which is \code{"quant"} or \code{"cc"}; \code{N}; and \code{sdY} or \code{s}).
 Fine-mapping with SuSiE also needs \code{LD}, the correlation matrix of the
-SNPs. \code{\link[=check_dataset]{check_dataset()}} lists every element and which combinations are
+SNPs, and \code{beta} with \code{varbeta}: p-values are not enough.
+\code{\link[=check_dataset]{check_dataset()}} lists every element and which combinations are
 needed, and checks a dataset for you. \link{coloc_test_data} holds four
 examples.
 \item \strong{A SuSiE fit}: the result of \code{\link[=runsusie]{runsusie()}} on a coloc dataset, or of
@@ -78,15 +80,15 @@ many signals a trait can have.
 region, and computes one Bayes factor per SNP from \code{beta} and \code{varbeta}
 (or \code{pvalues} and \code{MAF}), as \code{\link[=coloc.abf]{coloc.abf()}} did. This is the default.
 \item \code{"susie"} fine-maps the dataset with SuSiE through \code{\link[=runsusie]{runsusie()}}, which
-needs \code{LD} and \code{N}, and gives one signal per credible set, so a trait
-can have several.
+needs \code{beta} and \code{varbeta} (p-values are not enough), \code{LD} and \code{N}, and
+gives one signal per credible set, so a trait can have several.
 }
 
 One value applies to both traits. Two values apply to trait 1 and trait 2
-in turn, so the traits can be treated differently: \code{method = c("single", "susie")} fine-maps trait 2 only, for example when only trait 2 has an LD
-matrix. \code{method} applies only to datasets, because a SuSiE fit is already
-fine-mapped and log Bayes factors are already computed. Asking for
-\code{"single"} for a SuSiE fit is an error, and naming a method for a trait
+in turn, so the traits can be treated differently: \code{method = c("single", "susie")} fine-maps only trait 2 with SuSiE, for example when only trait 2
+has an LD matrix. \code{method} applies only to datasets, because a SuSiE fit
+is already fine-mapped and log Bayes factors are already computed. Asking
+for \code{"single"} for a SuSiE fit is an error, and naming a method for a trait
 given as log Bayes factors gives a warning.
 }
 
@@ -102,7 +104,7 @@ res
 ## reading the result
 is_ok(res)              # the posteriors were computed
 n_signals(res)          # pairs of signals compared
-pp(res)                 # number of snps, and PP.H0 to PP.H4 for the first pair
+pp(res, row = 1)        # number of snps, and PP.H0 to PP.H4 for the first pair
 bf1 <- log_bf(res, 1)   # trait 1's log Bayes factors, to fine-map
 finemap.bf(bf1)$summary
 
@@ -113,8 +115,10 @@ if (requireNamespace("susieR", quietly = TRUE)) {
     ## fine-map both traits with SuSiE: one row per pair of credible sets
     res2 <- coloc(D3, D4, method = "susie")
     res2$summary
+    pp(res2, row = 2)   # the second pair: row picks a row of $summary
 
-    ## fine-map trait 2 only: D1 stays one signal, D3 gives two
+    ## fine-map only trait 2 with SuSiE. Trait 1 is one signal and trait 2
+    ## has two credible sets, so trait 1 is compared with each: two rows
     res3 <- coloc(D1, D3, method = c("single", "susie"))
     res3$summary
 

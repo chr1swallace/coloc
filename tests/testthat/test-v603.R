@@ -32,6 +32,7 @@ to_pvalues <- function(d) {
     d[c("beta", "varbeta", "sdY")] <- NULL
     d
 }
+## the same snps listed in the opposite order, as two studies sorted differently would be
 reverse <- function(d) {
     for (v in c("beta", "varbeta", "MAF", "snp", "position"))
         d[[v]] <- rev(d[[v]])
@@ -50,6 +51,11 @@ p0 <- function(bf, p = 1e-4) {
 }
 
 ## ---- coloc() gives 6.0.3's answers ---------------------------------------------
+## Both sides run with their default priors unless a test says otherwise:
+## p1 = p2 = 1e-4 and p12 = 5e-6, the same in coloc() and in 6.0.3's
+## coloc.bf_bf(), coloc.susie() and coloc.susie_bf(), so each test also checks
+## that the defaults agree. coloc.abf()'s p12 default is 1e-5 (AL01), so its
+## tests give p12 = 1e-5.
 
 test_that("coloc() matches 6.0.3's coloc.bf_bf(): two signals against one", {
     expected <- get_match_6_0_3(coloc.bf_bf(bf_a, bf_b))
@@ -72,7 +78,8 @@ test_that("coloc() matches 6.0.3's coloc.bf_bf(): a null column", {
                       one = list(with_null(bf_a), bf_b),
                       ## nulllast() has to move it
                       not_last = list(with_null(bf_a)[, c("null", snps)], bf_b),
-                      ## one row with a null column, the shape #210 broke
+                      ## one row with a null column: a subset of one row
+                      ## becomes a vector unless the code says drop = FALSE
                       one_row = list(with_null(bf_b), with_null(bf_b)))) {
         expected <- get_match_6_0_3(coloc.bf_bf(pair[[1]], pair[[2]]))
         got <- coloc(pair[[1]], pair[[2]])
@@ -88,7 +95,7 @@ test_that("coloc() matches 6.0.3's coloc.bf_bf(): partial snp overlap", {
     expect_equal(got$results, expected$results)
 })
 
-test_that("coloc() matches 6.0.3's coloc.bf_bf(): trimming off", {
+test_that("coloc() matches 6.0.3's coloc.bf_bf(): trim_by_posterior = FALSE", {
     far <- bf_a[, 5:8]
     expected <- get_match_6_0_3(coloc.bf_bf(far, bf_b, trim_by_posterior = FALSE))
     got <- coloc(far, bf_b, control = coloc_control(trim_by_posterior = FALSE))
@@ -151,10 +158,11 @@ test_that("coloc() stops on a bad dataset with 6.0.3's coloc.abf() message", {
     expect_error(coloc(D1, bad), expected, fixed = TRUE)
 })
 
-test_that("no fixture reaches susieR's random subsampling", {
-    ## the SuSiE comparisons fit each dataset once for each side, and agree only
-    ## if fitting is deterministic. Its one random step, in susie_get_cs(),
-    ## samples only from credible sets of more than n_purity snps
+test_that("SuSiE fits each test dataset the same way every time", {
+    ## The SuSiE comparisons fit each dataset twice, once for each side, so they
+    ## agree only if SuSiE gives the same fit both times. It has one random step:
+    ## for a credible set of more than n_purity (100) snps, it checks a random 100
+    ## of them. So every test dataset's credible sets must stay smaller than that.
     threshold <- eval(formals(susieR::susie_get_cs)$n_purity)
     for (nm in c("D1", "D2", "D3", "D4")) {
         fit <- suppressMessages(runsusie(coloc_test_data[[nm]]))
@@ -162,7 +170,7 @@ test_that("no fixture reaches susieR's random subsampling", {
     }
 })
 
-test_that("coloc() matches 6.0.3's coloc.susie(): two datasets", {
+test_that("coloc() matches 6.0.3's coloc.susie(): two coloc datasets", {
     expected <- suppressMessages(get_match_6_0_3(coloc.susie(D3, D4)))
     got <- suppressMessages(coloc(D3, D4, method = "susie"))
     expect_equal(got$summary, expected$summary)
@@ -170,8 +178,9 @@ test_that("coloc() matches 6.0.3's coloc.susie(): two datasets", {
     expect_equal(got$priors, expected$priors)
 })
 
-test_that("coloc() matches 6.0.3's coloc.susie(): fits", {
-    ## D4 has one credible set, the shape #210 broke when it came first
+test_that("coloc() matches 6.0.3's coloc.susie(): two SuSiE fits", {
+    ## D4 has one credible set, so as trait 1 it is a one-row matrix: a subset
+    ## of one row becomes a vector unless the code says drop = FALSE
     for (pair in list(list(fit4, fit3), list(fit3, fit3))) {
         expected <- get_match_6_0_3(coloc.susie(pair[[1]], pair[[2]]))
         got <- coloc(pair[[1]], pair[[2]])

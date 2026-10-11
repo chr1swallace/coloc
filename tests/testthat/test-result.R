@@ -54,7 +54,9 @@ test_that("pp() stops on a row that does not exist", {
 })
 
 test_that("pp(), is_ok() and n_signals() answer for a result with no rows", {
-    ## res$summary$PP.H4.abf > 0.9 is logical(0) here, which if() cannot take
+    ## bf and bf_x share no snps, so the result has no rows: reading the column
+    ## directly, empty$summary$PP.H4.abf > 0.9 is logical(0), which if() cannot
+    ## use. These three functions still answer: not ok, 0 pairs, NA posteriors
     empty <- suppressWarnings(coloc(bf, bf_x))
     expect_false(is_ok(empty))
     expect_equal(n_signals(empty), 0L)

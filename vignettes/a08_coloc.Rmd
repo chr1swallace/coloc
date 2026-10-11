@@ -75,12 +75,13 @@ dim(D1$LD)
   deviation of a quantitative trait, or `s`, the proportion of cases in a
   case-control one.
 * For fine-mapping with SuSiE: `LD`, the correlation matrix of the SNPs, with
-  the SNP ids as its row and column names.
+  the SNP ids as its row and column names. SuSiE needs `beta` and `varbeta`;
+  p-values are not enough.
 
 `check_dataset()` checks a dataset, and returns `NULL` when it finds nothing
 wrong. Its help page, `?check_dataset`, lists every element and which
 combinations are needed. `coloc()` runs the same check on every dataset it is
-given, and says which trait a problem is in.
+given, and most of its messages say which dataset the problem is in.
 
 ```{r check}
 check_dataset(D1)
@@ -127,8 +128,9 @@ signals a trait can have.
 * `"single"`, the default, assumes the trait has at most one causal variant
   in the region, and computes one Bayes factor per SNP from `beta` and
   `varbeta` (or `pvalues` and `MAF`). This is what `coloc.abf()` did.
-* `"susie"` fine-maps the dataset with SuSiE, which needs `LD` and `N`, and
-  gives one signal per credible set, so a trait can have several.
+* `"susie"` fine-maps the dataset with SuSiE, which needs `beta` and `varbeta`
+  (p-values are not enough), `LD` and `N`, and gives one signal per credible
+  set, so a trait can have several.
 
 ```{r methods, message = FALSE}
 res_single <- coloc(D1, D2)                      # "single" for both traits
@@ -144,7 +146,7 @@ One value of `method` applies to both traits. Two values apply to trait 1 and
 trait 2 in turn, so each trait can be treated in the way its data allow. A
 common reason is that only one trait has an LD matrix: SuSiE cannot run
 without one, so a single `"susie"` fails, but the other trait can still be
-fine-mapped.
+fine-mapped with SuSiE.
 
 ```{r per-trait, message = FALSE}
 D1_noLD <- D1
@@ -168,7 +170,8 @@ does not apply there.
 
 ## Reading the result
 
-`coloc()` returns a `coloc_result`, a list with the same fields every time.
+`coloc()` returns a `coloc_result`, a list with the same fields every time,
+apart from `weights`, which is there only when prior weights were given.
 `?coloc_result` describes each of them.
 
 ```{r result}
@@ -181,12 +184,14 @@ res_single
   probabilities, and which signal of each trait the row compares (`idx1`,
   `idx2`).
 * `$results` has one row per shared SNP, with the posterior probability that
-  this SNP is the shared causal variant if H4 is true.
+  this SNP is the shared causal variant if H4 is true: one column per row of
+  `$summary`, `SNP.PP.H4.abf` for a single pair, and `SNP.PP.H4.row1`,
+  `SNP.PP.H4.row2` and so on for several.
 * `$priors` holds the prior probabilities used, and `$meta` how the result
   was made.
 
-Four small functions answer the common questions without reaching into the
-fields:
+Three small functions answer the common questions without reaching into the
+fields; a fourth, `log_bf()`, comes in below:
 
 ```{r accessors}
 is_ok(res_single)        # were the posteriors computed?
@@ -207,9 +212,10 @@ columns.
 | `"no_signal"` | a trait had no signal, for example SuSiE found no credible set | no rows |
 | `"no_overlap"` | the two traits share no SNPs | no rows |
 | `"all_trimmed"` | every pair was left out, because too little of a signal's posterior falls on SNPs the other trait has (`overlap.min` in `coloc_control()`) | a row per pair, with `PP.H1.abf` to `PP.H4.abf` `NA` |
-| `"degenerate"` | some pair's posteriors could not be computed, for example from a SuSiE fit whose log Bayes factors are `NA` | that pair's posteriors `NA` |
+| `"degenerate"` | some pair's posteriors could not be computed; `coloc()` checks its inputs to prevent this, so it should not be seen | that pair's posteriors `NA` |
 
-Here are the first four, from small changes to the test data. Each warns as it
+Here are the first four: `"ok"` is `res_single` from above, and the other three
+come from small changes to the test data. Each of those three warns as it
 happens, and the warning is kept in `$messages` too.
 
 ```{r statuses, message = FALSE, warning = FALSE}
@@ -279,7 +285,7 @@ res_susie$meta$idx1
 | `overlap.min =`, `trim_by_posterior =` | `control = coloc_control(overlap.min =, trim_by_posterior =)` |
 | `res$summary["PP.H4.abf"]`, from `coloc.abf()` | `pp(res)["PP.H4.abf"]`, or `res$summary$PP.H4.abf` |
 
-Three things are worth knowing when moving over.
+Four things are worth knowing when moving over.
 
 **The default `p12`.** `coloc.abf()` defaults `p12` to `1e-5`, while
 `coloc.susie()` and `coloc.bf_bf()` default it to `5e-6`. `coloc_prior()`
@@ -297,6 +303,14 @@ per-SNP working (`z`, `V`, `r` and `lABF` for each dataset). `coloc()`'s
 `$results` holds the shared posterior only; each trait's log Bayes factors
 are in `log_bf()`.
 
-**`coloc.susie_bf()`.** Its replacement names `method = "susie"` for the
-dataset, and `coloc()` warns that the method does not apply to the log Bayes
-factors given for the other trait. The warning is expected there.
+**A warning when replacing `coloc.susie_bf()`.** Its replacement names
+`method = "susie"` for the dataset, and `coloc()` warns that the method does not
+apply to the log Bayes factors given for the other trait. The warning is
+expected there.
+
+**What `coloc()` refuses or treats differently.** It refuses some inputs that
+coloc 6.0.3 took: a vector `p1` or `p2` (give `weights1` and `weights2`
+instead), log Bayes factors with missing values, and p-values above 1. It
+applies `coloc.abf()`'s cap on the priors in a large region to log Bayes
+factors and SuSiE fits as well, and it uses the priors given where 6.0.3's
+`coloc.susie_bf()` ignored them.

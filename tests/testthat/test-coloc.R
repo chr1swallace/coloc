@@ -1,6 +1,16 @@
-## coloc(): the method each trait gets, the adapter each input reaches, the
-## checks made before the engine, and the region-size guard.
-## get_match_6_0_3(), in helper-v603.R, runs a call as 6.0.3 made it.
+## coloc(), the entry point, tested through its own steps:
+## - which method each trait gets: "single" when none is given, and one
+##   method per trait when two are given;
+## - that each kind of input (a dataset, a SuSiE fit, log BFs) reaches the
+##   adapter for it;
+## - the checks made before the engine runs: a prior given as a plain list
+##   must hold scalar p1, p2 and p12, and any weights1 and weights2 must be
+##   positive and not NA (vectors, one per snp, as in coloc_prior()); a bad
+##   dataset or bad log BFs stop coloc() with the trait named;
+## - the region-size guard, which caps p1, p2 and p12 when a prior times its
+##   number of snps reaches 1, as coloc.abf() did.
+## Some tests compare with 6.0.3: get_match_6_0_3(), in helper-v603.R, runs a
+## call as 6.0.3 made it.
 
 D1 <- coloc_test_data$D1
 D2 <- coloc_test_data$D2

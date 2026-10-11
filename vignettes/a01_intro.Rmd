@@ -25,8 +25,6 @@ This package implements the more population enumeration approach.
 
 You can read about how to prepare your data in [this vignette](a02_data.html) or read the vignettes listed in one of the sections below to understand how coloc works.
 
-To run an analysis through `coloc()`, the one function that takes datasets, SuSiE fits or log Bayes factors in any combination, see [One entry point: coloc()](a08_coloc.html).
-
 ## A single causal variant assumption
 
  Claudia Giambartolomei and

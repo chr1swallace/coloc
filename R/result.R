@@ -57,7 +57,10 @@
 ##'     each credible set);
 ##'     `n_pairs_in` and `n_pairs_kept`, the pairs of signals before and after
 ##'     trimming, and `dropped`, why pairs were left out, when there were any
-##'     pairs; and `schema`, the version of this structure.}
+##'     pairs; and `schema`, the version of this structure, which goes up
+##'     when a field is added or changed, so that code reading a saved
+##'     result can tell which fields it has. It is 2; a result saved from a
+##'     development version before `bf` was added has 1.}
 ##'   \item{`bf`}{each trait's log Bayes factors, `list(bf1 =, bf2 =)`, as
 ##'     they went into the analysis; see [log_bf()].}
 ##' }
@@ -78,8 +81,8 @@
 ##'     probability that neither trait has a causal variant, from each
 ##'     trait's own SNPs.}
 ##'   \item{`"degenerate"`}{the posteriors of some pair could not be
-##'     computed, for example from a SuSiE fit whose log Bayes factors are
-##'     `NA`. That pair's posteriors are `NA`.}
+##'     computed. That pair's posteriors are `NA`. [coloc()] checks its
+##'     inputs to prevent this, so it should not be seen.}
 ##' }
 ##'
 ##' Two rules hold for every result: `summary` has no rows only when no pair

@@ -149,7 +149,8 @@
         ## shared snps, with p12 coupling the traits. This is a product of two
         ## marginals over two different panels under an independence the coloc
         ## prior does not quite make. The two are not comparable, and calling
-        ## them by the same column name is 6.0.3's choice, frozen by D6.
+        ## them by the same column name is 6.0.3's choice, kept so the result
+        ## has 6.0.3's columns.
         skel <- data.table(nsnps = length(isnps),
                            hit1 = pk(pp1, todo$i), hit2 = pk(pp2, todo$j),
                            PP.H0.abf = ph0.1[todo$i] * ph0.2[todo$j],
@@ -175,10 +176,10 @@
 
     ## Which combining function. combine_abf_weighted() reassociates the H3
     ## term, so it is NOT bit-identical to combine.abf() on the unweighted
-    ## path even though it is algebraically equal. D6 says that path keeps
-    ## the function it has always used.
+    ## path even though it is algebraically equal. That path keeps the
+    ## function it has always used, so its results stay identical to 6.0.3's.
     ##
-    ## p1, p2 and p12 are single numbers here: coloc() and coloc.bf_bf()
+    ## p1, p2 and p12 are scalars here: coloc() and coloc.bf_bf()
     ## reject a vector, and since R 4.2 coloc.abf() stops on one in
     ## adjust_prior()'s if (). 6.0.3's coloc.bf_bf() passed a vector p1 to
     ## combine.abf(), which is scalar only, and reported 33 hypotheses for 8

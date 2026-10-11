@@ -40,7 +40,7 @@ test_that("issue 79", {
   expect_error(coloc.abf(d1,d2), "must give sdY")
 })
 
-test_that("issue 79 (coloc())", {
+test_that("issue 79, with coloc() in place of coloc.abf()", {
   d1=list(snp=letters[1:5],
           position=1:5,
           N=200000,
@@ -75,7 +75,7 @@ test_that("issue 160", {
   expect_error(coloc.abf(d1,d2), "per-snp sample sizes")
 })
 
-test_that("issue 160 (coloc())", {
+test_that("issue 160, with coloc() in place of coloc.abf()", {
   d1=list(snp=letters[1:5],
           position=1:5,
           N=200000,

@@ -19,7 +19,8 @@
 ##'   with `varbeta`, or `pvalues` with `MAF`) and single values that describe
 ##'   the study (`type`, which is `"quant"` or `"cc"`; `N`; and `sdY` or `s`).
 ##'   Fine-mapping with SuSiE also needs `LD`, the correlation matrix of the
-##'   SNPs. [check_dataset()] lists every element and which combinations are
+##'   SNPs, and `beta` with `varbeta`: p-values are not enough.
+##'   [check_dataset()] lists every element and which combinations are
 ##'   needed, and checks a dataset for you. [coloc_test_data] holds four
 ##'   examples.
 ##' * **A SuSiE fit**: the result of [runsusie()] on a coloc dataset, or of
@@ -43,22 +44,24 @@
 ##'   region, and computes one Bayes factor per SNP from `beta` and `varbeta`
 ##'   (or `pvalues` and `MAF`), as [coloc.abf()] did. This is the default.
 ##' * `"susie"` fine-maps the dataset with SuSiE through [runsusie()], which
-##'   needs `LD` and `N`, and gives one signal per credible set, so a trait
-##'   can have several.
+##'   needs `beta` and `varbeta` (p-values are not enough), `LD` and `N`, and
+##'   gives one signal per credible set, so a trait can have several.
 ##'
 ##' One value applies to both traits. Two values apply to trait 1 and trait 2
 ##' in turn, so the traits can be treated differently: `method = c("single",
-##' "susie")` fine-maps trait 2 only, for example when only trait 2 has an LD
-##' matrix. `method` applies only to datasets, because a SuSiE fit is already
-##' fine-mapped and log Bayes factors are already computed. Asking for
-##' `"single"` for a SuSiE fit is an error, and naming a method for a trait
+##' "susie")` fine-maps only trait 2 with SuSiE, for example when only trait 2
+##' has an LD matrix. `method` applies only to datasets, because a SuSiE fit
+##' is already fine-mapped and log Bayes factors are already computed. Asking
+##' for `"single"` for a SuSiE fit is an error, and naming a method for a trait
 ##' given as log Bayes factors gives a warning.
 ##'
 ##' @param x1 trait 1: a coloc dataset, a SuSiE fit or log Bayes factors (see
 ##'   Inputs)
 ##' @param x2 trait 2, with the same choices
 ##' @param method `"single"` or `"susie"`: one value for both traits, or one
-##'   for each trait (see Choosing `method`)
+##'   for each trait (see Choosing `method`). The default, `c("single",
+##'   "susie")`, lists the choices: if `method` is not given, both traits use
+##'   `"single"`
 ##' @param prior the prior probabilities, made with [coloc_prior()]
 ##' @param control when to leave a pair of signals out, made with
 ##'   [coloc_control()]
@@ -84,7 +87,7 @@
 ##' ## reading the result
 ##' is_ok(res)              # the posteriors were computed
 ##' n_signals(res)          # pairs of signals compared
-##' pp(res)                 # number of snps, and PP.H0 to PP.H4 for the first pair
+##' pp(res, row = 1)        # number of snps, and PP.H0 to PP.H4 for the first pair
 ##' bf1 <- log_bf(res, 1)   # trait 1's log Bayes factors, to fine-map
 ##' finemap.bf(bf1)$summary
 ##'
@@ -95,8 +98,10 @@
 ##'     ## fine-map both traits with SuSiE: one row per pair of credible sets
 ##'     res2 <- coloc(D3, D4, method = "susie")
 ##'     res2$summary
+##'     pp(res2, row = 2)   # the second pair: row picks a row of $summary
 ##'
-##'     ## fine-map trait 2 only: D1 stays one signal, D3 gives two
+##'     ## fine-map only trait 2 with SuSiE. Trait 1 is one signal and trait 2
+##'     ## has two credible sets, so trait 1 is compared with each: two rows
 ##'     res3 <- coloc(D1, D3, method = c("single", "susie"))
 ##'     res3$summary
 ##'
@@ -188,7 +193,14 @@ coloc <- function(x1, x2,
 ##' @examples
 ##' data(coloc_test_data)
 ##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
-##' pp(res)
+##' pp(res)                   # row = 1, the first pair, by default
+##'
+##' if (requireNamespace("susieR", quietly = TRUE)) {
+##'     ## two credible sets in D3 against one in D4: two pairs
+##'     res2 <- coloc(coloc_test_data$D3, coloc_test_data$D4, method = "susie")
+##'     n_signals(res2)
+##'     pp(res2, row = 2)
+##' }
 pp <- function(x, row = 1) {
     stopifnot(inherits(x, "coloc_result"))
     ## No rows means no signal pair was summarised, so the count is 0 and
@@ -204,13 +216,23 @@ pp <- function(x, row = 1) {
     unlist(x$summary[row, c("nsnps", paste0("PP.H", 0:4, ".abf")), with = FALSE])
 }
 
-##' Did a colocalisation analysis produce usable posteriors?
+##' Did a colocalisation analysis produce posteriors for every pair?
 ##'
-##' `res$summary$PP.H4.abf > 0.9` yields `logical(0)` on an empty result, so
-##' an `if()` around it errors. Ask this instead.
+##' `is_ok()` is `TRUE` when the status is `"ok"`: at least one pair of
+##' signals was compared, and every pair in `$summary` has its posterior
+##' probabilities. Pairs left out under `overlap.min`, while others were kept,
+##' have no row and do not count against it. It answers for the whole result,
+##' so with status `"degenerate"` it is `FALSE` even if some pairs have
+##' posteriors. It says nothing about whether the traits colocalise: read
+##' the posteriors for that.
+##'
+##' `if (res$summary$PP.H4.abf > 0.9)` fails when the posteriors were not
+##' computed: with no rows (no shared SNPs, or no signal in a trait) the test
+##' is `logical(0)`, and with posteriors that are `NA` (every pair trimmed, or
+##' a pair that could not be computed) it is `NA`. Ask `is_ok()` first.
 ##'
 ##' @param x a coloc_result
-##' @return logical(1)
+##' @return `TRUE` or `FALSE`
 ##' @export
 ##' @examples
 ##' data(coloc_test_data)
