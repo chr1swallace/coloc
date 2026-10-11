@@ -332,6 +332,23 @@ test_that("AL16: a p-value above 1 is refused, which 6.0.3 accepted", {
     expect_null(check_dataset(one, 1))
 })
 
+test_that("AL18: a SuSiE fit with a duplicated snp id is refused, where 6.0.3 used the first", {
+    ## today's coloc.susie() runs through coloc(), which checks a fit's log
+    ## BFs as it checks log BFs given directly; 6.0.3's went to coloc.bf_bf()
+    dup <- fit4
+    colnames(dup$lbf_variable)[2] <- colnames(dup$lbf_variable)[1]
+    expected <- get_match_6_0_3(coloc.susie(fit3, dup))
+    expect_equal(nrow(expected$summary), 2L)
+    expect_error(coloc.susie(fit3, dup),
+                 "trait 2: duplicated snps found in the log Bayes factors")
+    ## an NA in a credible set's log BFs stopped 6.0.3 too, with R's own message
+    na <- fit4
+    na$lbf_variable[na$sets$cs_index[1], 10] <- NA
+    expect_error(get_match_6_0_3(coloc.susie(fit3, na)), "missing value where TRUE/FALSE needed")
+    expect_error(coloc.susie(fit3, na),
+                 "trait 2: log Bayes factors contain missing or infinite values")
+})
+
 ## ---- what both sides share ---------------------------------------------------
 ## The 6.0.3 copies and coloc() both use process.dataset(), sdY.est(),
 ## runsusie() and the log-space helpers, unchanged since 6.0.3, so an edit to

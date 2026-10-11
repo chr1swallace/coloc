@@ -92,6 +92,19 @@ test_that(".adapt_susie() rejects a broken fit, and a suffix in susie.args", {
                  "susie.args cannot set suffix")
 })
 
+test_that(".adapt_susie() checks a fit's log BFs as .adapt_bf() does", {
+    ## a fit given directly skips runsusie() and its check_dataset()
+    na <- stub_fit(snps)
+    na$lbf_variable[1, 2] <- NA
+    expect_error(.adapt_susie(na, 2), "trait 2: log Bayes factors contain missing or infinite")
+    dup <- stub_fit(c("s1", "s1", "s3"))
+    expect_error(.adapt_susie(dup, 2), "trait 2: duplicated snps found")
+    ## only the credible-set rows go to the engine, so only they are checked
+    elsewhere <- stub_fit(snps)
+    elsewhere$lbf_variable[2, 2] <- NA
+    expect_silent(.adapt_susie(elsewhere, 2))
+})
+
 test_that(".adapt_bf() takes a named vector or a matrix, every row", {
     v <- .adapt_bf(setNames(c(1, 2, 3), snps))
     expect_equal(v$bf, matrix(c(1, 2, 3), nrow = 1, dimnames = list("sig1", snps)))

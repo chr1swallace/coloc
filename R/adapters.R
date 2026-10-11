@@ -117,9 +117,29 @@
                                 has_null = "null" %in% snps)))
     }
     bf <- fit$lbf_variable[idx, , drop = FALSE]
+    ## checked on both routes, and needed for a fit given directly: it skips
+    ## runsusie() and its check_dataset(), and annotate_susie() takes its snp
+    ## ids as given. Only the credible-set rows reach the engine, so only they
+    ## are checked.
+    .check_bf_values(bf, trait)
     rownames(bf) <- paste0("sig", idx)           ## lbf_variable carries no rownames
     list(bf = bf, meta = list(method = "susie", idx = idx,
                               has_null = "null" %in% colnames(bf)))
+}
+
+## The two checks on the values of every log BF matrix the engine gets, from
+## .adapt_bf() and .adapt_susie() alike, so a mistake gets the same message
+## however it arrives. check_dataset()'s rule for a dataset, applied to log
+## BFs: no missing values, so the caller cleans their own data. One NA makes
+## every pair using its row NA, and 6.0.3's coloc.bf_bf() reported an all-NA
+## row as a certainty (allowlist AL12). And the engine matches snps by name,
+## where match() would take the first of two.
+.check_bf_values <- function(x, trait) {
+    if (any(!is.finite(x)))
+        stop("trait ", trait, ": log Bayes factors contain missing or infinite values")
+    if (anyDuplicated(colnames(x)))
+        stop("trait ", trait, ": duplicated snps found in the log Bayes factors")
+    invisible(x)
 }
 
 ## Validation only. Every row becomes a signal, because nothing says otherwise.
@@ -138,15 +158,7 @@
     }
     if (is.null(colnames(x)))
         stop("trait ", trait, ": a log-BF matrix needs snp ids as colnames")
-    ## check_dataset()'s rule for a dataset, applied to log BFs: no missing
-    ## values, so the caller cleans their own data. One NA makes every pair
-    ## using its row NA, and 6.0.3's coloc.bf_bf() reported an all-NA row as a
-    ## certainty (allowlist AL12).
-    if (any(!is.finite(x)))
-        stop("trait ", trait, ": log Bayes factors contain missing or infinite values")
-    ## the engine matches snps by name, and match() would take the first of two
-    if (anyDuplicated(colnames(x)))
-        stop("trait ", trait, ": duplicated snps found in the log Bayes factors")
+    .check_bf_values(x, trait)
     ## a matrix with no rows gets no names: assigning character(0) is an error
     if (is.null(rownames(x)) && nrow(x)) rownames(x) <- paste0("sig", seq_len(nrow(x)))
     list(bf = x, meta = list(method = NA_character_, idx = seq_len(nrow(x)),
