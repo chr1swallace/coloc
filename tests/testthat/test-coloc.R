@@ -67,10 +67,15 @@ test_that("every kind of input reaches its adapter", {
     expect_length(warnings_of(coloc(bf4, bf4, method = "single")), 2L)
 })
 
-test_that("a prior given as a plain list must still hold scalars", {
+test_that("a prior given as a plain list is checked for scalars and weights", {
     bf <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
     expect_error(coloc(bf, bf, prior = list(p1 = rep(1e-4, 4), p2 = 1e-4, p12 = 5e-6)),
                  "must each be a scalar")
+    ## a bad weight would otherwise reach the engine, and end in an internal
+    ## error that blames coloc
+    expect_error(coloc(bf, bf, prior = list(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
+                                            weights1 = c(1, -1, 5, 1))),
+                 "prior_weights1 must contain non-NA/non-negative weights")
 })
 
 ## one mistake each, made to a copy of a good dataset

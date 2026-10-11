@@ -127,8 +127,10 @@ coloc <- function(x1, x2,
     supplied <- !missing(method)
     if (!supplied) method <- "single"
 
-    ## a coloc_prior has been checked already, but a plain list has not
+    ## a coloc_prior has been checked already, but a plain list has not: it
+    ## gets the scalar check, and the weight checks the old doors make
     .check_scalar_prior(prior)
+    .check_prior_weights(prior)
 
     kinds  <- c(.classify_input(x1), .classify_input(x2))
     method <- .resolve_method(method, kinds, supplied = supplied)
