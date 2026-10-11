@@ -58,17 +58,19 @@ test_that("every kind of input reaches its adapter", {
                    "trait 2: method is inapplicable")
     expect_equal(from_bf$summary$PP.H4.abf, from_fit$summary$PP.H4.abf)
     expect_equal(from_bf$meta$method, c("susie", NA))
-    ## a fit needs no method, and cannot take "single"
+    ## a fit needs no method: with none named, it is taken as "susie". One
+    ## method applies to both traits, so "single" here reaches the fit too,
+    ## and stops coloc(): a fit has no beta or varbeta for "single" to use
     expect_equal(coloc(fit4, fit4)$meta$method, c("susie", "susie"))
     expect_error(coloc(fit4, D3, method = "single"), "susie fit")
     ## a method named for log BFs warns once for each trait
     expect_length(warnings_of(coloc(bf4, bf4, method = "single")), 2L)
 })
 
-test_that("a prior given as a plain list must still hold single numbers", {
+test_that("a prior given as a plain list must still hold scalars", {
     bf <- matrix(c(0, 0, 8, 2), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
     expect_error(coloc(bf, bf, prior = list(p1 = rep(1e-4, 4), p2 = 1e-4, p12 = 5e-6)),
-                 "single number")
+                 "must each be a scalar")
 })
 
 ## one mistake each, made to a copy of a good dataset

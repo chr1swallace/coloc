@@ -202,7 +202,7 @@ coloc <- function(x1, x2,
 ##'     pp(res2, row = 2)
 ##' }
 pp <- function(x, row = 1) {
-    stopifnot(inherits(x, "coloc_result"))
+    .need_coloc_result(x)
     ## No rows means no signal pair was summarised, so the count is 0 and
     ## agrees with n_signals(). The posteriors stay NA under the governing
     ## rule: they could not be computed.
@@ -240,7 +240,7 @@ pp <- function(x, row = 1) {
 ##' if (is_ok(res) && pp(res)["PP.H4.abf"] > 0.8)
 ##'     message("the traits share a causal variant")
 is_ok <- function(x) {
-    stopifnot(inherits(x, "coloc_result"))
+    .need_coloc_result(x)
     identical(x$status, "ok")
 }
 
@@ -254,7 +254,7 @@ is_ok <- function(x) {
 ##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
 ##' n_signals(res)
 n_signals <- function(x) {
-    stopifnot(inherits(x, "coloc_result"))
+    .need_coloc_result(x)
     nrow(x$summary)
 }
 
@@ -279,7 +279,7 @@ n_signals <- function(x) {
 ##' ## fine-map trait 1 from the same numbers coloc() used
 ##' finemap.bf(bf1)$summary
 log_bf <- function(x, trait = 1) {
-    stopifnot(inherits(x, "coloc_result"))
+    .need_coloc_result(x)
     if (length(trait) != 1 || !trait %in% 1:2)
         stop("trait must be 1 or 2")
     if (is.null(x$bf)) {

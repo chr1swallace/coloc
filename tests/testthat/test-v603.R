@@ -263,8 +263,9 @@ test_that("AL08: PP.H0 in a trimmed result is a probability, where 6.0.3 left ro
 test_that("AL10: a vector p1 or p2 is rejected, where 6.0.3 reported 33 hypotheses", {
     expected <- get_match_6_0_3(coloc.bf_bf(bf_a, bf_b, p1 = rep(1e-4, 8), p2 = rep(1e-4, 8)))
     expect_equal(sum(startsWith(names(expected$summary), "PP.H")), 33)
-    expect_error(coloc(bf_a, bf_b, prior = coloc_prior(p1 = rep(1e-4, 8))), "single number")
-    expect_error(coloc.bf_bf(bf_a, bf_b, p1 = rep(1e-4, 8)), "single number")
+    expect_error(coloc(bf_a, bf_b, prior = coloc_prior(p1 = rep(1e-4, 8))),
+                 "must each be a scalar")
+    expect_error(coloc.bf_bf(bf_a, bf_b, p1 = rep(1e-4, 8)), "must each be a scalar")
 })
 
 test_that("AL11: traits with no snps in common warn, where 6.0.3 was silent", {

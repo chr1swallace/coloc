@@ -120,6 +120,16 @@ NULL
 
 .coloc_result_statuses <- c("ok", "no_overlap", "all_trimmed", "no_signal", "degenerate")
 
+## pp(), is_ok(), n_signals() and log_bf() take only what coloc() returns.
+## sys.call(-1) names the caller, pp(x), in the error rather than this helper.
+.need_coloc_result <- function(x) {
+    if (!inherits(x, "coloc_result"))
+        stop(simpleError(paste0("x must be the result of coloc(), but is a ",
+                                class(x)[1], "; run coloc() first"),
+                         sys.call(-1)))
+    invisible(x)
+}
+
 ##' Check a coloc_result has the shape every result must have
 ##'
 ##' Called on every return from the engine, so every test that makes a result
@@ -130,26 +140,40 @@ NULL
 ##' @return x invisibly, or an error saying what is wrong
 ##' @noRd
 validate_coloc_result <- function(x) {
-    stopifnot(inherits(x, "coloc_result"))
     ## every message says what is wrong, what it should be, and whose fault it is
     bug <- function(...)
         stop("internal error in coloc: ", ..., ". This is a bug in coloc; please report it",
              call. = FALSE)
     shown <- function(v) paste0("[", paste(v, collapse = ", "), "]")
+    if (!inherits(x, "coloc_result"))
+        bug("validate_coloc_result() was given an object of class '", class(x)[1],
+            "', not a coloc_result")
 
     required <- c("summary", "results", "priors", "status", "messages", "meta")
-    if (length(setdiff(required, names(x))))
-        bug("the result has fields ", shown(names(x)), " but should have at least ",
+    missing_fields <- setdiff(required, names(x))
+    if (length(missing_fields))
+        bug("the result is missing ", shown(missing_fields), "; it should have at least ",
             shown(required))
-    if (!identical(names(x$summary), names(.empty_summary())))
-        bug("result $summary has columns ", shown(names(x$summary)),
-            " but should have ", shown(names(.empty_summary())))
+    ## name the difference: identical() also fails on the right columns in
+    ## another order
+    got <- names(x$summary)
+    want <- names(.empty_summary())
+    if (!identical(got, want)) {
+        wrong <- c(if (length(setdiff(got, want)))
+                       paste("has extra column(s)", shown(setdiff(got, want))),
+                   if (length(setdiff(want, got)))
+                       paste("is missing column(s)", shown(setdiff(want, got))))
+        if (!length(wrong)) wrong <- "has its columns in the wrong order"
+        bug("result $summary ", paste(wrong, collapse = " and "), "; it should have ",
+            shown(want))
+    }
     if (!x$status %in% .coloc_result_statuses)
         bug("result $status is '", x$status, "' but should be one of ",
             shown(.coloc_result_statuses))
     if (!is.numeric(x$meta$schema))
         bug("result $meta$schema is ",
-            if (is.null(x$meta$schema)) "missing" else class(x$meta$schema)[1],
+            if (is.null(x$meta$schema)) "missing"
+            else paste0("of class '", class(x$meta$schema)[1], "'"),
             " but should be a number, the version of the result's shape")
 
     ## rows exist iff a signal pair was considered; posteriors are NA iff they
@@ -177,7 +201,7 @@ validate_coloc_result <- function(x) {
             bug("result $bf is ",
                 if (is.list(x$bf)) paste0("list(", paste0(names(x$bf), " = ",
                                           vapply(x$bf, what, ""), collapse = ", "), ")")
-                else class(x$bf)[1],
+                else paste0("of class '", class(x$bf)[1], "'"),
                 " but should be list(bf1, bf2) of numeric matrices with snp ids as ",
                 "column names")
     }

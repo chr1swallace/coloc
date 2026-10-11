@@ -110,11 +110,14 @@ test_that("the old doors reject a vector prior, as coloc_prior() does", {
                  "only be used with single values")
     ## coloc.abf() stops earlier, in adjust_prior(), with R's own message
     abf <- tryCatch(coloc.abf(D1, D2, p1 = rep(1e-4, 500)), error = conditionMessage)
-    expect_false(grepl("single number", abf))
+    expect_false(grepl("must each be a scalar", abf))
 })
 
 test_that("coloc.bf_bf() still fails as 6.0.3 did on a character matrix", {
-    ## it never calls .adapt_bf(), whose type check is coloc()'s
+    ## coloc.bf_bf() hands its matrices straight to the engine, not through
+    ## .adapt_bf(), so it lacks coloc()'s checks: a character matrix fails in
+    ## the arithmetic with R's "non-numeric argument", as in 6.0.3, where
+    ## coloc() stops first with "log Bayes factors must be numeric"
     chr <- matrix("a", 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
     num <- matrix(0, 2, 3, dimnames = list(NULL, paste0("s", 1:3)))
     expect_error(coloc.bf_bf(chr, num), "non-numeric argument")

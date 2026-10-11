@@ -48,7 +48,7 @@ validate_coloc_prior <- function(x) {
 .check_scalar_prior <- function(x) {
     for (nm in c("p1", "p2", "p12"))
         if (length(x[[nm]]) != 1)
-            stop("p1, p2 and p12 must each be a single number; ",
+            stop("p1, p2 and p12 must each be a scalar; ",
                  "to vary the prior across SNPs, use weights1/weights2")
     invisible(x)
 }
@@ -103,10 +103,14 @@ coloc_prior <- function(p1 = 1e-4, p2 = 1e-4, p12 = 5e-6,
 ##' ## falls on SNPs the other trait has
 ##' coloc_control(overlap.min = 0.1)
 coloc_control <- function(overlap.min = 0.5, trim_by_posterior = TRUE) {
-    stopifnot(is.numeric(overlap.min), length(overlap.min) == 1,
-              overlap.min > 0, overlap.min <= 1,
-              is.logical(trim_by_posterior), length(trim_by_posterior) == 1,
-              !is.na(trim_by_posterior))
+    ## is.na() before the comparisons, so an NA gets this message rather than
+    ## R's "missing value where TRUE/FALSE needed"
+    if (!is.numeric(overlap.min) || length(overlap.min) != 1 || is.na(overlap.min) ||
+        overlap.min <= 0 || overlap.min > 1)
+        stop("overlap.min must be a single number above 0 and at most 1")
+    if (!is.logical(trim_by_posterior) || length(trim_by_posterior) != 1 ||
+        is.na(trim_by_posterior))
+        stop("trim_by_posterior must be TRUE or FALSE")
     structure(list(overlap.min = overlap.min, trim_by_posterior = trim_by_posterior),
               class = "coloc_control")
 }

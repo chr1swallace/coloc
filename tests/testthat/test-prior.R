@@ -11,16 +11,17 @@ test_that("coloc_prior() holds the defaults, declared once", {
     expect_equal(.default_control(), unclass(coloc_control()))
 })
 
-test_that("p1, p2 and p12 must each be a single number", {
+test_that("p1, p2 and p12 must each be a scalar", {
     for (arg in c("p1", "p2", "p12")) {
         a <- list(rep(1e-4, 8))
         names(a) <- arg
-        expect_error(do.call(coloc_prior, a), "single number.*weights1/weights2", label = arg)
+        expect_error(do.call(coloc_prior, a), "must each be a scalar.*weights1/weights2",
+                     label = arg)
     }
     ## checked before the bounds, which would accept a vector
-    expect_error(coloc_prior(p1 = c(1e-4, 1e-4), weights1 = c(1, 1)), "single number")
+    expect_error(coloc_prior(p1 = c(1e-4, 1e-4), weights1 = c(1, 1)), "must each be a scalar")
     expect_error(.check_scalar_prior(list(p1 = 1e-4, p2 = c(1e-4, 1e-4), p12 = 5e-6)),
-                 "single number")
+                 "must each be a scalar")
     expect_silent(.check_scalar_prior(.default_prior()))
 })
 
@@ -56,15 +57,17 @@ test_that("coloc_control() holds the defaults", {
 
 test_that("coloc_control() takes overlap.min in (0, 1]", {
     expect_equal(coloc_control(overlap.min = 1)$overlap.min, 1)
-    expect_error(coloc_control(overlap.min = 0))
-    expect_error(coloc_control(overlap.min = 1.5))
-    expect_error(coloc_control(overlap.min = NA_real_))
-    expect_error(coloc_control(overlap.min = c(0.5, 0.6)))
-    expect_error(coloc_control(overlap.min = "0.5"))
+    msg <- "overlap.min must be a single number above 0 and at most 1"
+    expect_error(coloc_control(overlap.min = 0), msg, fixed = TRUE)
+    expect_error(coloc_control(overlap.min = 1.5), msg, fixed = TRUE)
+    expect_error(coloc_control(overlap.min = NA_real_), msg, fixed = TRUE)
+    expect_error(coloc_control(overlap.min = c(0.5, 0.6)), msg, fixed = TRUE)
+    expect_error(coloc_control(overlap.min = "0.5"), msg, fixed = TRUE)
 })
 
 test_that("coloc_control() takes TRUE or FALSE for trim_by_posterior", {
     expect_false(coloc_control(trim_by_posterior = FALSE)$trim_by_posterior)
-    expect_error(coloc_control(trim_by_posterior = NA))
-    expect_error(coloc_control(trim_by_posterior = "yes"))
+    msg <- "trim_by_posterior must be TRUE or FALSE"
+    expect_error(coloc_control(trim_by_posterior = NA), msg, fixed = TRUE)
+    expect_error(coloc_control(trim_by_posterior = "yes"), msg, fixed = TRUE)
 })
