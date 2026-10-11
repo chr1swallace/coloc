@@ -63,6 +63,13 @@ test_that("SNP.PP.H4 is the softmax of bf1 + bf2 over the shared snps", {
     expect_equal(res$results$SNP.PP.H4.abf, exp(lsum) / sum(exp(lsum)))
 })
 
+test_that("the log-space helpers add and subtract on the probability scale", {
+    expect_equal(logsum(log(c(2, 3))), log(5))
+    expect_equal(logdiff(log(5), log(2)), log(3))
+    ## four equal log BFs and no null column: four equal posteriors
+    expect_equal(logbf_to_pp(matrix(0, 1, 4), 0.1, last_is_null = FALSE), matrix(0.25, 1, 4))
+})
+
 test_that("one shared snp is enough", {
     x <- matrix(c(0, 0, 0, 5), nrow = 1, dimnames = list("sig1", paste0("s", 1:4)))
     y <- matrix(c(5, 0, 0, 0), nrow = 1, dimnames = list("sig1", paste0("s", 4:7)))

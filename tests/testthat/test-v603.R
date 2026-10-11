@@ -42,6 +42,24 @@ reverse <- function(d) {
 ## coloc.abf()'s SNP.PP.H4, in the snp order of a coloc() result
 pp4_of <- function(abf, snps) abf$results$SNP.PP.H4[match(snps, abf$results$snp)]
 
+## Seven pairs of datasets for the two coloc.abf() comparisons below: coloc()
+## against 6.0.3's coloc.abf(), and today's coloc.abf() against 6.0.3's.
+## The first five cover the kinds of dataset coloc.abf() takes: quant or
+## case-control traits, given as beta and varbeta or as p-values, and one
+## trait of each type. In the last two, the traits share only some snps (300
+## of 500), or list the same snps in a different order, so coloc.abf() must
+## match them up by snp name.
+D1_sub <- suppressMessages(subset_dataset(D1, 1:400))
+D2_sub <- suppressMessages(subset_dataset(D2, 101:500))
+abf_pairs <- list(quant = list(D1, D2),                            # beta and varbeta, sdY given
+                  cc = list(as_cc(D1), as_cc(D2)),                 # both case-control
+                  pvalues = list(to_pvalues(D1), to_pvalues(D2)),  # p-values and MAF only
+                  cc_pvalues = list(to_pvalues(as_cc(D1)),         # case-control and p-values
+                                    to_pvalues(as_cc(D2))),
+                  mixed_type = list(D1, as_cc(D2)),                # one of each type
+                  partial_overlap = list(D1_sub, D2_sub),          # 300 of 500 SNPs shared
+                  reversed = list(D1, reverse(D2)))                # D2's SNPs in reverse order
+
 ## P(no causal variant) for each row of a log BF matrix, with the null at log
 ## BF 0 and prior p for each snp
 p0 <- function(bf, p = 1e-4) {
@@ -111,24 +129,17 @@ test_that("coloc() matches 6.0.3's coloc.bf_bf(): p12 and prior weights", {
 
     w <- c(1, 1, 1, 1, 1, 1, 1, 100)
     expected <- get_match_6_0_3(coloc.bf_bf(bf_a, bf_b, prior_weights1 = w, prior_weights2 = w))
-    prior <- suppressWarnings(coloc_prior(weights1 = w, weights2 = w))   # AL15
+    ## coloc_prior() warns when both traits have weights (AL15, below)
+    prior <- suppressWarnings(coloc_prior(weights1 = w, weights2 = w))
     got <- coloc(bf_a, bf_b, prior = prior)
     expect_equal(got$summary, expected$summary)
     expect_equal(got$results, expected$results)
 })
 
 test_that("coloc() matches 6.0.3's coloc.abf()", {
-    D1_sub <- suppressMessages(subset_dataset(D1, 1:400))
-    D2_sub <- suppressMessages(subset_dataset(D2, 101:500))
-    pairs <- list(quant = list(D1, D2),
-                  cc = list(as_cc(D1), as_cc(D2)),
-                  pvalues = list(to_pvalues(D1), to_pvalues(D2)),
-                  mixed_type = list(D1, as_cc(D2)),
-                  partial_overlap = list(D1_sub, D2_sub),
-                  reversed = list(D1, reverse(D2)))
-    for (nm in names(pairs)) {
-        d1 <- pairs[[nm]][[1]]
-        d2 <- pairs[[nm]][[2]]
+    for (nm in names(abf_pairs)) {
+        d1 <- abf_pairs[[nm]][[1]]
+        d2 <- abf_pairs[[nm]][[2]]
         ## p12 = 1e-5 is coloc.abf()'s default (AL01)
         expected <- get_match_6_0_3(coloc.abf(d1, d2))
         got <- coloc(d1, d2, prior = coloc_prior(p12 = 1e-5))
@@ -198,17 +209,33 @@ test_that("coloc() matches 6.0.3's coloc.susie_bf()", {
 })
 
 ## ---- today's versions of the changed functions, before and after ---------------
-## These go at step 7, with the functions.
+## The tests of coloc.abf(), coloc.bf_bf(), coloc.susie() and coloc.susie_bf()
+## go at step 7, the hard break, with those four functions.
 
 test_that("coloc.abf() returns what 6.0.3's did", {
-    expected <- get_match_6_0_3(coloc.abf(D1, D2))
-    invisible(utils::capture.output(got <- coloc.abf(D1, D2)))
-    expect_equal(got, expected)
-    expect_equal(as.list(got$summary), as.list(expected$summary))
+    for (nm in names(abf_pairs)) {
+        d1 <- abf_pairs[[nm]][[1]]
+        d2 <- abf_pairs[[nm]][[2]]
+        expected <- get_match_6_0_3(coloc.abf(d1, d2))
+        invisible(utils::capture.output(got <- coloc.abf(d1, d2)))
+        expect_equal(got, expected, label = nm)
+        expect_equal(as.list(got$summary), as.list(expected$summary), label = nm)
+    }
 })
 
 test_that("coloc.bf_bf() returns what 6.0.3's did", {
     expect_equal(coloc.bf_bf(bf_a, bf_b), get_match_6_0_3(coloc.bf_bf(bf_a, bf_b)))
+})
+
+test_that("coloc.bf_bf() with every pair trimmed returns 6.0.3's result, apart from PP.H0", {
+    ## PP.H0 is the one intended change here (AL08 and AL13, below)
+    far <- bf_a[, 5:8]
+    expect_warning(got <- coloc.bf_bf(far, bf_b), "overlap too small")
+    expect_warning(expected <- get_match_6_0_3(coloc.bf_bf(far, bf_b)), "overlap too small")
+    expect_equal(names(got), names(expected))
+    expect_equal(sapply(got$summary, class), sapply(expected$summary, class))
+    cols <- setdiff(names(expected$summary), "PP.H0.abf")
+    expect_equal(got$summary[, cols, with = FALSE], expected$summary[, cols, with = FALSE])
 })
 
 test_that("coloc.susie() returns what 6.0.3's did", {
@@ -217,17 +244,6 @@ test_that("coloc.susie() returns what 6.0.3's did", {
 
 test_that("coloc.susie_bf() returns what 6.0.3's did", {
     expect_equal(coloc.susie_bf(fit3, bf4), get_match_6_0_3(coloc.susie_bf(fit3, bf4)))
-})
-
-test_that("check_dataset() names a missing type, where 6.0.3 failed obscurely", {
-    d <- D3
-    d$type <- NULL
-    req <- c("beta", "varbeta", "LD", "snp", "N")   # runsusie()'s, without type
-    expect_error(get_match_6_0_3(check_dataset(d, 1, req = req)), "argument is of length zero")
-    expect_error(check_dataset(d, 1, req = req), "dataset 1: variable type not set")
-    ## with type required, as coloc.abf() asks, the two agree
-    expect_error(get_match_6_0_3(check_dataset(d, 1)), "missing required element")
-    expect_error(check_dataset(d, 1), "missing required element")
 })
 
 ## ---- the deliberate differences, one test each -------------------------------
@@ -249,6 +265,26 @@ test_that("AL02: the priors given are used, which 6.0.3's coloc.susie_bf() ignor
     expect_equal(got$priors[["p12"]], 1e-4)
 })
 
+test_that("AL03: coloc.susie() now applies the region-size guard, which 6.0.3's never did", {
+    ## Today's coloc.susie() runs through coloc(), which applies the region-size
+    ## guard; 6.0.3's ran through coloc.bf_bf(), which does not. With 500 SNPs,
+    ## p1 = p2 = 0.01 implies five causal variants in each trait, so coloc() caps
+    ## both at 1/501. coloc.susie_bf() also runs through coloc() now, but cannot
+    ## show this: 6.0.3's ignored the priors it was given (AL02).
+    w <- capture_warnings(expected <- get_match_6_0_3(
+        coloc.susie(fit3, fit4, p1 = 0.01, p2 = 0.01, p12 = 1e-4)))
+    expect_length(w, 0)
+    expect_equal(expected$priors, c(p1 = 0.01, p2 = 0.01, p12 = 1e-4))
+    w <- capture_warnings(got <- coloc.susie(fit3, fit4, p1 = 0.01, p2 = 0.01, p12 = 1e-4))
+    expect_equal(w, c("p1 * nsnps >= 1, setting p1=1/(nsnps + 1)",
+                      "p2 * nsnps >= 1, setting p2=1/(nsnps + 1)"))
+    expect_equal(got$priors, c(p1 = 1 / 501, p2 = 1 / 501, p12 = 1e-4))
+    expect_gt(got$summary$PP.H4.abf[1], expected$summary$PP.H4.abf[1])
+    ## and nothing else moves: the same as 6.0.3 given the capped priors
+    capped <- get_match_6_0_3(coloc.susie(fit3, fit4, p1 = 1 / 501, p2 = 1 / 501, p12 = 1e-4))
+    expect_equal(got$summary, capped$summary)
+})
+
 test_that("AL08: PP.H0 in a trimmed result is a probability, where 6.0.3 left rounding noise", {
     far <- bf_a[, 5:8]
     expect_warning(expected <- get_match_6_0_3(coloc.bf_bf(far, bf_b)), "overlap too small")
@@ -260,7 +296,10 @@ test_that("AL08: PP.H0 in a trimmed result is a probability, where 6.0.3 left ro
     expect_equal(got$summary[, cols, with = FALSE], expected$summary[, cols, with = FALSE])
 })
 
-test_that("AL10: a vector p1 or p2 is rejected, where 6.0.3 reported 33 hypotheses", {
+test_that("AL10: a vector p1 or p2 is rejected, where 6.0.3 allowed it, with extra hypotheses", {
+    ## p1 and p2 of length 8, one per snp: 6.0.3 accepted them and reported
+    ## 4 * 8 + 1 = 33 hypotheses in place of five; the count grows with the
+    ## length of the vectors
     expected <- get_match_6_0_3(coloc.bf_bf(bf_a, bf_b, p1 = rep(1e-4, 8), p2 = rep(1e-4, 8)))
     expect_equal(sum(startsWith(names(expected$summary), "PP.H")), 33)
     expect_error(coloc(bf_a, bf_b, prior = coloc_prior(p1 = rep(1e-4, 8))),
@@ -268,7 +307,9 @@ test_that("AL10: a vector p1 or p2 is rejected, where 6.0.3 reported 33 hypothes
     expect_error(coloc.bf_bf(bf_a, bf_b, p1 = rep(1e-4, 8)), "must each be a scalar")
 })
 
-test_that("AL11: traits with no snps in common warn, where 6.0.3 was silent", {
+test_that("AL11: traits with no snps in common warn, where 6.0.3 returned nsnps = NA silently", {
+    ## 6.0.3's coloc.bf_bf() returned early with data.table(nsnps = NA) and no warning;
+    ## coloc() warns "no snps in common" and returns status "no_overlap"
     bf_x <- bf_b
     colnames(bf_x) <- paste0("x", 1:8)
     expect_silent(expected <- get_match_6_0_3(coloc.bf_bf(bf_a, bf_x)))
@@ -332,6 +373,19 @@ test_that("AL16: a p-value above 1 is refused, which 6.0.3 accepted", {
     expect_null(check_dataset(one, 1))
 })
 
+test_that("AL17: check_dataset() reports a dataset with no type, where 6.0.3 gave R's error", {
+    ## runsusie() leaves type out of req, so check_dataset() has to notice a
+    ## dataset without one by itself
+    d <- D3
+    d$type <- NULL
+    req <- c("beta", "varbeta", "LD", "snp", "N")   # runsusie()'s, without type
+    expect_error(get_match_6_0_3(check_dataset(d, 1, req = req)), "argument is of length zero")
+    expect_error(check_dataset(d, 1, req = req), "dataset 1: variable type not set")
+    ## with type required, as coloc.abf() asks, the two agree
+    expect_error(get_match_6_0_3(check_dataset(d, 1)), "missing required element")
+    expect_error(check_dataset(d, 1), "missing required element")
+})
+
 test_that("AL18: a SuSiE fit with a duplicated snp id is refused, where 6.0.3 used the first", {
     ## today's coloc.susie() runs through coloc(), which checks a fit's log
     ## BFs as it checks log BFs given directly; 6.0.3's went to coloc.bf_bf()
@@ -350,10 +404,13 @@ test_that("AL18: a SuSiE fit with a duplicated snp id is refused, where 6.0.3 us
 })
 
 ## ---- what both sides share ---------------------------------------------------
-## The 6.0.3 copies and coloc() both use process.dataset(), sdY.est(),
-## runsusie() and the log-space helpers, unchanged since 6.0.3, so an edit to
-## one of them would move both sides together, unseen above. These values,
-## worked out with them as they are, pin them.
+## The 6.0.3 copies and coloc() both use the package's process.dataset(), with
+## the approx.bf.estimates(), approx.bf.p() and sdY.est() it calls, and
+## runsusie(). They are not copied and are unchanged since 6.0.3, so an edit to
+## one would move both sides together, unseen above. These values, worked out
+## with them as they are, pin them. logsum(), logdiff() and logbf_to_pp() are
+## copied into helper-v603.R with the 6.0.3 functions, so the comparisons above
+## already see an edit to the package's versions.
 
 test_that("the shared code still gives 6.0.3's log ABFs", {
     at_s105 <- function(d, suffix) {
@@ -375,11 +432,4 @@ test_that("the shared code still finds D3's credible sets", {
     expect_equal(colnames(rows)[apply(rows, 1, which.max)], c("s105", "s89"))
     ## a SuSiE fit can differ across machines by about 1e-8, so 6 digits
     expect_equal(apply(rows, 1, max), c(25.82456833, 13.32711173), tolerance = 1e-6)
-})
-
-test_that("the log-space helpers add and subtract on the probability scale", {
-    expect_equal(logsum(log(c(2, 3))), log(5))
-    expect_equal(logdiff(log(5), log(2)), log(3))
-    ## four equal log BFs and no null column: four equal posteriors
-    expect_equal(logbf_to_pp(matrix(0, 1, 4), 0.1, last_is_null = FALSE), matrix(0.25, 1, 4))
 })

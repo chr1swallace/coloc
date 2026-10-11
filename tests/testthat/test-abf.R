@@ -101,13 +101,13 @@ test_that("process.dataset", {
 
 ## coloc.abf with coefficients
 test_that("coloc.abf", {
-    expect_error(suppressWarnings(coloc.abf(dataset1=DQ,dataset2=DCC), NA))
+    expect_error(suppressWarnings(coloc.abf(dataset1=DQ,dataset2=DCC)), NA)
     expect_warning(result <- coloc.abf(dataset1=DQ,dataset2=DCC), "minimum p value")
     expect_true(which.max(result$summary[-1]) == 5)
     expect_true(result$summary[1] == ncol(X))
 })
 
-test_that("coloc.abf (coloc())", {
+test_that("the coloc.abf checks, with coloc() in place of coloc.abf()", {
     expect_error(suppressWarnings(coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5))), NA)
     expect_warning(result <- coloc(DQ, DCC, prior = coloc_prior(p12 = 1e-5)), "minimum p value")
     expect_true(which.max(pp(result)[-1]) == 5)
