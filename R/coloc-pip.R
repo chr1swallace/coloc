@@ -10,7 +10,7 @@
 clPP_to_coloc <- function(clPP, alpha1, alpha2, p1=1e-4, p2=1e-4, p12=5e-6, h4_only=FALSE) {
     stopifnot("p1, p2, p12 must be probabilities"=is_prob(p1) && is_prob(p2) && is_prob(p12))
     stopifnot("clPP must be in [0,1]"=is_prob(clPP))
-    stopifnot("alpha1, alpha2 must be in [0,1]"=is_prob(clPP))
+    stopifnot("alpha1, alpha2 must be in [0,1]"=is_prob(alpha1) && is_prob(alpha2))
     pr_h4 <- p12 * clPP / ((p12 - p1*p2) * clPP + p1*p2 * (alpha1 * alpha2))
     if(!h4_only)
         return(c(PP.H3=1-pr_h4, PP.H4=pr_h4))
@@ -101,8 +101,10 @@ check_PP <- function(cs) {
     NULL
 }
 
+## Is x a single probability in [0,1]?
+## Allows for numerical rounding errors, eg in sums of PPs
 is_prob <- function(x) {
     length(x)==1 && !is.na(x) && is.numeric(x) &&
-        (x >= 0 || all.equal(x, 0)) && # allows for numerical rounding errors
-        (x <= 1 || all.equal(x, 1))
+        (x >= 0 || isTRUE(all.equal(x, 0))) && # allows for numerical rounding errors
+        (x <= 1 || isTRUE(all.equal(x, 1)))
 }

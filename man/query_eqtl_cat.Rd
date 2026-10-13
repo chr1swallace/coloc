@@ -31,7 +31,12 @@ will save time and prevent downloading the same files in each
 R session.
 
 You can also set this variable persistently using
-`options(coloc.cache_dir="path/to/my/directory")`
+`options(coloc.cache_dir="path/to/my/directory")`. See
+[coloc-options].
+
+Downloads larger than `getOption("coloc.max_temp_download",
+1e9)` bytes (eg several quant_methods at once) require a
+persistent dir.
 }\if{html}{\out{</div>}}}
 
 \item{window}{numeric value saying how far outside the index

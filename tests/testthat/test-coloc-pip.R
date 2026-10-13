@@ -9,14 +9,13 @@ test_that("is_prob accepts valid probabilities", {
   expect_true(is_prob(0.999))
 })
 
-test_that("is_prob rejects boundary values in strict mode", {
-  expect_false(is_prob(0))
-  expect_false(is_prob(1))
-})
-
-test_that("is_prob accepts boundary values in non-strict mode", {
-  expect_true(is_prob(0, strict = FALSE))
-  expect_true(is_prob(1, strict = FALSE))
+test_that("is_prob accepts boundary values, allowing for rounding error", {
+  expect_true(is_prob(0))
+  expect_true(is_prob(1))
+  expect_true(is_prob(sum(rep(0.1, 10))))   # not exactly 1 in floating point
+  expect_true(is_prob(1 + 1e-12))
+  expect_true(is_prob(-1e-12))
+  expect_false(is_prob(1.01))
 })
 
 test_that("is_prob rejects invalid inputs", {

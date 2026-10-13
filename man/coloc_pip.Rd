@@ -36,6 +36,20 @@ vectors.  The object should contain at a minimim
 \item snp: a character vector of snp identifiers
 \item PP: a numeric vector of posterior probabilities
 }
+
+Each cs may additionally contain a column
+\itemize{
+\item beta: the estimated per all snp effect on the trait
+}
+
+If they both do, then the returned object will also include
+"freq_sign_agree", which is the proportion of snps in both
+credible sets for which the difrection of effects (sign of beta)
+agrees. This is a useful quantity to be able to say
+"higher gene expression associates with higher (lower) disease risk"
+when freq_sign_agree=1 (0). If 0 < freq_sign_agree < 1 then there
+is some disagreement between SNPs and users are invited to
+investigate potential causes of this further.
 }
 \examples{
 cs1 <- data.frame(snp=c("s1","s2"), PP=c(0.05,0.9))

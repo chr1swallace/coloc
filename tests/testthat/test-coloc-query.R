@@ -14,9 +14,71 @@ test_that("coloc_query", {
     expect_error(coloc_query(ql, q))
     attributes(ql) <- NULL
     expect_error(coloc_query(q, ql))
-})    
+})
 
-test_that("query_ot (slow)", {
+test_that("Open Targets file index is sorted and complete", {
+    idx <- coloc:::.ot_index()
+    expect_equal(nrow(idx), 200)
+    expect_true(all(idx$size > 0))
+    expect_true(all(is.na(idx$md5) | grepl("^[0-9a-f]{32}$", idx$md5)))
+    chrs <- unique(c(rbind(idx$chr_first, idx$chr_last)))
+    k1 <- match(idx$chr_first, chrs) * 1e10 + idx$pos_first
+    k2 <- match(idx$chr_last, chrs) * 1e10 + idx$pos_last
+    expect_true(all(k1 <= k2))
+    expect_true(all(head(k2, -1) <= tail(k1, -1))) # files in order and not overlapping
+    expect_setequal(chrs, c(1:22, "X", "Y"))
+})
+
+test_that("query regions select the right Open Targets files", {
+    sel <- function(c, l, u) sub("^(part-[0-9]+)-.*", "\\1", coloc:::.ot_files_for(c, l, u)$file)
+    expect_equal(sel(6, 90179406, 90388603), "part-00166")
+    expect_equal(sel(1, 155051361, 155315184), "part-00012")
+    expect_equal(sel(1, 155028000, 155029000), c("part-00011", "part-00012")) # straddles a file boundary
+    expect_equal(sel(10, 1e6, 2e6), "part-00018") # file shared by end of chr1 and start of chr10
+    expect_equal(nrow(coloc:::.ot_files_for(23, 1, 1e9)), 0)
+})
+
+test_that("query_ot on an uncovered chromosome returns an empty list without downloading", {
+    expect_warning(ot <- query_ot(data.frame(chr = 23, pos = 1e6)), "No Open Targets")
+    expect_length(ot, 0)
+})
+
+test_that("large downloads require a persistent cache dir", {
+    old <- options(coloc.cache_dir = NULL, coloc.max_temp_download = NULL)
+    on.exit(options(old), add = TRUE)
+    expect_error(suppressWarnings(ot_fetch()), "persistent cache directory")
+    expect_error(suppressWarnings(eqtl_cat_fetch(c("ge", "majiq"))), "persistent cache directory")
+    expect_error(coloc:::.check_download_size(2e9, NULL, "x"), "2 GB")
+    expect_null(coloc:::.check_download_size(15e6, NULL, "x"))     # small: temp dir is fine
+    expect_null(coloc:::.check_download_size(2e9, "/some/dir", "x")) # dir supplied
+    options(coloc.max_temp_download = 5e9)
+    expect_null(coloc:::.check_download_size(2e9, NULL, "x"))       # limit raised
+})
+
+test_that("downloads are checked, and bad ones removed", {
+    src <- tempfile(fileext = ".bin"); writeBin(as.raw(1:100), src)
+    url <- paste0("file://", normalizePath(src)); good <- unname(tools::md5sum(src))
+    d <- tempfile("dl")
+    expect_error(suppressMessages(coloc:::.download_once(url, d, "a.bin", md5 = "0000")), "Checksum mismatch")
+    expect_false(file.exists(file.path(d, "a.bin")))
+    expect_length(list.files(d, pattern = "\\.part"), 0)
+    expect_error(suppressMessages(coloc:::.download_once(url, d, "a.bin", size = 99)), "Size mismatch")
+    p <- suppressMessages(coloc:::.download_once(url, d, "a.bin", md5 = good, size = 100))
+    expect_equal(file.size(p), 100)
+    writeBin(as.raw(1:5), p) # truncated file is replaced when size is known
+    p <- suppressMessages(coloc:::.download_once(url, d, "a.bin", size = 100))
+    expect_equal(file.size(p), 100)
+})
+
+test_that("eqtl_cat_fetch returns paths named by quant_method", {
+    d <- tempfile("ecat"); dir.create(d)
+    file.create(file.path(d, coloc:::.eqtl_cat_files$file)) # pretend all files are already downloaded
+    p <- eqtl_cat_fetch(c("ge", "tx"), dir = d)
+    expect_equal(names(p), c("ge", "tx", "metadata"))
+    expect_true(all(file.exists(p)))
+})
+
+test_that("query_ot", {
     skip_on_cran()
     if(is.null(getOption("coloc.cache_dir"))) {
         expect_warning(ot <- query_ot(q))
@@ -27,6 +89,14 @@ test_that("query_ot (slow)", {
     expect_equal(length(ot), 484)
     expect_equal(nrow(out), 484)
     expect_equal(sum(out$PP.H4 > 0.5), 44)
+})
+
+test_that("query_ot remote = TRUE matches local", {
+    skip_on_cran()
+    ot_local <- suppressWarnings(query_ot(q))
+    ot_remote <- suppressWarnings(query_ot(q, remote = TRUE))
+    expect_equal(names(ot_remote), names(ot_local))
+    expect_equal(attr(ot_remote, "annot"), attr(ot_local, "annot"))
 })
 
 test_that("query_eqtl_cat (slow)", {

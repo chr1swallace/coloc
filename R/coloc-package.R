@@ -19,3 +19,36 @@
 "_PACKAGE"
 
 utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1","hit2","lABF.df1","lABF.df2","lABF.h3","lbf1","lbf2","lbf3","lbf4","nsnps","snp","snp1","snp2","varbeta","z", "logp"))
+
+##' Package options
+##'
+##' coloc reads the following options, set with [options()], for
+##' example in your `.Rprofile`. They mainly control the functions
+##' that download public credible sets ([query_ot()], [ot_fetch()],
+##' [query_eqtl_cat()], [ensembl_to_symbol()]).
+##'
+##' \describe{
+##'   \item{`coloc.cache_dir`}{Directory where downloaded files are
+##'   kept, so they are reused between R sessions. Used when a
+##'   function's `dir` argument is NULL. If neither is set, files go
+##'   to a temporary directory that is deleted when R exits, with a
+##'   warning. Default: unset.}
+##'   \item{`coloc.max_temp_download`}{Largest download, in bytes,
+##'   allowed into that temporary directory. Larger downloads (eg
+##'   [ot_fetch()], or several eQTL Catalogue quantification methods at
+##'   once) stop with a request to set a cache directory. Default:
+##'   `1e9` (1 GB).}
+##'   \item{`coloc.ot_remote`}{Default for the `remote` argument of
+##'   [query_ot()]. FALSE downloads the Open Targets files a query needs
+##'   to the cache directory; TRUE reads them directly from the Open
+##'   Targets S3 bucket. Default: FALSE.}
+##' }
+##'
+##' @examples
+##' \dontrun{
+##' ## in ~/.Rprofile, to keep downloads in one place
+##' options(coloc.cache_dir = "~/data/coloc-cache")
+##' }
+##' @name coloc-options
+##' @aliases coloc.cache_dir coloc.max_temp_download coloc.ot_remote
+NULL

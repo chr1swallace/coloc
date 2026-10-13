@@ -9,6 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup, include = FALSE}
+## Chunks that download public data (several hundred MB) are skipped under R CMD check unless
+## NOT_CRAN=true, ie they are not run on CRAN. They run when knitting interactively, with
+## devtools::build(), devtools::check() and pkgdown.
+online <- Sys.getenv("_R_CHECK_PACKAGE_NAME_") == "" || identical(Sys.getenv("NOT_CRAN"), "true")
+```
+
 # Using credible sets to approximate full coloc
 
 As GWAS and QTL datasets continue to grow in number, it is becoming harder to store complete summary statistics. Organisations like eQTL Catalogue and Open Targets are instead moving to store/make publicly available just the credible   sets at significant loci.
@@ -45,12 +52,40 @@ q <- data.frame(chr = 6,
 
 You will see this credible set has additional chr and pos columns. We will need these to define the lookup region in the public data resources.  The SNP identifiers also have a particular format: chr\_pos\_ref\_alt. This is how snp identifiers are formatted in the public resources, so yours will need to be too in order to match identifiers.
 
+## Set up a cache directory first
+
+Both query functions download files: Open Targets credible sets and a study manifest for `query_ot()`, and eQTL Catalogue files for `query_eqtl_cat()`. coloc keeps these in a *cache directory* and reuses them, so each file is only downloaded once.
+
+**We strongly recommend setting a cache directory before you start.** The simplest way is to set the `coloc.cache_dir` option once, for example in your `~/.Rprofile`, so that every coloc session uses it:
+
+```{r cacheopt, eval = FALSE}
+options(coloc.cache_dir = "~/data/coloc-cache")
+```
+
+If you would rather not set the option, pass the directory to each query function with the `dir` argument instead, eg `query_ot(q, dir = "~/data/coloc-cache")`.
+
+If you do neither, coloc falls back to a temporary directory with a warning. This works, but the temporary directory is deleted when R exits, so everything is downloaded again in every new session. For this reason, downloads larger than 1 GB (such as downloading all of Open Targets with `ot_fetch()`, or several eQTL Catalogue quantification methods at once) will stop and ask you to set a cache directory.
+
+The options that control downloading are listed in `?coloc-options`:
+
+* `coloc.cache_dir` - where downloaded files are kept (default: unset, so a temporary directory is used, with a warning)
+* `coloc.max_temp_download` - the largest download, in bytes, allowed into that temporary directory (default: `1e9`, 1 GB)
+* `coloc.ot_remote` - whether `query_ot()` reads Open Targets files directly from S3 instead of downloading them (default: `FALSE`; see below)
+
+In this vignette we use a cache directory inside R's temporary directory, so that building the vignette leaves no files behind. For your own work, use a directory that persists, as above.
+
+```{r cache}
+options(coloc.cache_dir = file.path(tempdir(), "coloc-cache"))
+```
+
+`r if (!online) "*The examples below download public data, so they have not been run in this build of the vignette, and their output is not shown. Run them yourself to see the results.*"`
+
 ## Query Open Targets
 
-Open Targets make their data available using S3.  We will connect to that using arrow. The first connection may be slow because arrow has to read the structure of the files, but future runs should be faster.  We also download to a temporary directory a manifest file so we can add information about what each study in Open Targets relate to.  It is good practice to provide a local directory where this will be stored, and then files can persist between R sessions. If you fail to do this, the files will be held in temporary space and will need to be downloaded again each R session.
+Open Targets stores its fine-mapped credible sets as 200 files in a public S3 bucket, about 3.2 GB in total for release 26.06. Each file covers a contiguous block of the genome. `query_ot()` works out which file or files overlap your region (usually just one, around 15 MB), downloads only those to the cache directory, and reads them locally. Later queries in the same region reuse the downloaded files, so they are fast and need no network access. It also downloads a study manifest (about 100 MB, once) so it can describe what each Open Targets study relates to.
 
-```{r ot}
-ot <- query_ot(q, dir="/tmp/mycache")
+```{r ot, eval = online}
+ot <- query_ot(q)
 out <- coloc_query(q, ot)
 head(out) 
 out[out$PP.H4 > 0 & out$studyType != "gwas",]
@@ -59,27 +94,54 @@ out[out$PP.H4 > 0 & out$studyType != "gwas",]
 In this case, we are only interested in seeing what evidence there is for a causal gene, so we exclude studyType="gwas".  We could have done this directly using the type argument:
 
 
-```{r ot2}
-ot <- query_ot(q, dir="/tmp/mycache", type="qtl")
+```{r ot2, eval = online}
+ot <- query_ot(q, type="qtl")
 out <- coloc_query(q, ot)
 out[out$PP.H4 > 0,]
 ```
 
+### Downloading versus querying remotely
+
+There are three ways to work with the Open Targets data, depending on how many queries you will run:
+
+* **Default: download what each query needs.** Suits most uses. Files build up in the cache directory as you query new regions.
+* **`remote = TRUE`: read directly from S3.** `query_ot(q, remote = TRUE)` reads the same file(s) straight from the Open Targets bucket without saving them. This is convenient for a few one-off queries when you don't want files on disk. It opens a fresh network connection on every call, so it is slower for repeated queries and less robust: avoid it inside forked parallel code such as `parallel::mclapply()`, and if a call fails with a "SIGPIPE" error, restart R before continuing. Set `options(coloc.ot_remote = TRUE)` to make this the default.
+* **`ot_fetch()`: download everything in advance.** Downloads all 200 files (about 3.2 GB) to the cache directory in one go. This is useful on HPC systems where compute nodes have no internet access: run `ot_fetch()` once on a login node, then run `query_ot()` on compute nodes with the same cache directory. Because of its size, `ot_fetch()` requires a cache directory to be set.
+
+```{r otfetch, eval = FALSE}
+ot <- query_ot(q, remote = TRUE)                  # a quick one-off query, nothing saved
+ot_fetch(dir = "/shared/project/coloc-cache")     # everything, once, eg on an HPC login node
+```
+
+Downloads are checked against the expected size and checksum. If a download is interrupted or corrupt it is removed, and running the command again retries it.
+
+### Running many queries in parallel
+
+If you will query many credible sets in parallel, for example with `parallel::mclapply()`, download the data first, and then run the parallel queries against the local files:
+
+```{r parallel, eval = FALSE}
+ot_fetch()                          # all Open Targets credible sets, once
+eqtl_cat_fetch(c("ge", "exon"))     # the eQTL Catalogue files you need, once
+res <- parallel::mclapply(my_credsets, function(cs) coloc_query(cs, query_ot(cs)), mc.cores = 8)
+```
+
+Otherwise, workers that query nearby regions at the same time will each download the same file. This is wasteful. Do not use `remote = TRUE` inside `mclapply()`: forked workers sharing S3 connections can crash R.
+
 ## Query eQTL Catalogue
 
-Querying the eQTL Catalogue works similarly, except here the data is stored at Zenodo in files that need to be downloaded locally to work with. Again, it is sensible to supply the dir argument so that these can persist between sessions.
+Querying the eQTL Catalogue works similarly, except here the data is stored at Zenodo in large files that each cover the whole genome. These cannot be read remotely or split by region, so the whole file for each quantification method is downloaded to the cache directory on first use and reused after that. This is another reason to set a persistent cache directory.
 
-These files are divided by the method used to quantify gene expression. "ge" - the default - is total gene expression, but it's also the largest file. We will use "exon" for this vignette because it's among the smallest. You can see the full set of files at <https://zenodo.org/records/22846842>.  In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
+These files are divided by the method used to quantify gene expression. "ge" - the default - is total gene expression, but it's also the largest file (about 780 MB). We will use "exon" for this vignette because it's among the smallest. You can see the full set of files at <https://zenodo.org/records/22846842>.  To download files in advance, eg on an HPC login node, use `eqtl_cat_fetch()`. In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
 
 
-```{r ecat}
-ecat <- query_eqtl_cat(q, dir="/tmp/mycache", quant_method="exon")
+```{r ecat, eval = online}
+ecat <- query_eqtl_cat(q, quant_method="exon")
 out <- coloc_query(q, ecat)
 out
 ```
 
 Because ecat is a small object, we can examine its structure. It is a list of credible sets, with an attribute "annot". annot is a data.frame containing one row per credible set giving information about the analysis it refers to.
 
-```{r obj}
+```{r obj, eval = online}
 ecat
 ```
