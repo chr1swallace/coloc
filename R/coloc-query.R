@@ -444,7 +444,8 @@ query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5) {
   names(tbl)[names(tbl) == "variant"] <- "snp"
   names(tbl)[names(tbl) == "pip"] <- "PP"
   tbl$snp <- sub("^chr", "", tbl$snp) # match snp format eg 6_90279406_G_C
-  credsets <- split(tbl[, c("snp", "PP", "beta")], tbl$cs_id)
+  tbl <- unique(tbl)
+  credsets <- split(tbl[, c("snp", "PP", "beta")], tbl$cs_id) 
   ok <- sapply(credsets, function(x) is_prob(sum(x$PP)))
   if(any(!ok)) {
       warning(sum(!ok), " / ", length(ok), " credsets have sum(PP) not in [0,1]. Removing")
