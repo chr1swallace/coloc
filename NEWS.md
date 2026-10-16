@@ -1,5 +1,6 @@
 # coloc 6.0.3
 * fix issue #208, #209
+* fix variant-specific prior weights being applied to the wrong SNPs in coloc.abf(), and in coloc.bf_bf()/coloc.susie() when dataset 2 lists its SNPs in a different order (the same affected a per-SNP p2); fix finemap.abf() rejecting valid prior_weights
 # coloc 6.0.0
 * Add new ability to calculate varying prior probabilities based on distance to the gene in eQTL datasets
 * Add new plot_extended_data function to produce nice QC plots for coloc

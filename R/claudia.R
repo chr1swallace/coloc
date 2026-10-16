@@ -321,7 +321,7 @@ finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
     nsnps <- nrow(df)
     p1=adjust_prior(p1,nsnps,"1")
 
-    if (!is.null(prior_weights) && (nsnps != length(prior_weights) | (prior_weights <= 0))) {
+    if (!is.null(prior_weights) && (nsnps != length(prior_weights) || any(prior_weights <= 0))) {
       stop("Length of prior weights must match size of dataset")
     }
 
@@ -448,8 +448,8 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
     merged.df <- merge(df1,df2)
     p12=adjust_prior(p12,nrow(merged.df),"12")
 
-    prior_weights1 <- prior_weights1[which(df1$snp %in% merged.df$snp)]
-    prior_weights2 <- prior_weights2[which(df2$snp %in% merged.df$snp)]
+    prior_weights1 <- prior_weights1[match(merged.df$snp, df1$snp)]
+    prior_weights2 <- prior_weights2[match(merged.df$snp, df2$snp)]
 
     if(!nrow(merged.df))
         stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")

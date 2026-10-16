@@ -303,15 +303,15 @@ coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
       stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
   }
 
-  ## restrict bf1/2, p1, p2 and prior weights for incomplete snp overlap
-  if(length(isnps)!=ncol(bf1)) {
+  ## restrict and reorder bf1/2, p1, p2 and prior weights to the common snps, isnps
+  if(!identical(colnames(bf1), isnps)) {
     keep=match(isnps,colnames(bf1))
     prior_weights1 <- prior_weights1[keep]
     bf1=bf1[,keep,drop=FALSE]
     if(length(p1)>1)
       p1=p1[keep]
   }
-  if(length(isnps)!=ncol(bf2)) {
+  if(!identical(colnames(bf2), isnps)) {
     keep=match(isnps,colnames(bf2))
     prior_weights2 <- prior_weights2[keep]
     bf2=bf2[,keep,drop=FALSE]
