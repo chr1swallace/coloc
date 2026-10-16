@@ -1,6 +1,6 @@
 library(coloc)
 data(coloc_test_data)
-attach(coloc_test_data)
+D1 <- coloc_test_data$D1
   result.nonull=runsusie(D1)
   pi0=1e-4
   ## 3rd edition: expect_warning() returns the condition, not the value, so the

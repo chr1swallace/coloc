@@ -1,6 +1,7 @@
 library(coloc)
 data(coloc_test_data)
-attach(coloc_test_data)
+D1 <- coloc_test_data$D1
+D3 <- coloc_test_data$D3
 
 B1=C1=D1
 C1[c("type","s")]=list(type="cc",s=0.5)

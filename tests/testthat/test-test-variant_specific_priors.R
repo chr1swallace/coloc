@@ -1,6 +1,7 @@
 
 data(coloc_test_data)
-attach(coloc_test_data)
+D1 <- coloc_test_data$D1
+D2 <- coloc_test_data$D2
 
 # finemap.abf()
 
