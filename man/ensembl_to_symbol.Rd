@@ -9,11 +9,9 @@ ensembl_to_symbol(ids, dir = NULL)
 \arguments{
 \item{ids}{character vector of Ensembl gene ids}
 
-\item{dir}{eQTL Catalogue credible sets are available at
-\href{https://zenodo.org/records/22846842}{Zenodo} subdivided by quant_method. On
-first use, this function will download copies of the
-appropriate files to a local temporary directory, and query
-those files without download on subsequent use.
+\item{dir}{eQTL Catalogue files are downloaded as needed and kept
+in a cache dir, and queried without download on subsequent
+use. If dir is NULL, a temporary directory will be used.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{It is strongly recommended to use dir to supply a local
 directory where files will persist between R sessions. This
@@ -25,8 +23,8 @@ You can also set this variable persistently using
 [coloc-options].
 
 Downloads larger than `getOption("coloc.max_temp_download",
-1e9)` bytes (eg several quant_methods at once) require a
-persistent dir.
+1e9)` bytes (eg [eqtl_cat_fetch()] for several quant_methods
+at once) require a persistent dir.
 }\if{html}{\out{</div>}}}
 }
 \value{

@@ -23,8 +23,8 @@ Suggests:
     locuszoomr,
     gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 7.0.1
-Date: 2026-10-01
+Version: 7.0.2
+Date: 2026-10-16
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"), email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut", email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb", email="v.plagnol@ucl.ac.uk"),
@@ -60,4 +60,5 @@ Collate:
 Depends: 
     R (>= 3.5)
 LazyData: true
+LazyDataCompression: xz
 Config/roxygen2/version: 8.1.0

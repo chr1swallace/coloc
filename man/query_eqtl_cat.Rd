@@ -4,7 +4,13 @@
 \alias{query_eqtl_cat}
 \title{query eQTL catalogue credible sets}
 \usage{
-query_eqtl_cat(cs, quant_method = "ge", dir = NULL, window = 1e+05)
+query_eqtl_cat(
+  cs,
+  quant_method = "ge",
+  dir = NULL,
+  window = 1e+05,
+  version = .eqtl_cat_default_version
+)
 }
 \arguments{
 \item{cs}{an index data.frame containing columns "chr" "pos". NB
@@ -16,14 +22,12 @@ leafcutter, majiq, tx, txrev. See
 \url{https://www.ebi.ac.uk/eqtl/Methods/}.
 \href{https://www.biorxiv.org/content/10.1101/2024.07.02.601792v1}{majiq}
 is a recent splicing quantification that was introduced to
-eQTL Catalogue in r8. The default is ge, but you can choose
-more than one if you wish.}
+eQTL Catalogue in r8, so is not available in r7. The default
+is ge, but you can choose more than one if you wish.}
 
-\item{dir}{eQTL Catalogue credible sets are available at
-\href{https://zenodo.org/records/22846842}{Zenodo} subdivided by quant_method. On
-first use, this function will download copies of the
-appropriate files to a local temporary directory, and query
-those files without download on subsequent use.
+\item{dir}{eQTL Catalogue files are downloaded as needed and kept
+in a cache dir, and queried without download on subsequent
+use. If dir is NULL, a temporary directory will be used.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{It is strongly recommended to use dir to supply a local
 directory where files will persist between R sessions. This
@@ -35,8 +39,8 @@ You can also set this variable persistently using
 [coloc-options].
 
 Downloads larger than `getOption("coloc.max_temp_download",
-1e9)` bytes (eg several quant_methods at once) require a
-persistent dir.
+1e9)` bytes (eg [eqtl_cat_fetch()] for several quant_methods
+at once) require a persistent dir.
 }\if{html}{\out{</div>}}}
 
 \item{window}{numeric value saying how far outside the index
@@ -44,6 +48,11 @@ credible set we should search. Given that only overlapping
 credible sets can show colocalisation there is no reason to
 set this particularly large. The default, 1e+5, has been
 adequate in all our tests.}
+
+\item{version}{eQTL Catalogue release: "r8-beta" (default,
+\url{https://zenodo.org/records/23398345}) or "r7"
+(\url{https://zenodo.org/records/23397994}). Each release is kept
+in its own subdirectory of the cache dir. See}
 }
 \value{
 a list of credible sets with an attribute "annot"
@@ -59,6 +68,18 @@ that may overlap - ie contain at least one snp within the region
 then be colocalised with the index credible set using the
 coloc_query() function.
 }
+\details{
+The eQTL Catalogue credible sets are stored, for each release and
+quantification method, as a series of files each covering a block
+of the genome. query_eqtl_cat() downloads only the file(s)
+overlapping the query region (typically one, ~25 MB per
+quantification method) to the cache dir, and reuses them in later
+queries. To download everything in advance, use
+\code{\link[=eqtl_cat_fetch]{eqtl_cat_fetch()}}. These files are the eQTL Catalogue's own
+credible sets, unchanged but split by genomic position: release r7
+at \url{https://zenodo.org/records/23397994} and r8-beta at
+\url{https://zenodo.org/records/23398345}.
+}
 \examples{
 \dontrun{
 q <- data.frame(chr = 6,
@@ -70,10 +91,12 @@ q <- data.frame(chr = 6,
 ecat <- query_eqtl_cat(q)
 out2 <- coloc_query(q, ecat)
 out2[out2$PP.H4 > 0, ]
+
+ecat7 <- query_eqtl_cat(q, version = "r7") # an earlier release
 }
 }
 \seealso{
-\code{\link[=coloc_query]{coloc_query()}}
+\code{\link[=coloc_query]{coloc_query()}}, \code{\link[=eqtl_cat_fetch]{eqtl_cat_fetch()}}
 }
 \author{
 Chris Wallace

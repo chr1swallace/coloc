@@ -101,6 +101,7 @@ importFrom(susieR,
 )
 importFrom(utils,
   combn,
+  head,
   packageVersion
 )
 importFrom(viridis,viridis)

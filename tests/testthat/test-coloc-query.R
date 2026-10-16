@@ -70,12 +70,28 @@ test_that("downloads are checked, and bad ones removed", {
     expect_equal(file.size(p), 100)
 })
 
-test_that("eqtl_cat_fetch returns paths named by quant_method", {
-    d <- tempfile("ecat"); dir.create(d)
-    file.create(file.path(d, coloc:::.eqtl_cat_files$file)) # pretend all files are already downloaded
-    p <- eqtl_cat_fetch(c("ge", "tx"), dir = d)
-    expect_equal(names(p), c("ge", "tx", "metadata"))
-    expect_true(all(file.exists(p)))
+test_that("eQTL Catalogue file indexes are complete and sorted", {
+    for (v in coloc:::.eqtl_cat_releases$version) {
+        idx <- coloc:::.eqtl_cat_index(v)
+        expect_true(all(c("quant_method", "file", "chromosome", "pos_min", "pos_max", "size", "md5") %in% names(idx)), info = v)
+        expect_true(all(grepl(paste0("^eQTL_Catalogue_", v, "_"), idx$file)), info = v)
+        expect_true(all(grepl("^[0-9a-f]{32}$", idx$md5)), info = v)
+        expect_lte(length(unique(idx$file)) + 2, 100) # Zenodo files per record
+        ## within each method and chromosome, chunks are in position order
+        expect_true(all(tapply(idx$pos_min, paste(idx$quant_method, idx$chromosome), function(x) !is.unsorted(x))), info = v)
+    }
+    expect_false("majiq" %in% coloc:::.eqtl_cat_index("r7")$quant_method)
+    expect_true("majiq" %in% coloc:::.eqtl_cat_index("r8-beta")$quant_method)
+})
+
+test_that("eQTL Catalogue releases are cached separately and validated", {
+    d <- tempfile("ecat")
+    expect_false(eqtl_cat_dir(d, "r7") == eqtl_cat_dir(d, "r8-beta"))
+    expect_equal(dirname(eqtl_cat_dir(d, "r7")), dirname(eqtl_cat_dir(d, "r8-beta")))
+    expect_error(query_eqtl_cat(q, quant_method = "majiq", version = "r7", dir = d), "not available in eQTL Catalogue r7")
+    expect_error(query_eqtl_cat(q, version = "r9", dir = d), "version must be one of")
+    expect_warning(ot <- query_eqtl_cat(data.frame(chr = 6, pos = 1e9), dir = d), "No eQTL Catalogue")
+    expect_length(ot, 0)
 })
 
 test_that("query_ot", {
@@ -97,6 +113,15 @@ test_that("query_ot remote = TRUE matches local", {
     ot_remote <- suppressWarnings(query_ot(q, remote = TRUE))
     expect_equal(names(ot_remote), names(ot_local))
     expect_equal(attr(ot_remote, "annot"), attr(ot_local, "annot"))
+})
+
+test_that("query_eqtl_cat r7 (slow)", {
+    skip_on_cran()
+    ecat <- suppressWarnings(query_eqtl_cat(q, quant_method = "exon", version = "r7"))
+    expect_true(is.list(ecat))
+    expect_true(all(c("dataset_id", "cs_id") %in% names(attr(ecat, "annot"))))
+    expect_false("beta" %in% names(attr(ecat, "annot")))            # variant-level columns stay in the credible sets
+    expect_equal(attr(ecat, "annot")$cs_id, names(ecat))           # one annotation row per credible set, in order
 })
 
 test_that("query_eqtl_cat (slow)", {

@@ -324,31 +324,78 @@ query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"), dir = NU
 ################################################################################
 ## eqtl catalogue queries
 
-.eqtl_cat_url <- "https://zenodo.org/records/22846842"
-.eqtl_cat_files <- data.frame(quant_method = c("exon", "ge", "leafcutter", "majiq", "tx", "txrev", "metadata"),
-                              file = c(sprintf("eQTL_Catalogue_r8-beta_cs_%s_190926.parquet",
-                                               c("exon", "ge", "leafcutter", "majiq", "tx", "txrev")),
-                                       "dataset_metadata.tsv"),
-                              md5 = c("5085e0b6c61b57ff8acd3aad9f7fc297",
-                                      "1c54f8dfab4ced90fe0da3154b9b03f7",
-                                      "e83fbe0b283c63c28f843db4e155060b",
-                                      "3963dbb8ffc347b46d25f13983ef9d0a",
-                                      "c11a60ba590e6cf24417de8935cfb699",
-                                      "277bf7c2f592a2e48dbfab59618a4e27",
-                                      "52b0305f56bd046eb5eeb2b6f2efa874"),
-                              size = c(293.8e6, 779.0e6, 228.5e6, 607.3e6, 284.2e6, 325.1e6, 64.6e3)) # approximate bytes, from Zenodo: used for the download size limit, not to check files
+## Releases: eQTL Catalogue credible sets split into small files sorted by genomic position
+## (data-raw/eqtl_cat_split.R), published on Zenodo with one record per release (data-raw/zenodo_upload.sh).
+## To add a release: split, upload, copy its index to inst/extdata, and add a row here.
+.eqtl_cat_releases <- data.frame(
+  version = c("r7", "r8-beta"),
+  record = c("23397994", "23398345"),
+  source_record = c("23350544", "22846842"), # the original eQTL Catalogue records the files were split from
+  metadata = c("dataset_metadata_r7.tsv", "dataset_metadata.tsv"),
+  metadata_md5 = c("7020d45bc577bff33f2904671a97eb03", "52b0305f56bd046eb5eeb2b6f2efa874"))
+.eqtl_cat_default_version <- "r8-beta"
 
-eqtl_cat_dir <- function(dir = NULL) .cache_dir(dir, "eqtl_catalogue")
+.eqtl_cat_release <- function(version) {
+  if (length(version) != 1 || !version %in% .eqtl_cat_releases$version)
+    stop("version must be one of: ", paste(.eqtl_cat_releases$version, collapse = ", "), call. = FALSE)
+  .eqtl_cat_releases[.eqtl_cat_releases$version == version, ]
+}
+.eqtl_cat_url <- function(version = .eqtl_cat_default_version) sprintf("https://zenodo.org/records/%s", .eqtl_cat_release(version)$record)
+
+## Session cache for the file indexes
+.eqtl_env <- new.env(parent = emptyenv())
+
+## Index of a release's chunk files, one row per chunk and chromosome:
+## quant_method, file, chromosome, pos_min, pos_max, n_cs, n_rows, size, md5
+.eqtl_cat_index <- function(version = .eqtl_cat_default_version) {
+  .eqtl_cat_release(version)
+  if (is.null(.eqtl_env[[version]])) {
+    f <- system.file("extdata", sprintf("eQTL_Catalogue_index_%s.tsv", version), package = "coloc")
+    if (!nzchar(f)) stop("eQTL Catalogue file index for ", version, " not found in inst/extdata")
+    .eqtl_env[[version]] <- utils::read.delim(f, colClasses = c(chromosome = "character", md5 = "character"))
+  }
+  .eqtl_env[[version]]
+}
+
+## Check quant_method against what the release contains (eg r7 has no majiq)
+.eqtl_cat_check_qm <- function(quant_method, version) {
+  qms <- unique(.eqtl_cat_index(version)$quant_method)
+  bad <- setdiff(quant_method, qms)
+  if (length(bad))
+    stop("quant_method ", paste(bad, collapse = ", "), " not available in eQTL Catalogue ", version, ". Choose from: ", paste(qms, collapse = ", "), call. = FALSE)
+  quant_method
+}
+
+## Cache directory for one release, so releases never overwrite each other
+eqtl_cat_dir <- function(dir = NULL, version = .eqtl_cat_default_version)
+  file.path(.cache_dir(dir, "eqtl_catalogue"), paste0("eQTL_Catalogue_", .eqtl_cat_release(version)$version))
+
+## Make sure the given chunk files (rows of the index) and the release metadata are in the cache, downloading any
+## that are missing. Returns local paths named by quant_method, with the metadata file named "metadata"
+.eqtl_cat_fetch_files <- function(files, version, dir, what) {
+  rel <- .eqtl_cat_release(version)
+  local <- eqtl_cat_dir(dir, version)
+  base <- paste0(.eqtl_cat_url(version), "/files/")
+  files <- unique(files[, c("quant_method", "file", "size", "md5")])
+  have <- file.exists(file.path(local, files$file)) & file.size(file.path(local, files$file)) == files$size
+  .check_download_size(sum(files$size[!have]), dir, what)
+  if (any(!have))
+    message("Downloading ", sum(!have), " eQTL Catalogue ", version, " file(s) (", round(sum(files$size[!have]) / 1e6), " MB) to ", local)
+  getone <- function(f, m, s) .download_once(paste0(base, f, "?download=1"), local, file = f, md5 = m, size = s)
+  paths <- stats::setNames(mapply(getone, files$file, files$md5, files$size, USE.NAMES = FALSE), files$quant_method)
+  c(paths, metadata = .download_once(paste0(base, rel$metadata, "?download=1"), local, file = rel$metadata, md5 = rel$metadata_md5))
+}
 
 ##' Download eQTL Catalogue credible sets
 ##'
-##' Downloads the eQTL Catalogue credible set files for the chosen
-##' quantification methods, plus the dataset metadata, from
-##' [Zenodo](`r .eqtl_cat_url`) to the cache directory. Files already
-##' present are not downloaded again. query_eqtl_cat() calls this
-##' itself; call it directly to download in advance, for example on an
-##' HPC login node before running query_eqtl_cat() on compute nodes
-##' without internet access, using the same dir.
+##' Downloads all the eQTL Catalogue credible set files for the chosen
+##' quantification methods and release, plus the dataset metadata, to
+##' the cache directory. query_eqtl_cat() downloads only the files it
+##' needs for each query, so you only need this to download
+##' everything in advance, for example on an HPC login node before
+##' running query_eqtl_cat() on compute nodes without internet access,
+##' using the same dir. Files already present are not downloaded
+##' again.
 ##'
 ##' @inheritParams query_eqtl_cat
 ##' @return named character vector of local file paths, named by
@@ -356,14 +403,10 @@ eqtl_cat_dir <- function(dir = NULL) .cache_dir(dir, "eqtl_catalogue")
 ##' @export
 ##' @author Chris Wallace
 ##' @seealso [query_eqtl_cat()]
-eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL) {
-  quant_method <- match.arg(quant_method, setdiff(.eqtl_cat_files$quant_method, "metadata"), several.ok = TRUE)
-  files <- .eqtl_cat_files[.eqtl_cat_files$quant_method %in% c(quant_method, "metadata"), ]
-  local <- eqtl_cat_dir(dir)
-  todo <- !file.exists(file.path(local, files$file))
-  .check_download_size(sum(files$size[todo]), dir, "This eQTL Catalogue query")
-  getone <- function(f, m) .download_once(paste0(.eqtl_cat_url, "/files/", f, "?download=1"), local, file = f, md5 = m)
-  stats::setNames(mapply(getone, files$file, files$md5, USE.NAMES = FALSE), files$quant_method)
+eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL, version = .eqtl_cat_default_version) {
+  quant_method <- .eqtl_cat_check_qm(quant_method, version)
+  idx <- .eqtl_cat_index(version)
+  .eqtl_cat_fetch_files(idx[idx$quant_method %in% quant_method, ], version, dir, "Downloading these eQTL Catalogue files")
 }
 
 ##' query eQTL catalogue credible sets
@@ -375,6 +418,17 @@ eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL) {
 ##' then be colocalised with the index credible set using the
 ##' coloc_query() function.
 ##'
+##' The eQTL Catalogue credible sets are stored, for each release and
+##' quantification method, as a series of files each covering a block
+##' of the genome. query_eqtl_cat() downloads only the file(s)
+##' overlapping the query region (typically one, ~25 MB per
+##' quantification method) to the cache dir, and reuses them in later
+##' queries. To download everything in advance, use
+##' [eqtl_cat_fetch()]. These files are the eQTL Catalogue's own
+##' credible sets, unchanged but split by genomic position: release r7
+##' at <`r .eqtl_cat_url("r7")`> and r8-beta at
+##' <`r .eqtl_cat_url("r8-beta")`>.
+##'
 ##' @inheritParams query_ot
 ##' @param quant_method the eQTL Catalogue contains results for up to
 ##'     six different ways of quantifying gene expression: exon, ge,
@@ -382,13 +436,15 @@ eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL) {
 ##'     <https://www.ebi.ac.uk/eqtl/Methods/>.
 ##'     [majiq](https://www.biorxiv.org/content/10.1101/2024.07.02.601792v1)
 ##'     is a recent splicing quantification that was introduced to
-##'     eQTL Catalogue in r8. The default is ge, but you can choose
-##'     more than one if you wish.
-##' @param dir eQTL Catalogue credible sets are available at
-##'     [Zenodo](`r .eqtl_cat_url`) subdivided by quant_method. On
-##'     first use, this function will download copies of the
-##'     appropriate files to a local temporary directory, and query
-##'     those files without download on subsequent use.
+##'     eQTL Catalogue in r8, so is not available in r7. The default
+##'     is ge, but you can choose more than one if you wish.
+##' @param version eQTL Catalogue release: "r8-beta" (default,
+##'     <https://zenodo.org/records/23398345>) or "r7"
+##'     (<https://zenodo.org/records/23397994>). Each release is kept
+##'     in its own subdirectory of the cache dir. See
+##' @param dir eQTL Catalogue files are downloaded as needed and kept
+##'     in a cache dir, and queried without download on subsequent
+##'     use. If dir is NULL, a temporary directory will be used.
 ##'
 ##'     It is strongly recommended to use dir to supply a local
 ##'     directory where files will persist between R sessions. This
@@ -400,15 +456,15 @@ eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL) {
 ##'     [coloc-options].
 ##'
 ##'     Downloads larger than `getOption("coloc.max_temp_download",
-##'     1e9)` bytes (eg several quant_methods at once) require a
-##'     persistent dir.
+##'     1e9)` bytes (eg [eqtl_cat_fetch()] for several quant_methods
+##'     at once) require a persistent dir.
 ##' @return a list of credible sets with an attribute "annot"
 ##'     containing a data.frame where one row per element in the list
 ##'     describes the annotation of the list (most importantly,
 ##'     dataset_id).
 ##' @export
 ##' @author Chris Wallace
-##' @seealso [coloc_query()]
+##' @seealso [coloc_query()], [eqtl_cat_fetch()]
 ##' @examples
 ##' \dontrun{
 ##' q <- data.frame(chr = 6,
@@ -420,42 +476,50 @@ eqtl_cat_fetch <- function(quant_method = "ge", dir = NULL) {
 ##' ecat <- query_eqtl_cat(q)
 ##' out2 <- coloc_query(q, ecat)
 ##' out2[out2$PP.H4 > 0, ]
+##'
+##' ecat7 <- query_eqtl_cat(q, version = "r7") # an earlier release
 ##' }
-query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5) {
+query_eqtl_cat <- function(cs, quant_method = "ge", dir = NULL, window = 1e+5, version = .eqtl_cat_default_version) {
   .check_q(cs)
   .check_window(window)
   chr <- unique(cs$chr)
   if (length(chr) != 1) stop("`chr` column must only have one value")
-  lower_pos <- as.integer(min(cs$pos) - window)
+  lower_pos <- as.integer(max(0, min(cs$pos) - window))
   upper_pos <- as.integer(max(cs$pos) + window)
-  paths <- eqtl_cat_fetch(quant_method, dir)
+  quant_method <- .eqtl_cat_check_qm(quant_method, version)
+
+  ## only the chunk files overlapping the query region
+  idx <- .eqtl_cat_index(version)
+  files <- idx[idx$quant_method %in% quant_method & idx$chromosome == as.character(chr) & idx$pos_max >= lower_pos & idx$pos_min <= upper_pos, ]
+  if (!nrow(files)) {
+    warning("No eQTL Catalogue ", version, " credible sets for ", paste(quant_method, collapse = ", "), " near chromosome ", chr, ":", lower_pos, "-", upper_pos)
+    return(structure(list(), annot = data.frame()))
+  }
+  paths <- .eqtl_cat_fetch_files(files, version, dir, "This eQTL Catalogue query")
   path_manifest <- paths[["metadata"]]
   ds <- arrow::open_dataset(unname(paths[names(paths) != "metadata"]), format = "parquet")
 
   pos_ref <- arrow::Expression$field_ref("position")
-  ## pos_type <- ds$schema$position$type
-  ## lower <- arrow::Scalar$create(lower_pos, type = pos_type)
-  ## upper <- arrow::Scalar$create(upper_pos, type = pos_type)
-  filt <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower_pos & pos_ref <= upper_pos 
-  cols <- c("dataset_id", "molecular_trait_id", "molecular_trait_object_id", "cs_id", "region", "variant", "pip","beta")
-  ## Create bounds with the column's own type, so arrow doesn't convert positions for the comparison
-  
+  filt <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower_pos & pos_ref <= upper_pos
+  ## releases differ: r8-beta has molecular_trait_object_id, r7 has gene_id instead; take whichever are present
+  cols <- intersect(c("dataset_id", "molecular_trait_id", "molecular_trait_object_id", "gene_id", "cs_id", "region", "variant", "pip","beta"), names(ds))
+
   tbl <- arrow::Scanner$create(ds, projection = cols, filter = filt)$ToTable()  |> as.data.frame()
   names(tbl)[names(tbl) == "variant"] <- "snp"
   names(tbl)[names(tbl) == "pip"] <- "PP"
   tbl$snp <- sub("^chr", "", tbl$snp) # match snp format eg 6_90279406_G_C
   tbl <- unique(tbl)
-  credsets <- split(tbl[, c("snp", "PP", "beta")], tbl$cs_id) 
+  credsets <- split(tbl[, c("snp", "PP", "beta")], tbl$cs_id)
   ok <- sapply(credsets, function(x) is_prob(sum(x$PP)))
   if(any(!ok)) {
       warning(sum(!ok), " / ", length(ok), " credsets have sum(PP) not in [0,1]. Removing")
       print(names(credsets)[!ok])
       credsets <- credsets[ok]
   }
-  annot <- unique(tbl[, setdiff(names(tbl), c("snp", "PP"))])
+  annot <- unique(tbl[, setdiff(names(tbl), c("snp", "PP", "beta"))]) # one row per credible set: variant-level columns stay in credsets
   manifest <- data.table::fread(path_manifest, data.table = FALSE)
   annot <- merge(annot, manifest, by = "dataset_id", all.x = TRUE)
-  annot <- annot[match(names(credsets), annot$cs_id), ] 
+  annot <- annot[match(names(credsets), annot$cs_id), ]
   rownames(annot) <- NULL
   attr(credsets, "annot") <- annot
   credsets
@@ -536,7 +600,7 @@ coloc_query <- function(cs, querylist) {
 ## Ensembl id -> symbol table from HGNC, downloaded once and read once per session
 .hgnc_genes <- function(dir = NULL) {
   if (is.null(.gene_env$hgnc)) {
-    path <- .download_once(.hgnc_url, eqtl_cat_dir(dir))
+    path <- .download_once(.hgnc_url, .cache_dir(dir, "eqtl_catalogue")) # shared by all releases
     g <- data.table::fread(path, select = c("symbol", "ensembl_gene_id"), data.table = FALSE)
     .gene_env$hgnc <- g[g$ensembl_gene_id != "", ]
   }

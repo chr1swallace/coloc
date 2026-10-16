@@ -1,3 +1,7 @@
+# coloc 7.0.2
+* adds options to query r7 eqtl catalogue
+* uses split eqtl catalogue files to avoid large downloads
+
 # coloc 7.0.0
 * adds colocalisation from credible sets, function coloc_pip()
 * adds ability to query Open Targets credible sets, function coloc_query() and query_ot()

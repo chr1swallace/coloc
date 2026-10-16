@@ -64,7 +64,7 @@ options(coloc.cache_dir = "~/data/coloc-cache")
 
 If you would rather not set the option, pass the directory to each query function with the `dir` argument instead, eg `query_ot(q, dir = "~/data/coloc-cache")`.
 
-If you do neither, coloc falls back to a temporary directory with a warning. This works, but the temporary directory is deleted when R exits, so everything is downloaded again in every new session. For this reason, downloads larger than 1 GB (such as downloading all of Open Targets with `ot_fetch()`, or several eQTL Catalogue quantification methods at once) will stop and ask you to set a cache directory.
+If you do neither, coloc falls back to a temporary directory with a warning. This works, but the temporary directory is deleted when R exits, so everything is downloaded again in every new session. For this reason, downloads larger than 1 GB (such as downloading all of Open Targets with `ot_fetch()`, or all of several eQTL Catalogue quantification methods with `eqtl_cat_fetch()`) will stop and ask you to set a cache directory.
 
 The options that control downloading are listed in `?coloc-options`:
 
@@ -121,7 +121,7 @@ If you will query many credible sets in parallel, for example with `parallel::mc
 
 ```{r parallel, eval = FALSE}
 ot_fetch()                          # all Open Targets credible sets, once
-eqtl_cat_fetch(c("ge", "exon"))     # the eQTL Catalogue files you need, once
+eqtl_cat_fetch(c("ge", "exon"))     # all eQTL Catalogue files for the methods you need, once
 res <- parallel::mclapply(my_credsets, function(cs) coloc_query(cs, query_ot(cs)), mc.cores = 8)
 ```
 
@@ -129,10 +129,28 @@ Otherwise, workers that query nearby regions at the same time will each download
 
 ## Query eQTL Catalogue
 
-Querying the eQTL Catalogue works similarly, except here the data is stored at Zenodo in large files that each cover the whole genome. These cannot be read remotely or split by region, so the whole file for each quantification method is downloaded to the cache directory on first use and reused after that. This is another reason to set a persistent cache directory.
+Querying the eQTL Catalogue works the same way as Open Targets. The eQTL Catalogue publishes its fine-mapped credible sets as one large file per quantification method, each covering the whole genome. For coloc, these have been split into smaller files (about 25 MB each) sorted by genomic position, with an index recording which part of the genome each file covers. No credible set is split across files, and the data are otherwise unchanged. `query_eqtl_cat()` uses the index to download only the file(s) overlapping your region - usually one per quantification method - to the cache directory, and reuses them in later queries.
 
-These files are divided by the method used to quantify gene expression. "ge" - the default - is total gene expression, but it's also the largest file (about 780 MB). We will use "exon" for this vignette because it's among the smallest. You can see the full set of files at <https://zenodo.org/records/22846842>.  To download files in advance, eg on an HPC login node, use `eqtl_cat_fetch()`. In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
+### Releases and quantification methods
 
+Two eQTL Catalogue releases are available, chosen with the `version` argument: "r8-beta" (the default) and "r7". The split files for each are on Zenodo, for [r7](https://zenodo.org/records/23397994) and [r8-beta](https://zenodo.org/records/23398345). Each release is kept in its own subdirectory of the cache directory, so they never overwrite each other and you can use both side by side.
+
+Within a release, the data are divided by the method used to quantify gene expression, chosen with `quant_method` (default "ge"). You can ask for more than one at once, eg `quant_method = c("ge", "leafcutter")`. See <https://www.ebi.ac.uk/eqtl/Methods/> for details of each method.
+
+| quant_method | what it measures | r7 credible sets | r8-beta credible sets |
+|---|---|---|---|
+| ge | total gene expression | 503,000 | 721,000 |
+| exon | exon expression | 626,000 | 416,000 |
+| tx | transcript usage | 368,000 | 353,000 |
+| txrev | transcriptional event usage | 411,000 | 403,000 |
+| leafcutter | splicing (LeafCutter) | 234,000 | 251,000 |
+| majiq | splicing (MAJIQ), new in r8 | - | 713,000 |
+
+The two releases differ slightly in their columns, and this shows in the annotation of the results: r8-beta credible sets carry a `molecular_trait_object_id` column, while r7 has a `gene_id` column instead.
+
+### Example
+
+We will use "exon" for this vignette. In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
 
 ```{r ecat, eval = online}
 ecat <- query_eqtl_cat(q, quant_method="exon")
@@ -140,8 +158,42 @@ out <- coloc_query(q, ecat)
 out
 ```
 
+The same query against the earlier release:
+
+```{r ecat7, eval = online}
+ecat7 <- query_eqtl_cat(q, quant_method="exon", version = "r7")
+coloc_query(q, ecat7)
+```
+
+The credible sets returned contain those of their variants that lie within the query window (the region spanned by your credible set, plus `window` either side, 100 kb by default). Because only overlapping credible sets can colocalise, this rarely matters, but you can increase `window` if you want more of each credible set.
+
 Because ecat is a small object, we can examine its structure. It is a list of credible sets, with an attribute "annot". annot is a data.frame containing one row per credible set giving information about the analysis it refers to.
 
 ```{r obj, eval = online}
 ecat
 ```
+
+### Gene symbols
+
+The eQTL Catalogue identifies genes by Ensembl gene id. `ensembl_to_symbol()` translates these to HGNC gene symbols, using the HGNC gene list (downloaded once to the cache directory, about 15 MB):
+
+```{r symbols, eval = online}
+annot <- attr(ecat, "annot")
+gene_col <- intersect(c("gene_id", "molecular_trait_object_id"), names(annot))[1] # depends on the release
+annot$symbol <- ensembl_to_symbol(annot[[gene_col]])
+annot[, c("cs_id", gene_col, "symbol")]
+```
+
+Ids without an approved HGNC symbol (eg some lncRNAs) are returned as `NA`.
+
+### Downloading in advance
+
+To download every file for some quantification methods in one go, for example on an HPC login node before running queries on compute nodes without internet access, use `eqtl_cat_fetch()` with the same cache directory:
+
+```{r ecatfetch, eval = FALSE}
+eqtl_cat_fetch("ge")                                          # about 0.7 GB
+eqtl_cat_fetch(c("ge", "majiq"), dir = "/shared/project/coloc-cache") # about 1.2 GB
+eqtl_cat_fetch(c("ge", "exon"), version = "r7")
+```
+
+Each release is about 2.2 GB in total. As for Open Targets, downloads larger than 1 GB need a cache directory to be set, and downloads are checked against the expected size and checksum, so an interrupted download can simply be rerun.
