@@ -225,6 +225,9 @@ sdY.est <- function(vbeta, maf, n) {
 ##' @return data.frame with log(abf) or log(bf)
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' head(process.dataset(coloc_test_data$D1, suffix = "df1"))
 process.dataset <- function(d, suffix, ...) {
                                         #message('Processing dataset')
 
@@ -313,6 +316,10 @@ process.dataset <- function(d, suffix, ...) {
 ##' }
 ##' @author Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' fm <- finemap.abf(coloc_test_data$D1)
+##' head(fm[order(fm$SNP.PP, decreasing = TRUE), ])
 finemap.abf <- function(dataset, p1=1e-4, prior_weights = NULL) {
 
   check_dataset(dataset,"")
@@ -455,17 +462,36 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
         stop("dataset1 and dataset2 should contain the same snps in the same order, or should contain snp names through which the common snps can be identified")
 
     merged.df$internal.sum.lABF <- with(merged.df, lABF.df1 + lABF.df2)
-    ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
-    my.denom.log.abf <- logsum(merged.df$internal.sum.lABF)
-    merged.df$SNP.PP.H4 <- exp(merged.df$internal.sum.lABF - my.denom.log.abf)
 
+    ## The colocalisation arithmetic now comes from the one engine. The merge
+    ## above has already fixed the snp set and its order, so the engine sees
+    ## exactly the pairs coloc.abf() has always compared, and $results keeps
+    ## every per-trait column it has always carried. trim_by_posterior is off
+    ## because coloc.abf() has no coverage guard: every merged snp is shared
+    ## by construction, so the guard could only ever be a no-op here.
+    bf1 <- matrix(merged.df$lABF.df1, nrow = 1L,
+                  dimnames = list("sig1", merged.df$snp))
+    bf2 <- matrix(merged.df$lABF.df2, nrow = 1L,
+                  dimnames = list("sig1", merged.df$snp))
+    engine <- .coloc_engine(bf1, bf2,
+                            prior = list(p1 = p1, p2 = p2, p12 = p12,
+                                         weights1 = prior_weights1,
+                                         weights2 = prior_weights2),
+                            control = list(overlap.min = 0.5,
+                                           trim_by_posterior = FALSE))
+
+    ## add SNP.PP.H4 - post prob that each SNP is THE causal variant for a shared signal
+    merged.df$SNP.PP.H4 <- engine$results$SNP.PP.H4.abf[
+        match(merged.df$snp, engine$results$snp)]
+    pp.abf <- unlist(engine$summary[1, paste0("PP.H", 0:4, ".abf"), with = FALSE])
+
+    ## combine.abf() printed unless told to be quiet, and the engine always
+    ## tells it to be quiet, so the printing is reproduced here rather than
+    ## silently dropped.
     is_weighted <- !is.null(prior_weights1) || !is.null(prior_weights2)
-    if (is_weighted) {
-      pp.abf <- combine_abf_weighted(merged.df$lABF.df1, merged.df$lABF.df2,
-                                     p1, p2, p12, prior_weights1, prior_weights2)
-    } else {
-      pp.abf <- combine.abf(merged.df$lABF.df1, merged.df$lABF.df2, p1, p2, p12)
-    }
+    print(signif(pp.abf, 3))
+    print(paste("PP abf for shared variant: ", signif(pp.abf["PP.H4.abf"], 3) * 100,
+                '%', sep = ''))
 
     common.snps <- nrow(merged.df)
     results <- c(nsnps=common.snps, pp.abf)
@@ -492,6 +518,10 @@ coloc.abf <- function(dataset1, dataset2, MAF=NULL,
 ##' @return SNP ids of the credible set
 ##' @author Guillermo Reales, Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' fm <- finemap.abf(coloc_test_data$D1)
+##' credible.sets(fm)
 credible.sets <- function(dataset, credible.size = 0.95){
     if(!"SNP.PP" %in% names(dataset)) stop("Input must be finemap.abf() output and have a SNP.PP column.")
     t2 <- dataset[ order(dataset$SNP.PP, decreasing = TRUE),]

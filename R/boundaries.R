@@ -11,6 +11,12 @@
 ##' @author Chris Wallace
 ##' @seealso findpeaks
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' D3 <- coloc_test_data$D3
+##' D3$z <- D3$beta / sqrt(D3$varbeta)   # findends() reads z scores
+##' keep <- findends(D3, maxz = 6)
+##' table(keep)
 findends=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
   if(!("position" %in% names(d)))
     stop("need position")
@@ -81,6 +87,10 @@ findpeaks=function(d, maxz=4, maxr2=0.1, do.plot=FALSE) {
 ##' @return a copy of dataset, with only the data relating to snps in index remaining
 ##' @author Chris Wallace
 ##' @export
+##' @examples
+##' data(coloc_test_data)
+##' D1 <- subset_dataset(coloc_test_data$D1, 1:100)
+##' length(D1$snp)
 subset_dataset=function(dataset, index) {
   if(!length(index))
     return(dataset)

@@ -45,6 +45,10 @@ susieR::susie_plot() so that colours will match}
 \description{
 Plot a coloc structured dataset
 }
+\examples{
+data(coloc_test_data)
+plot_dataset(coloc_test_data$D1)
+}
 \author{
 Chris Wallace
 }

@@ -62,6 +62,12 @@
 ##' @return NULL if no errors found
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' check_dataset(coloc_test_data$D1)     # NULL: no problems found
+##' bad <- coloc_test_data$D1
+##' bad$beta[1] <- NA
+##' try(check_dataset(bad, 1))
 check_dataset <- function(d,
                           suffix="",
                           req=c("type","snp"),
@@ -83,7 +89,10 @@ check_dataset <- function(d,
             stop("dataset ",suffix,": ",v," contains missing values")
     }
 
-    if (!(d$type %in% c("quant", "cc")))
+    ## guarded, so a dataset with no type reaches "variable type not set"
+    ## below rather than failing here on a zero-length condition: runsusie()
+    ## leaves type out of req
+    if ("type" %in% nd && !(d$type %in% c("quant", "cc")))
         stop("dataset ", suffix, ": ", "type must be quant or cc")
 
     ## snps should be unique
@@ -125,8 +134,8 @@ check_dataset <- function(d,
     if(!("beta" %in% nd) || !("varbeta" %in% nd)) { # need to estimate var (Y)
         if(!("pvalues" %in% nd) || !( "MAF" %in% nd))
             stop("dataset ",suffix,": ","require p values and MAF if beta, varbeta are unavailable")
-        if(any(d$pvalues<=0))
-            stop("pvalues should not be negative or exactly 0")
+        if(any(d$pvalues<=0 | d$pvalues>1))
+            stop("dataset ",suffix,": ","pvalues must be above 0 and at most 1")
         if(d$type=="cc" && !("s" %in% nd))
             stop("dataset ",suffix,": ","require, s, proportion of samples who are cases, if beta, varbeta are unavailable")
         if (!('N' %in% nd) || is.null(d$N) || any(d$N<=0) )
@@ -201,6 +210,10 @@ check_ld <- function(D,LD) {
 ##' @export
 ##' @return proportion of pairs that are positive
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' ## close to 1 when beta and LD are aligned to the same alleles
+##' check_alignment(coloc_test_data$D3, do_plot = FALSE)
 check_alignment <- function(D,thr=0.2,do_plot=TRUE) {
   check_dataset(D)
   bprod=outer(D$beta/sqrt(D$varbeta),D$beta/sqrt(D$varbeta),"*")

@@ -5,10 +5,12 @@
 \alias{coloc_test_data}
 \title{Simulated data to use in testing and vignettes in the coloc package}
 \format{
-A four of two coloc-style datasets. Elements D1 and D2 have a single
-shared causal variant, and 50 SNPs. Elements D3 and D4 have 100 SNPs, one
-shared causal variant, and one variant unique to D3. Use these as examples
-of what a coloc-style dataset for a quantitative trait should look like.
+A list of four coloc-style datasets for a quantitative trait, D1 to
+D4, each over the same 500 SNPs, and \code{causals}, the position of each
+dataset's causal SNPs. D1 and D2 share a single causal variant. D3 and D4
+share one causal variant, and D3 has a second of its own. Use these as
+examples of what a coloc-style dataset for a quantitative trait should look
+like.
 }
 \usage{
 data(coloc_test_data)

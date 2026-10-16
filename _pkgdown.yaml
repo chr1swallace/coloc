@@ -10,6 +10,7 @@ articles:
   navbar: ~
   contents:
   - a01_intro
+  - a08_coloc
   - a02_data
   - a03_enumeration
   - a04_sensitivity

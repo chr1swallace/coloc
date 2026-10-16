@@ -24,6 +24,11 @@ proportion of pairs that are positive
 \description{
 check alignment between beta and LD
 }
+\examples{
+data(coloc_test_data)
+## close to 1 when beta and LD are aligned to the same alleles
+check_alignment(coloc_test_data$D3, do_plot = FALSE)
+}
 \author{
 Chris Wallace
 }

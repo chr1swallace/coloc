@@ -3,7 +3,9 @@ data(coloc_test_data)
 attach(coloc_test_data)
   result.nonull=runsusie(D1)
   pi0=1e-4
-  result.null=expect_warning(runsusie(D1,null_weight=pi0))
+  ## 3rd edition: expect_warning() returns the condition, not the value, so the
+  ## fit has to be assigned inside the expectation rather than from its result
+  expect_warning(result.null <- runsusie(D1, null_weight = pi0))
 
 test_that("passing null_weight works", {
   expect_equal(result.null$pi[ length(D1$beta)+1 ], pi0)
@@ -34,4 +36,17 @@ test_that("coloc.bf_bf is order invariant",{
     b <- rnorm(10)
     names(a) <- names(b) <- paste0("s",1:10)
     expect_equal(coloc.bf_bf(a,b), coloc.bf_bf(a,rev(b)))
+})
+
+test_that("order invariance, with coloc() in place of coloc.bf_bf()",{
+    a <- rnorm(10)
+    b <- rnorm(10)
+    names(a) <- names(b) <- paste0("s",1:10)
+    ## $bf keeps each input as it was given, so it is the one field that
+    ## follows the order: the same values, reordered
+    ab <- coloc(a,b)
+    ba <- coloc(a,rev(b))
+    expect_equal(log_bf(ba, 2)[, names(b), drop = FALSE], log_bf(ab, 2))
+    ab$bf <- ba$bf <- NULL
+    expect_equal(ab, ba)
 })

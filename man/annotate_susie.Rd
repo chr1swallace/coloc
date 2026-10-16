@@ -30,6 +30,15 @@ sanity checks.
 Note: this annotation step is not needed if you use runsusie() -
 this is only required if you use the susieR functions directly
 }
+\examples{
+if (requireNamespace("susieR", quietly = TRUE)) {
+    data(coloc_test_data)
+    D3 <- coloc_test_data$D3
+    fit <- susieR::susie_rss(z = D3$beta / sqrt(D3$varbeta), R = D3$LD, n = D3$N)
+    fit <- annotate_susie(fit, D3$snp, D3$LD)
+    colnames(fit$lbf_variable)[1:5]   # now SNP ids, which coloc() matches on
+}
+}
 \author{
 Chris Wallace
 }

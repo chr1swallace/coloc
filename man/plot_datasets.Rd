@@ -19,6 +19,10 @@ plots a base graphics figure with two panels
 \description{
 plot a pair of coloc datasets, highlighting the snps that are common between them
 }
+\examples{
+data(coloc_test_data)
+plot_datasets(coloc_test_data$D1, coloc_test_data$D2)
+}
 \author{
 Chris Wallace
 }

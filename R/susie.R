@@ -68,35 +68,13 @@ logbf_to_pp=function(bf,pi, last_is_null) {
 ##'   values for causal association with one trait (p1, p2) or both (p12) and
 ##'   and prior weights.
 coloc.susie=function(dataset1, dataset2, back_calculate_lbf=FALSE, susie.args=list(), ...) {
-  ## if(!requireNamespace("susieR", quietly = TRUE)) {
-  ##   message("please install susieR https://github.com/stephenslab/susieR")
-  ##   return(NULL)
-  ## }
-  if("susie" %in% class(dataset1))
-    s1=dataset1
-  else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
-  if("susie" %in% class(dataset2))
-    s2=dataset2
-  else
-    s2=do.call("runsusie", c(list(d=dataset2,suffix=2),susie.args))
-  cs1=s1$sets
-  cs2=s2$sets
-  if(is.null(cs1$cs) || is.null(cs2$cs) || length(cs1$cs)==0 || length(cs2$cs)==0 ) {
-	  warning("at least one dataset has no credible sets, nothing to colocalise")
-    return(data.table(nsnps=NA))
-	  }
-
-  idx1=cs1$cs_index
-  idx2=cs2$cs_index
-  bf1=s1$lbf_variable[idx1,,drop=FALSE]
-  bf2=s2$lbf_variable[idx2,,drop=FALSE]
-
-  ret=coloc.bf_bf(bf1,bf2, ...)
-  ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
-  ret$summary[,idx2:=cs2$cs_index[idx2]]
-  ret
+  ## One implementation from here: the susie fitting, the credible-set row
+  ## selection and the arithmetic all come from the adapters and the engine
+  ## by way of coloc(). What stays is the old return shape.
+  dots <- list(...)
+  .coloc_result_as_6_0_3(
+      coloc(dataset1, dataset2, method = "susie", susie.args = susie.args,
+            prior = .prior_from_dots(dots), control = .control_from_dots(dots)))
 }
 
 finemap.susie=function(dataset1, susie.args=list(),  ...) {
@@ -130,21 +108,19 @@ finemap.susie=function(dataset1, susie.args=list(),  ...) {
 ##' @export
 ##' @author Chris Wallace
 coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=list(), ...) {
-  if("susie" %in% class(dataset1))
-    s1=dataset1
-  else
-    s1=do.call("runsusie", c(list(d=dataset1,suffix=1),susie.args))
-  cs1=s1$sets
-  if(is.null(cs1$cs) || length(cs1$cs)==0 )
-    return(data.table(nsnps=NA))
-  idx1=cs1$cs_index
-  ## alpha: an L by p matrix of posterior inclusion probabilites
-  bf1=s1$lbf_variable[idx1,,drop=FALSE][,setdiff(colnames(s1$lbf_variable),""),drop=FALSE]
+  dots <- list(...)
+  prior <- .prior_from_dots(dots)
+  ## AL02: 6.0.3 declared p1/p2/p12 here and forwarded none of them, so a
+  ## caller's values were silently discarded and the hardcoded defaults of
+  ## coloc.bf_bf() were used instead. They are forwarded now.
+  if (is.null(dots$p1))  prior$p1  <- p1
+  if (is.null(dots$p2))  prior$p2  <- p2
+  if (is.null(dots$p12)) prior$p12 <- p12
 
-  ret=coloc.bf_bf(bf1,bf2, ...)
-  ## renumber index to match
-  ret$summary[,idx1:=cs1$cs_index[idx1]]
-  ret
+  .coloc_result_as_6_0_3(
+      .without_method_warning(
+          coloc(dataset1, bf2, method = "susie", susie.args = susie.args,
+                prior = prior, control = .control_from_dots(dots))))
 }
 
 ##' Finemap one dataset represented by Bayes factors
@@ -157,6 +133,13 @@ coloc.susie_bf=function(dataset1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, susie.args=lis
 ##' @return finemap.signals style result
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' data(coloc_test_data)
+##' ## one signal's log Bayes factors, as kept by coloc()
+##' res <- coloc(coloc_test_data$D1, coloc_test_data$D2)
+##' fm <- finemap.bf(log_bf(res, 1))
+##' fm$summary
+##' head(fm$results[order(fm$results$SNP.PP.abf, decreasing = TRUE), ])
 finemap.bf=function(bf1, p1=1e-4) {
   if(is.vector(bf1))
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
@@ -231,156 +214,53 @@ finemap.bf=function(bf1, p1=1e-4) {
 coloc.bf_bf=function(bf1,bf2, p1=1e-4, p2=1e-4, p12=5e-6, overlap.min=0.5,
                      trim_by_posterior=TRUE, prior_weights1 = NULL, prior_weights2 = NULL) {
 
-  if ((length(p1) != 1 || length(p2) != 1 || length(p12) != 1) &&
-      (!is.null(prior_weights1) || !is.null(prior_weights2))) {
-      stop("Prior weights can only be used with single values of the prior parameters.")
-  }
+  ## A thin wrapper over .coloc_engine(). The arithmetic moved to R/engine.R;
+  ## what stays here is 6.0.3's user-facing validation, its vector promotion
+  ## and the translation of coloc_result back into the five return shapes
+  ## callers still expect. That translation is temporary: it keeps the old
+  ## entry points' 6.0.3 return shapes, which test-v603.R compares, and it goes
+  ## at step 7 (the hard break, in a later stage), with these functions.
 
-  if (!is.null(prior_weights1) && any(is.na(prior_weights1) | (prior_weights1 <= 0))) {
-    stop("prior_weights1 must contain non-NA/non-negative weights.")
-  }
+  prior <- list(p1 = p1, p2 = p2, p12 = p12,
+                weights1 = prior_weights1, weights2 = prior_weights2)
+  .check_prior_weights(prior)
+  ## 6.0.3 accepted a vector p1/p2 here (allowlist AL10); the engine does not
+  .check_scalar_prior(prior)
 
-  if (!is.null(prior_weights2) && any(is.na(prior_weights2) | (prior_weights2 <= 0))) {
-    stop("prior_weights2 must contain non-NA/non-negative weights.")
-  }
-  
+  ## a named vector is one signal: make it a one-row matrix here, as
+  ## coloc() does in .adapt_bf(), which coloc.bf_bf() does not call
   if(is.vector(bf1))
     bf1=matrix(bf1,nrow=1,dimnames=list(NULL,names(bf1)))
   if(is.vector(bf2))
     bf2=matrix(bf2,nrow=1,dimnames=list(NULL,names(bf2)))
-  
-  if (!is.null(prior_weights1) && ncol(bf1) != length(prior_weights1)) {
-    stop("Length of prior_weights1 must match size of dataset 1")
-  }
-  if (!is.null(prior_weights2) && ncol(bf2) != length(prior_weights2)) {
-    stop("Length of prior_weights2 must match size of dataset 2")
-  } 
-  
-  todo <- as.data.table(expand.grid(i=1:nrow(bf1),j=1:nrow(bf2)))
-  todo[,pp4:=0]
-  isnps=setdiff(intersect(colnames(bf1),colnames(bf2)),
-                "null")
-  if(!length(isnps))
-    return(data.table(nsnps=NA))
-    ## scale bf in case needed
-    nulllast <- function(m) m[,c(setdiff(colnames(m),"null"), "null"), drop=FALSE]
-  if("null" %in% colnames(bf1))
-    bf1=nulllast(bf1) - matrix(bf1[,"null"],nrow(bf1),ncol(bf1))
-  if("null" %in% colnames(bf2))
-    bf2=nulllast(bf2) - matrix(bf2[,"null"],nrow(bf2),ncol(bf2))
 
-  ## check whether isnps covers the signal for each trait
-  pp1=logbf_to_pp(bf1,p1, last_is_null="null" %in% colnames(bf1))
-  pp2=logbf_to_pp(bf2,p2, last_is_null="null" %in% colnames(bf2))
-  ## pp1=logbf_to_pp(bf1,p1, last_is_null=TRUE)
-  ## pp2=logbf_to_pp(bf2,p2, last_is_null=TRUE)
-  ph0.1=if("null" %in% colnames(pp1)) { pp1[,"null"] } else { 1 - rowSums(pp1) }
-  ph0.2=if("null" %in% colnames(pp2)) { pp2[,"null"] } else { 1 - rowSums(pp2) }
-  prop1=rowSums(pp1[,c(isnps),drop=FALSE]) / rowSums(pp1[,setdiff(colnames(pp1),"null"),drop=FALSE])
-  prop2=rowSums(pp2[,c(isnps),drop=FALSE]) / rowSums(pp2[,setdiff(colnames(pp2),"null"),drop=FALSE])
-  if(trim_by_posterior==TRUE) {
-    drop=sapply(1:nrow(todo), function(k) {
-      prop1[todo$i[k]] < overlap.min | prop2[todo$j[k]] < overlap.min
-    })
-    if(all(drop)) {
-      warning("snp overlap too small between datasets: too few snps with high posterior in one trait represented in other")
-      return(
-        list(summary=cbind(
-               data.table(nsnps=length(isnps),
-                          hit1=colnames(pp1)[apply(pp1,1,which.max)][todo$i],
-                          hit2=colnames(pp2)[apply(pp2,1,which.max)][todo$j],
-                          PP.H0.abf=pmin(ph0.1[todo$i],ph0.2[todo$j]),
-                          PP.H1.abf=NA, PP.H2.abf=NA, PP.H3.abf=NA, PP.H4.abf=NA),
-               todo[,.(idx1=i,idx2=j)]))
-      )
-    }
-    if(any(drop))
-      todo=todo[!drop,,drop=FALSE]
-  }
-  ## check p12
-  if(length(p12)>1) { # only proceed if didn't need to trim snps
-    if(length(isnps)!=ncol(bf1) || length(isnps)!=ncol(bf2))
-      stop("p12 must have length 1 or equal length to p1 and p2, but different numbers of snps between datasets")
+  res <- .coloc_engine(bf1, bf2, prior = prior,
+                       control = list(overlap.min = overlap.min,
+                                      trim_by_posterior = trim_by_posterior))
+  .coloc_result_as_6_0_3(res)
+}
+
+## Turn a coloc_result, the one shape coloc() returns, back into the five
+## shapes the old functions returned in 6.0.3. Deliberately lossy: $status,
+## $messages and $meta have nowhere to go in the old shapes, which is the
+## whole argument for replacing them.
+.coloc_result_as_6_0_3 <- function(res) {
+  if (res$status %in% c("no_overlap", "no_signal"))
+    return(data.table(nsnps = NA))
+
+  s <- data.table::copy(res$summary)
+  if (res$status == "all_trimmed") {
+    ## 6.0.3 writes a bare NA into this branch, which makes the columns
+    ## logical rather than numeric. A coloc_result's $summary columns are
+    ## always numeric, so the old type is restored here, not in the engine.
+    for (col in paste0("PP.H", 1:4, ".abf"))
+      data.table::set(s, j = col, value = as.logical(s[[col]]))
+    return(list(summary = s))
   }
 
-  ## restrict bf1/2, p1, p2 and prior weights for incomplete snp overlap
-  if(length(isnps)!=ncol(bf1)) {
-    keep=match(isnps,colnames(bf1))
-    prior_weights1 <- prior_weights1[keep]
-    bf1=bf1[,keep,drop=FALSE]
-    if(length(p1)>1)
-      p1=p1[keep]
-  }
-  if(length(isnps)!=ncol(bf2)) {
-    keep=match(isnps,colnames(bf2))
-    prior_weights2 <- prior_weights2[keep]
-    bf2=bf2[,keep,drop=FALSE]
-    if(length(p2)>1)
-      p2=p2[keep]
-  }
-  ## sort p12 if length(p1)>1 || length(p2)>1
-  if(length(p12)==1) {
-    if(length(p1)>1 || length(p2)>1) {
-      p1_at_dist=min(p1)
-      p2_at_dist=min(p2)
-      c12=p12 / p1_at_dist / p2_at_dist
-      p12=p1*p2*c12
-    }
-  }
-
-  results <- PP <- vector("list",nrow(todo))
-  ## results=lapply(1:nrow(todo), function(k) {
-  for(k in 1:nrow(todo)) {
-    df <- data.frame(snp=isnps, bf1=bf1[todo$i[k], isnps], bf2=bf2[todo$j[k], isnps])
-    df$internal.sum.lABF <- with(df, bf1 + bf2)
-    my.denom.log.abf <- logsum(df$internal.sum.lABF)
-    df$SNP.PP.H4 <- exp(df$internal.sum.lABF - my.denom.log.abf)
-
-    if (!is.null(prior_weights1) || !is.null(prior_weights2)) {
-      pp.abf <- combine_abf_weighted(df$bf1, df$bf2,
-                                     p1, p2, p12,
-                                     prior_weights1,
-                                     prior_weights2,
-                                     quiet = TRUE)
-    } else {
-      pp.abf <- combine.abf(df$bf1, df$bf2, p1, p2, p12, quiet=TRUE)
-    }
-
-    PP[[k]]=df$SNP.PP.H4
-    if(all(is.na(df$SNP.PP.H4))) {
-      df$SNP.PP.H4=0
-      pp.abf[1:5]=c(1,0,0,0,0)
-    }
-    common.snps <- nrow(df)
-    hit1=names(which.max(bf1[todo$i[k],])) #df$snp[ which.max(abs(df$bf1)) ]
-    if(is.null(hit1)) {
-      hit1="-"
-      pp.abf[c(1,3)]=c(0,1)
-    }
-    hit2=names(which.max(bf2[todo$j[k],])) #df$snp[ which.max(abs(df$bf2)) ]
-    if(is.null(hit2)) {
-      hit2="-"
-      pp.abf[c(1,2)]=c(0,1)
-    }
-    results[[k]]=do.call("data.frame",c(list(nsnps=common.snps, hit1=hit1, hit2=hit2),
-                                        as.list(pp.abf)))
-  }
-  results <- as.data.table(do.call("rbind",results))
-  PP <- as.data.table(do.call("cbind",PP))
-  if(nrow(todo)>1)
-    colnames(PP)=paste0("SNP.PP.H4.row",1:nrow(todo))
-  else
-    colnames(PP)="SNP.PP.H4.abf"
-
-  results=cbind(results,todo[,.(idx1=i,idx2=j)])
-  PP=cbind(data.table(snp=isnps),PP)
-  list(summary=results,
-       results=PP,
-       priors=if(length(p1)==1 && length(p2)==1 && length(p12)==1) {
-                c(p1=p1,p2=p2,p12=p12)
-              } else {
-                list(p1=p1,p2=p2,p12=p12)
-              })
+  list(summary = s,
+       results = res$results,
+       priors  = res$priors)
 }
 
 
@@ -496,6 +376,14 @@ runsusie=function(d,suffix=1,
 ##' @return res with column names added to some components
 ##' @export
 ##' @author Chris Wallace
+##' @examples
+##' if (requireNamespace("susieR", quietly = TRUE)) {
+##'     data(coloc_test_data)
+##'     D3 <- coloc_test_data$D3
+##'     fit <- susieR::susie_rss(z = D3$beta / sqrt(D3$varbeta), R = D3$LD, n = D3$N)
+##'     fit <- annotate_susie(fit, D3$snp, D3$LD)
+##'     colnames(fit$lbf_variable)[1:5]   # now SNP ids, which coloc() matches on
+##' }
 annotate_susie=function(res,snp, LD) {
     ## if(ncol(res$lbf_variable) != length(snp)+1)
     ##     stop("length of snp vector should be 1 less than ncol(res$lbf_variable)")
