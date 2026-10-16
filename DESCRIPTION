@@ -21,13 +21,14 @@ Suggests:
     locuszoomr,
     gridExtra
 Title: Colocalisation Tests of Two Genetic Traits
-Version: 6.0.3
-Date: 2026-04-17
+Version: 8.0.0
+Date: 2026-10-16
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"), email = "cew54@cam.ac.uk"),
     person("Claudia","Giambartolomei", role="aut", email="claudia.giambartolomei.10@ucl.ac.uk"),
     person("Vincent","Plagnol", role="ctb", email="v.plagnol@ucl.ac.uk"),
     person("Tom","Willis", role="aut", email="tom.willis@live.com"),
-    person("Jeffrey","Pullin", role="aut", email="jp2045@cam.ac.uk"))
+    person("Jeffrey","Pullin", role="aut", email="jp2045@cam.ac.uk"),
+    person("Wei-Yu Lin", role="aut", email="wyl37@cam.ac.uk"))
 Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Description: Performs the colocalisation tests described in
     Giambartolomei et al (2013) <doi:10.1371/journal.pgen.1004383>,
@@ -45,6 +46,7 @@ Collate:
     'coloc-package.R'
     'boundaries.R'
     'check.R'
+    'dataset.R'
     'claudia.R'
     'result.R'
     'engine.R'

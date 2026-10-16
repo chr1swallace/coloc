@@ -74,7 +74,7 @@ check_dataset <- function(d,
                           warn.minp=1e-6) {
     if(!is.list(d) )
         stop("dataset ",suffix,": is not a list")
-    recognised_items=c("beta","varbeta","pvalues","MAF","snp","position","N","type","s","sdY","LD")
+    recognised_items <- .dataset_items # defined in R/dataset.R
     nd <- intersect(names(d), recognised_items)
 
     ## no missing values - make people clean their own data rather
@@ -155,8 +155,9 @@ check_dataset <- function(d,
       stop("dataset ", suffix,": Zero values in varbeta")
     }
 
-    ## minp
-    if(min(p) > warn.minp)
+    ## minp. A coloc_dataset gave this warning when it was made, so it is not
+    ## repeated each time the dataset is used
+    if(!inherits(d, "coloc_dataset") && min(p) > warn.minp)
         warning("minimum p value is: ",format.pval(min(p)),"\nIf this is what you expected, this is not a problem.\nIf this is not as small as you expected, please check you supplied var(beta) and not sd(beta) for the varbeta argument. If that's not the explanation, please check the 02_data vignette.")
 
     ## sdY

@@ -26,6 +26,7 @@ Authors:
   \item Claudia Giambartolomei \email{claudia.giambartolomei.10@ucl.ac.uk}
   \item Tom Willis \email{tom.willis@live.com}
   \item Jeffrey Pullin \email{jp2045@cam.ac.uk}
+  \item Wei-Yu Lin \email{wyl37@cam.ac.uk}
 }
 
 Other contributors:

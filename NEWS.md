@@ -1,3 +1,7 @@
+# coloc 8.0.0
+* restructured package
+* new `coloc_dataset()` and `as_coloc_dataset()` constructors
+
 # coloc 6.0.3
 * fix issue #208, #209
 # coloc 6.0.0
