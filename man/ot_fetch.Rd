@@ -4,23 +4,7 @@
 \alias{ot_fetch}
 \title{Download a complete local copy of the Open Targets credible sets}
 \usage{
-ot_fetch(dir = NULL)
-}
-\arguments{
-\item{dir}{Open Targets credible set files and the study manifest
-(https://ftp.ebi.ac.uk/pub/databases/opentargets/platform/26.06/output/study/part-00000-1c0a4198-4d65-425e-82a1-d9d8b54d8549-c000.snappy.parquet) are downloaded as needed and saved in a
-cache dir. If dir is NULL, a temporary directory will be
-used. It is strongly recommended to use dir to supply a local
-directory where files will persist between R sessions. This
-will save time and prevent downloading the same files in each
-R session. Downloads larger than
-\code{getOption("coloc.max_temp_download", 1e9)} bytes require a
-persistent dir.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{You can also set this variable persistently using
-`options(coloc.cache_dir="path/to/my/directory")`. See
-[coloc-options].
-}\if{html}{\out{</div>}}}
+ot_fetch()
 }
 \value{
 the path to the local credible set directory, invisibly
@@ -31,11 +15,12 @@ query (typically one or two files, ~15 MB each) and caches them. Use
 ot_fetch() to download all of them (about 3.2 GB for release 26.06)
 in one go, for example on an HPC login node before running
 query_ot() on compute nodes without internet access, using the same
-dir.
+cache directory.
 }
 \details{
-Because of its size, a persistent dir (or
-\code{options(coloc.cache_dir=...)}) is required. Files already present
+Because of its size, a persistent cache directory
+(\code{options(coloc.cache_dir=...)}, see \link{coloc-options}) is required.
+Files already present
 with the expected size are not downloaded again, so an interrupted
 download can be resumed by calling ot_fetch() again.
 }

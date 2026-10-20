@@ -6,15 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Colocalisation Tests of Two Genetic Traits • coloc</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Colocalisation Tests of Two Genetic Traits">
 <meta name="description" content="Performs the colocalisation tests described in Giambartolomei et al (2013) &lt;doi:10.1371/journal.pgen.1004383&gt;, Wallace (2020) &lt;doi:10.1371/journal.pgen.1008720&gt;, Wallace (2021) &lt;doi:10.1371/journal.pgen.1009440&gt;, Pullin and Wallace (2025) &lt;doi:10.1101/2024.08.21.608957&gt;.">
@@ -29,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">coloc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">6.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">7.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +46,8 @@
     <li><a class="dropdown-item" href="articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a></li>
     <li><a class="dropdown-item" href="articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a></li>
     <li><a class="dropdown-item" href="articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a></li>
-    <li><a class="dropdown-item" href="articles/a07_variant-specific-priors.html">Coloc: using variant-specific priros in coloc</a></li>
+    <li><a class="dropdown-item" href="articles/a07_variant-specific-priors.html">Coloc: using variant-specific priors in coloc</a></li>
+    <li><a class="dropdown-item" href="articles/a08_query.html">coloc_pip and using coloc_query to query against eQTL Catalogue and Open Targets</a></li>
     <li><a class="dropdown-item" href="articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a></li>
   </ul>
 </li>
@@ -70,8 +70,8 @@
 <img src="logo.png" class="logo" alt=""><h1 id="coloc">coloc<a class="anchor" aria-label="anchor" href="#coloc"></a>
 </h1>
 </div>
-<p><a href="https://cran.r-project.org/package=coloc" class="external-link"><img src="https://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a> <a href="https://cran.r-project.org/package=coloc" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/coloc"></a></p>
-<p><img src="reference/figures/logo30.png" align="right"></p>
+<p><a href="https://cran.r-project.org/package=coloc" class="external-link"><img src="https://www.r-pkg.org/badges/version/coloc" alt="CRAN_Status_Badge"></a> <a href="https://cran.r-project.org/package=coloc" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/coloc" alt="CRAN downloads"></a></p>
+<p><img src="reference/figures/logo30.png" align="right" alt="coloc logo"></p>
 <p>The coloc package can be used to perform genetic colocalisation analysis of two potentially related phenotypes, to ask whether they share common genetic causal variant(s) in a given region.</p>
 <p>Most of the questions I get relate to misunderstanding the assumptions behind coloc (dense genotypes across a single genomic region) and/or the data structures used. Please read <code><a href="articles/a02_data.html">vignette("a02_data",package="coloc")</a></code> before starting an issue. The <a href="https://chr1swallace.github.io/coloc/FAQ.html">FAQ page</a> may also be helpful.</p>
 <div class="section level2">
@@ -170,10 +170,10 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Chris Wallace <br><small class="roles"> Author, maintainer </small>  </li>
-<li>Claudia Giambartolomei <br><small class="roles"> Author </small>  </li>
-<li>Tom Willis <br><small class="roles"> Author </small>  </li>
-<li>Jeffrey Pullin <br><small class="roles"> Author </small>  </li>
+<li>Chris Wallace <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Claudia Giambartolomei <br><small class="roles"> Author </small>   </li>
+<li>Tom Willis <br><small class="roles"> Author </small>   </li>
+<li>Jeffrey Pullin <br><small class="roles"> Author </small>   </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
@@ -189,7 +189,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

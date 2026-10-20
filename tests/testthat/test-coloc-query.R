@@ -43,16 +43,70 @@ test_that("query_ot on an uncovered chromosome returns an empty list without dow
     expect_length(ot, 0)
 })
 
+test_that("chr may be numeric or character, so query_ot() credible sets can be used as queries", {
+    for (chr in list(6, 6L, "6", factor("6"))) expect_equal(coloc:::.check_q(data.frame(chr = chr, pos = 1)), "6")
+    expect_equal(coloc:::.check_q(data.frame(chr = "chr6", pos = 1)), "6") # tolerated, though not documented
+    expect_equal(coloc:::.check_q(data.frame(chr = "X", pos = 1)), "X")
+    ot_style <- data.frame(chr = c("1", "1"), pos = c(155051361L, 155215184L), snp = c("1_155051361_A_G", "1_155215184_C_T"), PP = c(0.6, 0.3))
+    expect_equal(coloc:::.check_q(ot_style), "1")
+    expect_error(coloc:::.check_q(data.frame(chr = c("6", "7"), pos = 1:2)), "only have one value")
+    expect_error(coloc:::.check_q(data.frame(chr = TRUE, pos = 1)), "chr must be numeric or character")
+    ## character chr reaches file selection: a region with no data warns rather than erroring, without downloading
+    expect_warning(query_eqtl_cat(data.frame(chr = "6", pos = 1e9)), "No eQTL Catalogue")
+    expect_warning(query_ot(data.frame(chr = "23", pos = 1e6)), "No Open Targets")
+})
+
+test_that("Open Targets variants on alt/patch contigs are kept, with NA position", {
+    locus <- data.frame(variantId = c("17_45000000_A_G", "17_KI270857v1_alt_811563_C_G", "17_45001000_T_C"),
+                        posteriorProbability = c(0.5, 0.3, 0.15), beta = 0.1)
+    expect_no_warning(cs <- coloc:::.otlocus_to_cs(locus))
+    expect_equal(cs$pos, c(45000000L, NA, 45001000L))
+    expect_equal(cs$chr, rep("17", 3))
+    expect_equal(sum(cs$PP), 0.95) # alt contig variant still counts towards the credible set
+    expect_equal(coloc:::.check_q(cs), "17") # usable as a query
+    expect_error(coloc:::.check_q(data.frame(chr = 17, pos = NA_integer_)), "at least one non-missing pos")
+    expect_silent(coloc:::.check_snp_ids(cs$snp)) # accepted as index credible set ids in coloc_query()
+    expect_error(coloc:::.check_snp_ids(c("rs123", "chr6_90279406_G_C")), "not in the format")
+})
+
+test_that("*_many functions skip failures, collect warnings, and stop on systematic failure", {
+    fq <- function(cs, nm) { warning("same warning"); if (identical(cs$chr[1], "bad")) stop("bad credible set"); nm }
+    cs3 <- list(a = data.frame(chr = "1"), b = data.frame(chr = "bad"), c = data.frame(chr = "2"))
+    ws <- character()
+    res <- withCallingHandlers(coloc:::.run_many(cs3, fq, "test", 5), warning = function(w) { ws <<- c(ws, conditionMessage(w)); invokeRestart("muffleWarning") })
+    expect_null(res$b)
+    expect_equal(res$c, "c")
+    expect_equal(attr(res, "failed"), c(b = "bad credible set"))
+    expect_length(ws, 2) # the repeated warning once, plus the failure summary
+    expect_match(ws[1], "credible set\\(s\\): a, b, c")
+    bad <- setNames(rep(list(data.frame(chr = "bad")), 6), letters[1:6])
+    expect_error(suppressWarnings(coloc:::.run_many(bad, fq, "test", 3)), "3 credible sets in a row failed")
+    expect_error(suppressWarnings(coloc:::.run_many(bad[1:2], fq, "test", 5)), "all 2 credible sets failed")
+    expect_error(query_ot_many(q), "list of credible sets")
+})
+
+test_that("coloc_query_many pairs credible sets with their query results by name", {
+    cs_list <- list(first = q, second = q, third = q)
+    query_list <- list(first = ql, second = NULL, third = ql) # second's query failed
+    attr(query_list, "failed") <- c(second = "query failed")
+    out <- coloc_query_many(cs_list, query_list)
+    expect_equal(out$query_cs, c("first", "third"))
+    expect_equal(out[, -1], rbind(coloc_query(q, ql), coloc_query(q, ql)), ignore_attr = TRUE)
+    expect_equal(names(attr(out, "failed")), "second")
+    expect_error(coloc_query_many(cs_list, list(other = ql)), "names not found in cs_list: other")
+})
+
 test_that("large downloads require a persistent cache dir", {
     old <- options(coloc.cache_dir = NULL, coloc.max_temp_download = NULL)
     on.exit(options(old), add = TRUE)
     expect_error(suppressWarnings(ot_fetch()), "persistent cache directory")
     expect_error(suppressWarnings(eqtl_cat_fetch(c("ge", "majiq"))), "persistent cache directory")
-    expect_error(coloc:::.check_download_size(2e9, NULL, "x"), "2 GB")
-    expect_null(coloc:::.check_download_size(15e6, NULL, "x"))     # small: temp dir is fine
-    expect_null(coloc:::.check_download_size(2e9, "/some/dir", "x")) # dir supplied
+    expect_error(coloc:::.check_download_size(2e9, "x"), "2 GB")
+    expect_null(coloc:::.check_download_size(15e6, "x"))          # small: temp dir is fine
     options(coloc.max_temp_download = 5e9)
-    expect_null(coloc:::.check_download_size(2e9, NULL, "x"))       # limit raised
+    expect_null(coloc:::.check_download_size(2e9, "x"))           # limit raised
+    options(coloc.cache_dir = tempfile(), coloc.max_temp_download = NULL)
+    expect_null(coloc:::.check_download_size(2e9, "x"))           # cache dir set
 })
 
 test_that("downloads are checked, and bad ones removed", {
@@ -85,12 +139,13 @@ test_that("eQTL Catalogue file indexes are complete and sorted", {
 })
 
 test_that("eQTL Catalogue releases are cached separately and validated", {
-    d <- tempfile("ecat")
-    expect_false(eqtl_cat_dir(d, "r7") == eqtl_cat_dir(d, "r8-beta"))
-    expect_equal(dirname(eqtl_cat_dir(d, "r7")), dirname(eqtl_cat_dir(d, "r8-beta")))
-    expect_error(query_eqtl_cat(q, quant_method = "majiq", version = "r7", dir = d), "not available in eQTL Catalogue r7")
-    expect_error(query_eqtl_cat(q, version = "r9", dir = d), "version must be one of")
-    expect_warning(ot <- query_eqtl_cat(data.frame(chr = 6, pos = 1e9), dir = d), "No eQTL Catalogue")
+    old <- options(coloc.cache_dir = tempfile("ecat"))
+    on.exit(options(old), add = TRUE)
+    expect_false(eqtl_cat_dir("r7") == eqtl_cat_dir("r8-beta"))
+    expect_equal(dirname(eqtl_cat_dir("r7")), dirname(eqtl_cat_dir("r8-beta")))
+    expect_error(query_eqtl_cat(q, quant_method = "majiq", version = "r7"), "not available in eQTL Catalogue r7")
+    expect_error(query_eqtl_cat(q, version = "r9"), "version must be one of")
+    expect_warning(ot <- query_eqtl_cat(data.frame(chr = 6, pos = 1e9)), "No eQTL Catalogue")
     expect_length(ot, 0)
 })
 
@@ -105,14 +160,6 @@ test_that("query_ot", {
     expect_equal(length(ot), 484)
     expect_equal(nrow(out), 484)
     expect_equal(sum(out$PP.H4 > 0.5), 44)
-})
-
-test_that("query_ot remote = TRUE matches local", {
-    skip_on_cran()
-    ot_local <- suppressWarnings(query_ot(q))
-    ot_remote <- suppressWarnings(query_ot(q, remote = TRUE))
-    expect_equal(names(ot_remote), names(ot_local))
-    expect_equal(attr(ot_remote, "annot"), attr(ot_local, "annot"))
 })
 
 test_that("query_eqtl_cat r7 (slow)", {

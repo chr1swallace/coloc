@@ -8,14 +8,14 @@ query_ot(
   cs,
   window = 1e+05,
   type = c("all", "gwas", "qtl"),
-  dir = NULL,
-  extra = c("traitFromSource", "pubmedId"),
-  remote = getOption("coloc.ot_remote", FALSE)
+  extra = c("traitFromSource", "pubmedId")
 )
 }
 \arguments{
-\item{cs}{an index data.frame containing columns "chr" "pos". NB
-chr should be a numeric: 1 for chromosome 1, not "chr1".}
+\item{cs}{an index data.frame containing columns "chr" and
+"pos", for a single chromosome. chr may be numeric or
+character, eg 6, "6" or "X". Credible sets returned by
+query_ot() can be used directly.}
 
 \item{window}{numeric value saying how far outside the index
 credible set we should search. Given that only overlapping
@@ -30,28 +30,7 @@ level traits eg to look for pleiotropy) or qtl datasets (you
 want to colocalise with molecular datasets eg to nominate
 causal genes).}
 
-\item{dir}{Open Targets credible set files and the study manifest
-(https://ftp.ebi.ac.uk/pub/databases/opentargets/platform/26.06/output/study/part-00000-1c0a4198-4d65-425e-82a1-d9d8b54d8549-c000.snappy.parquet) are downloaded as needed and saved in a
-cache dir. If dir is NULL, a temporary directory will be
-used. It is strongly recommended to use dir to supply a local
-directory where files will persist between R sessions. This
-will save time and prevent downloading the same files in each
-R session. Downloads larger than
-\code{getOption("coloc.max_temp_download", 1e9)} bytes require a
-persistent dir.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{You can also set this variable persistently using
-`options(coloc.cache_dir="path/to/my/directory")`. See
-[coloc-options].
-}\if{html}{\out{</div>}}}
-
 \item{extra}{extra columns from the Open Targets manifest}
-
-\item{remote}{FALSE (default): download the credible set files
-needed for this query to dir and read them locally. TRUE: read
-them directly from the Open Targets S3 bucket without
-downloading. Can be set persistently with
-\code{options(coloc.ot_remote = TRUE)}. See \link{coloc-options}.}
 }
 \value{
 a list of credible sets with an attribute "annot"
@@ -72,14 +51,22 @@ The Open Targets credible sets are stored in 200 files, each
 covering a contiguous block of the genome. By default, query_ot()
 downloads only the file(s) overlapping the query region (typically
 one or two, ~15 MB each) to the cache dir, and reuses them in later
-queries. Alternatively, remote = TRUE reads those files directly
-from the Open Targets S3 bucket without downloading. To download
-everything up front (eg before working on HPC compute nodes without
-internet access), use \code{\link[=ot_fetch]{ot_fetch()}}.
+queries. To download everything up front (eg before working on
+HPC compute nodes without internet access), use \code{\link[=ot_fetch]{ot_fetch()}}.
 
-S3 access (remote = TRUE) opens a fresh connection for each call.
-Avoid using it inside parallel::mclapply or other forked workers. If
-a call fails with a SIGPIPE error, restart R before continuing.
+Files are kept in the directory given by
+\code{options(coloc.cache_dir = "path/to/dir")}, so they persist between
+R sessions. Setting this is strongly recommended: otherwise a
+temporary directory is used, and files are downloaded again in
+every session. See \link{coloc-options}.
+
+A few Open Targets credible sets include variants on alt or patch
+contigs (eg 17_KI270857v1_alt_811563_C_G). These are returned as
+Open Targets provides them, with pos set to NA. Because they cannot
+match variants on the primary chromosomes, their posterior
+probability counts against colocalisation, so query_ot() warns
+when it finds them: assess any lack of colocalisation with those
+credible sets carefully.
 }
 \examples{
 \dontrun{

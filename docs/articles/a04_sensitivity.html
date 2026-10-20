@@ -6,15 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Coloc: sensitivity to prior values • coloc</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Coloc: sensitivity to prior values">
 </head>
@@ -26,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">coloc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">6.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">7.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +43,8 @@
     <li><a class="dropdown-item" href="../articles/a03_enumeration.html">Coloc: under a single causal variant assumption</a></li>
     <li><a class="dropdown-item" href="../articles/a04_sensitivity.html">Coloc: sensitivity to prior values</a></li>
     <li><a class="dropdown-item" href="../articles/a06_SuSiE.html">Coloc: using SuSiE to relax the single causal variant assumption</a></li>
-    <li><a class="dropdown-item" href="../articles/a07_variant-specific-priors.html">Coloc: using variant-specific priros in coloc</a></li>
+    <li><a class="dropdown-item" href="../articles/a07_variant-specific-priors.html">Coloc: using variant-specific priors in coloc</a></li>
+    <li><a class="dropdown-item" href="../articles/a08_query.html">coloc_pip and using coloc_query to query against eQTL Catalogue and Open Targets</a></li>
     <li><a class="dropdown-item" href="../articles/a05_conditioning.html">DEPRECATED Coloc: relaxing the single causal variant assumption</a></li>
   </ul>
 </li>
@@ -71,7 +71,7 @@
                         <h4 data-toc-skip class="author">Chris
 Wallace</h4>
             
-            <h4 data-toc-skip class="date">2025-12-04</h4>
+            <h4 data-toc-skip class="date">2026-10-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/chr1swallace/coloc/blob/HEAD/vignettes/a04_sensitivity.Rmd" class="external-link"><code>vignettes/a04_sensitivity.Rmd</code></a></small>
       <div class="d-none name"><code>a04_sensitivity.Rmd</code></div>
@@ -100,7 +100,7 @@ specified.</p>
 vignette</a>, we have</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/chr1swallace/coloc" class="external-link">coloc</a></span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## This is coloc version 6.0.1</span></span></code></pre>
+<pre><code><span><span class="co">## This is coloc version 7.0.2</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/attach.html" class="external-link">attach</a></span><span class="op">(</span><span class="va">coloc_test_data</span><span class="op">)</span></span>
@@ -146,7 +146,7 @@ also.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 0.5"</span><span class="op">)</span> </span></code></pre></div>
 <pre><code><span><span class="co">## Results pass decision rule H4 &gt; 0.5</span></span></code></pre>
-<p><img src="a04_sensitivity_files/figure-html/sens-1.png" width="768"></p>
+<p><img src="a04_sensitivity_files/figure-html/sens-1.png" class="r-plt" alt="" width="768"></p>
 <p>Let’s fake a smaller dataset where that won’t be the case, by
 increasing varbeta:</p>
 <p>Now, colocalisation is very dependent on the value of
@@ -176,7 +176,7 @@ increasing varbeta:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 0.5"</span><span class="op">)</span> </span></code></pre></div>
 <pre><code><span><span class="co">## Results pass decision rule H4 &gt; 0.5</span></span></code></pre>
-<p><img src="a04_sensitivity_files/figure-html/sens2-1.png" width="768"></p>
+<p><img src="a04_sensitivity_files/figure-html/sens2-1.png" class="r-plt" alt="" width="768"></p>
 <p>In this case, we find there is evidence for colocalisation according
 to a rule
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mn>4</mn></msub><mo>&gt;</mo><mn>0.5</mn></mrow><annotation encoding="application/x-tex">H_4&gt;0.5</annotation></semantics></math>
@@ -193,7 +193,7 @@ to begin with to find these data convincing.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">my.res</span>,rule<span class="op">=</span><span class="st">"H4 &gt; 3*H3 &amp; H0 &lt; 0.1"</span><span class="op">)</span> </span></code></pre></div>
 <pre><code><span><span class="co">## Results pass decision rule H4 &gt; 3*H3 &amp; H0 &lt; 0.1</span></span></code></pre>
-<p><img src="a04_sensitivity_files/figure-html/sens3-1.png" width="768"></p>
+<p><img src="a04_sensitivity_files/figure-html/sens3-1.png" class="r-plt" alt="" width="768"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -206,7 +206,7 @@ to begin with to find these data convincing.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -29,8 +29,7 @@ utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1",
 ##'
 ##' \describe{
 ##'   \item{`coloc.cache_dir`}{Directory where downloaded files are
-##'   kept, so they are reused between R sessions. Used when a
-##'   function's `dir` argument is NULL. If neither is set, files go
+##'   kept, so they are reused between R sessions. If unset, files go
 ##'   to a temporary directory that is deleted when R exits, with a
 ##'   warning. Default: unset.}
 ##'   \item{`coloc.max_temp_download`}{Largest download, in bytes,
@@ -38,10 +37,6 @@ utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1",
 ##'   [ot_fetch()], or several eQTL Catalogue quantification methods at
 ##'   once) stop with a request to set a cache directory. Default:
 ##'   `1e9` (1 GB).}
-##'   \item{`coloc.ot_remote`}{Default for the `remote` argument of
-##'   [query_ot()]. FALSE downloads the Open Targets files a query needs
-##'   to the cache directory; TRUE reads them directly from the Open
-##'   Targets S3 bucket. Default: FALSE.}
 ##' }
 ##'
 ##' @examples
@@ -50,5 +45,5 @@ utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1",
 ##' options(coloc.cache_dir = "~/data/coloc-cache")
 ##' }
 ##' @name coloc-options
-##' @aliases coloc.cache_dir coloc.max_temp_download coloc.ot_remote
+##' @aliases coloc.cache_dir coloc.max_temp_download
 NULL

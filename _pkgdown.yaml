@@ -15,6 +15,7 @@ articles:
   - a04_sensitivity
   - a06_SuSiE
   - a07_variant-specific-priors
+  - a08_query
   - a05_conditioning
 reference:
   - title: Coloc data structure
@@ -36,6 +37,23 @@ reference:
     contents:
       - '`coloc.susie`'
       - '`runsusie`'
+  - title: Colocalisation of credible sets
+    desc: Approximate coloc using fine-mapped credible sets
+    contents:
+      - '`coloc_pip`'
+      - '`clPP_to_coloc`'
+  - title: Querying Open Targets and eQTL Catalogue
+    desc: Find public credible sets overlapping your own, and colocalise against them
+    contents:
+      - '`query_ot`'
+      - '`query_eqtl_cat`'
+      - '`coloc_query`'
+      - '`query_ot_many`'
+      - '`coloc_query_many`'
+      - '`ot_fetch`'
+      - '`eqtl_cat_fetch`'
+      - '`ensembl_to_symbol`'
+      - '`coloc-options`'
   - title: Visualisation
     desc: see stuff
     contents:

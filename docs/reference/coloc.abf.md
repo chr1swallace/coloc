@@ -1,0 +1,96 @@
+# Fully Bayesian colocalisation analysis using Bayes Factors
+
+Bayesian colocalisation analysis
+
+## Usage
+
+``` r
+coloc.abf(
+  dataset1,
+  dataset2,
+  MAF = NULL,
+  p1 = 1e-04,
+  p2 = 1e-04,
+  p12 = 1e-05,
+  prior_weights1 = NULL,
+  prior_weights2 = NULL,
+  ...
+)
+```
+
+## Arguments
+
+- dataset1:
+
+  a list with specifically named elements defining the dataset to be
+  analysed. See
+  [`check_dataset`](https://chr1swallace.github.io/coloc/reference/check_dataset.md)
+  for details.
+
+- dataset2:
+
+  as above, for dataset 2
+
+- MAF:
+
+  Common minor allele frequency vector to be used for both dataset1 and
+  dataset2, a shorthand for supplying the same vector as parts of both
+  datasets
+
+- p1:
+
+  prior probability a SNP is associated with trait 1, default 1e-4
+
+- p2:
+
+  prior probability a SNP is associated with trait 2, default 1e-4
+
+- p12:
+
+  prior probability a SNP is associated with both traits, default 1e-5
+
+- prior_weights1:
+
+  Non-negative weights for the prior probability a SNP is associated
+  with trait 1
+
+- prior_weights2:
+
+  Non-negative weights for the prior probability a SNP is asscoiated
+  with trait 2
+
+- ...:
+
+  used to pass parameters to approx.bf.estimates, in particular the
+  effect_priors parameter
+
+## Value
+
+a list of two `data.frame`s:
+
+- summary is a vector giving the number of SNPs analysed, and the
+  posterior probabilities of H0 (no causal variant), H1 (causal variant
+  for trait 1 only), H2 (causal variant for trait 2 only), H3 (two
+  distinct causal variants) and H4 (one common causal variant)
+
+- results is an annotated version of the input data containing log
+  Approximate Bayes Factors and intermediate calculations, and the
+  posterior probability SNP.PP.H4 of the SNP being causal for the shared
+  signal *if* H4 is true. This is only relevant if the posterior support
+  for H4 in summary is convincing.
+
+## Details
+
+This function calculates posterior probabilities of different causal
+variant configurations under the assumption of a single causal variant
+for each trait.
+
+If regression coefficients and variances are available, it calculates
+Bayes factors for association at each SNP. If only p values are
+available, it uses an approximation that depends on the SNP's MAF and
+ignores any uncertainty in imputation. Regression coefficients should be
+used if available.
+
+## Author
+
+Claudia Giambartolomei, Chris Wallace, Jeffrey Pullin

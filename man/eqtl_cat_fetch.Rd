@@ -4,11 +4,7 @@
 \alias{eqtl_cat_fetch}
 \title{Download eQTL Catalogue credible sets}
 \usage{
-eqtl_cat_fetch(
-  quant_method = "ge",
-  dir = NULL,
-  version = .eqtl_cat_default_version
-)
+eqtl_cat_fetch(quant_method = "ge", version = .eqtl_cat_default_version)
 }
 \arguments{
 \item{quant_method}{the eQTL Catalogue contains results for up to
@@ -20,28 +16,10 @@ is a recent splicing quantification that was introduced to
 eQTL Catalogue in r8, so is not available in r7. The default
 is ge, but you can choose more than one if you wish.}
 
-\item{dir}{eQTL Catalogue files are downloaded as needed and kept
-in a cache dir, and queried without download on subsequent
-use. If dir is NULL, a temporary directory will be used.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{It is strongly recommended to use dir to supply a local
-directory where files will persist between R sessions. This
-will save time and prevent downloading the same files in each
-R session.
-
-You can also set this variable persistently using
-`options(coloc.cache_dir="path/to/my/directory")`. See
-[coloc-options].
-
-Downloads larger than `getOption("coloc.max_temp_download",
-1e9)` bytes (eg [eqtl_cat_fetch()] for several quant_methods
-at once) require a persistent dir.
-}\if{html}{\out{</div>}}}
-
 \item{version}{eQTL Catalogue release: "r8-beta" (default,
 \url{https://zenodo.org/records/23398345}) or "r7"
 (\url{https://zenodo.org/records/23397994}). Each release is kept
-in its own subdirectory of the cache dir. See}
+in its own subdirectory of the cache directory.}
 }
 \value{
 named character vector of local file paths, named by
@@ -54,8 +32,8 @@ the cache directory. query_eqtl_cat() downloads only the files it
 needs for each query, so you only need this to download
 everything in advance, for example on an HPC login node before
 running query_eqtl_cat() on compute nodes without internet access,
-using the same dir. Files already present are not downloaded
-again.
+using the same cache directory. Files already present are not
+downloaded again.
 }
 \seealso{
 \code{\link[=query_eqtl_cat]{query_eqtl_cat()}}

@@ -7,14 +7,15 @@
 query_eqtl_cat(
   cs,
   quant_method = "ge",
-  dir = NULL,
   window = 1e+05,
   version = .eqtl_cat_default_version
 )
 }
 \arguments{
-\item{cs}{an index data.frame containing columns "chr" "pos". NB
-chr should be a numeric: 1 for chromosome 1, not "chr1".}
+\item{cs}{an index data.frame containing columns "chr" and
+"pos", for a single chromosome. chr may be numeric or
+character, eg 6, "6" or "X". Credible sets returned by
+query_ot() can be used directly.}
 
 \item{quant_method}{the eQTL Catalogue contains results for up to
 six different ways of quantifying gene expression: exon, ge,
@@ -25,24 +26,6 @@ is a recent splicing quantification that was introduced to
 eQTL Catalogue in r8, so is not available in r7. The default
 is ge, but you can choose more than one if you wish.}
 
-\item{dir}{eQTL Catalogue files are downloaded as needed and kept
-in a cache dir, and queried without download on subsequent
-use. If dir is NULL, a temporary directory will be used.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{It is strongly recommended to use dir to supply a local
-directory where files will persist between R sessions. This
-will save time and prevent downloading the same files in each
-R session.
-
-You can also set this variable persistently using
-`options(coloc.cache_dir="path/to/my/directory")`. See
-[coloc-options].
-
-Downloads larger than `getOption("coloc.max_temp_download",
-1e9)` bytes (eg [eqtl_cat_fetch()] for several quant_methods
-at once) require a persistent dir.
-}\if{html}{\out{</div>}}}
-
 \item{window}{numeric value saying how far outside the index
 credible set we should search. Given that only overlapping
 credible sets can show colocalisation there is no reason to
@@ -52,7 +35,7 @@ adequate in all our tests.}
 \item{version}{eQTL Catalogue release: "r8-beta" (default,
 \url{https://zenodo.org/records/23398345}) or "r7"
 (\url{https://zenodo.org/records/23397994}). Each release is kept
-in its own subdirectory of the cache dir. See}
+in its own subdirectory of the cache directory.}
 }
 \value{
 a list of credible sets with an attribute "annot"
@@ -75,7 +58,9 @@ of the genome. query_eqtl_cat() downloads only the file(s)
 overlapping the query region (typically one, ~25 MB per
 quantification method) to the cache dir, and reuses them in later
 queries. To download everything in advance, use
-\code{\link[=eqtl_cat_fetch]{eqtl_cat_fetch()}}. These files are the eQTL Catalogue's own
+\code{\link[=eqtl_cat_fetch]{eqtl_cat_fetch()}}. As for \code{\link[=query_ot]{query_ot()}}, files are kept in the
+directory given by \code{options(coloc.cache_dir = ...)}; see
+\link{coloc-options}. These files are the eQTL Catalogue's own
 credible sets, unchanged but split by genomic position: release r7
 at \url{https://zenodo.org/records/23397994} and r8-beta at
 \url{https://zenodo.org/records/23398345}.

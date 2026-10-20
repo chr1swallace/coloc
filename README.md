@@ -2,9 +2,9 @@ coloc
 =====
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/coloc)](https://cran.r-project.org/package=coloc)
-[![](https://cranlogs.r-pkg.org/badges/coloc)](https://cran.r-project.org/package=coloc)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/coloc)](https://cran.r-project.org/package=coloc)
 
-<img src="man/figures/logo30.png" align="right" />
+<img src="man/figures/logo30.png" align="right" alt="coloc logo" />
 
 The coloc package can be used to perform genetic colocalisation
 analysis of two potentially related phenotypes, to ask whether they
