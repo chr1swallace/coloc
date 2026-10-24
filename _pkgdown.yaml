@@ -16,6 +16,7 @@ articles:
   - a06_SuSiE
   - a07_variant-specific-priors
   - a08_query
+  - articles/a09_example
   - a05_conditioning
 reference:
   - title: Coloc data structure

@@ -45,25 +45,29 @@ plot_dataset <- function(d,
                                    "blue1", "steelblue4", "darkturquoise", "green1", "yellow4",
                                    "yellow3", "darkorange4", "brown"),
                          ...) {
-  if(!("position" %in% names(d)))
-    stop("no position element given")
-  if(is.null(alty)) {
-    y= - ( pnorm(-abs(d$beta)/sqrt(d$varbeta),log.p=TRUE) + log(2) ) / log(10)
-  } else {
-    y=alty
-  }
-  plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
-  if(!is.null(susie_obj))
-    highlight_list=lapply(susie_obj$sets$cs, names)
-  if(!is.null(highlight_list)) {
-    for(i in 1:length(highlight_list)) {
-      w=which(d$snp %in% highlight_list[[i]])
-      points(d$position[w], y[w], col=color[i], cex=2)
+    if(!("position" %in% names(d))) {
+        if("pos" %in% names(d))
+            d$position <- d$pos
+        else
+            stop("no position element given")
     }
-    if(show_legend)
-      legend("topright",col=color[1:length(highlight_list)],
-             pch=rep(1,length(highlight_list)),legend=1:length(highlight_list))
-  }
+    if(is.null(alty)) {
+        y= - ( pnorm(-abs(d$beta)/sqrt(d$varbeta),log.p=TRUE) + log(2) ) / log(10)
+    } else {
+        y=alty
+    }
+    plot(d$position,y,xlab="Position",ylab=ylab,pch=16,col="grey",...)
+    if(!is.null(susie_obj))
+        highlight_list=lapply(susie_obj$sets$cs, names)
+    if(!is.null(highlight_list)) {
+        for(i in 1:length(highlight_list)) {
+            w=which(d$snp %in% highlight_list[[i]])
+            points(d$position[w], y[w], col=color[i], cex=2)
+        }
+        if(show_legend)
+            legend("topright",col=color[1:length(highlight_list)],
+                   pch=rep(1,length(highlight_list)),legend=1:length(highlight_list))
+    }
 }
 
 ##' plot a pair of coloc datasets, highlighting the snps that are common between them
@@ -75,10 +79,18 @@ plot_dataset <- function(d,
 ##' @author Chris Wallace
 plot_datasets=function(d1, d2,
                        color = "dodgerblue2") {
-    if(!("position" %in% names(d1)))
-        stop("no position element given")
-    if(!("position" %in% names(d2)))
-        stop("no position element given")
+    if(!("position" %in% names(d1))) {
+        if("pos" %in% names(d1))
+            d1$position <- d1$pos
+        else
+            stop("no position element given")
+    }
+    if(!("position" %in% names(d2))) {
+        if("pos" %in% names(d2))
+            d2$position <- d2$pos
+        else
+            stop("no position element given")
+    }
     xlim=c(min(c(d1$position, d2$position)),
            max(c(d1$position, d2$position)))
     intsnps=intersect(d1$snp, d2$snp)
