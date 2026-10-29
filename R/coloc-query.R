@@ -379,7 +379,8 @@ eqtl_cat_dir <- function(version = .eqtl_cat_default_version)
         message("Downloading ", sum(!have), " eQTL Catalogue ", version, " file(s) (", round(sum(files$size[!have]) / 1e6), " MB) to ", local)
     getone <- function(f, m, s) .download_once(paste0(base, f, "?download=1"), local, file = f, md5 = m, size = s)
     paths <- stats::setNames(mapply(getone, files$file, files$md5, files$size, USE.NAMES = FALSE), files$quant_method)
-    c(paths, metadata = .download_once(paste0(base, rel$metadata, "?download=1"), local, file = rel$metadata, md5 = rel$metadata_md5))
+    ## c(paths, metadata = .download_once(paste0(base, rel$metadata, "?download=1"), local, file = rel$metadata, md5 = rel$metadata_md5))
+   c(paths, metadata = .eqtl_cat_metadata_path(version)) 
 }
 
 ##' Download eQTL Catalogue credible sets
@@ -496,7 +497,8 @@ query_eqtl_cat <- function(cs, quant_method = "ge", window = 1e+5, version = .eq
         credsets <- credsets[ok]
     }
     annot <- unique(tbl[, setdiff(names(tbl), c("snp", "PP", "beta"))]) # one row per credible set: variant-level columns stay in credsets
-    manifest <- data.table::fread(path_manifest, data.table = FALSE)
+    ## manifest <- data.table::fread(path_manifest, data.table = FALSE)
+    manifest <- eqtl_cat_metadata(version) 
     annot <- merge(annot, manifest, by = "dataset_id", all.x = TRUE)
     annot <- annot[match(names(credsets), annot$cs_id), ]
     rownames(annot) <- NULL
@@ -721,4 +723,42 @@ ensembl_to_symbol <- function(ids) {
     g <- .hgnc_genes()
     ids <- sub("\\..*","",ids)
     g$symbol[match(sub("\\.[0-9]+$", "", ids), g$ensembl_gene_id)]
+}
+
+## Local path to a release's dataset metadata, downloaded to the cache dir if not already there
+.eqtl_cat_metadata_path <- function(version = .eqtl_cat_default_version) {
+    rel <- .eqtl_cat_release(version)
+    url <- paste0(.eqtl_cat_url(version), "/files/", rel$metadata, "?download=1")
+    .download_once(url, eqtl_cat_dir(version), file = rel$metadata, md5 = rel$metadata_md5)
+}
+
+##' Load the eQTL Catalogue dataset metadata
+##'
+##' Returns the eQTL Catalogue dataset metadata for a release: one row
+##' per dataset, giving the study, tissue or cell type (including
+##' its ontology term, tissue_id), condition, sample size and
+##' quantification method. This is the table that query_eqtl_cat()
+##' merges into the "annot" attribute of its results, by dataset_id.
+##'
+##' The file is read from the cache directory if it is already there
+##' (eg from an earlier query_eqtl_cat() or eqtl_cat_fetch() call),
+##' and downloaded otherwise. It is read only once per R session. See
+##' [coloc-options] for setting a persistent cache directory.
+##'
+##' @inheritParams query_eqtl_cat
+##' @return a data.frame, one row per dataset
+##' @export
+##' @author Chris Wallace
+##' @seealso [query_eqtl_cat()], [eqtl_cat_fetch()]
+##' @examples
+##' \dontrun{
+##' meta <- eqtl_cat_metadata()
+##' table(meta$tissue_label)
+##' meta7 <- eqtl_cat_metadata("r7")
+##' }
+eqtl_cat_metadata <- function(version = .eqtl_cat_default_version) {
+    key <- paste0("metadata_", version) # .eqtl_env[[version]] already holds the file index
+    if (is.null(.eqtl_env[[key]]))
+        .eqtl_env[[key]] <- data.table::fread(.eqtl_cat_metadata_path(version), data.table = FALSE)
+    .eqtl_env[[key]]
 }
