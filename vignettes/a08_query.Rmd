@@ -54,7 +54,7 @@ You will see this credible set has additional chr and pos columns. We will need 
 
 ## Set up a cache directory first
 
-Both query functions download files: Open Targets credible sets and a study manifest for `query_ot()`, and eQTL Catalogue files for `query_eqtl_cat()`. coloc keeps these in a *cache directory* and reuses them, so each file is only downloaded once.
+Both query functions download files: Open Targets credible sets and a study manifest for `query_ot()`, and eQTL Catalogue files for `query_ecat()`. coloc keeps these in a *cache directory* and reuses them, so each file is only downloaded once.
 
 Set a cache directory before you start with the `coloc.cache_dir`. You can put this at the top of a script (more reproducible) or put it in your `~/.Rprofile`, so that every coloc session uses it:
 
@@ -62,7 +62,7 @@ Set a cache directory before you start with the `coloc.cache_dir`. You can put t
 options(coloc.cache_dir = "~/data/coloc-cache")
 ```
 
-If you do not, coloc falls back to a temporary directory with a warning. This works, but the temporary directory is deleted when R exits, so everything is downloaded again in every new session. For this reason, downloads larger than 1 GB (such as downloading all of Open Targets with `ot_fetch()`, or all of several eQTL Catalogue quantification methods with `eqtl_cat_fetch()`) will stop and ask you to set a cache directory.
+If you do not, coloc falls back to a temporary directory with a warning. This works, but the temporary directory is deleted when R exits, so everything is downloaded again in every new session. For this reason, downloads larger than 1 GB (such as downloading all of Open Targets with `ot_fetch()`, or all of several eQTL Catalogue quantification methods with `ecat_fetch()`) will stop and ask you to set a cache directory.
 
 The options that control downloading are listed in `?coloc-options`:
 
@@ -109,7 +109,9 @@ out[out$PP.H4 > 0,]
 
 ## Query eQTL Catalogue
 
-Querying the eQTL Catalogue works the same way as Open Targets. The eQTL Catalogue publishes its fine-mapped credible sets as one large file per quantification method, each covering the whole genome. For coloc, these have been split into smaller files (about 25 MB each) sorted by genomic position, with an index recording which part of the genome each file covers. No credible set is split across files, and the data are otherwise unchanged. `query_eqtl_cat()` uses the index to download only the file(s) overlapping your region - usually one per quantification method - to the cache directory, and reuses them in later queries. 
+If you use eQTL Catalogue results, please cite the eQTL Catalogue: Kerimov N, Hayhurst JD, et al. (2021) A compendium of uniformly processed human gene expression and splicing quantitative trait loci. *Nature Genetics* 53:1290-1299. [doi:10.1038/s41588-021-00924-w](https://doi.org/10.1038/s41588-021-00924-w)
+
+Querying the eQTL Catalogue works the same way as Open Targets. The eQTL Catalogue publishes its fine-mapped credible sets as one large file per quantification method, each covering the whole genome. For coloc, these have been split into smaller files (about 25 MB each) sorted by genomic position, with an index recording which part of the genome each file covers. No credible set is split across files, and the data are otherwise unchanged. `query_ecat()` uses the index to download only the file(s) overlapping your region - usually one per quantification method - to the cache directory, and reuses them in later queries. 
 
 ### Releases and quantification methods
 
@@ -133,7 +135,7 @@ The two releases differ slightly in their columns, and this shows in the annotat
 We will use "exon" for this vignette. In this case, there is only one exon credible set in the region but it doesn't overlap our credible set and so doesn't colocalise.
 
 ```{r ecat, eval = online}
-ecat <- query_eqtl_cat(q, quant_method="exon")
+ecat <- query_ecat(q, quant_method="exon")
 out <- coloc_query(q, ecat)
 out
 ```
@@ -141,7 +143,7 @@ out
 The same query against the earlier release:
 
 ```{r ecat7, eval = online}
-ecat7 <- query_eqtl_cat(q, quant_method="exon", version = "r7")
+ecat7 <- query_ecat(q, quant_method="exon", version = "r7")
 coloc_query(q, ecat7)
 ```
 
@@ -171,7 +173,7 @@ Ids without an approved HGNC symbol (eg some lncRNAs) are returned as `NA`.
 Normally you don't need to think about downloading: each query downloads the files it needs to the cache directory, and later queries reuse them. Two functions download data in advance and populate the cache directory:
 
 * `ot_fetch()` downloads all the Open Targets credible sets (200 files, about 3.2 GB for release 26.06).
-* `eqtl_cat_fetch()` downloads all the eQTL Catalogue files for the quantification methods and release you choose, plus the dataset metadata. A whole release is about 2.2 GB; "ge" alone is about 0.7 GB.
+* `ecat_fetch()` downloads all the eQTL Catalogue files for the quantification methods and release you choose, plus the dataset metadata. A whole release is about 2.2 GB; "ge" alone is about 0.7 GB.
 
 This is useful when:
 
@@ -181,27 +183,27 @@ This is useful when:
 ```{r fetch, eval = FALSE}
 options(coloc.cache_dir = "/shared/project/coloc-cache")   # the same directory you will query from
 ot_fetch()                                                # all Open Targets credible sets
-eqtl_cat_fetch("ge")                                      # eQTL Catalogue r8-beta, total gene expression
-eqtl_cat_fetch(c("ge", "leafcutter"), version = "r7")     # or several methods, from another release
+ecat_fetch("ge")                                      # eQTL Catalogue r8-beta, total gene expression
+ecat_fetch(c("ge", "leafcutter"), version = "r7")     # or several methods, from another release
 ```
 
 Because these downloads are large, they need a persistent cache directory: set `coloc.cache_dir`.
 
 ## Multiple credible sets {#many-credible-sets}
 
-Often you will have several index credible sets to test. `query_ot_many()`, `query_eqtl_cat_many()` and `coloc_query_many()` do the same as `query_ot()`, `query_eqtl_cat()` and `coloc_query()`, for a named list of credible sets. They work in two steps: first query, then colocalise.
+Often you will have several index credible sets to test. `query_ot_many()`, `query_ecat_many()` and `coloc_query_many()` do the same as `query_ot()`, `query_ecat()` and `coloc_query()`, for a named list of credible sets. They work in two steps: first query, then colocalise.
 
 ```{r many, eval = online}
 cs_list <- list(locus1 = q, locus2 = q)   # add more credible sets to the list, each named
 ot_list <- query_ot_many(cs_list, type = "qtl")
-ecat_list <- query_eqtl_cat_many(cs_list, quant_method = "exon")
+ecat_list <- query_ecat_many(cs_list, quant_method = "exon")
 res <- coloc_query_many(cs_list, ot_list)
 head(res)
 res_ecat <- coloc_query_many(cs_list, ecat_list)
 res_ecat
 ```
 
-`query_ot_many()` and `query_eqtl_cat_many()` take the same arguments as `query_ot()` and `query_eqtl_cat()`, and return a list of query results, one per credible set, named as `cs_list`. `coloc_query_many()` matches each credible set to its own query results by name, and returns one table of results, with a `query_cs` column first saying which of your credible sets each row refers to.
+`query_ot_many()` and `query_ecat_many()` take the same arguments as `query_ot()` and `query_ecat()`, and return a list of query results, one per credible set, named as `cs_list`. `coloc_query_many()` matches each credible set to its own query results by name, and returns one table of results, with a `query_cs` column first saying which of your credible sets each row refers to.
 
 Keeping the two steps separate means the slow step, querying (which may need to download), can be done once and saved, and the fast step, colocalisation, run or repeated later without the network. For example, on an HPC:
 

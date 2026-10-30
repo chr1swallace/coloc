@@ -12,12 +12,12 @@ for \code{\link[=query_ot]{query_ot()}}. Names are used to label the results; if
 unnamed, the credible sets are numbered.}
 
 \item{query_list}{output of \code{\link[=query_ot_many]{query_ot_many()}} or
-\code{\link[=query_eqtl_cat_many]{query_eqtl_cat_many()}} for the same cs_list}
+\code{\link[=query_ecat_many]{query_ecat_many()}} for the same cs_list}
 
 \item{max_fail}{stop after this many credible sets in a row fail}
 }
 \value{
-a data.frame of coloc results, as from \code{\link[=coloc_query]{coloc_query()}},
+a data.table of coloc results, as from \code{\link[=coloc_query]{coloc_query()}},
 with an extra first column query_cs giving the name of the
 index credible set each row refers to. Attribute "failed" gives
 the error message for each credible set that failed, in the
@@ -26,7 +26,7 @@ query or in the colocalisation.
 \description{
 Runs \code{\link[=coloc_query]{coloc_query()}} for each credible set in cs_list against its
 own query results from \code{\link[=query_ot_many]{query_ot_many()}} or
-\code{\link[=query_eqtl_cat_many]{query_eqtl_cat_many()}}, matched by name, and combines the results.
+\code{\link[=query_ecat_many]{query_ecat_many()}}, matched by name, and combines the results.
 Credible sets whose query failed, or found nothing, are skipped.
 Failures and warnings are handled as for \code{\link[=query_ot_many]{query_ot_many()}}.
 }

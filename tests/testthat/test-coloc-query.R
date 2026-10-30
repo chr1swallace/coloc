@@ -52,7 +52,7 @@ test_that("chr may be numeric or character, so query_ot() credible sets can be u
     expect_error(coloc:::.check_q(data.frame(chr = c("6", "7"), pos = 1:2)), "only have one value")
     expect_error(coloc:::.check_q(data.frame(chr = TRUE, pos = 1)), "chr must be numeric or character")
     ## character chr reaches file selection: a region with no data warns rather than erroring, without downloading
-    expect_warning(query_eqtl_cat(data.frame(chr = "6", pos = 1e9)), "No eQTL Catalogue")
+    expect_warning(query_ecat(data.frame(chr = "6", pos = 1e9)), "No eQTL Catalogue")
     expect_warning(query_ot(data.frame(chr = "23", pos = 1e6)), "No Open Targets")
 })
 
@@ -91,7 +91,7 @@ test_that("coloc_query_many pairs credible sets with their query results by name
     attr(query_list, "failed") <- c(second = "query failed")
     out <- coloc_query_many(cs_list, query_list)
     expect_equal(out$query_cs, c("first", "third"))
-    expect_equal(out[, -1], rbind(coloc_query(q, ql), coloc_query(q, ql)), ignore_attr = TRUE)
+    expect_equal(out[, -1], rbind(coloc_query(q, ql), coloc_query(q, ql)), check.attributes = FALSE)
     expect_equal(names(attr(out, "failed")), "second")
     expect_error(coloc_query_many(cs_list, list(other = ql)), "names not found in cs_list: other")
 })
@@ -100,7 +100,7 @@ test_that("large downloads require a persistent cache dir", {
     old <- options(coloc.cache_dir = NULL, coloc.max_temp_download = NULL)
     on.exit(options(old), add = TRUE)
     expect_error(suppressWarnings(ot_fetch()), "persistent cache directory")
-    expect_error(suppressWarnings(eqtl_cat_fetch(c("ge", "majiq"))), "persistent cache directory")
+    expect_error(suppressWarnings(ecat_fetch(c("ge", "majiq"), version = "r8-beta")), "persistent cache directory")
     expect_error(coloc:::.check_download_size(2e9, "x"), "2 GB")
     expect_null(coloc:::.check_download_size(15e6, "x"))          # small: temp dir is fine
     options(coloc.max_temp_download = 5e9)
@@ -125,8 +125,8 @@ test_that("downloads are checked, and bad ones removed", {
 })
 
 test_that("eQTL Catalogue file indexes are complete and sorted", {
-    for (v in coloc:::.eqtl_cat_releases$version) {
-        idx <- coloc:::.eqtl_cat_index(v)
+    for (v in coloc:::.ecat_releases$version) {
+        idx <- coloc:::.ecat_index(v)
         expect_true(all(c("quant_method", "file", "chromosome", "pos_min", "pos_max", "size", "md5") %in% names(idx)), info = v)
         expect_true(all(grepl(paste0("^eQTL_Catalogue_", v, "_"), idx$file)), info = v)
         expect_true(all(grepl("^[0-9a-f]{32}$", idx$md5)), info = v)
@@ -134,18 +134,18 @@ test_that("eQTL Catalogue file indexes are complete and sorted", {
         ## within each method and chromosome, chunks are in position order
         expect_true(all(tapply(idx$pos_min, paste(idx$quant_method, idx$chromosome), function(x) !is.unsorted(x))), info = v)
     }
-    expect_false("majiq" %in% coloc:::.eqtl_cat_index("r7")$quant_method)
-    expect_true("majiq" %in% coloc:::.eqtl_cat_index("r8-beta")$quant_method)
+    expect_false("majiq" %in% coloc:::.ecat_index("r7")$quant_method)
+    expect_true("majiq" %in% coloc:::.ecat_index("r8-beta")$quant_method)
 })
 
 test_that("eQTL Catalogue releases are cached separately and validated", {
     old <- options(coloc.cache_dir = tempfile("ecat"))
     on.exit(options(old), add = TRUE)
-    expect_false(eqtl_cat_dir("r7") == eqtl_cat_dir("r8-beta"))
-    expect_equal(dirname(eqtl_cat_dir("r7")), dirname(eqtl_cat_dir("r8-beta")))
-    expect_error(query_eqtl_cat(q, quant_method = "majiq", version = "r7"), "not available in eQTL Catalogue r7")
-    expect_error(query_eqtl_cat(q, version = "r9"), "version must be one of")
-    expect_warning(ot <- query_eqtl_cat(data.frame(chr = 6, pos = 1e9)), "No eQTL Catalogue")
+    expect_false(ecat_dir("r7") == ecat_dir("r8-beta"))
+    expect_equal(dirname(ecat_dir("r7")), dirname(ecat_dir("r8-beta")))
+    expect_error(query_ecat(q, quant_method = "majiq", version = "r7"), "not available in eQTL Catalogue r7")
+    expect_error(query_ecat(q, version = "r9"), "version must be one of")
+    expect_warning(ot <- query_ecat(data.frame(chr = 6, pos = 1e9)), "No eQTL Catalogue")
     expect_length(ot, 0)
 })
 
@@ -160,26 +160,84 @@ test_that("query_ot", {
     expect_equal(length(ot), 484)
     expect_equal(nrow(out), 484)
     expect_equal(sum(out$PP.H4 > 0.5), 44)
+    ## result <- annotate_ot(out)
+    ## plot_query(result, label_n=1)
 })
 
-test_that("query_eqtl_cat r7 (slow)", {
+test_that("query_ecat r7", {
     skip_on_cran()
-    ecat <- suppressWarnings(query_eqtl_cat(q, quant_method = "exon", version = "r7"))
+    ecat <- suppressWarnings(query_ecat(q, quant_method = "exon", version = "r7"))
     expect_true(is.list(ecat))
     expect_true(all(c("dataset_id", "cs_id") %in% names(attr(ecat, "annot"))))
     expect_false("beta" %in% names(attr(ecat, "annot")))            # variant-level columns stay in the credible sets
     expect_equal(attr(ecat, "annot")$cs_id, names(ecat))           # one annotation row per credible set, in order
+    ## result <- coloc_query(q, ecat)
+    ## result <- annotate_ecat(result)
+    ## plot_query(result)
 })
 
-test_that("query_eqtl_cat (slow)", {
+test_that("query_ecat r8-beta", {
     skip_on_cran()
     if(is.null(getOption("coloc.cache_dir"))) {
-        expect_warning(ecat <- query_eqtl_cat(q, quant_method="exon"))
+        expect_warning(ecat <- query_ecat(q, quant_method="exon", version="r8-beta"))
     } else {
-        (ecat <- query_eqtl_cat(q, quant_method="exon"))
+        (ecat <- query_ecat(q, quant_method="exon", version="r8-beta"))
     }
     out <- coloc_query(q, ecat)
     expect_equal(length(ecat), 1)
     expect_equal(length(ecat), nrow(out))
     expect_equal(out$PP.H4, 0)
+    ## result <- annotate_ecat(out)
+    ## plot_query(result)
+})
+
+## *_many versions of the three tests above: the same credible set twice, so both sets should give the single-set results
+qs <- list(set1 = q, set2 = q)
+
+test_that("query_ot_many", {
+    skip_on_cran()
+    if(is.null(getOption("coloc.cache_dir"))) {
+        expect_warning(ot <- query_ot_many(qs))
+    } else {
+        (ot <- query_ot_many(qs))
+    }
+    expect_named(ot, names(qs))
+    expect_equal(lengths(ot), c(set1 = 484, set2 = 484))
+    out <- coloc_query_many(qs, ot)
+    expect_equal(nrow(out), 2 * 484)
+    expect_equal(as.vector(table(out$query_cs)), c(484, 484))
+    expect_equal(sum(out$PP.H4 > 0.5), 2 * 44)
+    expect_equal(out[out$query_cs == "set2", -1], out[out$query_cs == "set1", -1], check.attributes = FALSE)
+    result <- annotate_ot(out)
+    plot_query(result, label_n=1)
+})
+
+test_that("query_ecat_many r7", {
+    skip_on_cran()
+    ecat <- suppressWarnings(query_ecat_many(qs, quant_method = "exon", version = "r7"))
+    expect_named(ecat, names(qs))
+    for (e in ecat) {
+        expect_true(is.list(e))
+        expect_true(all(c("dataset_id", "cs_id") %in% names(attr(e, "annot"))))
+        expect_false("beta" %in% names(attr(e, "annot")))            # variant-level columns stay in the credible sets
+        expect_equal(attr(e, "annot")$cs_id, names(e))               # one annotation row per credible set, in order
+    }
+    expect_equal(ecat$set2, ecat$set1)
+    out <- query_ecat_many(qs)
+    result <- annotate_ecat(coloc_query_many(qs, ecat))
+    plot_query(result)
+})
+
+test_that("query_ecat_many r8-beta", {
+    skip_on_cran()
+    if(is.null(getOption("coloc.cache_dir"))) {
+        expect_warning(ecat <- query_ecat_many(qs, quant_method="exon", version="r8-beta"))
+    } else {
+        (ecat <- query_ecat_many(qs, quant_method="exon", version="r8-beta"))
+    }
+    expect_equal(lengths(ecat), c(set1 = 1, set2 = 1))
+    out <- coloc_query_many(qs, ecat)
+    expect_equal(nrow(out), 2)
+    expect_equal(out$query_cs, names(qs))
+    expect_equal(out$PP.H4, c(0, 0))
 })

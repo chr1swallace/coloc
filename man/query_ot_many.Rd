@@ -2,12 +2,12 @@
 % Please edit documentation in R/coloc-query.R
 \name{query_ot_many}
 \alias{query_ot_many}
-\alias{query_eqtl_cat_many}
+\alias{query_ecat_many}
 \title{Query Open Targets or eQTL Catalogue for many credible sets}
 \usage{
 query_ot_many(cs_list, ..., max_fail = 5)
 
-query_eqtl_cat_many(cs_list, ..., max_fail = 5)
+query_ecat_many(cs_list, ..., max_fail = 5)
 }
 \arguments{
 \item{cs_list}{a list of index credible sets, each as described
@@ -15,7 +15,7 @@ for \code{\link[=query_ot]{query_ot()}}. Names are used to label the results; if
 unnamed, the credible sets are numbered.}
 
 \item{...}{further arguments passed to \code{\link[=query_ot]{query_ot()}} or
-\code{\link[=query_eqtl_cat]{query_eqtl_cat()}}, eg type, quant_method, version, window}
+\code{\link[=query_ecat]{query_ecat()}}, eg type, quant_method, version, window}
 
 \item{max_fail}{stop after this many credible sets in a row fail}
 }
@@ -25,7 +25,7 @@ credible set (NULL for those that failed). Attribute "failed"
 gives the error message for each failed credible set.
 }
 \description{
-Runs \code{\link[=query_ot]{query_ot()}} or \code{\link[=query_eqtl_cat]{query_eqtl_cat()}} for each credible set in a
+Runs \code{\link[=query_ot]{query_ot()}} or \code{\link[=query_ecat]{query_ecat()}} for each credible set in a
 list. The results can then be colocalised with the same credible
 sets using \code{\link[=coloc_query_many]{coloc_query_many()}}. Keeping the two steps separate
 means the queries, which need network access, can be run once
@@ -44,7 +44,7 @@ credible sets they came from.
 \dontrun{
 cs_list <- list(BACH2 = q, other = q2) # index credible sets, as for query_ot()
 ot <- query_ot_many(cs_list, type = "qtl")
-ecat <- query_eqtl_cat_many(cs_list, quant_method = c("ge", "leafcutter"))
+ecat <- query_ecat_many(cs_list, quant_method = c("ge", "leafcutter"))
 res_ot <- coloc_query_many(cs_list, ot)
 res_ecat <- coloc_query_many(cs_list, ecat)
 }

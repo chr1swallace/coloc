@@ -3,7 +3,7 @@ NULL
 
 ## Shared helpers
 
-## Check an index credible set for the ot_query and eqtl_cat_query functions.
+## Check an index credible set for the ot_query and query_ecat functions.
 ## return its single chromosome as used in the public data: "6", "X".
 ## chr may be numeric or character
 .check_q <- function(cs) {
@@ -323,39 +323,39 @@ query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"),
 ## Releases: eQTL Catalogue credible sets split into small files sorted by genomic position
 ## (data-raw/eqtl_cat_split.R), published on Zenodo with one record per release (data-raw/zenodo_upload.sh).
 ## To add a release: split, upload, copy its index to inst/extdata, and add a row here.
-.eqtl_cat_releases <- data.frame(
+.ecat_releases <- data.frame(
     version = c("r7", "r8-beta"),
     record = c("23397994", "23398345"),
     source_record = c("23350544", "22846842"), # the original eQTL Catalogue records the files were split from
     metadata = c("dataset_metadata_r7.tsv", "dataset_metadata.tsv"),
     metadata_md5 = c("7020d45bc577bff33f2904671a97eb03", "52b0305f56bd046eb5eeb2b6f2efa874"))
-.eqtl_cat_default_version <- "r8-beta"
+.ecat_default_version <- "r7"
 
-.eqtl_cat_release <- function(version) {
-    if (length(version) != 1 || !version %in% .eqtl_cat_releases$version)
-        stop("version must be one of: ", paste(.eqtl_cat_releases$version, collapse = ", "), call. = FALSE)
-    .eqtl_cat_releases[.eqtl_cat_releases$version == version, ]
+.ecat_release <- function(version) {
+    if (length(version) != 1 || !version %in% .ecat_releases$version)
+        stop("version must be one of: ", paste(.ecat_releases$version, collapse = ", "), call. = FALSE)
+    .ecat_releases[.ecat_releases$version == version, ]
 }
-.eqtl_cat_url <- function(version = .eqtl_cat_default_version) sprintf("https://zenodo.org/records/%s", .eqtl_cat_release(version)$record)
+.ecat_url <- function(version = .ecat_default_version) sprintf("https://zenodo.org/records/%s", .ecat_release(version)$record)
 
 ## Session cache for the file indexes
-.eqtl_env <- new.env(parent = emptyenv())
+.ecat_env <- new.env(parent = emptyenv())
 
 ## Index of a release's chunk files, one row per chunk and chromosome:
 ## quant_method, file, chromosome, pos_min, pos_max, n_cs, n_rows, size, md5
-.eqtl_cat_index <- function(version = .eqtl_cat_default_version) {
-    .eqtl_cat_release(version)
-    if (is.null(.eqtl_env[[version]])) {
+.ecat_index <- function(version = .ecat_default_version) {
+    .ecat_release(version)
+    if (is.null(.ecat_env[[version]])) {
         f <- system.file("extdata", sprintf("eQTL_Catalogue_index_%s.tsv", version), package = "coloc")
         if (!nzchar(f)) stop("eQTL Catalogue file index for ", version, " not found in inst/extdata")
-        .eqtl_env[[version]] <- utils::read.delim(f, colClasses = c(chromosome = "character", md5 = "character"))
+        .ecat_env[[version]] <- utils::read.delim(f, colClasses = c(chromosome = "character", md5 = "character"))
     }
-    .eqtl_env[[version]]
+    .ecat_env[[version]]
 }
 
 ## Check quant_method against what the release contains (eg r7 has no majiq)
-.eqtl_cat_check_qm <- function(quant_method, version) {
-    qms <- unique(.eqtl_cat_index(version)$quant_method)
+.ecat_check_qm <- function(quant_method, version) {
+    qms <- unique(.ecat_index(version)$quant_method)
     bad <- setdiff(quant_method, qms)
     if (length(bad))
         stop("quant_method ", paste(bad, collapse = ", "), " not available in eQTL Catalogue ", version, ". Choose from: ", paste(qms, collapse = ", "), call. = FALSE)
@@ -363,15 +363,15 @@ query_ot <- function(cs, window = 1e+5, type = c("all", "gwas", "qtl"),
 }
 
 ## Cache directory for one release, so releases never overwrite each other
-eqtl_cat_dir <- function(version = .eqtl_cat_default_version)
-    file.path(.cache_dir("eqtl_catalogue"), paste0("eQTL_Catalogue_", .eqtl_cat_release(version)$version))
+ecat_dir <- function(version = .ecat_default_version)
+    file.path(.cache_dir("eqtl_catalogue"), paste0("eQTL_Catalogue_", .ecat_release(version)$version))
 
 ## Make sure the given chunk files (rows of the index) and the release metadata are in the cache, downloading any
 ## that are missing. Returns local paths named by quant_method, with the metadata file named "metadata"
-.eqtl_cat_fetch_files <- function(files, version, what) {
-    rel <- .eqtl_cat_release(version)
-    local <- eqtl_cat_dir(version)
-    base <- paste0(.eqtl_cat_url(version), "/files/")
+.ecat_fetch_files <- function(files, version, what) {
+    rel <- .ecat_release(version)
+    local <- ecat_dir(version)
+    base <- paste0(.ecat_url(version), "/files/")
     files <- unique(files[, c("quant_method", "file", "size", "md5")])
     have <- file.exists(file.path(local, files$file)) & file.size(file.path(local, files$file)) == files$size
     .check_download_size(sum(files$size[!have]), what)
@@ -380,30 +380,30 @@ eqtl_cat_dir <- function(version = .eqtl_cat_default_version)
     getone <- function(f, m, s) .download_once(paste0(base, f, "?download=1"), local, file = f, md5 = m, size = s)
     paths <- stats::setNames(mapply(getone, files$file, files$md5, files$size, USE.NAMES = FALSE), files$quant_method)
     ## c(paths, metadata = .download_once(paste0(base, rel$metadata, "?download=1"), local, file = rel$metadata, md5 = rel$metadata_md5))
-   c(paths, metadata = .eqtl_cat_metadata_path(version)) 
+   c(paths, metadata = .ecat_metadata_path(version)) 
 }
 
 ##' Download eQTL Catalogue credible sets
 ##'
 ##' Downloads all the eQTL Catalogue credible set files for the chosen
 ##' quantification methods and release, plus the dataset metadata, to
-##' the cache directory. query_eqtl_cat() downloads only the files it
+##' the cache directory. query_ecat() downloads only the files it
 ##' needs for each query, so you only need this to download
 ##' everything in advance, for example on an HPC login node before
-##' running query_eqtl_cat() on compute nodes without internet access,
+##' running query_ecat() on compute nodes without internet access,
 ##' using the same cache directory. Files already present are not
 ##' downloaded again.
 ##'
-##' @inheritParams query_eqtl_cat
+##' @inheritParams query_ecat
 ##' @return named character vector of local file paths, named by
 ##'     quant_method, with the dataset metadata file named "metadata"
 ##' @export
 ##' @author Chris Wallace
-##' @seealso [query_eqtl_cat()]
-eqtl_cat_fetch <- function(quant_method = "ge", version = .eqtl_cat_default_version) {
-    quant_method <- .eqtl_cat_check_qm(quant_method, version)
-    idx <- .eqtl_cat_index(version)
-    .eqtl_cat_fetch_files(idx[idx$quant_method %in% quant_method, ], version, "Downloading these eQTL Catalogue files")
+##' @seealso [query_ecat()]
+ecat_fetch <- function(quant_method = "ge", version = .ecat_default_version) {
+    quant_method <- .ecat_check_qm(quant_method, version)
+    idx <- .ecat_index(version)
+    .ecat_fetch_files(idx[idx$quant_method %in% quant_method, ], version, "Downloading these eQTL Catalogue files")
 }
 
 ##' query eQTL catalogue credible sets
@@ -417,16 +417,16 @@ eqtl_cat_fetch <- function(quant_method = "ge", version = .eqtl_cat_default_vers
 ##'
 ##' The eQTL Catalogue credible sets are stored, for each release and
 ##' quantification method, as a series of files each covering a block
-##' of the genome. query_eqtl_cat() downloads only the file(s)
+##' of the genome. query_ecat() downloads only the file(s)
 ##' overlapping the query region (typically one, ~25 MB per
 ##' quantification method) to the cache dir, and reuses them in later
 ##' queries. To download everything in advance, use
-##' [eqtl_cat_fetch()]. As for [query_ot()], files are kept in the
+##' [ecat_fetch()]. As for [query_ot()], files are kept in the
 ##' directory given by `options(coloc.cache_dir = ...)`; see
 ##' [coloc-options]. These files are the eQTL Catalogue's own
 ##' credible sets, unchanged but split by genomic position: release r7
-##' at <`r .eqtl_cat_url("r7")`> and r8-beta at
-##' <`r .eqtl_cat_url("r8-beta")`>.
+##' at <`r .ecat_url("r7")`> and r8-beta at
+##' <`r .ecat_url("r8-beta")`>.
 ##'
 ##' @inheritParams query_ot
 ##' @param quant_method the eQTL Catalogue contains results for up to
@@ -437,17 +437,20 @@ eqtl_cat_fetch <- function(quant_method = "ge", version = .eqtl_cat_default_vers
 ##'     is a recent splicing quantification that was introduced to
 ##'     eQTL Catalogue in r8, so is not available in r7. The default
 ##'     is ge, but you can choose more than one if you wish.
-##' @param version eQTL Catalogue release: "r8-beta" (default,
-##'     <https://zenodo.org/records/23398345>) or "r7"
-##'     (<https://zenodo.org/records/23397994>). Each release is kept
+##' @param version eQTL Catalogue release: "r7" (default,
+##'     <https://zenodo.org/records/23397994>) or "r8-beta"
+##'     (<https://zenodo.org/records/23398345>). Each release is kept
 ##'     in its own subdirectory of the cache directory.
 ##' @return a list of credible sets with an attribute "annot"
 ##'     containing a data.frame where one row per element in the list
 ##'     describes the annotation of the list (most importantly,
 ##'     dataset_id).
+##' @references If you use eQTL Catalogue results, please cite: Kerimov N, Hayhurst JD, et al. (2021) A
+##'     compendium of uniformly processed human gene expression and splicing quantitative trait loci. Nature
+##'     Genetics 53:1290-1299. \doi{10.1038/s41588-021-00924-w}
 ##' @export
 ##' @author Chris Wallace
-##' @seealso [coloc_query()], [eqtl_cat_fetch()]
+##' @seealso [coloc_query()], [ecat_fetch()]
 ##' @examples
 ##' \dontrun{
 ##' q <- data.frame(chr = 6,
@@ -456,27 +459,27 @@ eqtl_cat_fetch <- function(quant_method = "ge", version = .eqtl_cat_default_vers
 ##'            "6_90276601_A_G", "6_90288603_A_G", "6_90286261_C_G"),
 ##'    PP = c(0.675, 0.0747, 0.0702, 0.0505, 0.0422, 0.0412))
 ##'
-##' ecat <- query_eqtl_cat(q)
+##' ecat <- query_ecat(q)
 ##' out2 <- coloc_query(q, ecat)
 ##' out2[out2$PP.H4 > 0, ]
 ##'
-##' ecat7 <- query_eqtl_cat(q, version = "r7") # an earlier release
+##' ecat8 <- query_ecat(q, version = "r8-beta") # the newer, beta release
 ##' }
-query_eqtl_cat <- function(cs, quant_method = "ge", window = 1e+5, version = .eqtl_cat_default_version) {
+query_ecat <- function(cs, quant_method = "ge", window = 1e+5, version = .ecat_default_version) {
     chr <- .check_q(cs)
     .check_window(window)
     lower_pos <- as.integer(max(0, min(cs$pos, na.rm = TRUE) - window)) # NA pos: eg variants on alt contigs
     upper_pos <- as.integer(max(cs$pos, na.rm = TRUE) + window)
-    quant_method <- .eqtl_cat_check_qm(quant_method, version)
+    quant_method <- .ecat_check_qm(quant_method, version)
 
     ## only the chunk files overlapping the query region
-    idx <- .eqtl_cat_index(version)
+    idx <- .ecat_index(version)
     files <- idx[idx$quant_method %in% quant_method & idx$chromosome == as.character(chr) & idx$pos_max >= lower_pos & idx$pos_min <= upper_pos, ]
     if (!nrow(files)) {
         warning("No eQTL Catalogue ", version, " credible sets for ", paste(quant_method, collapse = ", "), " near chromosome ", chr, ":", lower_pos, "-", upper_pos)
         return(structure(list(), annot = data.frame()))
     }
-    paths <- .eqtl_cat_fetch_files(files, version, "This eQTL Catalogue query")
+    paths <- .ecat_fetch_files(files, version, "This eQTL Catalogue query")
     path_manifest <- paths[["metadata"]]
     ds <- arrow::open_dataset(unname(paths[names(paths) != "metadata"]), format = "parquet")
 
@@ -498,7 +501,7 @@ query_eqtl_cat <- function(cs, quant_method = "ge", window = 1e+5, version = .eq
     }
     annot <- unique(tbl[, setdiff(names(tbl), c("snp", "PP", "beta"))]) # one row per credible set: variant-level columns stay in credsets
     ## manifest <- data.table::fread(path_manifest, data.table = FALSE)
-    manifest <- eqtl_cat_metadata(version) 
+    manifest <- ecat_metadata(version) 
     annot <- merge(annot, manifest, by = "dataset_id", all.x = TRUE)
     annot <- annot[match(names(credsets), annot$cs_id), ]
     rownames(annot) <- NULL
@@ -514,7 +517,7 @@ query_eqtl_cat <- function(cs, quant_method = "ge", window = 1e+5, version = .eq
 }
 
 ##' Colocalisation of an index credible set and a list of credible
-##' sets generated by query_ot() or query_eqtl_cat()
+##' sets generated by query_ot() or query_ecat()
 ##'
 ##' Note that the two credible sets are matched by column "snp".
 ##' Therefore it is important that the formatting of the snp column in
@@ -528,14 +531,14 @@ query_eqtl_cat <- function(cs, quant_method = "ge", window = 1e+5, version = .eq
 ##'     match against credible sets in querylist and should be of the
 ##'     format "chr_pos_ref_alt", eg "6_90279406_G_C" (not
 ##'     "chr6_90279406_G_C").
-##' @param querylist output of query_ot() or query_eqtl_cat(). If
+##' @param querylist output of query_ot() or query_ecat(). If
 ##'     querylist is of length 0 (no credible sets), this function
 ##'     warns and returns NULL.
-##' @return a data.frame containing coloc results, one row per
+##' @return a data.table containing coloc results, one row per
 ##'     credible set in querylist, with the annotation from querylist
 ##' @export
 ##' @author Chris Wallace
-##' @seealso [query_ot()], [query_eqtl_cat()], [coloc_pip()]
+##' @seealso [query_ot()], [query_ecat()], [coloc_pip()]
 ##' @examples
 ##' \dontrun{
 ##' q <- data.frame(chr = 6,
@@ -569,7 +572,7 @@ coloc_query <- function(cs, querylist) {
     coloc_res <- lapply(querylist, function(x) coloc_pip(cs, x)) |>
         do.call("rbind", args=_) |>
         as.data.frame()
-    cbind(attr(querylist, "annot"), coloc_res)
+    as.data.table(cbind(attr(querylist, "annot"), coloc_res))
 }
 
 ################################################################################
@@ -619,7 +622,7 @@ coloc_query <- function(cs, querylist) {
 
 ##' Query Open Targets or eQTL Catalogue for many credible sets
 ##'
-##' Runs [query_ot()] or [query_eqtl_cat()] for each credible set in a
+##' Runs [query_ot()] or [query_ecat()] for each credible set in a
 ##' list. The results can then be colocalised with the same credible
 ##' sets using [coloc_query_many()]. Keeping the two steps separate
 ##' means the queries, which need network access, can be run once
@@ -637,7 +640,7 @@ coloc_query <- function(cs, querylist) {
 ##'     for [query_ot()]. Names are used to label the results; if
 ##'     unnamed, the credible sets are numbered.
 ##' @param ... further arguments passed to [query_ot()] or
-##'     [query_eqtl_cat()], eg type, quant_method, version, window
+##'     [query_ecat()], eg type, quant_method, version, window
 ##' @param max_fail stop after this many credible sets in a row fail
 ##' @return a list, named as cs_list, of the query results for each
 ##'     credible set (NULL for those that failed). Attribute "failed"
@@ -649,7 +652,7 @@ coloc_query <- function(cs, querylist) {
 ##' \dontrun{
 ##' cs_list <- list(BACH2 = q, other = q2) # index credible sets, as for query_ot()
 ##' ot <- query_ot_many(cs_list, type = "qtl")
-##' ecat <- query_eqtl_cat_many(cs_list, quant_method = c("ge", "leafcutter"))
+##' ecat <- query_ecat_many(cs_list, quant_method = c("ge", "leafcutter"))
 ##' res_ot <- coloc_query_many(cs_list, ot)
 ##' res_ecat <- coloc_query_many(cs_list, ecat)
 ##' }
@@ -658,21 +661,21 @@ query_ot_many <- function(cs_list, ..., max_fail = 5)
 
 ##' @rdname query_ot_many
 ##' @export
-query_eqtl_cat_many <- function(cs_list, ..., max_fail = 5)
-    .run_many(cs_list, function(cs, nm) query_eqtl_cat(cs, ...), "query_eqtl_cat", max_fail)
+query_ecat_many <- function(cs_list, ..., max_fail = 5)
+    .run_many(cs_list, function(cs, nm) query_ecat(cs, ...), "query_ecat", max_fail)
 
 ##' Colocalise many credible sets with their query results
 ##'
 ##' Runs [coloc_query()] for each credible set in cs_list against its
 ##' own query results from [query_ot_many()] or
-##' [query_eqtl_cat_many()], matched by name, and combines the results.
+##' [query_ecat_many()], matched by name, and combines the results.
 ##' Credible sets whose query failed, or found nothing, are skipped.
 ##' Failures and warnings are handled as for [query_ot_many()].
 ##'
 ##' @inheritParams query_ot_many
 ##' @param query_list output of [query_ot_many()] or
-##'     [query_eqtl_cat_many()] for the same cs_list
-##' @return a data.frame of coloc results, as from [coloc_query()],
+##'     [query_ecat_many()] for the same cs_list
+##' @return a data.table of coloc results, as from [coloc_query()],
 ##'     with an extra first column query_cs giving the name of the
 ##'     index credible set each row refers to. Attribute "failed" gives
 ##'     the error message for each credible set that failed, in the
@@ -684,13 +687,13 @@ coloc_query_many <- function(cs_list, query_list, max_fail = 5) {
     if (is.null(names(cs_list))) names(cs_list) <- seq_along(cs_list) # as the query functions name them
     unknown <- setdiff(names(query_list), names(cs_list))
     if (is.null(names(query_list)) || length(unknown))
-        stop("query_list should be the output of query_ot_many() or query_eqtl_cat_many() for the same cs_list: ",
+        stop("query_list should be the output of query_ot_many() or query_ecat_many() for the same cs_list: ",
              "names not found in cs_list: ", paste(utils::head(unknown, 5), collapse = ", "), call. = FALSE)
     keep <- names(query_list)[!vapply(query_list, is.null, logical(1))] # skip failed queries
     if (!length(keep)) stop("query_list contains no query results", call. = FALSE)
     res <- .run_many(cs_list[keep], function(cs, nm) coloc_query(cs, query_list[[nm]]), "coloc_query", max_fail)
-    out <- as.data.frame(data.table::rbindlist(res, idcol = "query_cs", fill = TRUE))
-    attr(out, "failed") <- c(attr(query_list, "failed"), attr(res, "failed")) # failed queries, then failed colocs
+    out <- data.table::rbindlist(res, idcol = "query_cs", fill = TRUE)
+    data.table::setattr(out, "failed", c(attr(query_list, "failed"), attr(res, "failed"))) # failed queries, then failed colocs
     out
 }
 
@@ -726,10 +729,10 @@ ensembl_to_symbol <- function(ids) {
 }
 
 ## Local path to a release's dataset metadata, downloaded to the cache dir if not already there
-.eqtl_cat_metadata_path <- function(version = .eqtl_cat_default_version) {
-    rel <- .eqtl_cat_release(version)
-    url <- paste0(.eqtl_cat_url(version), "/files/", rel$metadata, "?download=1")
-    .download_once(url, eqtl_cat_dir(version), file = rel$metadata, md5 = rel$metadata_md5)
+.ecat_metadata_path <- function(version = .ecat_default_version) {
+    rel <- .ecat_release(version)
+    url <- paste0(.ecat_url(version), "/files/", rel$metadata, "?download=1")
+    .download_once(url, ecat_dir(version), file = rel$metadata, md5 = rel$metadata_md5)
 }
 
 ##' Load the eQTL Catalogue dataset metadata
@@ -737,28 +740,225 @@ ensembl_to_symbol <- function(ids) {
 ##' Returns the eQTL Catalogue dataset metadata for a release: one row
 ##' per dataset, giving the study, tissue or cell type (including
 ##' its ontology term, tissue_id), condition, sample size and
-##' quantification method. This is the table that query_eqtl_cat()
+##' quantification method. This is the table that query_ecat()
 ##' merges into the "annot" attribute of its results, by dataset_id.
 ##'
 ##' The file is read from the cache directory if it is already there
-##' (eg from an earlier query_eqtl_cat() or eqtl_cat_fetch() call),
+##' (eg from an earlier query_ecat() or ecat_fetch() call),
 ##' and downloaded otherwise. It is read only once per R session. See
 ##' [coloc-options] for setting a persistent cache directory.
 ##'
-##' @inheritParams query_eqtl_cat
+##' @inheritParams query_ecat
 ##' @return a data.frame, one row per dataset
 ##' @export
 ##' @author Chris Wallace
-##' @seealso [query_eqtl_cat()], [eqtl_cat_fetch()]
+##' @seealso [query_ecat()], [ecat_fetch()]
 ##' @examples
 ##' \dontrun{
-##' meta <- eqtl_cat_metadata()
+##' meta <- ecat_metadata()
 ##' table(meta$tissue_label)
-##' meta7 <- eqtl_cat_metadata("r7")
+##' meta7 <- ecat_metadata("r7")
 ##' }
-eqtl_cat_metadata <- function(version = .eqtl_cat_default_version) {
-    key <- paste0("metadata_", version) # .eqtl_env[[version]] already holds the file index
-    if (is.null(.eqtl_env[[key]]))
-        .eqtl_env[[key]] <- data.table::fread(.eqtl_cat_metadata_path(version), data.table = FALSE)
-    .eqtl_env[[key]]
+ecat_metadata <- function(version = .ecat_default_version) {
+    key <- paste0("metadata_", version) # .ecat_env[[version]] already holds the file index
+    if (is.null(.ecat_env[[key]]))
+        .ecat_env[[key]] <- data.table::fread(.ecat_metadata_path(version), data.table = FALSE)
+    .ecat_env[[key]]
+}
+
+################################################################################
+## group labels: roll biosamples (tissues, cell types) up to coarse groups
+
+## Open Targets biosample index: every UBERON/CL/EFO term with its ancestors (via is_a and part_of)
+.ot_biosample_url <- sprintf("%s/platform/%s/output/biosample/part-00000-b13417e4-8fed-4fbd-b720-70130065798e-c000.snappy.parquet", .ot_s3_url, .ot_release)
+.ot_biosample_md5 <- "9ccfc396daf483776ef0994ea1de7115"
+.ot_biosample_size <- 8428035
+
+## Terms with no useful ontology ancestors, assigned by hand
+.group_overrides <- c(EFO_0005292 = "hematopoietic cell", # lymphoblastoid cell line
+                      BTO_0000930 = "neural cell")
+## When a term rolls up to several groups, the first of these that matches wins
+.group_priority <- c("hematopoietic cell", "epithelial cell", "neural cell", "connective tissue cell", "adipose tissue")
+
+## Biosample lookup, built once per session: ancestors (including the term itself) and names, keyed by id, plus target terms
+.biosample_lookup <- function() {
+    if (is.null(.ot_env$biosample)) {
+        path <- .download_once(.ot_biosample_url, .ot_dir(), file = paste0("biosample_", .ot_release, ".parquet"), md5 = .ot_biosample_md5, size = .ot_biosample_size)
+        bs <- as.data.frame(arrow::read_parquet(path, col_select = c("biosampleId", "biosampleName", "ancestors")))
+        f <- system.file("extdata", "cellxgene_group_terms.tsv", package = "coloc")
+        if (!nzchar(f)) stop("cellxgene_group_terms.tsv not found in inst/extdata")
+        .ot_env$biosample <- list(anc = stats::setNames(Map(c, bs$biosampleId, lapply(bs$ancestors, as.character)), bs$biosampleId),
+                                  name = stats::setNames(bs$biosampleName, bs$biosampleId),
+                                  targets = utils::read.delim(f)$id)
+    }
+    .ot_env$biosample
+}
+
+## Roll one biosample id up to its most specific target term(s)
+.rollup_one <- function(id, bs) {
+    if (id %in% names(.group_overrides)) return(.group_overrides[[id]])
+    hit <- intersect(bs$anc[[id]], bs$targets) # NULL for ids not in the index
+    if (!length(hit)) return(NA_character_)
+    hit <- hit[!vapply(hit, function(h) any(h %in% unlist(bs$anc[setdiff(hit, h)])), logical(1))] # drop hits that are ancestors of other hits
+    nm <- unname(bs$name[hit])
+    for (kp in .group_priority) if (kp %in% nm) return(kp)
+    paste(sort(nm), collapse = "|") # unresolved tie: add to .group_overrides or .group_priority
+}
+
+## Group label for each of a vector of biosample ids (UBERON_0001157 or UBERON:0001157 form)
+.group_label <- function(ids) {
+    ids <- sub(":", "_", as.character(ids), fixed = TRUE)
+    u <- unique(ids[!is.na(ids)])
+    if (!length(u)) return(rep(NA_character_, length(ids)))
+    bs <- .biosample_lookup()
+    unname(stats::setNames(vapply(u, .rollup_one, character(1), bs = bs), u)[ids])
+}
+
+## Open Targets disease index: EFO/MONDO trait terms with their ancestors and therapeutic areas, used to group GWAS
+.ot_disease_url <- sprintf("%s/platform/%s/output/disease/disease.parquet", .ot_s3_url, .ot_release)
+.ot_disease_md5 <- "91474ea14a5792bc2d43d3fd3da88595"
+.ot_disease_size <- 7150787
+
+## GWAS are grouped by the Open Targets therapeutic area of their trait. Where a trait has several, the first of these
+## wins: causes (cancer, infection) and specific categories (psychiatric, immune) before organ systems
+.gwas_area_priority <- c("cancer or benign tumor", "infectious disease", "psychiatric disorder", "immune system disorder",
+                         "cardiovascular disorder", "nervous system disorder", "endocrine system disorder", "nutritional or metabolic disease",
+                         "respiratory or thoracic disease", "gastrointestinal disease", "hepatobiliary disorder", "urinary system disorder",
+                         "reproductive system or breast disease", "pregnancy or perinatal disease", "musculoskeletal or connective tissue disease",
+                         "integumentary system disorder", "hematologic disorder", "disorder of visual system", "disorder of ear",
+                         "injury, poisoning or other complication")
+## Traits in the "measurement" area (eg protein or metabolite levels) are grouped by the first of these they descend from,
+## or "other measurement"
+.gwas_measurement_priority <- c("protein measurement", "lipid or lipoprotein measurement", "metabolite measurement", "neuroimaging measurement",
+                                "brain attribute", "microbiome measurement", "seropositivity measurement", "cardiovascular measurement",
+                                "hematological measurement", "anthropometric measurement", "hormone measurement", "diet measurement",
+                                "facial morphology trait")
+## Areas used only when a trait has no disease area and is not a measurement
+.gwas_other_areas <- c("phenotype", "biological_process", "genetic, familial or congenital disease", "medical procedure")
+
+## Disease lookup, built once per session: names of each term's ancestors (including itself) and of its therapeutic areas
+.disease_lookup <- function() {
+    if (is.null(.ot_env$disease)) {
+        path <- .download_once(.ot_disease_url, .ot_dir(), file = paste0("disease_", .ot_release, ".parquet"), md5 = .ot_disease_md5, size = .ot_disease_size)
+        ds <- as.data.frame(arrow::read_parquet(path, col_select = c("id", "name", "ancestors", "therapeuticAreas")))
+        nm <- stats::setNames(ds$name, ds$id)
+        .ot_env$disease <- list(anc = stats::setNames(lapply(seq_along(ds$id), function(i) unname(nm[c(ds$id[i], as.character(ds$ancestors[[i]]))])), ds$id),
+                                area = stats::setNames(lapply(ds$therapeuticAreas, function(a) unname(nm[as.character(a)])), ds$id))
+    }
+    .ot_env$disease
+}
+
+## Group label for one GWAS study, from its trait ids (diseaseIds)
+.gwas_rollup_one <- function(ids, dl) {
+    ids <- as.character(ids)
+    areas <- unique(unlist(dl$area[ids]))
+    for (a in .gwas_area_priority) if (a %in% areas) return(a)
+    if ("measurement" %in% areas) {
+        anc <- unique(unlist(dl$anc[ids]))
+        for (m in .gwas_measurement_priority) if (m %in% anc) return(m)
+        return("other measurement")
+    }
+    for (a in .gwas_other_areas) if (a %in% areas) return(a)
+    NA_character_
+}
+
+## Group label for each of a vector of GWAS studyIds; study is a table of studyId and diseaseIds (list column)
+.gwas_group_label <- function(study_ids, study) {
+    u <- unique(study_ids)
+    dl <- .disease_lookup()
+    lab <- vapply(study$diseaseIds[match(u, study$studyId)], .gwas_rollup_one, character(1), dl = dl)
+    unname(stats::setNames(lab, u)[study_ids])
+}
+
+#' Add column symbol for gene symbol
+#'
+#' for the gene id in the first of cols present in res, or the original id where there is none
+##'  
+##'
+##' @param res coloc_query result
+##' @param cols name of column holding ensembl_gene_id
+##' @return res with additional column "symbol". if no symbol is found, the ensembl_gene_id is used in its place
+##' @export 
+##' @author Chris Wallace
+add_symbol <- function(res, cols=c("ensembl_gene_id", "molecular_trait_object_id", "gene_id","geneId")) {
+    gcol <- intersect(cols, names(res))
+    if (!length(gcol)) {
+        warning("no gene id column found, so symbol not added", call. = FALSE)
+        return(res)
+    }
+    ids <- as.character(res[[gcol[1]]])
+    res$symbol <- ensembl_to_symbol(ids)
+    res$symbol[is.na(res$symbol)] <- ids[is.na(res$symbol)] # no symbol: keep the original id
+    res
+}
+
+##' Add tissue / cell type group labels to colocalisation results
+##'
+##' Adds a column `group_label` that rolls each result's biosample (tissue or cell type) up to a coarse group, such as
+##' "colon", "brain" or "hematopoietic cell", for summarising and plotting results (eg with [plot_query()]).
+##'
+##' Biosamples are UBERON, Cell Ontology or EFO terms. Each is mapped to its most specific ancestor (following is_a
+##' and part_of relations, as given by the Open Targets biosample index) among the CZ CELLxGENE curated high-level
+##' terms (tissue_general and cell_class lists from <https://github.com/chanzuckerberg/cellxgene-ontology-guide>).
+##' A few terms with no useful ancestors, such as lymphoblastoid cell lines, are assigned by hand, and where a term
+##' matches several groups, cell classes such as "hematopoietic cell" take precedence. Any remaining ties are
+##' returned joined by "|". The Open Targets biosample index (~8 MB) is downloaded to the cache directory on first use.
+##'
+##' For eQTL Catalogue results, the biosample is the dataset's tissue_id. For Open Targets QTL studies it is the
+##' study's biosampleId.
+##'
+##' Open Targets GWAS studies have no biosample, so annotate_ot() groups them by trait instead: by the Open Targets
+##' therapeutic area of the study's trait (diseaseIds), such as "immune system disorder". Where a trait has several
+##' areas, causes (cancer, infection) and specific categories (psychiatric, immune) take precedence over organ systems.
+##' Traits in the "measurement" area, the large majority of Open Targets GWAS, are split further by type, such as
+##' "protein measurement" or "metabolite measurement". The Open Targets disease index (~7 MB) is downloaded to the
+##' cache directory on first use.
+##'
+##' Both functions also add a column `symbol`, the HGNC gene symbol for the Ensembl gene id (see
+##' [ensembl_to_symbol()]), or the original id where no symbol is found. For Open Targets this is the study's geneId,
+##' which is NA for GWAS studies. Column `label` is the point label used by [plot_query()]: the gene symbol,
+##' or for Open Targets GWAS, the trait (traitFromSource, without any "(UKB data field ...)" suffix). annotate_ot() also adds `study_class`, "gwas" or "qtl", for
+##' faceting plots.
+##'
+##' @param res output of [coloc_query()] (or [coloc_query_many()]) for credible sets from [query_ecat()] or
+##'     [query_ot()] respectively
+##' @inheritParams query_ecat
+##' @return res, with columns group_label, symbol and label added, and for annotate_ot(), study_class (plus tissue_id,
+##'     or the Open Targets study columns studyType, biosampleId, geneId and traitFromSource, if not already present)
+##' @export
+##' @author Chris Wallace
+##' @seealso [plot_query()]
+##' @examples
+##' \dontrun{
+##' res <- annotate_ecat(coloc_query(q, query_ecat(q)))
+##' table(res$group_label)
+##' res_ot <- annotate_ot(coloc_query(q, query_ot(q, type = "qtl")))
+##' }
+annotate_ecat <- function(res, version = .ecat_default_version) {
+    stopifnot("res must be a data.frame from coloc_query() with column dataset_id" = is.data.frame(res) && "dataset_id" %in% names(res))
+    if (!"tissue_id" %in% names(res)) {
+        meta <- ecat_metadata(version)
+        res$tissue_id <- meta$tissue_id[match(res$dataset_id, meta$dataset_id)]
+    }
+    res$group_label <- .group_label(res$tissue_id)
+    res <- add_symbol(res) # r8-beta: molecular_trait_object_id, r7: gene_id
+    res$label <- res$symbol
+    res
+}
+
+##' @rdname annotate_ecat
+##' @export
+annotate_ot <- function(res) {
+    stopifnot("res must be a data.frame from coloc_query() with column studyId" = is.data.frame(res) && "studyId" %in% names(res))
+    miss <- setdiff(c("studyType", "biosampleId", "geneId", "traitFromSource"), names(res))
+    study <- .ot_study(unique(res$studyId), cols = c(miss, "diseaseIds")) # only the study columns not already there, plus traits
+    for (m in miss) res[[m]] <- study[[m]][match(res$studyId, study$studyId)]
+    gw <- !is.na(res$studyType) & res$studyType == "gwas"
+    res$study_class <- ifelse(gw, "gwas", "qtl")
+    res$group_label <- NA_character_
+    res$group_label[!gw] <- .group_label(res$biosampleId[!gw]) # QTL: by tissue / cell type
+    if (any(gw)) res$group_label[gw] <- .gwas_group_label(res$studyId[gw], study) # GWAS: by trait
+    res <- add_symbol(res, "geneId")
+    res$label <- ifelse(gw, sub("\\s*\\(UKB data field [0-9]+\\)", "", res$traitFromSource), res$symbol)
+    res
 }

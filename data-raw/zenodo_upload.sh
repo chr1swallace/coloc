@@ -45,7 +45,7 @@ print(json.dumps({"metadata": {
   "title": f"eQTL Catalogue {release} fine-mapped credible sets, split by genomic position for coloc",
   "creators": [{"name": "Wallace, Chris", "affiliation": "University of Cambridge"}],
   "description": (f"<p>The eQTL Catalogue {release} fine-mapped credible sets (<a href='https://doi.org/{doi}'>doi:{doi}</a>), "
-                  "reorganised for fast regional queries by the R package coloc (query_eqtl_cat()). Each quantification method's "
+                  "reorganised for fast regional queries by the R package coloc (query_ecat()). Each quantification method's "
                   "file is split into chunks sorted by chromosome and credible set start position; no credible set is split "
                   "across chunks. The index file lists, for each chunk and chromosome, the range of variant positions, "
                   "with file sizes and md5 checksums. The data are unchanged from the original release.</p>"

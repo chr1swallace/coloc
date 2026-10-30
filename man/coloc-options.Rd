@@ -9,7 +9,7 @@
 coloc reads the following options, set with \code{\link[=options]{options()}}, for
 example in your \code{.Rprofile}. They mainly control the functions
 that download public credible sets (\code{\link[=query_ot]{query_ot()}}, \code{\link[=ot_fetch]{ot_fetch()}},
-\code{\link[=query_eqtl_cat]{query_eqtl_cat()}}, \code{\link[=ensembl_to_symbol]{ensembl_to_symbol()}}).
+\code{\link[=query_ecat]{query_ecat()}}, \code{\link[=ensembl_to_symbol]{ensembl_to_symbol()}}).
 }
 \details{
 \describe{

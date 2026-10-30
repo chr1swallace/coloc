@@ -21,7 +21,9 @@ Suggests:
     EnsDb.Hsapiens.v86,
     EnsDb.Hsapiens.v75,
     locuszoomr,
-    gridExtra
+    gridExtra,
+    ggrepel (>= 0.9.0),
+    ggtext
 Title: Colocalisation Tests of Two Genetic Traits
 Version: 7.0.3
 Date: 2026-10-20
@@ -51,6 +53,7 @@ Collate:
     'check.R'
     'claudia.R'
     'plot.R'
+    'plot-query.R'
     'private.R'
     'sensitivity.R'
     'split.R'

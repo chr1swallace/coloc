@@ -25,7 +25,7 @@ utils::globalVariables(c(".","dfsane","dmvnorm","H0","H1","H2","H3","H4","hit1",
 ##' coloc reads the following options, set with [options()], for
 ##' example in your `.Rprofile`. They mainly control the functions
 ##' that download public credible sets ([query_ot()], [ot_fetch()],
-##' [query_eqtl_cat()], [ensembl_to_symbol()]).
+##' [query_ecat()], [ensembl_to_symbol()]).
 ##'
 ##' \describe{
 ##'   \item{`coloc.cache_dir`}{Directory where downloaded files are

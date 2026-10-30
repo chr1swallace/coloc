@@ -1,7 +1,7 @@
 ## Split eQTL Catalogue credible set files into smaller files sorted by genomic position, for upload to Zenodo.
 ##
 ## The eQTL Catalogue publishes one large parquet file per quantification method, each covering the whole
-## genome, so every query_eqtl_cat() call needs the whole file. This script rewrites each file as a series of
+## genome, so every query_ecat() call needs the whole file. This script rewrites each file as a series of
 ## smaller files ("chunks"), so a query only needs the chunk(s) overlapping its region, as for Open Targets.
 ##
 ## - credible sets are sorted by chromosome (1-22, X, ...) then by their first variant's position, and rows
@@ -10,7 +10,7 @@
 ## - chunks may run across a chromosome boundary, to keep the number of files per release under Zenodo's limit
 ##   (100 files per record by default)
 ## - an index records, for each chunk and each chromosome it contains, the range of variant positions, so
-##   query_eqtl_cat() can pick the chunks overlapping a query window
+##   query_ecat() can pick the chunks overlapping a query window
 ##
 ## Output, for each release, in <work>/<release>/:
 ##   eQTL_Catalogue_<release>_<quant_method>_<NNN>.parquet  the chunks
