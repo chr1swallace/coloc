@@ -488,7 +488,26 @@ query_ecat <- function(cs, quant_method = "ge", window = 1e+5, version = .ecat_d
     ## releases differ: r8-beta has molecular_trait_object_id, r7 has gene_id instead; take whichever are present
     cols <- intersect(c("dataset_id", "molecular_trait_id", "molecular_trait_object_id", "gene_id", "cs_id", "region", "variant", "pip","beta"), names(ds))
 
-    tbl <- arrow::Scanner$create(ds, projection = cols, filter = filt)$ToTable()  |> as.data.frame()
+    tbl <- arrow::Scanner$create(ds, projection = cols, filter = filt)$ToTable()  |> as.data.frame() ## NB may contain partial credible sets
+
+    ## second pass: credible sets hit in the window can extend beyond it (and beyond the chunk files opened), so fetch them whole
+    if (nrow(tbl)) {
+        ## every cs lies inside its fine-mapping region, eg "chr6:89279406-91279406"
+        if ("region" %in% names(tbl)) {
+            rg <- do.call(rbind, strsplit(sub("^chr", "", unique(tbl$region)), "[:-]"))
+            lower2 <- min(as.integer(rg[, 2])); upper2 <- max(as.integer(rg[, 3]))
+        } else {
+            lower2 <- max(0L, lower_pos - 1000000L); upper2 <- upper_pos + 1000000L # fallback: eQTL Catalogue cis window is +/- 1Mb
+        }
+        files2 <- idx[idx$quant_method %in% quant_method & idx$chromosome == as.character(chr) & idx$pos_max >= lower2 & idx$pos_min <= upper2, ]
+        paths2 <- .ecat_fetch_files(files2, version, "This eQTL Catalogue query")
+        ds2 <- arrow::open_dataset(unname(paths2[names(paths2) != "metadata"]), format = "parquet")
+
+        in_set <- function(col, vals) arrow::Expression$create("is_in", arrow::Expression$field_ref(col), options = list(value_set = arrow::Array$create(vals), skip_nulls = TRUE))
+        filt2 <- arrow::Expression$field_ref("chromosome") == as.character(chr) & pos_ref >= lower2 & pos_ref <= upper2 & in_set("cs_id", unique(tbl$cs_id)) # position terms only help row-group pruning
+        tbl <- arrow::Scanner$create(ds2, projection = cols, filter = filt2)$ToTable() |> as.data.frame()
+    }
+    
     names(tbl)[names(tbl) == "variant"] <- "snp"
     names(tbl)[names(tbl) == "pip"] <- "PP"
     tbl$snp <- sub("^chr", "", tbl$snp) # match snp format eg 6_90279406_G_C
